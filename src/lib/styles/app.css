@@ -1,1 +1,7 @@
 @import "tailwindcss" source("../../");
+
+body {
+  background-color: #000000;
+  overflow-x: hidden;
+  color: white; /* Disable browser handling of all touch gestures */
+}

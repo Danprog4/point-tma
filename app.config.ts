@@ -7,8 +7,8 @@ export default defineConfig({
     plugins: [
       tsConfigPaths({
         projects: ["./tsconfig.json"],
-      }),
-      tailwindcss(),
+      }) as any,
+      tailwindcss() as any,
     ],
   },
 
@@ -33,6 +33,6 @@ export default defineConfig({
 
   server: {
     // https://tanstack.com/start/latest/docs/framework/react/hosting#deployment
-    preset: "vercel",
+    preset: "bun",
   },
 });

@@ -1,17 +1,40 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import {
+  backButton,
+  hapticFeedback,
+  init,
+  mockTelegramEnv,
+  swipeBehavior,
+} from "@telegram-apps/sdk";
+
 import { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
-import { env } from "~/env";
+import { AuthProvider } from "~/components/AuthProvider";
 import appCss from "~/lib/styles/app.css?url";
+import { useTRPC } from "~/trpc/init/react";
 import { TRPCRouter } from "~/trpc/init/router";
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        enableClosingConfirmation: () => void;
+        expand: () => void;
+        disableVerticalSwipes: () => void;
+        requestFullscreen: () => void;
+        lockOrientation: () => void;
+        platform: string;
+        version: string;
+        // Add other Telegram WebApp properties you might use here
+      };
+    };
+  }
+}
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -25,7 +48,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content: "width=device-width, initial-scale=1, maximum-scale=1",
       },
       {
         title: "React TanStarter",
@@ -37,16 +60,77 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
+  useEffect(() => {
+    const themeParams = {
+      accent_text_color: "#6ab2f2",
+      bg_color: "#17212b",
+      button_color: "#5288c1",
+      button_text_color: "#ffffff",
+      destructive_text_color: "#ec3942",
+      header_bg_color: "#17212b",
+      hint_color: "#708499",
+      link_color: "#6ab3f3",
+      secondary_bg_color: "#232e3c",
+      section_bg_color: "#17212b",
+      section_header_text_color: "#6ab3f3",
+      subtitle_text_color: "#708499",
+      text_color: "#f5f5f5",
+    } as const;
+
+    if (import.meta.env.DEV) {
+      mockTelegramEnv({
+        launchParams: {
+          tgWebAppPlatform: "web",
+          tgWebAppVersion: "8.0.0",
+          tgWebAppData: import.meta.env.VITE_MOCK_INIT_DATA,
+          tgWebAppThemeParams: themeParams,
+          tgWebAppStartParam: "ref=3",
+        },
+      });
+    }
+
+    init();
+
+    backButton.mount();
+
+    if (swipeBehavior.mount.isAvailable()) {
+      swipeBehavior.mount();
+      swipeBehavior.isMounted();
+      swipeBehavior.disableVertical();
+      swipeBehavior.isVerticalEnabled();
+    }
+
+    // if (viewport.expand.isAvailable()) {
+    //   viewport.expand();
+    // }
+
+    // if (requestFullscreen.isAvailable()) {
+    //   requestFullscreen();
+    // }
+
+    // viewport.mount().then(() => viewport.requestFullscreen());
+
+    console.log(hapticFeedback.isSupported(), "hapticFeedback");
+  }, []);
+
   return (
     <RootDocument>
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
     </RootDocument>
   );
 }
 
+const isDev = import.meta.env.DEV;
+const isErudaEnabled = import.meta.env.VITE_ERUDA_ENABLED === "true";
+
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
   useEffect(() => {
-    if (import.meta.env.DEV && env.VITE_ERUDA_ENABLED) {
+    if (isDev && isErudaEnabled) {
       import("eruda").then((eruda) => {
         eruda.default.init();
       });
@@ -61,12 +145,6 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
       </head>
       <body>
         {children}
-
-        {import.meta.env.DEV && env.VITE_ERUDA_ENABLED && (
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-        )}
-        {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />}
-
         <Scripts />
       </body>
     </html>

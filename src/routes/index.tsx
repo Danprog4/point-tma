@@ -9,6 +9,8 @@ import {
   Plus,
   Search,
 } from "lucide-react";
+import { useState } from "react";
+import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Logo } from "~/components/Icons/Logo";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -20,6 +22,7 @@ function Home() {
   const trpc = useTRPC();
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-white pb-20">
@@ -355,7 +358,10 @@ function Home() {
 
       {/* Create Meeting Button */}
       <div className="fixed right-4 bottom-20 left-4">
-        <button className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+        <button
+          onClick={() => setIsDrawerOpen(true)}
+          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+        >
           Создать встречу
         </button>
       </div>
@@ -388,6 +394,9 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Create Quest Drawer */}
+      <CreateQuestDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   );
 }

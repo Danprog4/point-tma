@@ -4,3 +4,25 @@ body {
   overflow-x: hidden;
   color: black;
 }
+
+/* html {
+  overflow: hidden;
+  height: 100%;
+} */
+
+/* Prevent pull-to-refresh and other unwanted scrolling behaviors in Telegram mini apps */
+body,
+html {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent bounce scrolling on iOS */
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

@@ -1,14 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Bell,
-  Calendar,
-  ChevronDown,
-  Filter,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ArrowRight, Bell, ChevronDown, Filter, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Logo } from "~/components/Icons/Logo";
@@ -367,33 +359,6 @@ function Home() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col items-center px-4 py-2">
-            <div className="relative mb-1 h-6 w-6">
-              <div className="grid grid-cols-3 gap-px">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-1 w-1 rounded-sm bg-gray-900"></div>
-                ))}
-              </div>
-            </div>
-            <span className="text-xs font-medium text-gray-900">Афиша</span>
-            <div className="mt-1 h-0.5 w-8 rounded-full bg-purple-600"></div>
-          </div>
-          <div className="flex flex-col items-center px-4 py-2">
-            <Calendar className="mb-1 h-6 w-6 text-gray-400" />
-            <span className="text-xs font-medium text-gray-400">Встречи</span>
-          </div>
-          <div className="flex flex-col items-center px-4 py-2">
-            <div className="mb-1 h-6 w-6 rounded bg-gray-400"></div>
-            <span className="text-xs font-medium text-gray-400">Квесты</span>
-          </div>
-          <div className="flex flex-col items-center px-4 py-2">
-            <div className="mb-1 h-6 w-6 rounded bg-gray-400"></div>
-            <span className="text-xs font-medium text-gray-400">Профиль</span>
-          </div>
-        </div>
-      </div>
 
       {/* Create Quest Drawer */}
       <CreateQuestDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />

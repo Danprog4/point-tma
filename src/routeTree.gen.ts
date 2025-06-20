@@ -11,14 +11,28 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileImport } from './routes/profile'
+import { Route as MeetingsImport } from './routes/meetings'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
 
+const QuestsRoute = QuestsImport.update({
+  id: '/quests',
+  path: '/quests',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ProfileRoute = ProfileImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MeetingsRoute = MeetingsImport.update({
+  id: '/meetings',
+  path: '/meetings',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +53,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/meetings': {
+      id: '/meetings'
+      path: '/meetings'
+      fullPath: '/meetings'
+      preLoaderRoute: typeof MeetingsImport
+      parentRoute: typeof rootRoute
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/quests': {
+      id: '/quests'
+      path: '/quests'
+      fullPath: '/quests'
+      preLoaderRoute: typeof QuestsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +81,47 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile'
+  fullPaths: '/' | '/meetings' | '/profile' | '/quests'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile'
-  id: '__root__' | '/' | '/profile'
+  to: '/' | '/meetings' | '/profile' | '/quests'
+  id: '__root__' | '/' | '/meetings' | '/profile' | '/quests'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MeetingsRoute: typeof MeetingsRoute
   ProfileRoute: typeof ProfileRoute
+  QuestsRoute: typeof QuestsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MeetingsRoute: MeetingsRoute,
   ProfileRoute: ProfileRoute,
+  QuestsRoute: QuestsRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +135,22 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/profile"
+        "/meetings",
+        "/profile",
+        "/quests"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/meetings": {
+      "filePath": "meetings.tsx"
+    },
     "/profile": {
       "filePath": "profile.tsx"
+    },
+    "/quests": {
+      "filePath": "quests.tsx"
     }
   }
 }

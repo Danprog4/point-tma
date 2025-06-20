@@ -41,7 +41,7 @@ export const Navbar = () => {
           </div>
         </button>
         <button
-          //   onClick={() => navigate({ to: "/meetings" })}
+          onClick={() => navigate({ to: "/meetings" })}
           className="flex flex-col items-center px-4 py-2"
         >
           <Calendar
@@ -59,7 +59,7 @@ export const Navbar = () => {
           </div>
         </button>
         <button
-          //   onClick={() => navigate({ to: "/quests" })}
+          onClick={() => navigate({ to: "/quests" })}
           className="flex flex-col items-center px-4 py-2"
         >
           <div

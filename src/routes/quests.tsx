@@ -152,7 +152,7 @@ function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
 
 function RouteComponent() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen overflow-y-auto bg-white">
       {/* Main Header with coin balance */}
       <header className="flex items-center justify-between p-4 pb-2">
         <div className="flex items-center">
@@ -340,7 +340,7 @@ function RouteComponent() {
       </div>
 
       {/* Create Quest Button */}
-      <div className="fixed right-0 bottom-15 left-0 flex items-center gap-4 bg-white p-5">
+      <div className="fixed right-0 bottom-15 left-0 flex items-center gap-4 p-5">
         <button className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
           Создать квест
         </button>

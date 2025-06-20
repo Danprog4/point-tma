@@ -13,9 +13,9 @@ import {
   Settings,
   Star,
 } from "lucide-react";
+import { useScroll } from "~/components/hooks/useScroll";
 import { Logo } from "~/components/Icons/Logo";
 import { useTRPC } from "~/trpc/init/react";
-
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
 });
@@ -23,6 +23,8 @@ export const Route = createFileRoute("/profile")({
 function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+
+  useScroll();
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white">

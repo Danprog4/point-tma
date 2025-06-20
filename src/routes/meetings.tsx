@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Bell, Filter } from "lucide-react";
 import { Logo } from "~/components/Icons/Logo";
-
+import { useScroll } from "~/components/hooks/useScroll";
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
@@ -57,6 +57,8 @@ function RouteComponent() {
       statusColor: "#EFDEEF",
     },
   ];
+
+  useScroll();
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pb-32">

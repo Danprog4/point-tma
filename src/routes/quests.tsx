@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Bell, Clock, MapPin, Plus, Search } from "lucide-react";
 import { Logo } from "~/components/Icons/Logo";
-
+import { useScroll } from "~/components/hooks/useScroll";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -151,6 +151,8 @@ function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
 }
 
 function RouteComponent() {
+  useScroll();
+
   return (
     <div className="min-h-screen overflow-y-auto bg-white">
       {/* Main Header with coin balance */}

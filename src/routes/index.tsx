@@ -4,6 +4,7 @@ import { ArrowRight, Bell, ChevronDown, Filter, Plus, Search } from "lucide-reac
 import { useState } from "react";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Logo } from "~/components/Icons/Logo";
+import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/")({
@@ -15,6 +16,8 @@ function Home() {
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useScroll();
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-white pb-20">

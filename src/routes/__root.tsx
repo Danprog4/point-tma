@@ -17,6 +17,7 @@ import { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
 import { AuthProvider } from "~/components/AuthProvider";
 import { Navbar } from "~/components/Navbar";
+import { ScrollRestoration } from "~/components/ScrollRestoration";
 import appCss from "~/lib/styles/app.css?url";
 import { useTRPC } from "~/trpc/init/react";
 import { TRPCRouter } from "~/trpc/init/router";
@@ -117,6 +118,7 @@ function RootComponent() {
   return (
     <RootDocument>
       <AuthProvider>
+        <ScrollRestoration />
         <Outlet />
         <Navbar />
       </AuthProvider>

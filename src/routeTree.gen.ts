@@ -11,12 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SkillsImport } from './routes/skills'
 import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const SkillsRoute = SkillsImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const QuestsRoute = QuestsImport.update({
   id: '/quests',
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestsImport
       parentRoute: typeof rootRoute
     }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
+  '/skills': typeof SkillsRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
+  '/skills': typeof SkillsRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,15 @@ export interface FileRoutesById {
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
+  '/skills': typeof SkillsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/meetings' | '/profile' | '/quests'
+  fullPaths: '/' | '/meetings' | '/profile' | '/quests' | '/skills'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/meetings' | '/profile' | '/quests'
-  id: '__root__' | '/' | '/meetings' | '/profile' | '/quests'
+  to: '/' | '/meetings' | '/profile' | '/quests' | '/skills'
+  id: '__root__' | '/' | '/meetings' | '/profile' | '/quests' | '/skills'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +132,7 @@ export interface RootRouteChildren {
   MeetingsRoute: typeof MeetingsRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
+  SkillsRoute: typeof SkillsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeetingsRoute: MeetingsRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
+  SkillsRoute: SkillsRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +156,8 @@ export const routeTree = rootRoute
         "/",
         "/meetings",
         "/profile",
-        "/quests"
+        "/quests",
+        "/skills"
       ]
     },
     "/": {
@@ -151,6 +171,9 @@ export const routeTree = rootRoute
     },
     "/quests": {
       "filePath": "quests.tsx"
+    },
+    "/skills": {
+      "filePath": "skills.tsx"
     }
   }
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Award,
   BarChart3,
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/profile")({
 
 function RouteComponent() {
   const trpc = useTRPC();
+  const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
   useScroll();
@@ -153,6 +154,10 @@ function RouteComponent() {
       <div className="mb-6">
         <div className="space-y-0">
           <MenuItem
+            onClick={() => {
+              navigate({ to: "/skills" });
+              console.log("clicked");
+            }}
             icon={<BarChart3 className="h-6 w-6 text-purple-300" />}
             title="Ваши навыки"
           />
@@ -181,9 +186,20 @@ function RouteComponent() {
   );
 }
 
-function MenuItem({ icon, title }: { icon: React.ReactNode; title: string }) {
+function MenuItem({
+  icon,
+  title,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  onClick?: () => void;
+}) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0">
+    <div
+      className="flex items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0"
+      onClick={onClick}
+    >
       <div className="flex items-center gap-3">
         {icon}
         <span className="text-base font-medium text-black">{title}</span>

@@ -162,14 +162,23 @@ function RouteComponent() {
             title="Ваши навыки"
           />
           <MenuItem
+            onClick={() => {
+              navigate({ to: "/achievments" });
+            }}
             icon={<Award className="h-6 w-6 text-purple-300" />}
             title="Достижения"
           />
           <MenuItem
+            onClick={() => {
+              navigate({ to: "/calendar" });
+            }}
             icon={<Calendar className="h-6 w-6 text-purple-300" />}
             title="Календарь"
           />
           <MenuItem
+            onClick={() => {
+              navigate({ to: "/history" });
+            }}
             icon={<History className="h-6 w-6 text-purple-300" />}
             title="История"
           />

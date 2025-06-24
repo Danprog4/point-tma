@@ -15,6 +15,9 @@ import { Route as SkillsImport } from './routes/skills'
 import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as MeetingsImport } from './routes/meetings'
+import { Route as HistoryImport } from './routes/history'
+import { Route as CalendarImport } from './routes/calendar'
+import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
@@ -43,6 +46,24 @@ const MeetingsRoute = MeetingsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const HistoryRoute = HistoryImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CalendarRoute = CalendarImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AchievmentsRoute = AchievmentsImport.update({
+  id: '/achievments',
+  path: '/achievments',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
@@ -58,6 +79,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/achievments': {
+      id: '/achievments'
+      path: '/achievments'
+      fullPath: '/achievments'
+      preLoaderRoute: typeof AchievmentsImport
+      parentRoute: typeof rootRoute
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarImport
+      parentRoute: typeof rootRoute
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryImport
       parentRoute: typeof rootRoute
     }
     '/meetings': {
@@ -95,6 +137,9 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/achievments': typeof AchievmentsRoute
+  '/calendar': typeof CalendarRoute
+  '/history': typeof HistoryRoute
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -103,6 +148,9 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/achievments': typeof AchievmentsRoute
+  '/calendar': typeof CalendarRoute
+  '/history': typeof HistoryRoute
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -112,6 +160,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/achievments': typeof AchievmentsRoute
+  '/calendar': typeof CalendarRoute
+  '/history': typeof HistoryRoute
   '/meetings': typeof MeetingsRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -120,15 +171,43 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/meetings' | '/profile' | '/quests' | '/skills'
+  fullPaths:
+    | '/'
+    | '/achievments'
+    | '/calendar'
+    | '/history'
+    | '/meetings'
+    | '/profile'
+    | '/quests'
+    | '/skills'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/meetings' | '/profile' | '/quests' | '/skills'
-  id: '__root__' | '/' | '/meetings' | '/profile' | '/quests' | '/skills'
+  to:
+    | '/'
+    | '/achievments'
+    | '/calendar'
+    | '/history'
+    | '/meetings'
+    | '/profile'
+    | '/quests'
+    | '/skills'
+  id:
+    | '__root__'
+    | '/'
+    | '/achievments'
+    | '/calendar'
+    | '/history'
+    | '/meetings'
+    | '/profile'
+    | '/quests'
+    | '/skills'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AchievmentsRoute: typeof AchievmentsRoute
+  CalendarRoute: typeof CalendarRoute
+  HistoryRoute: typeof HistoryRoute
   MeetingsRoute: typeof MeetingsRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
@@ -137,6 +216,9 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AchievmentsRoute: AchievmentsRoute,
+  CalendarRoute: CalendarRoute,
+  HistoryRoute: HistoryRoute,
   MeetingsRoute: MeetingsRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
@@ -154,6 +236,9 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/achievments",
+        "/calendar",
+        "/history",
         "/meetings",
         "/profile",
         "/quests",
@@ -162,6 +247,15 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/achievments": {
+      "filePath": "achievments.tsx"
+    },
+    "/calendar": {
+      "filePath": "calendar.tsx"
+    },
+    "/history": {
+      "filePath": "history.tsx"
     },
     "/meetings": {
       "filePath": "meetings.tsx"

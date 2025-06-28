@@ -59,7 +59,7 @@ function RouteComponent() {
       style={{ backgroundColor: color, height, transform }}
     >
       <div className="flex items-center gap-2">
-        <span>{emoji}</span>
+        <span dangerouslySetInnerHTML={{ __html: emoji }} />
         <span>{category}</span>
       </div>
       <div className="text-xs">{text}</div>

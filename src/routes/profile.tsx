@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Award,
   BarChart3,
-  Bell,
   Calendar,
   ChevronRight,
   Crown,
@@ -13,8 +12,8 @@ import {
   Settings,
   Star,
 } from "lucide-react";
+import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
-import { Logo } from "~/components/Icons/Logo";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -28,24 +27,9 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white">
+    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
       {/* Top Navigation */}
-      <header className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Logo />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1">
-          <div className="h-4 w-4 rounded-full bg-orange-400"></div>
-          <span className="text-sm font-medium">0</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2">
-            <Bell className="h-5 w-5 text-gray-700" />
-          </button>
-        </div>
-      </header>
+      <Header />
 
       {/* Page Title */}
       <div className="px-4 py-5">
@@ -53,15 +37,13 @@ function RouteComponent() {
       </div>
 
       {/* Segment Control */}
-      <div className="px-4 pt-1 pb-4">
-        <div className="flex gap-4">
-          <button className="flex-1 rounded-full bg-black px-4 py-2 text-sm font-medium text-white">
-            Информация
-          </button>
-          <button className="flex-1 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-black">
-            Друзья
-          </button>
-        </div>
+      <div className="flex gap-4 px-4 pb-4">
+        <button className="flex-1 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white">
+          Информация
+        </button>
+        <button className="flex-1 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-black">
+          Друзья
+        </button>
       </div>
 
       {/* Profile Picture Section */}

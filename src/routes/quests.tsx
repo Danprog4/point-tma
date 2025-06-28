@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Clock, MapPin, Plus, Search } from "lucide-react";
-import { Logo } from "~/components/Icons/Logo";
+import { Clock, MapPin, Plus } from "lucide-react";
+import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
@@ -154,31 +154,14 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white">
-      {/* Main Header with coin balance */}
-      <header className="flex items-center justify-between p-4 pb-2">
-        <div className="flex items-center">
-          <Logo />
-        </div>
-        <div className="flex items-center gap-2 rounded-2xl border border-gray-300 px-3 py-1">
-          <div className="h-4 w-4 rounded-full bg-orange-400"></div>
-          <span className="text-sm font-medium">0</span>
-        </div>
-        <div className="flex items-center">
-          <button className="p-2">
-            <Bell className="h-5 w-5 text-gray-700" />
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+      {/* Top Navigation */}
+      <Header />
 
-      {/* Page Title Header */}
-      <div className="flex items-center justify-between px-4 pb-8">
+      {/* Page Title */}
+      <div className="px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Квесты</h1>
-        <button className="p-2">
-          <Search className="h-5 w-5 text-black" />
-        </button>
       </div>
-
       {/* Segment Control */}
       <div className="flex gap-4 px-4 pb-4">
         <button className="flex-1 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white">

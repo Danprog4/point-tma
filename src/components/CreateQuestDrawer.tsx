@@ -20,8 +20,8 @@ export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 mt-24 flex h-[576px] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[576px] flex-col rounded-t-[16px] bg-white">
           <div className="flex-1 rounded-t-[16px] bg-white p-4">
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">

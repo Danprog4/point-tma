@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Bell, ChevronDown, Filter, Plus, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
-import { Logo } from "~/components/Icons/Logo";
+import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -42,34 +42,19 @@ function Home() {
   useScroll();
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-white pb-20">
-      {/* Main Header */}
-      <header className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Logo />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1">
-          <div className="h-4 w-4 rounded-full bg-orange-400"></div>
-          <span className="text-sm font-medium">0</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2">
-            <Bell className="h-5 w-5 text-gray-700" />
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+      {/* Top Navigation */}
+      <Header />
 
-      {/* Secondary Header */}
-      <div className="flex items-center justify-between p-4">
-        <h1 className="text-2xl font-bold text-gray-900">Афиша</h1>
-        <div className="flex items-center gap-4">
-          <button className="p-2">
-            <Filter className="h-5 w-5 text-gray-700" />
+      {/* Page Title */}
+      <div className="flex items-center justify-between px-4 py-5">
+        <h1 className="text-3xl font-bold text-black">Афиша</h1>
+        <div className="flex items-center gap-2">
+          <button className="">
+            <Filter className="h-6 w-6 text-gray-900" />
           </button>
-          <button className="p-2">
-            <Search className="h-5 w-5 text-gray-700" />
+          <button className="">
+            <Search className="h-6 w-6 text-gray-900" />
           </button>
         </div>
       </div>

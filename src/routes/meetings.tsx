@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Filter } from "lucide-react";
-import { Logo } from "~/components/Icons/Logo";
+import { Filter } from "lucide-react";
+import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
@@ -61,78 +61,63 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pb-32">
-      <header className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Logo />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1">
-          <div className="h-4 w-4 rounded-full bg-orange-400"></div>
-          <span className="text-sm font-medium">0</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2">
-            <Bell className="h-5 w-5 text-gray-700" />
-          </button>
-        </div>
-      </header>
-      <div className="flex items-center justify-between p-4 pb-2">
-        <h1 className="text-2xl font-bold text-gray-900">Встречи</h1>
-        <button className="p-2">
+    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+      {/* Top Navigation */}
+      <Header />
+
+      {/* Page Title */}
+      <div className="flex items-center justify-between px-4 py-5">
+        <h1 className="text-3xl font-bold text-black">Встречи</h1>
+        <button className="">
           <Filter className="h-6 w-6 text-gray-900" />
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col">
-        {/* Segment Control */}
-        <div className="flex gap-3 px-4 py-2 pb-4">
-          <button className="flex-1 rounded-2xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white">
-            Списком
-          </button>
-          <button className="flex-1 rounded-2xl bg-transparent px-4 py-2.5 text-sm font-medium text-gray-900">
-            На карте
-          </button>
-        </div>
+      {/* Segment Control */}
+      <div className="flex gap-4 px-4 pb-4">
+        <button className="flex-1 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white">
+          Информация
+        </button>
+        <button className="flex-1 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-black">
+          Друзья
+        </button>
+      </div>
 
-        {/* Meetings List */}
-        <div className="flex-1 overflow-y-auto px-4">
-          <div className="grid grid-cols-2 gap-4">
-            {meetings.map((meeting) => (
-              <div key={meeting.id} className="relative">
-                {/* Profile Card */}
-                <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                  {/* Avatar Section */}
-                  <div className="relative h-36">
-                    <img
-                      src={meeting.avatar}
-                      alt={meeting.name}
-                      className="h-full w-full object-cover"
-                    />
-                    {/* Status Indicator */}
-                    <div
-                      className="absolute bottom-1 left-1 h-12 w-12 rounded-full border-2 border-purple-600"
-                      style={{ backgroundColor: meeting.statusColor }}
-                    />
-                  </div>
+      {/* Meetings List */}
+      <div className="flex-1 overflow-y-auto px-4">
+        <div className="grid grid-cols-2 gap-4">
+          {meetings.map((meeting) => (
+            <div key={meeting.id} className="relative">
+              {/* Profile Card */}
+              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+                {/* Avatar Section */}
+                <div className="relative h-36">
+                  <img
+                    src={meeting.avatar}
+                    alt={meeting.name}
+                    className="h-full w-full object-cover"
+                  />
+                  {/* Status Indicator */}
+                  <div
+                    className="absolute bottom-1 left-1 h-12 w-12 rounded-full border-2 border-purple-600"
+                    style={{ backgroundColor: meeting.statusColor }}
+                  />
+                </div>
 
-                  {/* Text Content */}
-                  <div className="p-2">
-                    <div className="space-y-1">
-                      <h3 className="text-sm leading-tight font-medium text-gray-900">
-                        {meeting.name}
-                      </h3>
-                      <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                        {meeting.description}
-                      </p>
-                    </div>
+                {/* Text Content */}
+                <div className="p-2">
+                  <div className="space-y-1">
+                    <h3 className="text-sm leading-tight font-medium text-gray-900">
+                      {meeting.name}
+                    </h3>
+                    <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                      {meeting.description}
+                    </p>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

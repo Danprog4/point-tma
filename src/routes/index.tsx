@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Bell, ChevronDown, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
@@ -9,6 +9,14 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    const isOnboarded = localStorage.getItem("isOnboarded");
+    if (!isOnboarded || isOnboarded === "false") {
+      throw redirect({
+        to: "/onboarding",
+      });
+    }
+  },
   component: Home,
 });
 

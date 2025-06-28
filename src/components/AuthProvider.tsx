@@ -17,7 +17,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginMutation = useMutation(
     trpc.auth.login.mutationOptions({
-      onSuccess: () => setLoggedIn(true),
+      onSuccess: () => {
+        if (!isOnboarded) {
+          navigate({ to: "/onboarding" });
+        }
+        setLoggedIn(true);
+      },
     }),
   );
 
@@ -59,10 +64,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (!loggedIn) {
     return <FullPageSpinner />;
-  }
-
-  if (!isOnboarded) {
-    navigate({ to: "/onboarding" });
   }
 
   return <>{children}</>;

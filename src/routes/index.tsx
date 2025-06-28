@@ -23,8 +23,13 @@ function Home() {
   useEffect(() => {
     if (!isOnboarded) {
       navigate({ to: "/onboarding" });
+      return;
     }
   }, [isOnboarded, navigate]);
+
+  if (!isOnboarded) {
+    return null;
+  }
 
   useScroll();
 

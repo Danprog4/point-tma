@@ -1,5 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, X } from "lucide-react";
 import { Drawer } from "vaul";
+import { eventTypes } from "~/types/events";
 
 interface CreateQuestDrawerProps {
   open: boolean;
@@ -7,39 +9,7 @@ interface CreateQuestDrawerProps {
 }
 
 export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps) {
-  const eventTypes = [
-    {
-      emoji: "🦸",
-      name: "Квест",
-      description: "Оффлайн активность с выполнением заданий и вознаграждением",
-      bgColor: "bg-purple-100",
-    },
-    {
-      emoji: "💁‍♂️",
-      name: "Конференция",
-      description:
-        "Вы хотите пригласить людей на серию лекций по определённой специфике.",
-      bgColor: "bg-blue-100",
-    },
-    {
-      emoji: "💬",
-      name: "Нетворкинг",
-      description: "Это может обычная беседе в кафе или в другом общественном месте.",
-      bgColor: "bg-green-100",
-    },
-    {
-      emoji: "🎉",
-      name: "Вечеринка",
-      description: "Совместный отдых и веселье",
-      bgColor: "bg-red-100",
-    },
-    {
-      emoji: "📽️",
-      name: "Кино",
-      description: "Совместный поход в кино",
-      bgColor: "bg-yellow-100",
-    },
-  ];
+  const navigate = useNavigate();
 
   const handleEventTypeSelect = (eventType: string) => {
     console.log("Selected event type:", eventType);
@@ -65,11 +35,17 @@ export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps
             </div>
 
             {/* Event Type Selection */}
-            <div className="max-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
+            <div className="min-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
               {eventTypes.map((eventType, index) => (
                 <button
                   key={index}
-                  onClick={() => handleEventTypeSelect(eventType.name)}
+                  onClick={() => {
+                    handleEventTypeSelect(eventType.name);
+                    navigate({
+                      to: "/createMeet/$name",
+                      params: { name: eventType.name },
+                    });
+                  }}
                   className={`w-full rounded-2xl p-4 ${eventType.bgColor} flex items-center justify-between transition-opacity hover:opacity-80`}
                 >
                   <div className="flex-1 text-left">

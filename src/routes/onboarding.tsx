@@ -107,9 +107,9 @@ function RouteComponent() {
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <Card
-                category="Категория"
-                text="Описание карточки"
-                emoji="a"
+                category="Квест"
+                text="Оффлайн активность с выполнением заданий и вознаграждением"
+                emoji="🦸"
                 color="#F3E5FF"
                 height={92}
                 transform="rotate(-5.68deg)"
@@ -128,9 +128,9 @@ function RouteComponent() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             >
               <Card
-                category="Категория"
-                text="Описание карточки"
-                emoji="b"
+                category="Конференция"
+                text="Вы хотите пригласить людей на серию лекций по определённой специфике."
+                emoji="💁‍♂️"
                 color="#D6E2FF"
                 height={92}
                 transform="rotate(8.15deg)"
@@ -149,9 +149,9 @@ function RouteComponent() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
             >
               <Card
-                category="Категория"
-                text="Описание карточки"
-                emoji="c"
+                category="Нетворкинг"
+                text="Это может обычная беседе в кафе или в другом общественном месте."
+                emoji="💬"
                 color="#EBFFF4"
                 height={92}
                 transform="rotate(-8.97deg)"
@@ -170,9 +170,9 @@ function RouteComponent() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
             >
               <Card
-                category="Категория"
-                text="Описание карточки"
-                emoji="d"
+                category="Вечеринка"
+                text="Совместный отдых и веселье"
+                emoji="🎉"
                 color="#FFE5E5"
                 height={86}
                 transform="rotate(5.62deg)"
@@ -191,9 +191,9 @@ function RouteComponent() {
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
             >
               <Card
-                category="Категория"
-                text="Описание карточки"
-                emoji="e"
+                category="Кино"
+                text="Совместный поход в кино"
+                emoji="📽️"
                 color="#FFFBEB"
                 height={86}
                 transform="rotate(-9.87deg)"

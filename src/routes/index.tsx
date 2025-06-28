@@ -377,7 +377,7 @@ function Home() {
       <div className="fixed right-4 bottom-20 left-4">
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-4 font-medium text-white shadow-lg"
         >
           Создать встречу
         </button>

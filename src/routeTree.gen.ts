@@ -14,7 +14,9 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as SkillsImport } from './routes/skills'
 import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileImport } from './routes/profile'
+import { Route as OnboardingImport } from './routes/onboarding'
 import { Route as MeetingsImport } from './routes/meetings'
+import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
@@ -40,9 +42,21 @@ const ProfileRoute = ProfileImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const OnboardingRoute = OnboardingImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const MeetingsRoute = MeetingsImport.update({
   id: '/meetings',
   path: '/meetings',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const InventoryRoute = InventoryImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -102,11 +116,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoryImport
       parentRoute: typeof rootRoute
     }
+    '/inventory': {
+      id: '/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof InventoryImport
+      parentRoute: typeof rootRoute
+    }
     '/meetings': {
       id: '/meetings'
       path: '/meetings'
       fullPath: '/meetings'
       preLoaderRoute: typeof MeetingsImport
+      parentRoute: typeof rootRoute
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingImport
       parentRoute: typeof rootRoute
     }
     '/profile': {
@@ -140,7 +168,9 @@ export interface FileRoutesByFullPath {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/history': typeof HistoryRoute
+  '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -151,7 +181,9 @@ export interface FileRoutesByTo {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/history': typeof HistoryRoute
+  '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -163,7 +195,9 @@ export interface FileRoutesById {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/history': typeof HistoryRoute
+  '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -176,7 +210,9 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/history'
+    | '/inventory'
     | '/meetings'
+    | '/onboarding'
     | '/profile'
     | '/quests'
     | '/skills'
@@ -186,7 +222,9 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/history'
+    | '/inventory'
     | '/meetings'
+    | '/onboarding'
     | '/profile'
     | '/quests'
     | '/skills'
@@ -196,7 +234,9 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/history'
+    | '/inventory'
     | '/meetings'
+    | '/onboarding'
     | '/profile'
     | '/quests'
     | '/skills'
@@ -208,7 +248,9 @@ export interface RootRouteChildren {
   AchievmentsRoute: typeof AchievmentsRoute
   CalendarRoute: typeof CalendarRoute
   HistoryRoute: typeof HistoryRoute
+  InventoryRoute: typeof InventoryRoute
   MeetingsRoute: typeof MeetingsRoute
+  OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
@@ -219,7 +261,9 @@ const rootRouteChildren: RootRouteChildren = {
   AchievmentsRoute: AchievmentsRoute,
   CalendarRoute: CalendarRoute,
   HistoryRoute: HistoryRoute,
+  InventoryRoute: InventoryRoute,
   MeetingsRoute: MeetingsRoute,
+  OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
@@ -239,7 +283,9 @@ export const routeTree = rootRoute
         "/achievments",
         "/calendar",
         "/history",
+        "/inventory",
         "/meetings",
+        "/onboarding",
         "/profile",
         "/quests",
         "/skills"
@@ -257,8 +303,14 @@ export const routeTree = rootRoute
     "/history": {
       "filePath": "history.tsx"
     },
+    "/inventory": {
+      "filePath": "inventory.tsx"
+    },
     "/meetings": {
       "filePath": "meetings.tsx"
+    },
+    "/onboarding": {
+      "filePath": "onboarding.tsx"
     },
     "/profile": {
       "filePath": "profile.tsx"

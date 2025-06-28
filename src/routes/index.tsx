@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Bell, ChevronDown, Filter, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Logo } from "~/components/Icons/Logo";
 import { useScroll } from "~/components/hooks/useScroll";
@@ -13,9 +14,17 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const trpc = useTRPC();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
+
+  useEffect(() => {
+    if (!isOnboarded) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [isOnboarded, navigate]);
 
   useScroll();
 

@@ -12,6 +12,10 @@ export const Navbar = () => {
     setActive(pathname.pathname);
   }, [pathname]);
 
+  if (pathname.pathname === "/onboarding") {
+    return null;
+  }
+
   return (
     <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
       <div className="flex items-center justify-between">

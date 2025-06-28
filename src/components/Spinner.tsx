@@ -16,7 +16,7 @@ export const FullPageSpinner = () => {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-white" />
+      <Loader2 className="animate-spin text-black" />
     </div>
   );
 };

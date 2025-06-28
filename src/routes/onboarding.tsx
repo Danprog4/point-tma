@@ -33,7 +33,10 @@ function RouteComponent() {
     });
 
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 0));
-  const handleClose = () => navigate({ to: "/" });
+  const handleClose = () => {
+    navigate({ to: "/" });
+    setIsOnboarded(true);
+  };
 
   console.log(step);
   const Card = ({

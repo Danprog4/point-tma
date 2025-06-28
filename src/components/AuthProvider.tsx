@@ -2,12 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 
+import { useNavigate } from "@tanstack/react-router";
+import { useLocalStorage } from "usehooks-ts";
 import { FullPageSpinner } from "./Spinner";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
   const trpc = useTRPC();
   const [initData, setInitData] = useState<string | null>(null);
   const [startParam, setStartParam] = useState<string | undefined>(undefined);
+  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
 
   const queryClient = useQueryClient();
 
@@ -55,6 +59,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   if (!loggedIn) {
     return <FullPageSpinner />;
+  }
+
+  if (!isOnboarded) {
+    navigate({ to: "/onboarding" });
   }
 
   return <>{children}</>;

@@ -6,6 +6,7 @@
 body {
   overflow-x: hidden;
   color: black;
+  height: 100%;
 }
 
 /* ensure inputs don't cause page to rotate or zoom */

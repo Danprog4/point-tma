@@ -8,6 +8,15 @@ body {
   color: black;
 }
 
+/* ensure inputs don't cause page to rotate or zoom */
+input,
+textarea {
+  touch-action: manipulation;
+  -webkit-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+  transform: translateZ(0);
+}
 /* html {
   overflow: hidden;
   height: 100%;

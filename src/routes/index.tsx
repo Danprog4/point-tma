@@ -59,13 +59,29 @@ function Home() {
             className=""
             onClick={() => {
               const input = document.createElement("input");
-              input.style.position = "absolute";
-              input.style.left = "-9999px";
-              input.style.opacity = "0";
+              input.type = "text";
+              input.style.position = "fixed";
+              input.style.top = "50%";
+              input.style.left = "50%";
+              input.style.transform = "translate(-50%, -50%)";
+              input.style.zIndex = "9999";
+              input.style.padding = "12px";
+              input.style.border = "1px solid #ccc";
+              input.style.borderRadius = "8px";
+              input.style.fontSize = "16px";
+              input.placeholder = "Поиск...";
               document.body.appendChild(input);
               input.focus();
+
+              const handleClickOutside = (e: MouseEvent) => {
+                if (e.target !== input) {
+                  document.body.removeChild(input);
+                  document.removeEventListener("click", handleClickOutside);
+                }
+              };
+
               setTimeout(() => {
-                document.body.removeChild(input);
+                document.addEventListener("click", handleClickOutside);
               }, 100);
             }}
           >

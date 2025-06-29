@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Filter, Plus, Search } from "lucide-react";
+import { ArrowRight, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Header } from "~/components/Header";
+import { Filters } from "~/components/Icons/Filters";
 import { Selecter } from "~/components/Selecter";
 import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
@@ -50,11 +51,24 @@ function Home() {
       {/* Page Title */}
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Афиша</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <button className="">
-            <Filter className="h-6 w-6 text-gray-900" />
+            <Filters />
           </button>
-          <button className="">
+          <button
+            className=""
+            onClick={() => {
+              const input = document.createElement("input");
+              input.style.position = "absolute";
+              input.style.left = "-9999px";
+              input.style.opacity = "0";
+              document.body.appendChild(input);
+              input.focus();
+              setTimeout(() => {
+                document.body.removeChild(input);
+              }, 100);
+            }}
+          >
             <Search className="h-6 w-6 text-gray-900" />
           </button>
         </div>

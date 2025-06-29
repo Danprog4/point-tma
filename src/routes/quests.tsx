@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Clock, MapPin, Plus } from "lucide-react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+import { Filters } from "~/components/Icons/Filters";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -151,6 +152,7 @@ function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
 }
 
 function RouteComponent() {
+  const navigate = useNavigate();
   useScroll();
 
   return (
@@ -163,13 +165,16 @@ function RouteComponent() {
         <h1 className="text-3xl font-bold text-black">Квесты</h1>
       </div>
       {/* Segment Control */}
-      <div className="flex gap-4 px-4 pb-4">
-        <button className="flex-1 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white">
-          Новые
-        </button>
-        <button className="flex-1 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-black">
-          Активные
-        </button>
+
+      <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <input
+          type="text"
+          placeholder="Поиск квестов"
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+        <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+          <Filters />
+        </div>
       </div>
 
       {/* Calendar Section */}
@@ -179,7 +184,7 @@ function RouteComponent() {
         {/* Calendar dates */}
         <div className="flex justify-between pb-2">
           {calendarDates.map((dateItem, index) => (
-            <div key={index} className="flex w-12 flex-col items-center py-0.5">
+            <div key={index} className="flex w-12 flex-col items-center py-2">
               <span
                 className={`text-xl font-medium ${dateItem.isWeekend ? "text-black" : "text-black"}`}
               >
@@ -196,7 +201,7 @@ function RouteComponent() {
 
         {/* Filter buttons */}
         <div className="flex w-full gap-2">
-          <button className="flex items-center gap-1 rounded-2xl bg-black px-5 py-2.5 text-sm font-medium text-white shadow-lg">
+          <button className="flex items-center gap-1 rounded-3xl bg-black px-5 py-2.5 text-sm font-medium text-white shadow-lg">
             Фильтр
             <svg
               className="h-4 w-4"
@@ -212,7 +217,7 @@ function RouteComponent() {
               />
             </svg>
           </button>
-          <button className="flex items-center gap-1 rounded-2xl bg-white px-9 py-2.5 text-sm font-medium text-black shadow-lg">
+          <button className="flex flex-1 items-center justify-center gap-1 rounded-3xl bg-white px-9 py-2.5 text-sm font-medium text-black shadow-lg">
             Показать календарь
             <svg
               className="h-5 w-5"
@@ -278,7 +283,53 @@ function RouteComponent() {
                 </div>
               </div>
             </div>
-
+            <div className="">
+              <div className="flex gap-4 overflow-x-auto">
+                {[
+                  {
+                    title: "Квест для дизайнеров",
+                    subtitle: "Получи любой курс за прохождение",
+                    tag: "🕹 Квест",
+                    price: "3 000 ₸",
+                    bg: "bg-gradient-to-br from-orange-400 to-red-400",
+                  },
+                  {
+                    title: "Квест на поиск для развития коммуникационных навыков",
+                    subtitle: "Приз 1 ton",
+                    tag: "🕹 Квест",
+                    price: "3 000 ₸",
+                    bg: "bg-gradient-to-br from-teal-400 to-blue-400",
+                  },
+                  {
+                    title: "KazDrilling 2024",
+                    subtitle: "Renaissance Hotel",
+                    tag: "💃 Концерт",
+                    price: "3 000 ₸",
+                    bg: "bg-gradient-to-br from-green-400 to-blue-400",
+                  },
+                ].map((event, idx) => (
+                  <div
+                    key={idx}
+                    className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
+                  >
+                    <div className={`h-32 ${event.bg} relative`}>
+                      <div className="absolute bottom-2 left-2 flex gap-1">
+                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
+                          {event.tag}
+                        </span>
+                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
+                          {event.price}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
+                      <p className="text-sm text-gray-500">{event.subtitle}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             {/* Quest 3 */}
             <div>
               <QuestCard quest={questsData[2]} />
@@ -325,15 +376,23 @@ function RouteComponent() {
       </div>
 
       {/* Create Quest Button */}
-      <div className="fixed right-0 bottom-15 left-0 flex items-center gap-4 p-5">
-        <button className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-          Создать квест
-        </button>
-        <div className="flex flex-col items-center">
-          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-            <Plus className="h-5 w-5 text-purple-600" />
+
+      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
+        <div className="mx-auto flex w-full items-center gap-2 px-4">
+          <button
+            onClick={() =>
+              navigate({ to: "/createMeet/$name", params: { name: "Квест" } })
+            }
+            className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+          >
+            Создать квест
+          </button>
+          <div className="flex flex-col items-center">
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
+              <Plus className="h-5 w-5 text-purple-600" />
+            </div>
+            <span className="text-xs text-purple-600">Ещё</span>
           </div>
-          <span className="text-xs text-purple-600">Ещё</span>
         </div>
       </div>
     </div>

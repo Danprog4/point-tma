@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, ChevronDown, Filter, Plus, Search } from "lucide-react";
+import { ArrowRight, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Header } from "~/components/Header";
+import { Selecter } from "~/components/Selecter";
 import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -63,10 +64,11 @@ function Home() {
         {/* Filter Chips */}
         <div className="flex items-center gap-6 p-4 pb-6">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
+            {/* <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
               <span className="text-sm font-medium">Алматы</span>
               <ChevronDown className="h-4 w-4 text-gray-500" />
-            </div>
+            </div> */}
+            <Selecter height="h-10" width="w-full" placeholder="Москва" />
           </div>
           <div className="flex flex-nowrap gap-8 overflow-x-auto">
             {[
@@ -140,9 +142,21 @@ function Home() {
               </div>
             ))}
           </div>
-          <div className="flex w-fit items-center gap-2 rounded-full border bg-white px-4 py-2 shadow-sm">
-            <span className="text-sm font-medium">Все события</span>
-            <ChevronDown className="h-4 w-4 text-gray-500" />
+
+          <div className="mx-auto flex max-w-[145px] items-center justify-center">
+            <Selecter
+              height="h-8"
+              width="w-full"
+              placeholder="Все события"
+              cities={[
+                "Все события",
+                "Кино",
+                "Театр",
+                "Концерты",
+                "Конференции",
+                "Вечеринки",
+              ]}
+            />
           </div>
         </div>
 
@@ -362,7 +376,7 @@ function Home() {
       <div className="fixed right-4 bottom-20 left-4">
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-4 font-medium text-white shadow-lg"
+          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
         >
           Создать встречу
         </button>

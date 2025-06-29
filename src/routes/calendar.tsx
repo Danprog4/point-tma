@@ -24,7 +24,7 @@ const MONTHS = [
 const WEEKDAYS = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
 // Mock event data - dates that have events
-const EVENTS = [9, 11, 15, 27];
+const EVENTS = [9, 12, 13, 27];
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -157,7 +157,7 @@ function RouteComponent() {
       </div>
 
       {/* Add Event Button */}
-      <div className="p-4">
+      <div className="fixed right-4 bottom-4 left-4">
         <div className="flex items-center gap-4">
           <button
             className="flex-1 bg-purple-600 px-4 py-3 text-base font-medium text-white"

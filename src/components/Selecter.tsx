@@ -7,18 +7,32 @@ import {
   SelectValue,
 } from "./ui/select";
 
-export const Selecter = () => {
+export const Selecter = ({
+  height = "max-h-11 min-h-11",
+  width = "w-full",
+  placeholder = "Выберите город",
+  cities = ["Москва", "Санкт-Петербург", "Новосибирск"],
+}: {
+  height?: string;
+  width?: string;
+  placeholder?: string;
+  cities?: string[];
+}) => {
   const [selectedCity, setSelectedCity] = useState("Москва");
 
   return (
     <Select>
-      <SelectTrigger className="max-h-11 min-h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50">
-        <SelectValue placeholder="Выберите город" />
+      <SelectTrigger
+        className={`${height} ${width} rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50`}
+      >
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="light">Москва</SelectItem>
-        <SelectItem value="dark">Санкт-Петербург</SelectItem>
-        <SelectItem value="system">Новосибирск</SelectItem>
+        {cities.map((city) => (
+          <SelectItem key={city} value={city}>
+            {city}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

@@ -1,6 +1,9 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Main } from "./Icons/NavBar.tsx/Main";
+import { Meet } from "./Icons/NavBar.tsx/Meet";
+import { Profile } from "./Icons/NavBar.tsx/Profile";
+import { Quests } from "./Icons/NavBar.tsx/Quests";
 
 export const Navbar = () => {
   const pathname = useLocation();
@@ -27,15 +30,8 @@ export const Navbar = () => {
               onClick={() => navigate({ to: "/" })}
               className="flex flex-col items-center px-4 py-2"
             >
-              <div className="relative mb-1 h-6 w-6">
-                <div className="grid grid-cols-3 gap-px">
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-1 w-1 rounded-sm ${active === "/" ? "bg-gray-900" : "bg-gray-400"}`}
-                    ></div>
-                  ))}
-                </div>
+              <div className="mb-1 h-6 w-6">
+                <Main />
               </div>
               <span
                 className={`text-xs font-medium ${active === "/" ? "text-gray-900" : "text-gray-400"}`}
@@ -52,9 +48,9 @@ export const Navbar = () => {
               onClick={() => navigate({ to: "/meetings" })}
               className="flex flex-col items-center px-4 py-2"
             >
-              <Calendar
-                className={`mb-1 h-6 w-6 ${active === "/meetings" ? "text-gray-900" : "text-gray-400"}`}
-              />
+              <div className="mb-1 h-6 w-6">
+                <Meet />
+              </div>
               <span
                 className={`text-xs font-medium ${active === "/meetings" ? "text-gray-900" : "text-gray-400"}`}
               >
@@ -70,9 +66,9 @@ export const Navbar = () => {
               onClick={() => navigate({ to: "/quests" })}
               className="flex flex-col items-center px-4 py-2"
             >
-              <div
-                className={`mb-1 h-6 w-6 rounded ${active === "/quests" ? "bg-gray-900" : "bg-gray-400"}`}
-              ></div>
+              <div className="mb-1 h-6 w-6">
+                <Quests />
+              </div>
               <span
                 className={`text-xs font-medium ${active === "/quests" ? "text-gray-900" : "text-gray-400"}`}
               >
@@ -88,9 +84,9 @@ export const Navbar = () => {
               onClick={() => navigate({ to: "/profile" })}
               className="flex flex-col items-center px-4 py-2"
             >
-              <div
-                className={`mb-1 h-6 w-6 rounded ${active === "/profile" ? "bg-gray-900" : "bg-gray-400"}`}
-              ></div>
+              <div className="mb-1 h-6 w-6">
+                <Profile />
+              </div>
               <span
                 className={`text-xs font-medium ${active === "/profile" ? "text-gray-900" : "text-gray-400"}`}
               >

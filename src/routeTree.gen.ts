@@ -15,6 +15,7 @@ import { Route as SkillsImport } from './routes/skills'
 import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as OnboardingImport } from './routes/onboarding'
+import { Route as NotifImport } from './routes/notif'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
@@ -46,6 +47,12 @@ const ProfileRoute = ProfileImport.update({
 const OnboardingRoute = OnboardingImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const NotifRoute = NotifImport.update({
+  id: '/notif',
+  path: '/notif',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -137,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetingsImport
       parentRoute: typeof rootRoute
     }
+    '/notif': {
+      id: '/notif'
+      path: '/notif'
+      fullPath: '/notif'
+      preLoaderRoute: typeof NotifImport
+      parentRoute: typeof rootRoute
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -184,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -198,6 +213,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -213,6 +229,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -229,6 +246,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/notif'
     | '/onboarding'
     | '/profile'
     | '/quests'
@@ -242,6 +260,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/notif'
     | '/onboarding'
     | '/profile'
     | '/quests'
@@ -255,6 +274,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/notif'
     | '/onboarding'
     | '/profile'
     | '/quests'
@@ -270,6 +290,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
   MeetingsRoute: typeof MeetingsRoute
+  NotifRoute: typeof NotifRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
@@ -284,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
   MeetingsRoute: MeetingsRoute,
+  NotifRoute: NotifRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
@@ -307,6 +329,7 @@ export const routeTree = rootRoute
         "/history",
         "/inventory",
         "/meetings",
+        "/notif",
         "/onboarding",
         "/profile",
         "/quests",
@@ -331,6 +354,9 @@ export const routeTree = rootRoute
     },
     "/meetings": {
       "filePath": "meetings.tsx"
+    },
+    "/notif": {
+      "filePath": "notif.tsx"
     },
     "/onboarding": {
       "filePath": "onboarding.tsx"

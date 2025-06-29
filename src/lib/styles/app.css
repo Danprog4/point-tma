@@ -5,7 +5,15 @@
 
 body {
   overflow-x: hidden;
-  color: black;
+  overflow-y: auto; /* Prevent vertical scrolling in Telegram */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  touch-action: none; /* Disable browser handling of all touch gestures */
+}
+
+html {
+  overflow: hidden;
   height: 100%;
 }
 
@@ -17,18 +25,6 @@ textarea {
   -ms-user-select: auto;
   user-select: auto;
   transform: translateZ(0);
-  position: fixed;
-  position: static;
-}
-
-input:focus,
-textarea:focus {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 9999;
-  transform: none;
 }
 /* html {
   overflow: hidden;

@@ -5,11 +5,11 @@ import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import { More } from "~/components/More";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
 
-// Mock data for quests
 export const questsData = [
   {
     id: 1,
@@ -225,6 +225,7 @@ export function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
 function RouteComponent() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   useScroll();
 
   return (
@@ -452,7 +453,7 @@ function RouteComponent() {
 
       {/* Create Quest Button */}
 
-      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
+      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white pt-4">
         <div className="mx-auto flex w-full items-center gap-2 px-4">
           <button
             onClick={() =>
@@ -463,13 +464,17 @@ function RouteComponent() {
             Создать квест
           </button>
           <div className="flex flex-col items-center">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
+            <div
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-white"
+              onClick={() => setIsMoreOpen(!isMoreOpen)}
+            >
               <Plus className="h-5 w-5 text-purple-600" />
             </div>
             <span className="text-xs text-purple-600">Ещё</span>
           </div>
         </div>
       </div>
+      {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
     </div>
   );
 }

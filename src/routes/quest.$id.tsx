@@ -3,6 +3,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
+import { More } from "~/components/More";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { questsData } from "./quests";
 export const Route = createFileRoute("/quest/$id")({
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/quest/$id")({
 function RouteComponent() {
   useScroll();
   const [isOpen, setIsOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const { id } = Route.useParams();
 
   const navigate = useNavigate();
@@ -120,7 +122,10 @@ function RouteComponent() {
                 Купить за {questData?.price}
               </button>
 
-              <div className="flex flex-col items-center">
+              <div
+                className="flex flex-col items-center"
+                onClick={() => setIsMoreOpen(!isMoreOpen)}
+              >
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
                   <Plus className="h-5 w-5 text-purple-600" />
                 </div>
@@ -128,6 +133,7 @@ function RouteComponent() {
               </div>
             </div>
           </div>
+          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
         </div>
       )}
     </>

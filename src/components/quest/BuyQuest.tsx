@@ -60,15 +60,15 @@ export const BuyQuest = ({
             <PlusIcon />
           </div>
         </div>
-        <div className="mt-11 flex items-center justify-between gap-2">
-          <BuyDrawer open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+        <BuyDrawer open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+          <div className="mt-11 flex items-center justify-between gap-2">
             <div className="flex items-center justify-center gap-2">
               <WalletIcon />
               <div>Выберите способ оплаты</div>
             </div>
-          </BuyDrawer>
-          <ArrowRight className="h-6 w-6 text-gray-900" />
-        </div>
+            <ArrowRight className="h-6 w-6 text-gray-900" />
+          </div>
+        </BuyDrawer>
       </div>
     </>
   );

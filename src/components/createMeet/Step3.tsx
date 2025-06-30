@@ -15,7 +15,8 @@ export const Step3 = () => {
           Допустимое количество людей, не из числа ваших друзей
         </div>
       </div>
-      <div className="mb-4 flex w-full gap-2 text-xl font-bold">Пригласите друзей</div>
+      <div className="mb-2 flex w-full gap-2 text-xl font-bold">Пригласите друзей</div>
+      <div className="text-sm text-gray-500">У вас пока нет друзей</div>
     </>
   );
 };

@@ -70,7 +70,7 @@ function RouteComponent() {
       {/* Page Title */}
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Встречи</h1>
-        <button className="mr-1.5 h-4 w-4">
+        <button className="mr-1.5 mb-1.5 h-4 w-4">
           <Filters />
         </button>
       </div>

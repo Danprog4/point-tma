@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
+import { Coin } from "./Icons/Coin";
 import { Logo } from "./Icons/Logo";
 
 export const Header = () => {
@@ -13,7 +14,7 @@ export const Header = () => {
         </div>
       </div>
       <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1">
-        <div className="h-4 w-4 rounded-full bg-orange-400"></div>
+        <Coin />
         <span className="text-sm font-medium">0</span>
       </div>
       <div className="flex w-[81px] items-center justify-end gap-4">

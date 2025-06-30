@@ -22,6 +22,8 @@ import { Route as HistoryImport } from './routes/history'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
+import { Route as QuestIdImport } from './routes/quest.$id'
+import { Route as ProfileIdImport } from './routes/profile.$id'
 import { Route as CreateMeetNameImport } from './routes/createMeet.$name'
 
 // Create/Update Routes
@@ -90,6 +92,18 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const QuestIdRoute = QuestIdImport.update({
+  id: '/quest/$id',
+  path: '/quest/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileIdRoute = ProfileIdImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ProfileRoute,
 } as any)
 
 const CreateMeetNameRoute = CreateMeetNameImport.update({
@@ -186,10 +200,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateMeetNameImport
       parentRoute: typeof rootRoute
     }
+    '/profile/$id': {
+      id: '/profile/$id'
+      path: '/$id'
+      fullPath: '/profile/$id'
+      preLoaderRoute: typeof ProfileIdImport
+      parentRoute: typeof ProfileImport
+    }
+    '/quest/$id': {
+      id: '/quest/$id'
+      path: '/quest/$id'
+      fullPath: '/quest/$id'
+      preLoaderRoute: typeof QuestIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
 // Create and export the route tree
+
+interface ProfileRouteChildren {
+  ProfileIdRoute: typeof ProfileIdRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileIdRoute: ProfileIdRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -200,10 +239,12 @@ export interface FileRoutesByFullPath {
   '/meetings': typeof MeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/profile/$id': typeof ProfileIdRoute
+  '/quest/$id': typeof QuestIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -215,10 +256,12 @@ export interface FileRoutesByTo {
   '/meetings': typeof MeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/profile/$id': typeof ProfileIdRoute
+  '/quest/$id': typeof QuestIdRoute
 }
 
 export interface FileRoutesById {
@@ -231,10 +274,12 @@ export interface FileRoutesById {
   '/meetings': typeof MeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/profile/$id': typeof ProfileIdRoute
+  '/quest/$id': typeof QuestIdRoute
 }
 
 export interface FileRouteTypes {
@@ -252,6 +297,8 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/profile/$id'
+    | '/quest/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -266,6 +313,8 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/profile/$id'
+    | '/quest/$id'
   id:
     | '__root__'
     | '/'
@@ -280,6 +329,8 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/profile/$id'
+    | '/quest/$id'
   fileRoutesById: FileRoutesById
 }
 
@@ -292,10 +343,11 @@ export interface RootRouteChildren {
   MeetingsRoute: typeof MeetingsRoute
   NotifRoute: typeof NotifRoute
   OnboardingRoute: typeof OnboardingRoute
-  ProfileRoute: typeof ProfileRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
   CreateMeetNameRoute: typeof CreateMeetNameRoute
+  QuestIdRoute: typeof QuestIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -307,10 +359,11 @@ const rootRouteChildren: RootRouteChildren = {
   MeetingsRoute: MeetingsRoute,
   NotifRoute: NotifRoute,
   OnboardingRoute: OnboardingRoute,
-  ProfileRoute: ProfileRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
   CreateMeetNameRoute: CreateMeetNameRoute,
+  QuestIdRoute: QuestIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -334,7 +387,8 @@ export const routeTree = rootRoute
         "/profile",
         "/quests",
         "/skills",
-        "/createMeet/$name"
+        "/createMeet/$name",
+        "/quest/$id"
       ]
     },
     "/": {
@@ -362,7 +416,10 @@ export const routeTree = rootRoute
       "filePath": "onboarding.tsx"
     },
     "/profile": {
-      "filePath": "profile.tsx"
+      "filePath": "profile.tsx",
+      "children": [
+        "/profile/$id"
+      ]
     },
     "/quests": {
       "filePath": "quests.tsx"
@@ -372,6 +429,13 @@ export const routeTree = rootRoute
     },
     "/createMeet/$name": {
       "filePath": "createMeet.$name.tsx"
+    },
+    "/profile/$id": {
+      "filePath": "profile.$id.tsx",
+      "parent": "/profile"
+    },
+    "/quest/$id": {
+      "filePath": "quest.$id.tsx"
     }
   }
 }

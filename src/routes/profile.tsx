@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
+  ArrowRight,
   Award,
   BarChart3,
   Calendar,
@@ -76,6 +77,10 @@ function RouteComponent() {
                     </div>
                   </div>
                 </div>
+              </div>
+              <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">
+                <div className="font-medium text-black">Пройти верификацию</div>
+                <ArrowRight className="h-4 w-4 text-black" />
               </div>
 
               {/* Edit Button */}

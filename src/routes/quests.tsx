@@ -1,14 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Clock, MapPin, Plus } from "lucide-react";
+import { useState } from "react";
+import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
-import { Filters } from "~/components/Icons/Filters";
+import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
 
 // Mock data for quests
-const questsData = [
+export const questsData = [
   {
     id: 1,
     title: "Квест «Дизайнер»",
@@ -16,10 +18,26 @@ const questsData = [
       "Квест направленный на повышение практических навыков и знаний среди дизайнеров интерфейсов",
     date: "19 декабря",
     location: "г.Караганда",
+    price: 15000,
     type: "Глобальный",
     category: "Обучающий",
+    stages: [
+      {
+        title: "Этап 1: Анализ пользователей",
+        desc: "Изучите целевую аудиторию и создайте персоны пользователей",
+      },
+      {
+        title: "Этап 2: Создание wireframes",
+        desc: "Разработайте базовую структуру интерфейса и навигацию",
+      },
+      {
+        title: "Этап 3: Финальный дизайн",
+        desc: "Создайте финальный макет с учетом всех требований и фидбека",
+      },
+    ],
     reward: 200,
     hasAchievement: true,
+    organizer: "Дизайнер",
     image:
       "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=88&h=88&fit=crop&crop=center",
   },
@@ -30,10 +48,26 @@ const questsData = [
       "Семья отправляется в горы на отдых, но их приключение принимает неожиданный поворот.",
     date: "20 декабря",
     location: "г.Караганда",
+    price: 15000,
     type: "Глобальный",
     category: "Тематический",
+    stages: [
+      {
+        title: "Этап 1: Анализ пользователей",
+        desc: "Изучите целевую аудиторию и создайте персоны пользователей",
+      },
+      {
+        title: "Этап 2: Создание wireframes",
+        desc: "Разработайте базовую структуру интерфейса и навигацию",
+      },
+      {
+        title: "Этап 3: Финальный дизайн",
+        desc: "Создайте финальный макет с учетом всех требований и фидбека",
+      },
+    ],
     reward: 20000,
     hasAchievement: false,
+    organizer: "Голливуд",
     image:
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=88&h=88&fit=crop&crop=center",
   },
@@ -44,10 +78,26 @@ const questsData = [
       'Город погрузился в хаос мусора! Загадочные "Хранители Чистоты" отправляют команды добровольцев на миссию по спасению своего района. У вас есть всего несколько часов, чтобы очистить территорию, найти спрятанные артефакты чистоты и выполнить особые задания.',
     date: "20 декабря",
     location: "г.Караганда",
+    price: 15000,
     type: "Ежедневный",
+    organizer: "Чистый район",
     category: "Хелп-квест",
     reward: 2500,
     hasAchievement: true,
+    stages: [
+      {
+        title: "Этап 1: Анализ пользователей",
+        desc: "Изучите целевую аудиторию и создайте персоны пользователей",
+      },
+      {
+        title: "Этап 2: Создание wireframes",
+        desc: "Разработайте базовую структуру интерфейса и навигацию",
+      },
+      {
+        title: "Этап 3: Финальный дизайн",
+        desc: "Создайте финальный макет с учетом всех требований и фидбека",
+      },
+    ],
     image:
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=88&h=88&fit=crop&crop=center",
   },
@@ -58,10 +108,26 @@ const questsData = [
       "Участникам предлагается помочь детскому приюту собрать подарки и провести мастер-классы для детей. Это социальный проект, который объединяет людей вокруг благотворительности.",
     date: "23 декабря",
     location: "г.Караганда",
+    price: 15000,
     type: "Ежедневный",
+    organizer: "Детский приют",
     category: "Саморазвитие",
     reward: 15000,
     hasAchievement: false,
+    stages: [
+      {
+        title: "Этап 1: Анализ пользователей",
+        desc: "Изучите целевую аудиторию и создайте персоны пользователей",
+      },
+      {
+        title: "Этап 2: Создание wireframes",
+        desc: "Разработайте базовую структуру интерфейса и навигацию",
+      },
+      {
+        title: "Этап 3: Финальный дизайн",
+        desc: "Создайте финальный макет с учетом всех требований и фидбека",
+      },
+    ],
     image:
       "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=88&h=88&fit=crop&crop=center",
   },
@@ -106,16 +172,21 @@ function getTypeColor(type: string) {
   }
 }
 
-function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
+export function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="mb-4 flex gap-4">
+    <div
+      className="mb-4 flex items-center gap-4"
+      onClick={() => navigate({ to: "/quest/$id", params: { id: quest.id.toString() } })}
+    >
       <img
         src={quest.image}
         alt={quest.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />
       <div className="flex-1 space-y-2">
-        <h3 className="w-52 text-base leading-6 font-bold text-black">{quest.title}</h3>
+        <h3 className="w-full text-base leading-6 font-bold text-black">{quest.title}</h3>
 
         <div className="flex items-center gap-2">
           <span
@@ -153,6 +224,7 @@ function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
   useScroll();
 
   return (
@@ -172,8 +244,9 @@ function RouteComponent() {
           placeholder="Поиск квестов"
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
+
         <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
-          <Filters />
+          <WhiteFilter />
         </div>
       </div>
 
@@ -201,22 +274,24 @@ function RouteComponent() {
 
         {/* Filter buttons */}
         <div className="flex w-full gap-2">
-          <button className="flex items-center gap-1 rounded-3xl bg-black px-5 py-2.5 text-sm font-medium text-white shadow-lg">
-            Фильтр
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
+          <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
+            <button className="flex items-center gap-1 rounded-3xl bg-black px-5 py-2.5 text-sm font-medium text-white shadow-lg">
+              Фильтр
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+          </FilterDrawer>
           <button className="flex flex-1 items-center justify-center gap-1 rounded-3xl bg-white px-9 py-2.5 text-sm font-medium text-black shadow-lg">
             Показать календарь
             <svg

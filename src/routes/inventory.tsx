@@ -18,6 +18,7 @@ function RouteComponent() {
         </button>
         <h1 className="text-base font-bold text-gray-800">Инвентарь</h1>
       </div>
+      <div className="mx-auto text-center text-gray-800">Ваш инвентарь пока пуст</div>
     </div>
   );
 }

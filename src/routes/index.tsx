@@ -118,7 +118,7 @@ function Home() {
 
         {/* Calendar */}
         <div className="mb-6 w-full overflow-x-hidden px-4">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <h3 className="text-sm font-medium text-gray-600">Июнь</h3>
           </div>
           <div className="mb-4 flex gap-2">

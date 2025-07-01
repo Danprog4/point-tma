@@ -4,7 +4,7 @@ export const Calendar = () => {
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-600">Июнь</h3>
       </div>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-2 flex gap-2">
         {[
           { day: "5", weekday: "ВС", isWeekend: true },
           { day: "6", weekday: "ПН", isWeekend: false },

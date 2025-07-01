@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus, Settings } from "lucide-react";
 import { useState } from "react";
+import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
+import { Selecter } from "~/components/Selecter";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -173,22 +175,26 @@ export function getTypeColor(type: string) {
   }
 }
 
+const filters = ["Все", "Конференции", "Вечеринки", "Турниры"];
+
 function RouteComponent() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("Все");
   useScroll();
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
-      {/* Top Navigation */}
       <Header />
 
-      {/* Page Title */}
-      <div className="px-4 py-5">
-        <h1 className="text-3xl font-bold text-black">Квесты</h1>
+      <div className="flex items-center justify-between px-4 py-5">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-black">Квесты</h1>
+          <Selecter width="20px" height="20px" />
+        </div>
+        <Settings className="h-5 w-5 text-black" />
       </div>
-      {/* Segment Control */}
 
       <div className="mb-4 flex items-center justify-center gap-6 px-4">
         <input
@@ -197,72 +203,29 @@ function RouteComponent() {
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
 
-        <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
-          <WhiteFilter />
-        </div>
+        <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
+          <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <WhiteFilter />
+          </div>
+        </FilterDrawer>
       </div>
 
-      {/* Calendar Section */}
-      <div className="px-4 pb-4">
-        <h2 className="pb-2 text-xs font-normal text-black">Январь</h2>
-
-        {/* Calendar dates */}
-        <div className="flex justify-between pb-2">
-          {calendarDates.map((dateItem, index) => (
-            <div key={index} className="flex w-12 flex-col items-center py-2">
-              <span
-                className={`text-xl font-medium ${dateItem.isWeekend ? "text-black" : "text-black"}`}
-              >
-                {dateItem.date}
-              </span>
-              <span
-                className={`text-xs font-bold ${dateItem.isWeekend ? "text-red-500" : "text-gray-400"}`}
-              >
-                {dateItem.day}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Filter buttons */}
-        <div className="flex w-full gap-2">
-          <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
-            <button className="flex items-center gap-1 rounded-3xl bg-black px-5 py-2.5 text-sm font-medium text-white shadow-lg">
-              Фильтр
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-          </FilterDrawer>
-          <button className="flex flex-1 items-center justify-center gap-1 rounded-3xl bg-white px-9 py-2.5 text-sm font-medium text-black shadow-lg">
-            Показать календарь
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+      <Calendar />
+      <div className="mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              activeFilter === filter
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
+            }`}
+          >
+            {filter}
           </button>
-        </div>
+        ))}
       </div>
-
       {/* Quest Lists by Date */}
       <div className="space-y-4">
         {/* 19 декабря */}
@@ -310,22 +273,26 @@ function RouteComponent() {
                 </div>
               </div>
             </div>
-            <div className="">
+            <div className="col-span-2 w-full">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Актуальные квесты</h2>
+                <ArrowRight className="h-5 w-5 text-gray-500" />
+              </div>
               <div className="flex gap-4 overflow-x-auto">
                 {[
                   {
-                    title: "Квест для дизайнеров",
-                    subtitle: "Получи любой курс за прохождение",
-                    tag: "🕹 Квест",
+                    title: "Пост- новогодний вечер",
+                    subtitle: "15 января • Мозайка",
+                    tag: "🎄 Новый год",
                     price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-orange-400 to-red-400",
+                    bg: "bg-gradient-to-br from-red-400 to-pink-400",
                   },
                   {
-                    title: "Квест на поиск для развития коммуникационных навыков",
-                    subtitle: "Приз 1 ton",
-                    tag: "🕹 Квест",
+                    title: "Гангстеры и розы",
+                    subtitle: "21 января • Алькатрас",
+                    tag: "💞 Клубы знакомств",
                     price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-teal-400 to-blue-400",
+                    bg: "bg-gradient-to-br from-pink-400 to-purple-400",
                   },
                   {
                     title: "KazDrilling 2024",
@@ -337,21 +304,12 @@ function RouteComponent() {
                 ].map((event, idx) => (
                   <div
                     key={idx}
-                    className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
+                    className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                   >
-                    <div className={`h-32 ${event.bg} relative`}>
+                    <div className={`h-full w-full ${event.bg} relative`}>
                       <div className="absolute bottom-2 left-2 flex gap-1">
-                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                          {event.tag}
-                        </span>
-                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                          {event.price}
-                        </span>
+                        <div>{event.tag}</div>
                       </div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
-                      <p className="text-sm text-gray-500">{event.subtitle}</p>
                     </div>
                   </div>
                 ))}
@@ -385,7 +343,6 @@ function RouteComponent() {
         <div>
           <h3 className="px-4 pb-2 text-xs font-normal text-black">23 декабря</h3>
           <div className="px-4">
-            isNavigable={true}
             <QuestCard quest={questsData[3]} isNavigable={true} />
             <p className="mb-4 text-xs leading-4 text-black">
               {questsData[3].description}

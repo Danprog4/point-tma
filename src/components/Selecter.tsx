@@ -10,6 +10,7 @@ import {
 export const Selecter = ({
   height = "max-h-11 min-h-11",
   width = "w-full",
+  children,
   placeholder = "Выберите город",
   cities = ["Москва", "Санкт-Петербург", "Новосибирск"],
 }: {
@@ -17,6 +18,7 @@ export const Selecter = ({
   width?: string;
   placeholder?: string;
   cities?: string[];
+  children?: React.ReactNode;
 }) => {
   const [selectedCity, setSelectedCity] = useState("Москва");
 
@@ -25,6 +27,7 @@ export const Selecter = ({
       <SelectTrigger
         className={`${height} ${width} rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50`}
       >
+        {children}
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

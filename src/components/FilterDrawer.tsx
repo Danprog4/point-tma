@@ -14,6 +14,7 @@ export default function FilterDrawer({
   const [isNested, setIsNested] = useState(false);
   const [isNested2, setIsNested2] = useState(false);
   const [isNested3, setIsNested3] = useState(false);
+  const [isReward, setIsReward] = useState(false);
   const [type, setType] = useState("Все");
   const [theme, setTheme] = useState("Все");
   const [city, setCity] = useState("Все");
@@ -30,7 +31,7 @@ export default function FilterDrawer({
             e.preventDefault();
           }}
         />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[576px] flex-col rounded-t-[16px] bg-white px-4 py-3">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit flex-col rounded-t-[16px] bg-white px-4 py-3">
           <header>
             <div className="flex justify-center pb-2 text-xl font-bold">Фильтр</div>
             <div className="absolute top-4 right-4">
@@ -187,6 +188,38 @@ export default function FilterDrawer({
                 </Drawer.Content>
               </Drawer.Portal>
             </Drawer.NestedRoot>
+            <div className="mt-4 flex cursor-pointer items-center justify-between">
+              <div>Есть достижение?</div>
+              <div
+                onClick={() => setIsReward(!isReward)}
+                className="flex h-6 w-6 items-center justify-center rounded-md border border-[#ABABAB] bg-[#DBDBDB]"
+              >
+                {isReward && <Check />}
+              </div>
+            </div>
+            <div className="text-lg">Вознаграждение</div>
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+                <div className="flex flex-col items-start text-sm">
+                  <div className="text-[#ABABAB]">От</div>
+                  <input
+                    type="text"
+                    defaultValue="0"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+                <div className="flex flex-col items-start text-sm">
+                  <div className="text-[#ABABAB]">До</div>
+                  <input
+                    type="text"
+                    defaultValue="300"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           {/* add  nested drawer*/}
         </Drawer.Content>

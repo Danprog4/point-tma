@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Plus, Settings } from "lucide-react";
+import { ArrowRight, Settings } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
@@ -374,12 +375,12 @@ function RouteComponent() {
           </button>
           <div className="flex flex-col items-center">
             <div
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-white"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
               onClick={() => setIsMoreOpen(!isMoreOpen)}
             >
-              <Plus className="h-5 w-5 text-purple-600" />
+              <WhitePlusIcon />
             </div>
-            <span className="text-xs text-purple-600">Ещё</span>
+            <span className="text-xs">Ещё</span>
           </div>
         </div>
       </div>

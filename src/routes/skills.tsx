@@ -26,9 +26,9 @@ const skillCategories: SkillCategory[] = [
     titleColor: "text-green-700",
     progressColor: "bg-green-100",
     skills: [
-      { name: "Сила", current: 16, max: 32 },
-      { name: "Выносливость", current: 28, max: 32 },
-      { name: "Ловкость", current: 8, max: 32 },
+      { name: "Сила", current: 0, max: 32 },
+      { name: "Выносливость", current: 0, max: 32 },
+      { name: "Ловкость", current: 0, max: 32 },
     ],
   },
   {
@@ -37,9 +37,9 @@ const skillCategories: SkillCategory[] = [
     titleColor: "text-blue-700",
     progressColor: "bg-blue-100",
     skills: [
-      { name: "Обучаемость", current: 16, max: 32 },
-      { name: "Концентрация", current: 28, max: 32 },
-      { name: "Тайм-менеджмент", current: 8, max: 32 },
+      { name: "Обучаемость", current: 0, max: 32 },
+      { name: "Концентрация", current: 0, max: 32 },
+      { name: "Тайм-менеджмент", current: 0, max: 32 },
     ],
   },
   {
@@ -48,9 +48,9 @@ const skillCategories: SkillCategory[] = [
     titleColor: "text-orange-700",
     progressColor: "bg-orange-100",
     skills: [
-      { name: "Убеждение", current: 16, max: 32 },
-      { name: "Харизма", current: 28, max: 32 },
-      { name: "Лидерство", current: 8, max: 32 },
+      { name: "Убеждение", current: 0, max: 32 },
+      { name: "Харизма", current: 0, max: 32 },
+      { name: "Лидерство", current: 0, max: 32 },
     ],
   },
   {
@@ -59,9 +59,9 @@ const skillCategories: SkillCategory[] = [
     titleColor: "text-red-700",
     progressColor: "bg-red-100",
     skills: [
-      { name: "Управление бизнесом", current: 16, max: 32 },
-      { name: "Финансовая грамотность", current: 28, max: 32 },
-      { name: "Финансовая грамотность", current: 8, max: 32 },
+      { name: "Управление бизнесом", current: 0, max: 32 },
+      { name: "Финансовая грамотность", current: 0, max: 32 },
+      { name: "Финансовая грамотность", current: 0, max: 32 },
     ],
   },
 ];
@@ -76,7 +76,7 @@ function SkillProgressBar({
   const progressPercentage = (skill.current / skill.max) * 100;
 
   return (
-    <div className="flex w-full items-center justify-between rounded-full bg-white p-2 text-xs">
+    <div className="flex w-full items-center justify-between rounded-full bg-[#1212121A] p-2 text-xs">
       <div>{skill.name}</div>
       <div>
         {skill.current}/{skill.max}

@@ -84,7 +84,10 @@ function RouteComponent() {
 
               {/* Edit Button */}
               <div className="absolute top-4 right-4">
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50">
+                <button
+                  onClick={() => navigate({ to: "/profile-sett" })}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+                >
                   <Settings className="h-4 w-4 text-black" />
                 </button>
               </div>

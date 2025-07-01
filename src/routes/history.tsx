@@ -104,7 +104,8 @@ function RouteComponent() {
       </div>
 
       {/* History List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="px-4 text-gray-500">Ваша история пока пуста</div>
+      <div className="hidden flex-1 overflow-y-auto">
         {historyData.map((dateGroup, groupIndex) => (
           <div key={groupIndex} className="mb-6">
             {/* Date Header */}

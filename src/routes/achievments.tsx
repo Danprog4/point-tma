@@ -179,7 +179,6 @@ function RouteComponent() {
         <div className="flex-1">
           <h1 className="text-center text-base font-bold text-gray-800">Достижения</h1>
         </div>
-        <div className="w-6"></div>
       </div>
 
       {/* Filter Tabs */}
@@ -247,7 +246,7 @@ function RouteComponent() {
             <div className="relative flex h-18 w-18 items-center justify-center rounded-full border-2 border-purple-500 bg-gradient-to-br from-teal-300 to-teal-500">
               {/* Inner level circle */}
               <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-600 border-t-green-400 border-r-green-400 bg-purple-500">
-                <span className="text-2xl font-bold text-white">4</span>
+                <span className="text-2xl font-bold text-white">1</span>
               </div>
             </div>
             {/* Level text */}

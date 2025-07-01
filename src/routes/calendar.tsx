@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
+import { More } from "~/components/More";
 
 export const Route = createFileRoute("/calendar")({
   component: RouteComponent,
@@ -29,6 +31,7 @@ const EVENTS = [9, 12, 13, 27];
 function RouteComponent() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -109,7 +112,7 @@ function RouteComponent() {
   return (
     <div className="mx-auto min-h-screen w-full bg-white">
       {/* Header */}
-      <div className="relative flex items-center justify-center p-4 pb-10">
+      <div className="relative flex items-center justify-center p-4">
         <button
           onClick={() => navigate({ to: "/profile" })}
           className="absolute left-4 flex h-6 w-6 items-center justify-center"
@@ -162,17 +165,22 @@ function RouteComponent() {
           <button
             className="flex-1 bg-purple-600 px-4 py-3 text-base font-medium text-white"
             style={{ borderRadius: "16px 4px 16px 4px" }}
+            onClick={() => navigate({ to: "/" })}
           >
             Добавить событие
           </button>
-          <div className="flex flex-col items-center px-1">
-            <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-600 bg-white">
-              <Plus className="h-4 w-4 text-purple-600" strokeWidth={2} />
+          <div className="flex flex-col items-center">
+            <div
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
+              onClick={() => setIsMoreOpen(!isMoreOpen)}
+            >
+              <WhitePlusIcon />
             </div>
-            <span className="text-xs font-normal text-purple-600">Ещё</span>
+            <span className="text-xs">Ещё</span>
           </div>
         </div>
       </div>
+      {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
     </div>
   );
 }

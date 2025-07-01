@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as SkillsImport } from './routes/skills'
 import { Route as QuestsImport } from './routes/quests'
+import { Route as ProfileSettImport } from './routes/profile-sett'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as OnboardingImport } from './routes/onboarding'
 import { Route as NotifImport } from './routes/notif'
@@ -38,6 +39,12 @@ const SkillsRoute = SkillsImport.update({
 const QuestsRoute = QuestsImport.update({
   id: '/quests',
   path: '/quests',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileSettRoute = ProfileSettImport.update({
+  id: '/profile-sett',
+  path: '/profile-sett',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -186,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileImport
       parentRoute: typeof rootRoute
     }
+    '/profile-sett': {
+      id: '/profile-sett'
+      path: '/profile-sett'
+      fullPath: '/profile-sett'
+      preLoaderRoute: typeof ProfileSettImport
+      parentRoute: typeof rootRoute
+    }
     '/quests': {
       id: '/quests'
       path: '/quests'
@@ -254,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
@@ -272,6 +287,7 @@ export interface FileRoutesByTo {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
@@ -291,6 +307,7 @@ export interface FileRoutesById {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
@@ -311,6 +328,7 @@ export interface FileRouteTypes {
     | '/notif'
     | '/onboarding'
     | '/profile'
+    | '/profile-sett'
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
@@ -328,6 +346,7 @@ export interface FileRouteTypes {
     | '/notif'
     | '/onboarding'
     | '/profile'
+    | '/profile-sett'
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
@@ -345,6 +364,7 @@ export interface FileRouteTypes {
     | '/notif'
     | '/onboarding'
     | '/profile'
+    | '/profile-sett'
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
@@ -364,6 +384,7 @@ export interface RootRouteChildren {
   NotifRoute: typeof NotifRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRouteWithChildren
+  ProfileSettRoute: typeof ProfileSettRoute
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
   CreateMeetNameRoute: typeof CreateMeetNameRoute
@@ -381,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotifRoute: NotifRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRouteWithChildren,
+  ProfileSettRoute: ProfileSettRoute,
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
   CreateMeetNameRoute: CreateMeetNameRoute,
@@ -407,6 +429,7 @@ export const routeTree = rootRoute
         "/notif",
         "/onboarding",
         "/profile",
+        "/profile-sett",
         "/quests",
         "/skills",
         "/createMeet/$name",
@@ -443,6 +466,9 @@ export const routeTree = rootRoute
       "children": [
         "/profile/$id"
       ]
+    },
+    "/profile-sett": {
+      "filePath": "profile-sett.tsx"
     },
     "/quests": {
       "filePath": "quests.tsx"

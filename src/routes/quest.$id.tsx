@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
+import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { questsData } from "./quests";
@@ -119,14 +120,14 @@ function RouteComponent() {
                 Купить за {questData?.price}
               </button>
 
-              <div
-                className="flex flex-col items-center"
-                onClick={() => setIsMoreOpen(!isMoreOpen)}
-              >
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-                  <Plus className="h-5 w-5 text-purple-600" />
+              <div className="flex flex-col items-center">
+                <div
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
+                  onClick={() => setIsMoreOpen(!isMoreOpen)}
+                >
+                  <WhitePlusIcon />
                 </div>
-                <span className="text-xs text-purple-600">Ещё</span>
+                <span className="text-xs">Ещё</span>
               </div>
             </div>
           </div>

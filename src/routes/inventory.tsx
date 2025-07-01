@@ -9,7 +9,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   return (
     <div>
-      <div className="relative flex items-center justify-center p-4 pb-10">
+      <div className="relative flex items-center justify-center p-4">
         <button
           onClick={() => navigate({ to: "/profile" })}
           className="absolute left-4 flex h-6 w-6 items-center justify-center"
@@ -18,7 +18,7 @@ function RouteComponent() {
         </button>
         <h1 className="text-base font-bold text-gray-800">Инвентарь</h1>
       </div>
-      <div className="mx-auto text-center text-gray-800">Ваш инвентарь пока пуст</div>
+      <div className="px-4 text-start text-gray-500">Ваш инвентарь пока пуст</div>
     </div>
   );
 }

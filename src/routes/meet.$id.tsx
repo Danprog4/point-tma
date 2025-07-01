@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Settings, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Settings } from "lucide-react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
@@ -14,12 +14,12 @@ function RouteComponent() {
   const { id } = Route.useParams();
   return (
     <div className="flex h-full flex-col pt-14 pb-10">
-      <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4 pb-4">
-        <ArrowLeft className="h-6 w-6" onClick={() => window.history.back()} />
-        <div className="justify-center text-xl font-bold">Встреча</div>
-        <button className="rounded-full bg-transparent p-2">
-          <X className="h-6 w-6 text-transparent" />
-        </button>
+      <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4">
+        <ArrowLeft
+          className="absolute left-4 h-6 w-6"
+          onClick={() => window.history.back()}
+        />
+        <div className="flex flex-1 justify-center text-xl font-bold">Встреча</div>
       </header>
       <div className="flex flex-col p-4">
         <QuestCard quest={questsData[0]} />

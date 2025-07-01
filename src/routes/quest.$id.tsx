@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
@@ -50,11 +50,11 @@ function RouteComponent() {
       ) : (
         <div className="pt-14 pb-24">
           <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4 pb-4">
-            <ArrowLeft className="h-6 w-6" onClick={() => window.history.back()} />
-            <div className="justify-center text-xl font-bold">Квест</div>
-            <button className="rounded-full bg-transparent p-2">
-              <X className="h-6 w-6 text-transparent" />
-            </button>
+            <ArrowLeft
+              className="absolute left-4 h-6 w-6"
+              onClick={() => window.history.back()}
+            />
+            <div className="flex flex-1 justify-center text-xl font-bold">Квест</div>
           </header>
           <div className="relative">
             <img

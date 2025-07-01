@@ -191,8 +191,8 @@ function RouteComponent() {
               onClick={() => setActiveFilter(filter)}
               className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeFilter === filter
-                  ? "bg-gray-800 text-white"
-                  : "border-gray-200 bg-white text-gray-800"
+                  ? "bg-black text-white"
+                  : "border-gray-200 bg-white text-black"
               }`}
             >
               {filter}

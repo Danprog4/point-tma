@@ -5,6 +5,7 @@ import { Step1 } from "~/components/createMeet/Step1";
 import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
 import { Step4 } from "~/components/createMeet/Step4";
+import { Step5 } from "~/components/createMeet/Step5";
 export const Route = createFileRoute("/createMeet/$name")({
   component: RouteComponent,
 });
@@ -31,7 +32,7 @@ function RouteComponent() {
           {name}
         </div>
       </header>
-      {step < 3 && (
+      {step < 4 && (
         <div className="flex items-center justify-center gap-2 pt-12 pb-6">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
@@ -45,8 +46,9 @@ function RouteComponent() {
       {step === 0 && <Step1 />}
       {step === 1 && <Step2 />}
       {step === 2 && <Step3 />}
-      {step === 3 && <Step4 isLoading={isLoading} setIsLoading={setIsLoading} />}
-      {step < 3 ? (
+      {step === 3 && <Step4 />}
+      {step === 4 && <Step5 isLoading={isLoading} setIsLoading={setIsLoading} />}
+      {step < 4 ? (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
             onClick={handleNext}

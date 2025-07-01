@@ -62,7 +62,6 @@ function RouteComponent() {
 
       {page === "info" && (
         <>
-          {/* Profile Picture Section */}
           <div className="relative">
             <div className="relative h-60 bg-gradient-to-br from-purple-400 to-pink-300">
               {/* Level Badge */}

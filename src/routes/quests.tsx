@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Clock, MapPin, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
+import { QuestCard } from "~/components/QuestCard";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -146,7 +147,7 @@ const calendarDates = [
   { date: "13", day: "ПН", isWeekend: false },
 ];
 
-function getCategoryColor(category: string) {
+export function getCategoryColor(category: string) {
   switch (category) {
     case "Обучающий":
       return "bg-blue-500";
@@ -161,7 +162,7 @@ function getCategoryColor(category: string) {
   }
 }
 
-function getTypeColor(type: string) {
+export function getTypeColor(type: string) {
   switch (type) {
     case "Глобальный":
       return "bg-black/25";
@@ -170,56 +171,6 @@ function getTypeColor(type: string) {
     default:
       return "bg-gray-400";
   }
-}
-
-export function QuestCard({ quest }: { quest: (typeof questsData)[0] }) {
-  const navigate = useNavigate();
-
-  return (
-    <div
-      className="mb-4 flex items-center gap-4"
-      onClick={() => navigate({ to: "/quest/$id", params: { id: quest.id.toString() } })}
-    >
-      <img
-        src={quest.image}
-        alt={quest.title}
-        className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
-      />
-      <div className="flex-1 space-y-2">
-        <h3 className="w-full text-base leading-6 font-bold text-black">{quest.title}</h3>
-
-        <div className="flex items-center gap-2">
-          <span
-            className={`${getTypeColor(quest.type)} rounded-full px-2.5 py-0.5 text-xs font-medium text-black`}
-          >
-            {quest.type}
-          </span>
-          <span
-            className={`${getCategoryColor(quest.category)} rounded-full px-2.5 py-0.5 text-xs font-medium text-white`}
-          >
-            {quest.category}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-300">
-                <Clock className="h-2 w-2 text-white" />
-              </div>
-              <span className="text-xs text-black">{quest.date}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="flex h-4 w-4 items-center justify-center">
-                <MapPin className="h-3 w-3 text-gray-400" />
-              </div>
-              <span className="text-xs text-black">{quest.location}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function RouteComponent() {
@@ -318,7 +269,7 @@ function RouteComponent() {
         <div>
           <h3 className="px-4 pb-2 text-xs font-normal text-black">19 декабря</h3>
           <div className="px-4">
-            <QuestCard quest={questsData[0]} />
+            <QuestCard quest={questsData[0]} isNavigable={true} />
             <p className="mb-4 text-xs leading-4 text-black">
               {questsData[0].description}
             </p>
@@ -345,7 +296,7 @@ function RouteComponent() {
           <div className="space-y-6 px-4">
             {/* Quest 2 */}
             <div>
-              <QuestCard quest={questsData[1]} />
+              <QuestCard quest={questsData[1]} isNavigable={true} />
               <p className="mb-4 text-xs leading-4 text-black">
                 {questsData[1].description}
               </p>
@@ -408,7 +359,7 @@ function RouteComponent() {
             </div>
             {/* Quest 3 */}
             <div>
-              <QuestCard quest={questsData[2]} />
+              <QuestCard quest={questsData[2]} isNavigable={true} />
               <p className="mb-4 text-xs leading-4 text-black">
                 {questsData[2].description}
               </p>
@@ -434,7 +385,8 @@ function RouteComponent() {
         <div>
           <h3 className="px-4 pb-2 text-xs font-normal text-black">23 декабря</h3>
           <div className="px-4">
-            <QuestCard quest={questsData[3]} />
+            isNavigable={true}
+            <QuestCard quest={questsData[3]} isNavigable={true} />
             <p className="mb-4 text-xs leading-4 text-black">
               {questsData[3].description}
             </p>

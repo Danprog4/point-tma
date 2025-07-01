@@ -24,6 +24,7 @@ import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
 import { Route as QuestIdImport } from './routes/quest.$id'
 import { Route as ProfileIdImport } from './routes/profile.$id'
+import { Route as MeetIdImport } from './routes/meet.$id'
 import { Route as CreateMeetNameImport } from './routes/createMeet.$name'
 
 // Create/Update Routes
@@ -104,6 +105,12 @@ const ProfileIdRoute = ProfileIdImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ProfileRoute,
+} as any)
+
+const MeetIdRoute = MeetIdImport.update({
+  id: '/meet/$id',
+  path: '/meet/$id',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const CreateMeetNameRoute = CreateMeetNameImport.update({
@@ -200,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateMeetNameImport
       parentRoute: typeof rootRoute
     }
+    '/meet/$id': {
+      id: '/meet/$id'
+      path: '/meet/$id'
+      fullPath: '/meet/$id'
+      preLoaderRoute: typeof MeetIdImport
+      parentRoute: typeof rootRoute
+    }
     '/profile/$id': {
       id: '/profile/$id'
       path: '/$id'
@@ -243,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/quest/$id': typeof QuestIdRoute
 }
@@ -260,6 +275,7 @@ export interface FileRoutesByTo {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/quest/$id': typeof QuestIdRoute
 }
@@ -278,6 +294,7 @@ export interface FileRoutesById {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
+  '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/quest/$id': typeof QuestIdRoute
 }
@@ -297,6 +314,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/meet/$id'
     | '/profile/$id'
     | '/quest/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -313,6 +331,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/meet/$id'
     | '/profile/$id'
     | '/quest/$id'
   id:
@@ -329,6 +348,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/createMeet/$name'
+    | '/meet/$id'
     | '/profile/$id'
     | '/quest/$id'
   fileRoutesById: FileRoutesById
@@ -347,6 +367,7 @@ export interface RootRouteChildren {
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
   CreateMeetNameRoute: typeof CreateMeetNameRoute
+  MeetIdRoute: typeof MeetIdRoute
   QuestIdRoute: typeof QuestIdRoute
 }
 
@@ -363,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
   CreateMeetNameRoute: CreateMeetNameRoute,
+  MeetIdRoute: MeetIdRoute,
   QuestIdRoute: QuestIdRoute,
 }
 
@@ -388,6 +410,7 @@ export const routeTree = rootRoute
         "/quests",
         "/skills",
         "/createMeet/$name",
+        "/meet/$id",
         "/quest/$id"
       ]
     },
@@ -429,6 +452,9 @@ export const routeTree = rootRoute
     },
     "/createMeet/$name": {
       "filePath": "createMeet.$name.tsx"
+    },
+    "/meet/$id": {
+      "filePath": "meet.$id.tsx"
     },
     "/profile/$id": {
       "filePath": "profile.$id.tsx",

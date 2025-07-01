@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Calendar } from "~/components/Calendar";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Filters } from "~/components/Icons/Filters";
@@ -8,7 +10,8 @@ export const Route = createFileRoute("/meetings")({
 });
 
 function RouteComponent() {
-  const [isList, setIsList] = useState(true);
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState("Все");
   const meetings = [
     {
       id: 1,
@@ -60,6 +63,8 @@ function RouteComponent() {
     },
   ];
 
+  const filters = ["Все", "Конференции", "Вечеринки", "Турниры"];
+
   useScroll();
 
   return (
@@ -75,83 +80,48 @@ function RouteComponent() {
         </button>
       </div>
 
-      {/* Segment Control */}
-      <div className="flex gap-4 px-4 pb-4">
-        <button
-          className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-            isList ? "bg-black text-white" : "bg-white text-black"
-          }`}
-          onClick={() => setIsList(true)}
-        >
-          Списком
-        </button>
-        <button
-          className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-            !isList ? "bg-black text-white" : "bg-white text-black"
-          }`}
-          onClick={() => setIsList(false)}
-        >
-          На карте
-        </button>
+      <Calendar />
+
+      <div className="flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              activeFilter === filter
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
       </div>
 
       {/* Meetings List */}
       <div className="flex-1 overflow-y-auto px-4">
         <>
           <div className="grid grid-cols-2 gap-4">
-            {meetings.map((meeting, index) => (
-              <div key={meeting.id} className="">
-                {index <= 3 && (
-                  <>
-                    {/* Profile Card */}
-                    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                      {/* Avatar Section */}
-                      <div className="relative h-36">
-                        <img
-                          src={meeting.avatar}
-                          alt={meeting.name}
-                          className="h-full w-full object-cover"
-                        />
-                        {/* Status Indicator */}
-                        <div
-                          className="absolute bottom-1 left-1 h-12 w-12 rounded-full border-2 border-purple-600"
-                          style={{ backgroundColor: meeting.statusColor }}
-                        />
-                      </div>
-
-                      {/* Text Content */}
-                      <div className="p-2">
-                        <div className="space-y-1">
-                          <h3 className="text-sm leading-tight font-medium text-gray-900">
-                            {meeting.name}
-                          </h3>
-                          <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                            {meeting.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>{" "}
-                  </>
-                )}
+            <div className="col-span-2 mt-4 w-full">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Актуальные встречи</h2>
+                <ArrowRight className="h-5 w-5 text-gray-500" />
               </div>
-            ))}
-
-            <div className="col-span-2 mt-[-16px] w-full">
               <div className="flex gap-4 overflow-x-auto">
                 {[
                   {
-                    title: "Квест для дизайнеров",
-                    subtitle: "Получи любой курс за прохождение",
-                    tag: "🕹 Квест",
+                    title: "Пост- новогодний вечер",
+                    subtitle: "15 января • Мозайка",
+                    tag: "🎄 Новый год",
                     price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-orange-400 to-red-400",
+                    bg: "bg-gradient-to-br from-red-400 to-pink-400",
                   },
                   {
-                    title: "Квест на поиск для развития коммуникационных навыков",
-                    subtitle: "Приз 1 ton",
-                    tag: "🕹 Квест",
+                    title: "Гангстеры и розы",
+                    subtitle: "21 января • Алькатрас",
+                    tag: "💞 Клубы знакомств",
                     price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-teal-400 to-blue-400",
+                    bg: "bg-gradient-to-br from-pink-400 to-purple-400",
                   },
                   {
                     title: "KazDrilling 2024",
@@ -163,60 +133,52 @@ function RouteComponent() {
                 ].map((event, idx) => (
                   <div
                     key={idx}
-                    className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
+                    className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                   >
-                    <div className={`h-32 ${event.bg} relative`}>
+                    <div className={`h-full w-full ${event.bg} relative`}>
                       <div className="absolute bottom-2 left-2 flex gap-1">
-                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                          {event.tag}
-                        </span>
-                        <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                          {event.price}
-                        </span>
+                        <div>{event.tag}</div>
                       </div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
-                      <p className="text-sm text-gray-500">{event.subtitle}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             {meetings.map((meeting, index) => (
-              <div key={meeting.id} className="mt-[-32px]">
-                {index > 3 && (
-                  <>
-                    {/* Profile Card */}
-                    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                      {/* Avatar Section */}
-                      <div className="relative h-36">
-                        <img
-                          src={meeting.avatar}
-                          alt={meeting.name}
-                          className="h-full w-full object-cover"
-                        />
-                        {/* Status Indicator */}
-                        <div
-                          className="absolute bottom-1 left-1 h-12 w-12 rounded-full border-2 border-purple-600"
-                          style={{ backgroundColor: meeting.statusColor }}
-                        />
-                      </div>
+              <div key={meeting.id} className="">
+                {/* Profile Card */}
+                <div
+                  className="overflow-hidden"
+                  onClick={() =>
+                    navigate({ to: "/meet/$id", params: { id: meeting.id.toString() } })
+                  }
+                >
+                  {/* Avatar Section */}
+                  <div className="relative h-36">
+                    <img
+                      src={meeting.avatar}
+                      alt={meeting.name}
+                      className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
+                    />
+                    {/* Status Indicator */}
+                    <div
+                      className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600"
+                      style={{ backgroundColor: meeting.statusColor }}
+                    />
+                  </div>
 
-                      {/* Text Content */}
-                      <div className="p-2">
-                        <div className="space-y-1">
-                          <h3 className="text-sm leading-tight font-medium text-gray-900">
-                            {meeting.name}
-                          </h3>
-                          <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                            {meeting.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>{" "}
-                  </>
-                )}
+                  {/* Text Content */}
+                  <div className="p-2">
+                    <div className="space-y-1">
+                      <h3 className="text-sm leading-tight font-medium text-gray-900">
+                        {meeting.name}
+                      </h3>
+                      <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                        {meeting.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

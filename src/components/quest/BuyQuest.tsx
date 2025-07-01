@@ -1,6 +1,6 @@
 import { ArrowRight, X } from "lucide-react";
 import { useState } from "react";
-import { QuestCard } from "~/routes/quests";
+import { QuestCard } from "~/components/QuestCard";
 import { Quest } from "~/types/quest";
 import { MinusIcon } from "../Icons/MinusIcon";
 import { PlusIcon } from "../Icons/Plus";
@@ -39,7 +39,7 @@ export const BuyQuest = ({
 
       <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
       <div className="px-4">
-        <QuestCard quest={quest} />
+        <QuestCard quest={quest} isNavigable={true} />
         <div className="flex flex-col gap-2 pb-4">
           <div>Стоимость</div>
           <div className="text-xl font-bold">{quest.price}</div>

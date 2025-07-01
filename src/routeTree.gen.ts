@@ -20,6 +20,7 @@ import { Route as NotifImport } from './routes/notif'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
+import { Route as FillProfileImport } from './routes/fill-profile'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
@@ -81,6 +82,12 @@ const InventoryRoute = InventoryImport.update({
 const HistoryRoute = HistoryImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FillProfileRoute = FillProfileImport.update({
+  id: '/fill-profile',
+  path: '/fill-profile',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -149,6 +156,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarImport
+      parentRoute: typeof rootRoute
+    }
+    '/fill-profile': {
+      id: '/fill-profile'
+      path: '/fill-profile'
+      fullPath: '/fill-profile'
+      preLoaderRoute: typeof FillProfileImport
       parentRoute: typeof rootRoute
     }
     '/history': {
@@ -262,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
@@ -281,6 +296,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
@@ -301,6 +317,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
@@ -322,6 +339,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/fill-profile'
     | '/history'
     | '/inventory'
     | '/meetings'
@@ -340,6 +358,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/fill-profile'
     | '/history'
     | '/inventory'
     | '/meetings'
@@ -358,6 +377,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/fill-profile'
     | '/history'
     | '/inventory'
     | '/meetings'
@@ -378,6 +398,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievmentsRoute: typeof AchievmentsRoute
   CalendarRoute: typeof CalendarRoute
+  FillProfileRoute: typeof FillProfileRoute
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
   MeetingsRoute: typeof MeetingsRoute
@@ -396,6 +417,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievmentsRoute: AchievmentsRoute,
   CalendarRoute: CalendarRoute,
+  FillProfileRoute: FillProfileRoute,
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
   MeetingsRoute: MeetingsRoute,
@@ -423,6 +445,7 @@ export const routeTree = rootRoute
         "/",
         "/achievments",
         "/calendar",
+        "/fill-profile",
         "/history",
         "/inventory",
         "/meetings",
@@ -445,6 +468,9 @@ export const routeTree = rootRoute
     },
     "/calendar": {
       "filePath": "calendar.tsx"
+    },
+    "/fill-profile": {
+      "filePath": "fill-profile.tsx"
     },
     "/history": {
       "filePath": "history.tsx"

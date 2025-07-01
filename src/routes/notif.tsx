@@ -10,7 +10,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <div className="relative flex items-center justify-center p-4 pb-10">
+      <div className="relative flex items-center justify-center p-4">
         <button
           onClick={() => window.history.back()}
           className="absolute left-4 flex h-6 w-6 items-center justify-center"
@@ -19,7 +19,9 @@ function RouteComponent() {
         </button>
         <h1 className="text-base font-bold text-gray-800">Уведомления</h1>
       </div>
-      <div className="mx-auto text-center text-gray-800">Уведомлений пока нет</div>
+      <div className="px-4 py-4 text-start text-sm text-gray-500">
+        Уведомлений пока нет
+      </div>
     </div>
   );
 }

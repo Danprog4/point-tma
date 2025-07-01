@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Settings } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
+import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
-import { Filters } from "~/components/Icons/Filters";
+import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/meetings")({
 function RouteComponent() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
+  const [isOpen, setIsOpen] = useState(false);
   const meetings = [
     {
       id: 1,
@@ -74,10 +76,24 @@ function RouteComponent() {
 
       {/* Page Title */}
       <div className="flex items-center justify-between px-4 py-5">
-        <h1 className="text-3xl font-bold text-black">Встречи</h1>
-        <button className="mr-1.5 mb-1.5 h-4 w-4">
-          <Filters />
-        </button>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-black">Встречи</h1>
+        </div>
+        <Settings className="h-5 w-5 text-black" />
+      </div>
+
+      <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <input
+          type="text"
+          placeholder="Поиск встреч"
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+
+        <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
+          <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <WhiteFilter />
+          </div>
+        </FilterDrawer>
       </div>
 
       <Calendar />

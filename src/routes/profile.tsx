@@ -107,6 +107,21 @@ function RouteComponent() {
             </div>
           </div>
 
+          <div className="flex items-center justify-start gap-1 px-4">
+            <div className="flex-1 rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
+              <div className="flex flex-col gap-2">
+                <div>Заполенность профиля 0%</div>
+                <div className="h-2 w-full rounded-full bg-white"></div>
+              </div>
+            </div>
+            <div
+              className="flex items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] p-4"
+              onClick={() => navigate({ to: "/fill-profile" })}
+            >
+              <div className="text-white">Заполнить</div>
+            </div>
+          </div>
+
           {/* Digital Avatar Card */}
           <div className="mx-4 mb-4">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-5">

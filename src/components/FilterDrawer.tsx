@@ -27,7 +27,6 @@ export default function FilterDrawer({
         <Drawer.Overlay
           className="fixed inset-0 z-50 bg-black/40"
           onClick={(e) => {
-            e.stopPropagation();
             e.preventDefault();
           }}
         />

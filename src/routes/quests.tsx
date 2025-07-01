@@ -362,7 +362,7 @@ function RouteComponent() {
 
       {/* Create Quest Button */}
 
-      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white pt-4">
+      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
         <div className="mx-auto flex w-full items-center gap-2 px-4">
           <button
             onClick={() =>

@@ -87,7 +87,7 @@ function RouteComponent() {
                 </div>
               </>
             ) : (
-              <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
+              <div className="mx-auto flex w-full flex-col items-center gap-2 overflow-y-auto px-4 py-4">
                 <button
                   onClick={() => {
                     navigate({ to: "/" });

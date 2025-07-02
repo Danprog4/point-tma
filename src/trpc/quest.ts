@@ -106,7 +106,7 @@ export const questRouter = createTRPCRouter({
 
       const newInventory = user.inventory?.map((ticket) => {
         if (ticket.questId === input.questId) {
-          return { ...ticket, isActive: true };
+          return { ...ticket, isActive: false };
         }
         return ticket;
       });

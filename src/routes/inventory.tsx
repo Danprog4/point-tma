@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { questsData } from "~/config/quests";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/inventory")({
@@ -11,7 +12,6 @@ function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const navigate = useNavigate();
-  const getQuest = useQuery(trpc.quest.getMyQuests.queryOptions());
 
   if (!user?.inventory) {
     return (
@@ -21,11 +21,11 @@ function RouteComponent() {
     );
   }
 
-  const quests = getQuest.data?.filter(
-    (quest) =>
-      user.inventory &&
-      quest.id === user?.inventory.find((item) => item.type === "ticket")?.questId,
-  );
+  const tickets = user.inventory.filter((item) => item.type === "ticket");
+
+  const getQuest = (questId: number) => {
+    return questsData.find((quest) => quest.id === questId);
+  };
 
   return (
     <div>
@@ -38,8 +38,25 @@ function RouteComponent() {
         </button>
         <h1 className="text-base font-bold text-gray-800">Инвентарь</h1>
       </div>
-      <div className="px-4 text-start text-gray-500">
-        {quests?.map((quest) => <div key={quest.id}>{quest.id}</div>)}
+      <div className="grid grid-cols-3 gap-4 px-4">
+        {tickets
+          ?.filter((ticket) => !ticket.isActive)
+          .map((ticket) => (
+            <div
+              key={ticket.questId}
+              className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+            >
+              <img
+                src={getQuest(ticket.questId)?.image}
+                alt={getQuest(ticket.questId)?.title}
+                className="h-[61px] w-[61px] rounded-lg"
+              />
+
+              <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
+                Билет на квест
+              </div>
+            </div>
+          ))}
       </div>
     </div>
   );

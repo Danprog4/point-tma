@@ -5,7 +5,7 @@ import { Quest } from "~/types/quest";
 
 export function QuestCard({
   quest,
-  isNavigable = false,
+  isNavigable = true,
 }: {
   quest: Quest;
   isNavigable?: boolean;

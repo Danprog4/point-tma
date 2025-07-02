@@ -143,7 +143,7 @@ export const questRouter = createTRPCRouter({
               [
                 {
                   text: "🚀 Перейти в канал",
-                  url: "https://t.me/+uyQGDiDmRsc0YTcy",
+                  url: "https://t.me/joinchat/uyQGDiDmRsc0YTcy",
                 },
               ],
             ],

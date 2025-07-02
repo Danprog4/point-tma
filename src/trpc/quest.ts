@@ -111,10 +111,20 @@ export const questRouter = createTRPCRouter({
         return ticket;
       });
 
+      const questData = questsData.find((quest) => quest.id === input.questId);
+
+      if (!questData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Quest not found",
+        });
+      }
+
       await db
         .update(usersTable)
         .set({
           inventory: newInventory,
+          balance: user.balance! - questData.price,
         })
         .where(eq(usersTable.id, ctx.userId));
 
@@ -123,8 +133,6 @@ export const questRouter = createTRPCRouter({
         questId: input.questId,
         isCompleted: false,
       });
-
-      const questData = questsData.find((quest) => quest.id === input.questId);
 
       await sendTelegram(
         `Вы успешно активировали билет на квест *${questData?.title}* 🎟️\n\nЗаходи в канал и начинай выполнение:`,

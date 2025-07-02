@@ -103,7 +103,9 @@ function RouteComponent() {
                   <Star className="h-5 w-5 fill-blue-500 text-blue-500" />
                 </div>
               </div>
-              <p className="text-sm text-gray-500">г. Караганда, 35 лет</p>
+              <p className="text-sm text-gray-500">
+                г. {user?.city}, {user?.age} лет
+              </p>
             </div>
           </div>
 
@@ -161,11 +163,7 @@ function RouteComponent() {
               <h3 className="text-xl font-bold text-black">Интересы</h3>
             </div>
             <div className="">
-              <p className="text-sm leading-relaxed text-black">
-                Привет! Днём я дизайнер, вечером тренер по американскому футболу, ночью
-                веду свой паблик по спортивному дизайну и 27/4 любящий муж. Вот такое вот
-                описание.
-              </p>
+              <p className="text-sm leading-relaxed text-black">{user?.interests}</p>
             </div>
           </div>
 

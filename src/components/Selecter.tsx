@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,8 @@ export const Selecter = ({
   height = "max-h-11 min-h-11",
   width = "w-full",
   children,
+
+  setValue,
   placeholder = "Выберите город",
   cities = ["Москва", "Санкт-Петербург", "Новосибирск"],
 }: {
@@ -18,10 +19,10 @@ export const Selecter = ({
   width?: string;
   placeholder?: string;
   cities?: string[];
+
+  setValue?: (value: string) => void;
   children?: React.ReactNode;
 }) => {
-  const [selectedCity, setSelectedCity] = useState("Москва");
-
   return (
     <Select>
       <SelectTrigger
@@ -32,7 +33,7 @@ export const Selecter = ({
       </SelectTrigger>
       <SelectContent>
         {cities.map((city) => (
-          <SelectItem key={city} value={city}>
+          <SelectItem key={city} value={city} onClick={() => setValue?.(city)}>
             {city}
           </SelectItem>
         ))}

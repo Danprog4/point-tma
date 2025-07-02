@@ -20,7 +20,7 @@ function RouteComponent() {
   const [name, setName] = useState("");
   const [age, setAge] = useState<number | undefined>();
   const [city, setCity] = useState<string>("");
-  const [interests, setInterests] = useState("");
+  const [bio, setBio] = useState("");
   const navigate = useNavigate();
   const onBoarding = useMutation(
     trpc.main.getOnBoarding.mutationOptions({
@@ -40,7 +40,7 @@ function RouteComponent() {
   const LAST_STEP = TOTAL_CARDS + 1;
 
   const handleSubmit = () => {
-    onBoarding.mutate({ name, age: age!, city, interests });
+    onBoarding.mutate({ name, age: age!, city, bio });
   };
 
   const handleNext = () =>
@@ -59,7 +59,7 @@ function RouteComponent() {
     setIsOnboarded(true);
   };
 
-  const isDisabled = step === LAST_STEP && (!name || !age || !city || !interests);
+  const isDisabled = step === LAST_STEP && (!name || !age || !city || !bio);
 
   console.log(step);
   const Card = ({
@@ -273,9 +273,9 @@ function RouteComponent() {
                 </div>
 
                 <textarea
-                  value={interests}
-                  onChange={(e) => setInterests(e.target.value)}
-                  placeholder="Опишите ваши интересы"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Коротко о себе"
                   className="h-28 rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
                 />
               </div>

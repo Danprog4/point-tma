@@ -1,5 +1,6 @@
 import { ArrowLeft, X } from "lucide-react";
 import { Drawer } from "vaul";
+import { Coin } from "../Icons/Coin";
 export default function BuyDrawer({
   open,
   onOpenChange,
@@ -22,7 +23,9 @@ export default function BuyDrawer({
               <X className="h-6 w-6 text-gray-900" />
             </button>
           </header>
-          <div>Оплата пока недоступна</div>
+          <div className="flex items-center justify-start gap-1">
+            <div> Оплата пока доступна только за points</div> <Coin />
+          </div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

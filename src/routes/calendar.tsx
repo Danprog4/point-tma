@@ -26,7 +26,7 @@ const MONTHS = [
 const WEEKDAYS = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
 // Mock event data - dates that have events
-const EVENTS = [9, 12, 13, 27];
+const EVENTS: number[] = [];
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ function RouteComponent() {
         <div className="relative flex h-full w-full items-center justify-center">
           <span className="z-10 text-base font-medium text-gray-800">{day}</span>
           {isToday && (
-            <div className="absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 transform rounded-full bg-purple-600" />
+            <div className="absolute bottom-1/2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 transform rounded-full bg-purple-600" />
           )}
           {hasEvent && (
             <div className="absolute top-0 right-2 h-3.5 w-3.5 rounded-full bg-green-400" />

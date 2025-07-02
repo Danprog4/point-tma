@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Settings } from "lucide-react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { questsData } from "./quests";
+import { questsData } from "~/config/quests";
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
 });

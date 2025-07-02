@@ -6,7 +6,6 @@ import {
   BarChart3,
   Calendar,
   ChevronRight,
-  Crown,
   History,
   Package,
   Search,
@@ -125,7 +124,7 @@ function RouteComponent() {
           </div>
 
           {/* Digital Avatar Card */}
-          <div className="mx-4 mb-4">
+          {/* <div className="mx-4 mb-4">
             <div className="flex items-center justify-between border-b border-gray-100 px-4 py-5">
               <div className="flex items-center gap-3">
                 <Crown className="h-6 w-6 text-purple-600" />
@@ -133,10 +132,10 @@ function RouteComponent() {
               </div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
             </div>
-          </div>
+          </div> */}
 
           {/* Statistics */}
-          <div className="mb-6 px-4">
+          <div className="mt-4 mb-6 px-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-black">0</div>
@@ -158,6 +157,14 @@ function RouteComponent() {
           </div>
 
           {/* Interests Section */}
+          <div className="mx-4 mb-6">
+            <div className="mb-3 flex items-center justify-between py-3">
+              <h3 className="text-xl font-bold text-black">Обо мне</h3>
+            </div>
+            <div className="">
+              <p className="text-sm leading-relaxed text-black">{user?.bio}</p>
+            </div>
+          </div>
           <div className="mx-4 mb-6">
             <div className="mb-3 flex items-center justify-between py-3">
               <h3 className="text-xl font-bold text-black">Интересы</h3>

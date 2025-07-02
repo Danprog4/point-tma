@@ -24,7 +24,7 @@ export const router = {
         name: z.string(),
         age: z.number(),
         city: z.string(),
-        interests: z.string(),
+        bio: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -43,7 +43,7 @@ export const router = {
         name: input.name,
         age: input.age,
         city: input.city,
-        interests: input.interests,
+        bio: input.bio,
       });
 
       return user;

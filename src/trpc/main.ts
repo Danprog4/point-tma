@@ -48,6 +48,35 @@ export const router = {
 
       return user;
     }),
+
+  updateProfile: procedure
+    .input(
+      z.object({
+        email: z.string(),
+        phone: z.string(),
+        bio: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db.update(usersTable).set({
+        email: input.email,
+        phone: input.phone,
+        bio: input.bio,
+      });
+
+      return user;
+    }),
 } satisfies TRPCRouterRecord;
 
 export type Router = typeof router;

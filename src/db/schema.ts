@@ -8,4 +8,7 @@ export const usersTable = pgTable("users", {
   age: integer("age"),
   city: varchar("city", { length: 255 }),
   interests: varchar("interests", { length: 255 }),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 255 }),
+  bio: varchar("bio", { length: 255 }),
 });

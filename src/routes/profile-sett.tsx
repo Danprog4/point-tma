@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,15 +14,55 @@ function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [bio, setBio] = useState("");
+  const [email, setEmail] = useState<string | null>(null);
+  const [phone, setPhone] = useState<string | null>(null);
+  const [bio, setBio] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (user?.name) {
       setName(user.name);
     }
-  }, [user?.name]);
+    if (user?.email) {
+      setEmail(user.email);
+    }
+    if (user?.phone) {
+      setPhone(user.phone);
+    }
+    if (user?.bio) {
+      setBio(user.bio);
+    }
+  }, [user?.name, user?.email, user?.phone, user?.bio]);
+
+  const isDisabled =
+    name === user?.name &&
+    email === user?.email &&
+    phone === user?.phone &&
+    bio === user?.bio;
+
+  const updateProfile = useMutation(
+    trpc.main.updateProfile.mutationOptions({
+      onSuccess: () => {},
+    }),
+  );
+
+  const handleUpdateProfile = () => {
+    updateProfile.mutate({
+      email: email || "",
+      phone: phone || "",
+      bio: bio || "",
+    });
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      return {
+        ...old,
+        email: email,
+        phone: phone,
+        bio: bio,
+      };
+    });
+  };
+
+  console.log(user?.email);
 
   return (
     <div>
@@ -60,7 +100,7 @@ function RouteComponent() {
             <div className="text-[#ABABAB]">Email</div>
             <input
               type="text"
-              value={email}
+              value={email || ""}
               onChange={(e) => setEmail(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
@@ -71,7 +111,7 @@ function RouteComponent() {
             <div className="text-[#ABABAB]">Номер телефона</div>
             <input
               type="text"
-              value={phone}
+              value={phone || ""}
               onChange={(e) => setPhone(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
@@ -82,7 +122,7 @@ function RouteComponent() {
             <div className="text-[#ABABAB]">Описание</div>
             <input
               type="text"
-              value={bio}
+              value={bio || ""}
               onChange={(e) => setBio(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
@@ -115,7 +155,11 @@ function RouteComponent() {
           У вас пока нет социальных сетей
         </div>
       </div>
-      <button className="absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white opacity-50">
+      <button
+        disabled={isDisabled}
+        onClick={handleUpdateProfile}
+        className={`absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "opacity-50"}`}
+      >
         Сохранить изменения
       </button>
     </div>

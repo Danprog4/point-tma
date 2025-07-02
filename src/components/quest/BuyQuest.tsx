@@ -3,6 +3,7 @@ import { ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { QuestCard } from "~/components/QuestCard";
 import { Quest } from "~/types/quest";
+import { Coin } from "../Icons/Coin";
 import { MinusIcon } from "../Icons/MinusIcon";
 import { PlusIcon } from "../Icons/Plus";
 import { Success } from "../Icons/Success";
@@ -68,7 +69,10 @@ export const BuyQuest = ({
             <QuestCard quest={quest} isNavigable={true} />
             <div className="flex flex-col gap-2 pb-4">
               <div>Стоимость</div>
-              <div className="text-xl font-bold">{quest.price}</div>
+              <div className="flex items-center gap-1">
+                <div className="text-xl font-bold">{quest.price}</div>
+                <Coin />
+              </div>
             </div>
             <div>Количество билетов</div>
             <div className="mx-auto mt-4 flex w-1/2 items-center justify-between">

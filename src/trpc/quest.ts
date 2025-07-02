@@ -49,22 +49,78 @@ export const questRouter = createTRPCRouter({
         });
       }
 
-      const quest = await db
-        .insert(activeQuestsTable)
-        .values({
-          userId: ctx.userId,
-          isCompleted: false,
-        })
-        .returning();
+      if (user.inventory?.find((ticket) => ticket.questId === input.questId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Quest already bought",
+        });
+      }
 
       await db
         .update(usersTable)
         .set({
           inventory: [
             ...(user.inventory || []),
-            { type: "ticket", questId: quest[0].id, isActive: false },
+            { type: "ticket", questId: input.questId, isActive: false },
           ],
         })
         .where(eq(usersTable.id, ctx.userId));
+    }),
+
+  activateQuest: procedure
+    .input(
+      z.object({
+        questId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const ticket = user.inventory?.find(
+        (ticket) => ticket.type === "ticket" && ticket.questId === input.questId,
+      );
+
+      if (!ticket) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Билет не найден",
+        });
+      }
+
+      if (ticket.isActive) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Билет уже активирован",
+        });
+      }
+
+      const newInventory = user.inventory?.map((ticket) => {
+        if (ticket.questId === input.questId) {
+          return { ...ticket, isActive: true };
+        }
+        return ticket;
+      });
+
+      await db
+        .update(usersTable)
+        .set({
+          inventory: newInventory,
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      await db.insert(activeQuestsTable).values({
+        userId: ctx.userId,
+        questId: input.questId,
+        isCompleted: false,
+      });
     }),
 });

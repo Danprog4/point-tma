@@ -9,6 +9,7 @@ import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { questsData } from "~/config/quests";
+import { useActivate } from "~/hooks/useActivate";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/quest/$id")({
   component: RouteComponent,
@@ -25,6 +26,7 @@ function RouteComponent() {
   const { id } = Route.useParams();
   const [isBought, setIsBought] = useState(false);
   const [count, setCount] = useState(1);
+  const { useActivateQuest } = useActivate();
 
   const navigate = useNavigate();
 
@@ -40,8 +42,10 @@ function RouteComponent() {
 
   console.log(questData);
 
+  const isDisabled = user?.balance! < questData.price || buyQuest.isPending;
+
   const handleBuyQuest = () => {
-    if (user?.balance! < questData.price || buyQuest.isPending) {
+    if (isDisabled) {
       return;
     }
 
@@ -72,9 +76,11 @@ function RouteComponent() {
                     className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                   >
                     <div>
-                      {buyQuest.isPending
-                        ? "Покупка..."
-                        : `Купить за ${questData?.price * count}`}
+                      {isDisabled
+                        ? "Недостаточно средств"
+                        : buyQuest.isPending
+                          ? "Покупка..."
+                          : `Купить за ${questData?.price * count}`}
                     </div>{" "}
                     <Coin />
                   </button>
@@ -99,7 +105,9 @@ function RouteComponent() {
                   <div>В инвентарь</div>
                 </button>
                 <button
-                  onClick={handleBuyQuest}
+                  onClick={() => {
+                    useActivateQuest(Number(id));
+                  }}
                   className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                 >
                   <div>Активировать билет</div>

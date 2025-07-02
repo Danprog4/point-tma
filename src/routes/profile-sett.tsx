@@ -16,6 +16,7 @@ function RouteComponent() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
 
   useEffect(() => {
     if (user?.name) {
@@ -72,6 +73,17 @@ function RouteComponent() {
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              className="border-none bg-transparent text-black outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+          <div className="flex flex-col items-start text-sm">
+            <div className="text-[#ABABAB]">Описание</div>
+            <input
+              type="text"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
           </div>

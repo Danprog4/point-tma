@@ -4,6 +4,7 @@ import { z } from "zod";
 import { questsData } from "~/config/quests";
 import { db } from "~/db";
 import { activeQuestsTable, usersTable } from "~/db/schema";
+import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
 
 export const questRouter = createTRPCRouter({
@@ -122,5 +123,25 @@ export const questRouter = createTRPCRouter({
         questId: input.questId,
         isCompleted: false,
       });
+
+      const questData = questsData.find((quest) => quest.id === input.questId);
+
+      await sendTelegram(
+        `Вы успешно активировали билет на квест *${questData?.title}* 🎟️\n\nЗаходи в канал и начинай выполнение:`,
+        user.id,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🚀 Перейти в канал",
+                  url: "https://t.me/+uyQGDiDmRsc0YTcy",
+                },
+              ],
+            ],
+          },
+          parse_mode: "Markdown",
+        },
+      );
     }),
 });

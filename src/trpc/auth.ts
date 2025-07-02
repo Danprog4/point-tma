@@ -78,6 +78,14 @@ export const authRouter = {
             referrerId: referrerId ? Number(referrerId) : null,
             name,
             photoUrl: telegramUser.photo_url || null,
+            email: null,
+            phone: null,
+            bio: null,
+            interests: null,
+            city: null,
+            inventory: [],
+            balance: 0,
+            age: null,
           })
           .returning();
 

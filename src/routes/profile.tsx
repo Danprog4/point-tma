@@ -7,7 +7,6 @@ import {
   Calendar,
   ChevronRight,
   Crown,
-  Edit,
   History,
   Package,
   Search,
@@ -17,6 +16,7 @@ import {
 import { useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+import { Coin } from "~/components/Icons/Coin";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -139,8 +139,8 @@ function RouteComponent() {
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-black">0</div>
                 <div className="flex items-center justify-center gap-1">
-                  <div className="flex h-4 w-4 items-center justify-center rounded bg-yellow-600">
-                    <div className="h-2 w-2 rounded-sm bg-yellow-800"></div>
+                  <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
+                    !
                   </div>
                   <span className="text-sm text-black">Квесты</span>
                 </div>
@@ -148,7 +148,7 @@ function RouteComponent() {
               <div className="rounded-xl bg-purple-600 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-white">0</div>
                 <div className="flex items-center justify-center gap-1">
-                  <div className="h-4 w-4 rounded-full bg-orange-400"></div>
+                  <Coin />
                   <span className="text-sm text-white">Points</span>
                 </div>
               </div>
@@ -159,7 +159,6 @@ function RouteComponent() {
           <div className="mx-4 mb-6">
             <div className="mb-3 flex items-center justify-between py-3">
               <h3 className="text-xl font-bold text-black">Интересы</h3>
-              <Edit className="h-5 w-5 text-black" />
             </div>
             <div className="">
               <p className="text-sm leading-relaxed text-black">

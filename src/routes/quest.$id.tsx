@@ -50,7 +50,7 @@ function RouteComponent() {
   // console.log(Number(id));
   // console.log(questData);
 
-  const isDisabled = (user?.balance ?? 0) < questData.price * count || buyQuest.isPending;
+  const isDisabled = (user?.balance ?? 0) < questData.price * count;
 
   const handleBuyQuest = () => {
     if (isDisabled) {

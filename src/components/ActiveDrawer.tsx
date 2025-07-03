@@ -37,7 +37,7 @@ export default function ActiveDrawer({
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[35vh] flex-col rounded-t-[16px] bg-white px-4 py-4">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[fit] flex-col rounded-t-[16px] bg-white px-4 py-4 pb-20">
           {!isActive ? (
             <>
               <header className="flex items-center justify-end pb-4">
@@ -69,7 +69,7 @@ export default function ActiveDrawer({
               </div>
             </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 pb-12">
+            <div className="flex h-full flex-col items-center justify-center gap-2">
               <div className="text-xl font-bold text-[#00A349]">Билет активирован!</div>
               <div className="text-center text-lg">
                 Вам предоставлена ссылка на телеграмм-чат квеста и там будет вся

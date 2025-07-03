@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import ActiveDrawer from "~/components/ActiveDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
@@ -19,6 +20,8 @@ function RouteComponent() {
   useScroll();
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
+  const [isActivated, setIsActivated] = useState(false);
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const buyQuest = useMutation(trpc.quest.buyQuest.mutationOptions());
@@ -58,6 +61,14 @@ function RouteComponent() {
     });
 
     setIsBought(true);
+  };
+
+  const handleActivateQuest = () => {
+    if (!isActivated) {
+      useActivateQuest(Number(id));
+    } else {
+      navigate({ to: "/quests" });
+    }
   };
 
   return (
@@ -109,12 +120,10 @@ function RouteComponent() {
                   <div>В инвентарь</div>
                 </button>
                 <button
-                  onClick={() => {
-                    useActivateQuest(Number(id));
-                  }}
+                  onClick={handleActivateQuest}
                   className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                 >
-                  <div>Активировать билет</div>
+                  {!isActivated ? "Активировать билет" : "Билет активирован"}
                 </button>
               </div>
             )}
@@ -231,9 +240,15 @@ function RouteComponent() {
           {!isActive ? (
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                  <div>Активировать</div>
-                </button>
+                <ActiveDrawer
+                  id={Number(id)}
+                  open={isActiveDrawerOpen}
+                  onOpenChange={setIsActiveDrawerOpen}
+                >
+                  <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                    <div>Активировать</div>
+                  </button>
+                </ActiveDrawer>
               </div>
             </div>
           ) : (

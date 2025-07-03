@@ -1,34 +1,92 @@
-import { ArrowLeft, X } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { openTelegramLink } from "@telegram-apps/sdk";
+import { X } from "lucide-react";
+import { useState } from "react";
 import { Drawer } from "vaul";
-import { Coin } from "./Icons/Coin";
-
+import { useTRPC } from "~/trpc/init/react";
+import { Telegram } from "./Icons/Telegram";
 export default function BuyDrawer({
   open,
   onOpenChange,
   children,
+  id,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
+  id: number;
 }) {
+  const [isActive, setIsActive] = useState(false);
+  const trpc = useTRPC();
+  const activateTicket = useMutation(trpc.quest.activateQuest.mutationOptions());
+
+  const handleActivateTicket = () => {
+    setIsActive(true);
+    activateTicket.mutate({
+      questId: id,
+    });
+  };
+
+  const handleOpenLink = () => {
+    openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
+  };
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[576px] flex-col rounded-t-[16px] bg-white px-4 py-4">
-          <header className="flex items-center justify-between pb-4">
-            <ArrowLeft className="h-6 w-6 text-transparent" />
-            <div className="text-xl font-bold text-transparent">
-              Выберите способ оплаты
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[35vh] flex-col rounded-t-[16px] bg-white px-4 py-4">
+          {!isActive ? (
+            <>
+              <header className="flex items-center justify-end pb-4">
+                <button onClick={() => onOpenChange(false)}>
+                  <X className="h-6 w-6 text-gray-900" />
+                </button>
+              </header>
+              <div className="flex h-full flex-col items-center justify-center pb-12 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="text-xl font-bold">Активировать билет?</div>
+                  <div className="text-lg">
+                    Активируя билет, вы подтверждаете своё участие
+                  </div>
+                </div>
+              </div>
+              <div className="absolute right-4 bottom-4 left-4 mx-auto mt-4 flex w-auto items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
+                <div
+                  onClick={handleActivateTicket}
+                  className="flex-1 rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white"
+                >
+                  Да, активировать
+                </div>
+                <div
+                  onClick={() => onOpenChange(false)}
+                  className="flex-1 px-4 py-4 text-black"
+                >
+                  Отменить
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 pb-12">
+              <div className="text-xl font-bold text-[#00A349]">Билет активирован!</div>
+              <div className="text-center text-lg">
+                Вам предоставлена ссылка на телеграмм-чат квеста и там будет вся
+                информация по квесту
+              </div>
+              <div
+                className="absolute right-4 bottom-4 left-4 mx-auto mt-4 flex w-auto items-center justify-center gap-2 rounded-lg px-4 py-3 text-center font-semibold text-white"
+                style={{
+                  background:
+                    "linear-gradient(211.74deg, #34B0DF -4.14%, #1E88D3 90.25%)",
+                }}
+                onClick={handleOpenLink}
+              >
+                <div> Перейти в чат</div>
+                <Telegram />
+              </div>
             </div>
-            <button onClick={() => onOpenChange(false)}>
-              <X className="h-6 w-6 text-gray-900" />
-            </button>
-          </header>
-          <div className="flex items-center justify-start gap-1">
-            <div> Оплата пока доступна только за points</div> <Coin />
-          </div>
+          )}
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

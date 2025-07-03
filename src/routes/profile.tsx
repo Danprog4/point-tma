@@ -172,8 +172,8 @@ function RouteComponent() {
           </div>
 
           {/* Interests Section */}
-          <div className="mx-4 mb-6">
-            <div className="mb-3 flex flex-col items-start justify-between py-3">
+          <div className="mx-4">
+            <div className="flex flex-col items-start justify-between py-3">
               <h3 className="text-xl font-bold text-black">Обо мне</h3>
               {user?.bio ? (
                 <div className="text-sm text-black">{user.bio}</div>
@@ -183,12 +183,9 @@ function RouteComponent() {
                 </div>
               )}
             </div>
-            <div className="">
-              <p className="text-sm leading-relaxed text-black">{user?.bio}</p>
-            </div>
           </div>
-          <div className="mx-4 mb-6">
-            <div className="mb-3 flex flex-col items-start justify-between py-3">
+          <div className="mx-4">
+            <div className="flex flex-col items-start justify-between py-3">
               <h3 className="text-xl font-bold text-black">Интересы</h3>
               {user?.interests ? (
                 <div className="text-sm text-black">{user.interests}</div>

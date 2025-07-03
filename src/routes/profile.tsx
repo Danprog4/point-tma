@@ -26,6 +26,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
+  const { data: activeQuest } = useQuery(trpc.quest.getMyQuests.queryOptions());
 
   useScroll();
 
@@ -138,8 +139,15 @@ function RouteComponent() {
           <div className="mt-4 mb-6 px-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
-                <div className="mb-1 text-center text-xl font-bold text-black">0</div>
-                <div className="flex items-center justify-center gap-1">
+                <div className="mb-1 text-center text-xl font-bold text-black">
+                  {activeQuest?.length || 0}
+                </div>
+                <div
+                  onClick={() => {
+                    navigate({ to: "/user-quests" });
+                  }}
+                  className="flex items-center justify-center gap-1"
+                >
                   <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
                     !
                   </div>
@@ -147,8 +155,15 @@ function RouteComponent() {
                 </div>
               </div>
               <div className="rounded-xl bg-purple-600 p-3 shadow-sm">
-                <div className="mb-1 text-center text-xl font-bold text-white">0</div>
-                <div className="flex items-center justify-center gap-1">
+                <div className="mb-1 text-center text-xl font-bold text-white">
+                  {user?.balance || 0}
+                </div>
+                <div
+                  onClick={() => {
+                    navigate({ to: "/points" });
+                  }}
+                  className="flex items-center justify-center gap-1"
+                >
                   <Coin />
                   <span className="text-sm text-white">Points</span>
                 </div>

@@ -14,7 +14,7 @@ export function QuestCard({
 
   return (
     <div
-      className="mb-4 flex items-center gap-4"
+      className="mb-4 flex items-start gap-4"
       onClick={() => {
         if (isNavigable) {
           navigate({ to: "/quest/$id", params: { id: quest.id.toString() } });
@@ -26,7 +26,7 @@ export function QuestCard({
         alt={quest.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 flex-col space-y-2">
         <h3 className="w-full text-base leading-6 font-bold text-black">{quest.title}</h3>
 
         <div className="flex items-center gap-2">

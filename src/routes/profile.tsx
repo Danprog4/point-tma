@@ -108,15 +108,15 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="flex items-center justify-start gap-1 px-4">
-            <div className="flex-1 rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
+          <div className="flex w-full items-center justify-start gap-1 px-4">
+            <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
               <div className="flex flex-col gap-2">
-                <div>Заполенность профиля 0%</div>
+                <div className="text-sm text-nowrap">Заполенность профиля 0%</div>
                 <div className="h-2 w-full rounded-full bg-white"></div>
               </div>
             </div>
             <div
-              className="flex items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] p-4"
+              className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
               onClick={() => navigate({ to: "/fill-profile" })}
             >
               <div className="text-white">Заполнить</div>
@@ -158,16 +158,30 @@ function RouteComponent() {
 
           {/* Interests Section */}
           <div className="mx-4 mb-6">
-            <div className="mb-3 flex items-center justify-between py-3">
+            <div className="mb-3 flex flex-col items-start justify-between py-3">
               <h3 className="text-xl font-bold text-black">Обо мне</h3>
+              {user?.bio ? (
+                <div className="text-sm text-black">{user.bio}</div>
+              ) : (
+                <div className="text-sm text-black">
+                  Расскажите о себе, чтобы другие пользователи могли узнать вас
+                </div>
+              )}
             </div>
             <div className="">
               <p className="text-sm leading-relaxed text-black">{user?.bio}</p>
             </div>
           </div>
           <div className="mx-4 mb-6">
-            <div className="mb-3 flex items-center justify-between py-3">
+            <div className="mb-3 flex flex-col items-start justify-between py-3">
               <h3 className="text-xl font-bold text-black">Интересы</h3>
+              {user?.interests ? (
+                <div className="text-sm text-black">{user.interests}</div>
+              ) : (
+                <div className="text-sm text-black">
+                  Расскажите о себе, чтобы другие пользователи могли узнать вас
+                </div>
+              )}
             </div>
             <div className="">
               <p className="text-sm leading-relaxed text-black">{user?.interests}</p>

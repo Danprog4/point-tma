@@ -5,6 +5,7 @@ import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+import { Coin } from "~/components/Icons/Coin";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
@@ -64,7 +65,7 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-30">
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">
@@ -121,12 +122,12 @@ function RouteComponent() {
                   + Достижение
                 </span>
               )}
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex items-center gap-1">
                 <span className="text-base font-medium text-black">
                   + {questsData[0].reward.toLocaleString()}
                 </span>
                 <span className="text-base font-medium text-black">points</span>
-                <div className="h-2.5 w-2.5 rounded-full bg-orange-400"></div>
+                <Coin />
               </div>
             </div>
           </div>
@@ -139,16 +140,16 @@ function RouteComponent() {
             {/* Quest 2 */}
             <div>
               <QuestCard quest={questsData[1]} isNavigable={true} />
-              <p className="mb-4 text-xs leading-4 text-black">
+              <p className="mb-2 text-xs leading-4 text-black">
                 {questsData[1].description}
               </p>
               <div className="flex items-center justify-end">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <span className="text-base font-medium text-black">
                     + {questsData[1].reward.toLocaleString()}
                   </span>
                   <span className="text-base font-medium text-black">points</span>
-                  <div className="h-2.5 w-2.5 rounded-full bg-orange-400"></div>
+                  <Coin />
                 </div>
               </div>
             </div>
@@ -196,8 +197,9 @@ function RouteComponent() {
             </div>
             {/* Quest 3 */}
             <div>
+              <h3 className="pb-2 text-xs font-normal text-black">23 декабря</h3>
               <QuestCard quest={questsData[2]} isNavigable={true} />
-              <p className="mb-4 text-xs leading-4 text-black">
+              <p className="mb-2 text-xs leading-4 text-black">
                 {questsData[2].description}
               </p>
               <div className="flex items-center justify-between">
@@ -206,12 +208,12 @@ function RouteComponent() {
                     + Достижение
                   </span>
                 )}
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-1">
                   <span className="text-base font-medium text-black">
                     + {questsData[2].reward.toLocaleString()}
                   </span>
                   <span className="text-base font-medium text-black">points</span>
-                  <div className="h-2.5 w-2.5 rounded-full bg-orange-400"></div>
+                  <Coin />
                 </div>
               </div>
             </div>
@@ -232,7 +234,7 @@ function RouteComponent() {
                   + {questsData[3].reward.toLocaleString()}
                 </span>
                 <span className="text-base font-medium text-black">points</span>
-                <div className="h-2.5 w-2.5 rounded-full bg-orange-400"></div>
+                <Coin />
               </div>
             </div>
           </div>

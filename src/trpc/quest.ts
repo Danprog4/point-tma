@@ -57,13 +57,20 @@ export const questRouter = createTRPCRouter({
         });
       }
 
+      const newInventory = [
+        ...(user.inventory || []),
+        { type: "ticket", questId: input.questId, isActive: false },
+      ];
+
+      const newBalance = user.balance! - questData.price;
+
+      console.log(newInventory, newBalance);
+
       await db
         .update(usersTable)
         .set({
-          inventory: [
-            ...(user.inventory || []),
-            { type: "ticket", questId: input.questId, isActive: false },
-          ],
+          inventory: newInventory,
+          balance: newBalance,
         })
         .where(eq(usersTable.id, ctx.userId));
     }),
@@ -106,10 +113,12 @@ export const questRouter = createTRPCRouter({
 
       const newInventory = user.inventory?.map((ticket) => {
         if (ticket.questId === input.questId) {
-          return { ...ticket, isActive: false };
+          return { ...ticket, isActive: true };
         }
         return ticket;
       });
+
+      console.log(newInventory);
 
       const questData = questsData.find((quest) => quest.id === input.questId);
 
@@ -124,7 +133,6 @@ export const questRouter = createTRPCRouter({
         .update(usersTable)
         .set({
           inventory: newInventory,
-          balance: user.balance! - questData.price,
         })
         .where(eq(usersTable.id, ctx.userId));
 

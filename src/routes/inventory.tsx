@@ -23,6 +23,8 @@ function RouteComponent() {
 
   const tickets = user.inventory.filter((item) => item.type === "ticket");
 
+  const inactiveTickets = tickets.filter((ticket) => !ticket.isActive);
+
   const getQuest = (questId: number) => {
     return questsData.find((quest) => quest.id === questId);
   };
@@ -38,13 +40,15 @@ function RouteComponent() {
         </button>
         <h1 className="text-base font-bold text-gray-800">Инвентарь</h1>
       </div>
-      <div className="grid grid-cols-3 gap-4 px-4">
-        {tickets
-          ?.filter((ticket) => !ticket.isActive)
-          .map((ticket) => (
+      {inactiveTickets.length > 0 ? (
+        <div className="grid grid-cols-3 gap-4 px-4">
+          {inactiveTickets.map((ticket) => (
             <div
               key={ticket.questId}
               className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+              onClick={() => {
+                navigate({ to: `/quest/${ticket.questId}` });
+              }}
             >
               <img
                 src={getQuest(ticket.questId)?.image}
@@ -57,7 +61,10 @@ function RouteComponent() {
               </div>
             </div>
           ))}
-      </div>
+        </div>
+      ) : (
+        <div className="px-4 text-start text-gray-500">Ваш инвентарь пока пуст</div>
+      )}
     </div>
   );
 }

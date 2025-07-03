@@ -32,6 +32,10 @@ function RouteComponent() {
 
   const questData = questsData.find((quest) => quest.id === Number(id));
 
+  const isActive = user?.inventory?.find(
+    (ticket) => ticket.questId === Number(id),
+  )?.isActive;
+
   if (!questData) {
     return <div>Квест не найден</div>;
   }
@@ -87,7 +91,7 @@ function RouteComponent() {
                 </div>
               </>
             ) : (
-              <div className="mx-auto flex w-full flex-col items-center gap-2 overflow-y-auto px-4 py-4">
+              <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
                 <button
                   onClick={() => {
                     navigate({ to: "/" });
@@ -117,7 +121,7 @@ function RouteComponent() {
           </div>
         </>
       ) : (
-        <div className="pt-14 pb-24">
+        <div className="overflow-y-auto pt-14 pb-24">
           <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4 pb-4">
             <ArrowLeft
               className="absolute left-4 h-6 w-6"
@@ -224,27 +228,37 @@ function RouteComponent() {
               ))}
             </div>
           )}
-          <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-            <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-              <button
-                onClick={() => setIsOpen(true)}
-                className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-              >
-                <div>Купить за {questData?.price}</div>
-                <Coin />
-              </button>
-
-              <div className="flex flex-col items-center">
-                <div
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-                  onClick={() => setIsMoreOpen(!isMoreOpen)}
-                >
-                  <WhitePlusIcon />
-                </div>
-                <span className="text-xs">Ещё</span>
+          {!isActive ? (
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                  <div>Активировать</div>
+                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                >
+                  <div>Купить за {questData?.price}</div>
+                  <Coin />
+                </button>
+
+                <div className="flex flex-col items-center">
+                  <div
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
+                    onClick={() => setIsMoreOpen(!isMoreOpen)}
+                  >
+                    <WhitePlusIcon />
+                  </div>
+                  <span className="text-xs">Ещё</span>
+                </div>
+              </div>
+            </div>
+          )}
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
         </div>
       )}

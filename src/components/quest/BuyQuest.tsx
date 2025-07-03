@@ -36,7 +36,7 @@ export const BuyQuest = ({
   return (
     <>
       {isBought ? (
-        <div className="flex h-full flex-col items-center justify-center gap-2">
+        <div className="absolute inset-0 flex h-full flex-col items-center justify-center gap-2">
           <Success />
           <div className="mt-4 text-xl font-bold text-[#00A349]">Билет куплен</div>
           <div className="flex items-center gap-2">

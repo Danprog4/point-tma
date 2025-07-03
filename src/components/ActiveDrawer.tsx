@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Drawer } from "vaul";
 import { useTRPC } from "~/trpc/init/react";
 import { Telegram } from "./Icons/Telegram";
-export default function BuyDrawer({
+export default function ActiveDrawer({
   open,
   onOpenChange,
   children,
@@ -18,13 +18,14 @@ export default function BuyDrawer({
 }) {
   const [isActive, setIsActive] = useState(false);
   const trpc = useTRPC();
-  const activateTicket = useMutation(trpc.quest.activateQuest.mutationOptions());
+  const activateQuest = useMutation(trpc.quest.activateQuest.mutationOptions());
 
   const handleActivateTicket = () => {
-    setIsActive(true);
-    activateTicket.mutate({
+    console.log("activateQuest", id);
+    activateQuest.mutate({
       questId: id,
     });
+    setIsActive(true);
   };
 
   const handleOpenLink = () => {
@@ -54,14 +55,14 @@ export default function BuyDrawer({
               </div>
               <div className="absolute right-4 bottom-4 left-4 mx-auto mt-4 flex w-auto items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
                 <div
-                  onClick={handleActivateTicket}
-                  className="flex-1 rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white"
+                  onClick={() => handleActivateTicket()}
+                  className="z-[1000] flex-1 rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white"
                 >
                   Да, активировать
                 </div>
                 <div
                   onClick={() => onOpenChange(false)}
-                  className="flex-1 px-4 py-4 text-black"
+                  className="z-[1000] flex-1 px-4 py-4 text-black"
                 >
                   Отменить
                 </div>

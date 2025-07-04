@@ -31,6 +31,14 @@ export default function ActiveDrawer({
 
   const handleOpenLink = () => {
     openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      return {
+        ...old,
+        inventory: old?.inventory.map((ticket: any) =>
+          ticket.questId === id ? { ...ticket, isActive: true } : ticket,
+        ),
+      };
+    });
   };
 
   return (
@@ -84,7 +92,7 @@ export default function ActiveDrawer({
                 }}
                 onClick={handleOpenLink}
               >
-                <div> Перейти в чат</div>
+                <div>Перейти в чат</div>
                 <Telegram />
               </div>
             </div>

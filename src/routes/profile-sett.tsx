@@ -65,7 +65,7 @@ function RouteComponent() {
   console.log(user?.email);
 
   return (
-    <div>
+    <div className="h-full overflow-y-auto pb-24">
       <div className="flex items-center justify-between p-4 pb-2">
         <button
           onClick={() => navigate({ to: "/profile" })}
@@ -158,7 +158,7 @@ function RouteComponent() {
       <button
         disabled={isDisabled}
         onClick={handleUpdateProfile}
-        className={`absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "opacity-50"}`}
+        className={`absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "bg-gray-300"}`}
       >
         Сохранить изменения
       </button>

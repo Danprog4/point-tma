@@ -138,7 +138,10 @@ function Home() {
         <div className="mb-6 w-full overflow-x-hidden">
           <div className="mb-4 flex items-center justify-between px-4">
             <h2 className="text-xl font-bold text-gray-900">По вашим рекомендациям</h2>
-            <ArrowRight className="h-5 w-5 text-gray-500" />
+            <ArrowRight
+              className="h-5 w-5 cursor-pointer text-gray-500"
+              onClick={() => navigate({ to: "/all/$name", params: { name: "Кино" } })}
+            />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
             {[
@@ -191,7 +194,10 @@ function Home() {
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between px-4">
             <h2 className="text-xl font-bold text-gray-900">Квесты</h2>
-            <ArrowRight className="h-5 w-5 text-gray-500" />
+            <ArrowRight
+              className="h-5 w-5 cursor-pointer text-gray-500"
+              onClick={() => navigate({ to: "/all/$name", params: { name: "Квесты" } })}
+            />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
             {[
@@ -256,7 +262,12 @@ function Home() {
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between px-4">
             <h2 className="text-xl font-bold text-gray-900">ТОП Конференций</h2>
-            <ArrowRight className="h-5 w-5 text-gray-500" />
+            <ArrowRight
+              className="h-5 w-5 cursor-pointer text-gray-500"
+              onClick={() =>
+                navigate({ to: "/all/$name", params: { name: "Конференции" } })
+              }
+            />
           </div>
           <div className="flex w-full gap-4 overflow-x-auto px-4">
             {[
@@ -296,7 +307,12 @@ function Home() {
         <div className="mb-20">
           <div className="mb-4 flex items-center justify-between px-4">
             <h2 className="text-xl font-bold text-gray-900">Вечеринки</h2>
-            <ArrowRight className="h-5 w-5 text-gray-500" />
+            <ArrowRight
+              className="h-5 w-5 cursor-pointer text-gray-500"
+              onClick={() =>
+                navigate({ to: "/all/$name", params: { name: "Вечеринки" } })
+              }
+            />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
             {[

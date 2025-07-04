@@ -30,6 +30,125 @@ export const questsData = [
       "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=88&h=88&fit=crop&crop=center",
   },
   {
+    id: 6,
+    title: "Квест по истории города",
+    description:
+      "Участники проходят по историческим местам города, выполняя задания и узнавая интересные факты.",
+    date: "27 декабря",
+    location: "г.Алматы",
+    price: 10000,
+    type: "Ежедневный",
+    category: "Образовательный",
+    reward: 1200,
+    hasAchievement: false,
+    organizer: "Музей города",
+    stages: [
+      {
+        title: "Этап 1: Экскурсия",
+        desc: "Посещение ключевых исторических объектов.",
+      },
+      {
+        title: "Этап 2: Викторина",
+        desc: "Ответы на вопросы по истории.",
+      },
+      {
+        title: "Этап 3: Креативное задание",
+        desc: "Создание мини-проекта о городе.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 11,
+    title: "Квест по программированию",
+    description:
+      "Решайте логические задачи и программируйте роботов для выполнения миссий.",
+    date: "2 января",
+    location: "г.Астана",
+    price: 18000,
+    type: "Обучающий",
+    category: "IT",
+    reward: 3500,
+    hasAchievement: true,
+    organizer: "CodeLab",
+    stages: [
+      {
+        title: "Этап 1: Теория",
+        desc: "Изучение основ программирования.",
+      },
+      {
+        title: "Этап 2: Практика",
+        desc: "Решение задач на кодинг.",
+      },
+      {
+        title: "Этап 3: Робототехника",
+        desc: "Программирование робота на выполнение миссии.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1465101178521-c1a9136a3fd9?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 15,
+    title: "Квест по науке",
+    description: "Проведите научные эксперименты и разгадайте загадки природы.",
+    date: "6 января",
+    location: "г.Астана",
+    price: 11000,
+    type: "Обучающий",
+    category: "Наука",
+    reward: 1600,
+    hasAchievement: true,
+    organizer: "ScienceLab",
+    stages: [
+      {
+        title: "Этап 1: Эксперимент",
+        desc: "Проведение простого научного опыта.",
+      },
+      {
+        title: "Этап 2: Анализ",
+        desc: "Обсуждение результатов эксперимента.",
+      },
+      {
+        title: "Этап 3: Квест",
+        desc: "Решение научных загадок.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 9,
+    title: "Квест по безопасности",
+    description:
+      "Изучите основы безопасности в чрезвычайных ситуациях и выполните практические задания.",
+    date: "30 декабря",
+    location: "г.Караганда",
+    price: 5000,
+    type: "Обучающий",
+    category: "Безопасность",
+    reward: 800,
+    hasAchievement: true,
+    organizer: "Безопасный город",
+    stages: [
+      {
+        title: "Этап 1: Теория",
+        desc: "Изучение правил безопасности.",
+      },
+      {
+        title: "Этап 2: Практика",
+        desc: "Выполнение заданий по эвакуации.",
+      },
+      {
+        title: "Этап 3: Тест",
+        desc: "Проверка знаний участников.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=88&h=88&fit=crop&crop=center",
+  },
+  {
     id: 2,
     title: 'Голливудский квест в горах: "Охота за Золотым Сердцем"',
     description:
@@ -58,6 +177,126 @@ export const questsData = [
     organizer: "Голливуд",
     image:
       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 8,
+    title: "Кулинарный квест",
+    description:
+      "Участники учатся готовить национальные блюда и соревнуются в кулинарном мастерстве.",
+    date: "29 декабря",
+    location: "г.Астана",
+    price: 8000,
+    type: "Тематический",
+    category: "Кулинария",
+    reward: 1000,
+    hasAchievement: false,
+    organizer: "ВкусноFest",
+    stages: [
+      {
+        title: "Этап 1: Мастер-класс",
+        desc: "Обучение приготовлению блюда.",
+      },
+      {
+        title: "Этап 2: Соревнование",
+        desc: "Приготовление блюда на время.",
+      },
+      {
+        title: "Этап 3: Дегустация",
+        desc: "Оценка блюд жюри.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 10,
+    title: "Новогодний квест",
+    description:
+      "Погрузитесь в атмосферу праздника, выполняя веселые задания и разгадывая загадки.",
+    date: "31 декабря",
+    location: "г.Алматы",
+    price: 12000,
+    type: "Тематический",
+    category: "Праздник",
+    reward: 2000,
+    hasAchievement: false,
+    organizer: "HolidayTeam",
+    stages: [
+      {
+        title: "Этап 1: Украшение",
+        desc: "Оформление локации к празднику.",
+      },
+      {
+        title: "Этап 2: Квест",
+        desc: "Выполнение новогодних заданий.",
+      },
+      {
+        title: "Этап 3: Подарки",
+        desc: "Получение сюрпризов за участие.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1515168833906-d2a3b82b3029?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 12,
+    title: "Квест по искусству",
+    description:
+      "Погрузитесь в мир искусства, создавая собственные шедевры и разгадывая загадки художников.",
+    date: "3 января",
+    location: "г.Алматы",
+    price: 9000,
+    type: "Тематический",
+    category: "Искусство",
+    reward: 1100,
+    hasAchievement: false,
+    organizer: "ArtSpace",
+    stages: [
+      {
+        title: "Этап 1: Экскурсия",
+        desc: "Посещение художественной галереи.",
+      },
+      {
+        title: "Этап 2: Творчество",
+        desc: "Создание собственной картины.",
+      },
+      {
+        title: "Этап 3: Квест",
+        desc: "Разгадывание загадок по искусству.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 14,
+    title: "Квест по литературе",
+    description:
+      "Погрузитесь в мир книг, разгадывая литературные загадки и создавая собственные истории.",
+    date: "5 января",
+    location: "г.Караганда",
+    price: 6000,
+    type: "Тематический",
+    category: "Литература",
+    reward: 700,
+    hasAchievement: false,
+    organizer: "BookClub",
+    stages: [
+      {
+        title: "Этап 1: Викторина",
+        desc: "Ответы на вопросы по литературе.",
+      },
+      {
+        title: "Этап 2: Креатив",
+        desc: "Написание короткого рассказа.",
+      },
+      {
+        title: "Этап 3: Презентация",
+        desc: "Презентация своей истории группе.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=88&h=88&fit=crop&crop=center",
   },
   {
     id: 3,
@@ -118,5 +357,95 @@ export const questsData = [
     ],
     image:
       "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 5,
+    title: "Технологический марафон",
+    description:
+      "Команды соревнуются в создании инновационных решений для городской среды за 24 часа.",
+    date: "25 декабря",
+    location: "г.Астана",
+    price: 20000,
+    type: "Глобальный",
+    category: "Технологии",
+    reward: 5000,
+    hasAchievement: true,
+    organizer: "TechCity",
+    stages: [
+      {
+        title: "Этап 1: Идея",
+        desc: "Генерация и презентация идеи.",
+      },
+      {
+        title: "Этап 2: Прототип",
+        desc: "Разработка прототипа решения.",
+      },
+      {
+        title: "Этап 3: Презентация",
+        desc: "Защита проекта перед жюри.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 7,
+    title: "Экологический вызов",
+    description:
+      "Соберите команду и очистите парк от мусора, выполняя экологические задания.",
+    date: "28 декабря",
+    location: "г.Шымкент",
+    price: 0,
+    type: "Ежедневный",
+    category: "Экология",
+    reward: 3000,
+    hasAchievement: true,
+    organizer: "GreenLife",
+    stages: [
+      {
+        title: "Этап 1: Сбор мусора",
+        desc: "Очистка территории парка.",
+      },
+      {
+        title: "Этап 2: Сортировка",
+        desc: "Разделение мусора по категориям.",
+      },
+      {
+        title: "Этап 3: Креатив",
+        desc: "Создание арт-объекта из переработанных материалов.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=88&h=88&fit=crop&crop=center",
+  },
+  {
+    id: 13,
+    title: "Квест по здоровью",
+    description:
+      "Узнайте больше о здоровом образе жизни, выполняя спортивные и познавательные задания.",
+    date: "4 января",
+    location: "г.Шымкент",
+    price: 7000,
+    type: "Обучающий",
+    category: "Здоровье",
+    reward: 900,
+    hasAchievement: true,
+    organizer: "HealthClub",
+    stages: [
+      {
+        title: "Этап 1: Лекция",
+        desc: "Прослушивание лекции о здоровье.",
+      },
+      {
+        title: "Этап 2: Спорт",
+        desc: "Выполнение спортивных упражнений.",
+      },
+      {
+        title: "Этап 3: Кулинария",
+        desc: "Приготовление полезного блюда.",
+      },
+    ],
+    image:
+      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=88&h=88&fit=crop&crop=center",
   },
 ];

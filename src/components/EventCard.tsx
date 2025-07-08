@@ -10,7 +10,7 @@ export const EventCard = ({ event }: { event: any }) => {
             className="absolute inset-0 h-full w-full rounded-2xl bg-transparent object-cover"
           />
         )}
-        <div className="absolute bottom-2 left-2 z-10 flex gap-1">
+        <div className="absolute bottom-2 left-2 flex gap-1">
           {event.category && (
             <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
               {event.category}

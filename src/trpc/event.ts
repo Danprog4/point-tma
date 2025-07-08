@@ -1,24 +1,25 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { questsData } from "~/config/quests";
 import { db } from "~/db";
-import { activeQuestsTable, usersTable } from "~/db/schema";
+import { activeEventsTable, usersTable } from "~/db/schema";
+import { getEventData } from "~/lib/utils/getEventData";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
 
-export const questRouter = createTRPCRouter({
-  getMyQuests: procedure.query(async ({ ctx }) => {
-    const quests = await db.query.activeQuestsTable.findMany({
-      where: eq(activeQuestsTable.userId, ctx.userId),
+export const eventRouter = createTRPCRouter({
+  getMyEvents: procedure.query(async ({ ctx }) => {
+    const events = await db.query.activeEventsTable.findMany({
+      where: eq(activeEventsTable.userId, ctx.userId),
     });
-    return quests;
+    return events;
   }),
 
-  buyQuest: procedure
+  buyEvent: procedure
     .input(
       z.object({
-        questId: z.number(),
+        id: z.number(),
+        name: z.string(),
       }),
     )
 
@@ -34,23 +35,27 @@ export const questRouter = createTRPCRouter({
         });
       }
 
-      const questData = questsData.find((quest) => quest.id === input.questId);
+      const eventData = getEventData(input.name, input.id);
 
-      if (!questData) {
+      if (!eventData) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Quest not found",
+          message: "Event not found",
         });
       }
 
-      if (user.balance! < questData.price) {
+      if (user.balance! < eventData.price) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Not enough balance",
         });
       }
 
-      if (user.inventory?.find((ticket) => ticket.questId === input.questId)) {
+      if (
+        user.inventory?.find(
+          (ticket) => ticket.eventId === input.id && ticket.name === input.name,
+        )
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Quest already bought",
@@ -59,10 +64,10 @@ export const questRouter = createTRPCRouter({
 
       const newInventory = [
         ...(user.inventory || []),
-        { type: "ticket", questId: input.questId, isActive: false },
+        { type: "ticket", eventId: input.id, name: input.name, isActive: false },
       ];
 
-      const newBalance = user.balance! - questData.price;
+      const newBalance = user.balance! - eventData.price;
 
       console.log(newInventory, newBalance);
 
@@ -78,7 +83,8 @@ export const questRouter = createTRPCRouter({
   activateQuest: procedure
     .input(
       z.object({
-        questId: z.number(),
+        id: z.number(),
+        name: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -94,7 +100,10 @@ export const questRouter = createTRPCRouter({
       }
 
       const ticket = user.inventory?.find(
-        (ticket) => ticket.type === "ticket" && ticket.questId === input.questId,
+        (ticket) =>
+          ticket.type === "ticket" &&
+          ticket.eventId === input.id &&
+          ticket.name === input.name,
       );
 
       if (!ticket) {
@@ -112,7 +121,7 @@ export const questRouter = createTRPCRouter({
       }
 
       const newInventory = user.inventory?.map((ticket) => {
-        if (ticket.questId === input.questId) {
+        if (ticket.eventId === input.id && ticket.name === input.name) {
           return { ...ticket, isActive: true };
         }
         return ticket;
@@ -120,12 +129,12 @@ export const questRouter = createTRPCRouter({
 
       console.log(newInventory);
 
-      const questData = questsData.find((quest) => quest.id === input.questId);
+      const eventData = getEventData(input.name, input.id);
 
-      if (!questData) {
+      if (!eventData) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Quest not found",
+          message: "Event not found",
         });
       }
 
@@ -136,14 +145,15 @@ export const questRouter = createTRPCRouter({
         })
         .where(eq(usersTable.id, ctx.userId));
 
-      await db.insert(activeQuestsTable).values({
+      await db.insert(activeEventsTable).values({
         userId: ctx.userId,
-        questId: input.questId,
+        name: input.name,
+        eventId: input.id,
         isCompleted: false,
       });
 
       await sendTelegram(
-        `Вы успешно активировали билет на квест *${questData?.title}* 🎟️\n\nЗаходи в канал и начинай выполнение:`,
+        `Вы успешно активировали билет на мероприятие *${eventData?.title}* 🎟️\n\nЗаходи в канал и начинай выполнение:`,
         user.id,
         {
           reply_markup: {

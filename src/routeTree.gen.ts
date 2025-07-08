@@ -26,11 +26,11 @@ import { Route as FillProfileImport } from './routes/fill-profile'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
-import { Route as QuestIdImport } from './routes/quest.$id'
 import { Route as ProfileIdImport } from './routes/profile.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
 import { Route as CreateMeetNameImport } from './routes/createMeet.$name'
 import { Route as AllNameImport } from './routes/all.$name'
+import { Route as EventNameIdImport } from './routes/event.$name.$id'
 
 // Create/Update Routes
 
@@ -124,12 +124,6 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const QuestIdRoute = QuestIdImport.update({
-  id: '/quest/$id',
-  path: '/quest/$id',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const ProfileIdRoute = ProfileIdImport.update({
   id: '/$id',
   path: '/$id',
@@ -151,6 +145,12 @@ const CreateMeetNameRoute = CreateMeetNameImport.update({
 const AllNameRoute = AllNameImport.update({
   id: '/all/$name',
   path: '/all/$name',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EventNameIdRoute = EventNameIdImport.update({
+  id: '/event/$name/$id',
+  path: '/event/$name/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -291,11 +291,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileIdImport
       parentRoute: typeof ProfileImport
     }
-    '/quest/$id': {
-      id: '/quest/$id'
-      path: '/quest/$id'
-      fullPath: '/quest/$id'
-      preLoaderRoute: typeof QuestIdImport
+    '/event/$name/$id': {
+      id: '/event/$name/$id'
+      path: '/event/$name/$id'
+      fullPath: '/event/$name/$id'
+      preLoaderRoute: typeof EventNameIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -334,7 +334,7 @@ export interface FileRoutesByFullPath {
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
-  '/quest/$id': typeof QuestIdRoute
+  '/event/$name/$id': typeof EventNameIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -357,7 +357,7 @@ export interface FileRoutesByTo {
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
-  '/quest/$id': typeof QuestIdRoute
+  '/event/$name/$id': typeof EventNameIdRoute
 }
 
 export interface FileRoutesById {
@@ -381,7 +381,7 @@ export interface FileRoutesById {
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/profile/$id': typeof ProfileIdRoute
-  '/quest/$id': typeof QuestIdRoute
+  '/event/$name/$id': typeof EventNameIdRoute
 }
 
 export interface FileRouteTypes {
@@ -406,7 +406,7 @@ export interface FileRouteTypes {
     | '/createMeet/$name'
     | '/meet/$id'
     | '/profile/$id'
-    | '/quest/$id'
+    | '/event/$name/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -428,7 +428,7 @@ export interface FileRouteTypes {
     | '/createMeet/$name'
     | '/meet/$id'
     | '/profile/$id'
-    | '/quest/$id'
+    | '/event/$name/$id'
   id:
     | '__root__'
     | '/'
@@ -450,7 +450,7 @@ export interface FileRouteTypes {
     | '/createMeet/$name'
     | '/meet/$id'
     | '/profile/$id'
-    | '/quest/$id'
+    | '/event/$name/$id'
   fileRoutesById: FileRoutesById
 }
 
@@ -473,7 +473,7 @@ export interface RootRouteChildren {
   AllNameRoute: typeof AllNameRoute
   CreateMeetNameRoute: typeof CreateMeetNameRoute
   MeetIdRoute: typeof MeetIdRoute
-  QuestIdRoute: typeof QuestIdRoute
+  EventNameIdRoute: typeof EventNameIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -495,7 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   AllNameRoute: AllNameRoute,
   CreateMeetNameRoute: CreateMeetNameRoute,
   MeetIdRoute: MeetIdRoute,
-  QuestIdRoute: QuestIdRoute,
+  EventNameIdRoute: EventNameIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -526,7 +526,7 @@ export const routeTree = rootRoute
         "/all/$name",
         "/createMeet/$name",
         "/meet/$id",
-        "/quest/$id"
+        "/event/$name/$id"
       ]
     },
     "/": {
@@ -590,8 +590,8 @@ export const routeTree = rootRoute
       "filePath": "profile.$id.tsx",
       "parent": "/profile"
     },
-    "/quest/$id": {
-      "filePath": "quest.$id.tsx"
+    "/event/$name/$id": {
+      "filePath": "event.$name.$id.tsx"
     }
   }
 }

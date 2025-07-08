@@ -52,7 +52,7 @@ function Home() {
 
   function ConferenceCard({ conf }: { conf: any }) {
     return (
-      <div className="flex flex-col items-center gap-4 text-center text-sm text-nowrap">
+      <div className="flex flex-col items-center gap-2 text-center text-sm text-nowrap">
         <div className={`h-48 w-36 ${conf.bg || ""} relative overflow-hidden rounded-lg`}>
           {conf.image && (
             <img
@@ -61,7 +61,7 @@ function Home() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           )}
-          <div className="absolute bottom-2 left-2 z-10">
+          <div className="absolute bottom-2 left-2">
             <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
               🎉 Конференция
             </span>
@@ -104,15 +104,17 @@ function Home() {
           <div className="flex flex-nowrap gap-8 overflow-x-auto">
             {[
               { emoji: "🎞", name: "Кино" },
-              { emoji: "🏛", name: "Театр" },
-              { emoji: "🎄", name: "Новый год" },
-              { emoji: "💃", name: "Концерты" },
-              { emoji: "💞", name: "Клубы знакомств" },
+              { emoji: "💃", name: "Вечеринки" },
               { emoji: "📈", name: "Конференции" },
+              { emoji: "🤝", name: "Нетворкинг" },
+              { emoji: "🕵️‍♂️", name: "Квесты" },
             ].map((chip) => (
               <div
                 key={chip.name}
                 className="flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap"
+                onClick={() => {
+                  navigate({ to: "/all/$name", params: { name: chip.name } });
+                }}
               >
                 <div>{chip.emoji}</div>
                 <div>{chip.name}</div>
@@ -166,15 +168,24 @@ function Home() {
         {/* Recommendations Section */}
         <div className="mb-6 w-full overflow-x-hidden">
           <div className="mb-4 flex items-center justify-between px-4">
-            <h2 className="text-xl font-bold text-gray-900">По вашим рекомендациям</h2>
+            <h2 className="text-xl font-bold text-gray-900">Кино</h2>
             <ArrowRight
               className="h-5 w-5 cursor-pointer text-gray-500"
               onClick={() => navigate({ to: "/all/$name", params: { name: "Кино" } })}
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(kinoData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
-              <EventCard key={idx} event={event} />
+            {(kinoData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
+              <div
+                onClick={() => {
+                  navigate({
+                    to: "/event/$name/$id",
+                    params: { name: event.category, id: event.id },
+                  });
+                }}
+              >
+                <EventCard key={idx} event={event} />
+              </div>
             ))}
           </div>
         </div>
@@ -189,8 +200,17 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(questsData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
-              <EventCard key={idx} event={event} />
+            {(questsData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
+              <div
+                onClick={() => {
+                  navigate({
+                    to: "/event/$name/$id",
+                    params: { name: event.category, id: event.id },
+                  });
+                }}
+              >
+                <EventCard key={idx} event={event} />
+              </div>
             ))}
           </div>
         </div>
@@ -219,8 +239,17 @@ function Home() {
             />
           </div>
           <div className="flex w-full gap-4 overflow-x-auto px-4">
-            {(conferencesData?.slice?.(0, 3) || []).map((conf: any, idx: number) => (
-              <ConferenceCard key={idx} conf={conf} />
+            {(conferencesData?.slice?.(0, 5) || []).map((conf: any, idx: number) => (
+              <div
+                onClick={() => {
+                  navigate({
+                    to: "/event/$name/$id",
+                    params: { name: conf.category, id: conf.id },
+                  });
+                }}
+              >
+                <ConferenceCard key={idx} conf={conf} />
+              </div>
             ))}
           </div>
         </div>
@@ -237,8 +266,17 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(partiesData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
-              <EventCard key={idx} event={event} />
+            {(partiesData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
+              <div
+                onClick={() => {
+                  navigate({
+                    to: "/event/$name/$id",
+                    params: { name: event.category, id: event.id },
+                  });
+                }}
+              >
+                <EventCard key={idx} event={event} />
+              </div>
             ))}
           </div>
         </div>

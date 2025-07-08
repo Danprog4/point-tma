@@ -1,11 +1,11 @@
 import { authRouter } from "../auth";
+import { eventRouter } from "../event";
 import { router } from "../main";
-import { questRouter } from "../quest";
 import { createTRPCRouter } from "./index";
 export const trpcRouter = createTRPCRouter({
   main: router,
   auth: authRouter,
-  quest: questRouter,
+  event: eventRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

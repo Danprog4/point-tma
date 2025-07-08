@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { Calendar } from "~/components/Calendar";
 import { Selecter } from "~/components/Selecter";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/all/$name")({
 
 function RouteComponent() {
   const { name } = Route.useParams();
-
+  const navigate = useNavigate();
   console.log(name);
 
   let data: any[] = [];
@@ -173,7 +173,15 @@ function RouteComponent() {
 
           <div className="grid grid-cols-2 gap-2 px-4 py-2">
             {(items as any[]).map((item) => (
-              <div key={item.id}>
+              <div
+                key={item.id}
+                onClick={() => {
+                  navigate({
+                    to: "/event/$name/$id",
+                    params: { name: item.category!, id: item.id!.toString()! },
+                  });
+                }}
+              >
                 <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
                   <img
                     src={item.image}

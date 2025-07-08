@@ -84,9 +84,12 @@ export const router = {
 
       if (input.photo) {
         const imageUUID = await uploadBase64Image(input.photo);
-        await db.update(usersTable).set({
-          photo: imageUUID,
-        });
+        await db
+          .update(usersTable)
+          .set({
+            photo: imageUUID,
+          })
+          .where(eq(usersTable.id, ctx.userId));
       }
 
       if (input.gallery) {
@@ -103,16 +106,22 @@ export const router = {
             return image;
           }),
         );
-        await db.update(usersTable).set({
-          gallery: galleryUUIDs,
-        });
+        await db
+          .update(usersTable)
+          .set({
+            gallery: galleryUUIDs,
+          })
+          .where(eq(usersTable.id, ctx.userId));
       }
 
-      await db.update(usersTable).set({
-        email: input.email,
-        phone: input.phone,
-        bio: input.bio,
-      });
+      await db
+        .update(usersTable)
+        .set({
+          email: input.email,
+          phone: input.phone,
+          bio: input.bio,
+        })
+        .where(eq(usersTable.id, ctx.userId));
 
       return user;
     }),

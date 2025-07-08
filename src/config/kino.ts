@@ -103,7 +103,7 @@ export const kinoData = [
     location: "г.Астана, Kinopark 8 IMAX",
     price: 3000,
     type: "Премьера",
-    category: "Фантастика",
+    category: "Кино",
     stages: [
       {
         title: "IMAX-показ",
@@ -125,7 +125,7 @@ export const kinoData = [
     location: "г.Алматы, Kinopark 11",
     price: 2700,
     type: "Премьера",
-    category: "Фантастика",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -364,7 +364,7 @@ export const kinoData = [
     location: "г.Алматы, Kinopark 11",
     price: 1800,
     type: "Документальный",
-    category: "Документальный",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -389,7 +389,7 @@ export const kinoData = [
     location: "г.Нур-Султан, Chaplin Cinemas",
     price: 1700,
     type: "Документальный",
-    category: "Документальный",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -410,7 +410,7 @@ export const kinoData = [
     location: "г.Караганда, Kinoplexx",
     price: 1900,
     type: "Документальный",
-    category: "Документальный",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -431,7 +431,7 @@ export const kinoData = [
     location: "г.Шымкент, Kinopark 5",
     price: 1750,
     type: "Документальный",
-    category: "Документальный",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -452,7 +452,7 @@ export const kinoData = [
     location: "г.Астана, Kinopark 8 IMAX",
     price: 2000,
     type: "Документальный",
-    category: "Документальный",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -475,7 +475,7 @@ export const kinoData = [
     location: "г.Алматы, Kinopark 11",
     price: 2100,
     type: "Артхаус",
-    category: "Артхаус",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -500,7 +500,7 @@ export const kinoData = [
     location: "г.Нур-Султан, Chaplin Cinemas",
     price: 2200,
     type: "Артхаус",
-    category: "Артхаус",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -521,7 +521,7 @@ export const kinoData = [
     location: "г.Караганда, Kinoplexx",
     price: 2000,
     type: "Артхаус",
-    category: "Артхаус",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -542,7 +542,7 @@ export const kinoData = [
     location: "г.Шымкент, Kinopark 5",
     price: 1950,
     type: "Артхаус",
-    category: "Артхаус",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",
@@ -563,7 +563,7 @@ export const kinoData = [
     location: "г.Астана, Kinopark 8 IMAX",
     price: 2300,
     type: "Артхаус",
-    category: "Артхаус",
+    category: "Кино",
     stages: [
       {
         title: "Показ фильма",

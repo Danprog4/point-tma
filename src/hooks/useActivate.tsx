@@ -6,12 +6,12 @@ export const useActivate = () => {
   const trpc = useTRPC();
   const navigate = useNavigate();
 
-  const activateQuest = useMutation(trpc.quest.activateQuest.mutationOptions());
+  const activateEvent = useMutation(trpc.event.buyEvent.mutationOptions());
 
-  const useActivateQuest = (questId: number) => {
-    activateQuest.mutate({ questId });
-    navigate({ to: "/quests" });
+  const useActivateEvent = (eventId: number, name: string) => {
+    activateEvent.mutate({ id: eventId, name });
+    navigate({ to: "/all/$name", params: { name } });
   };
 
-  return { useActivateQuest };
+  return { useActivateEvent };
 };

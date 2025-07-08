@@ -11,10 +11,10 @@ import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { BuyQuest } from "~/components/quest/BuyQuest";
-import { questsData } from "~/config/quests";
 import { useActivate } from "~/hooks/useActivate";
+import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
-export const Route = createFileRoute("/quest/$id")({
+export const Route = createFileRoute("/event/$name/$id")({
   component: RouteComponent,
 });
 
@@ -26,23 +26,27 @@ function RouteComponent() {
   // const [isActivated, setIsActivated] = useState(false); // Not used, remove
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const buyQuest = useMutation(trpc.quest.buyQuest.mutationOptions());
+  const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
   const [page, setPage] = useState("info");
-  const { id } = Route.useParams();
+  const { name, id } = Route.useParams();
   const [isBought, setIsBought] = useState(false);
   const [count, setCount] = useState(1);
-  const { useActivateQuest } = useActivate();
+  const { useActivateEvent } = useActivate();
 
   const navigate = useNavigate();
 
-  const questData = questsData.find((quest) => quest.id === Number(id));
+  const event = getEventData(name, Number(id));
 
-  const ticket = user?.inventory?.find((ticket) => ticket.questId === Number(id));
+  console.log(event);
+
+  const ticket = user?.inventory?.find(
+    (ticket) => ticket.eventId === Number(id) && ticket.name === name,
+  );
   const isActive = ticket?.isActive;
   const isTicketAvailable = !!ticket;
 
-  if (!questData) {
-    return <div>Квест не найден</div>;
+  if (!event) {
+    return <div>Событие не найдено</div>;
   }
 
   // Remove console logs for production
@@ -50,16 +54,17 @@ function RouteComponent() {
   // console.log(Number(id));
   // console.log(questData);
 
-  const isDisabled = (user?.balance ?? 0) < questData.price * count;
+  const isDisabled = (user?.balance ?? 0) < event.price * count;
 
-  const handleBuyQuest = () => {
+  const handleBuyEvent = () => {
     if (isDisabled) {
       return;
     }
 
-    buyQuest.mutate(
+    buyEvent.mutate(
       {
-        questId: Number(id),
+        id: Number(id),
+        name,
       },
       {
         onSuccess: () => {
@@ -84,7 +89,7 @@ function RouteComponent() {
         <>
           <BuyQuest
             isBought={isBought}
-            quest={questData}
+            quest={event}
             setIsOpen={setIsOpen}
             count={count}
             setCount={setCount}
@@ -93,16 +98,16 @@ function RouteComponent() {
             {!isBought ? (
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                 <button
-                  onClick={handleBuyQuest}
+                  onClick={handleBuyEvent}
                   className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                   disabled={isDisabled}
                 >
                   <div>
                     {isDisabled
                       ? "Недостаточно средств"
-                      : buyQuest.isPending
+                      : buyEvent.isPending
                         ? "Покупка..."
-                        : `Купить за ${questData?.price * count}`}
+                        : `Купить за ${event.price * count}`}
                   </div>
                   <Coin />
                 </button>
@@ -140,27 +145,34 @@ function RouteComponent() {
         </>
       ) : (
         <div className="overflow-y-auto pt-18 pb-24">
-          <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4 pb-4">
-            <ArrowLeft
-              className="absolute left-4 h-6 w-6"
-              onClick={() => window.history.back()}
-            />
-            <div className="flex flex-1 justify-center text-xl font-bold">Квест</div>
-          </header>
+          <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
+            <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
+              <button
+                onClick={() => window.history.back()}
+                className="flex h-6 w-6 items-center justify-center"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+              </button>
+              <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
+                {event.category}
+              </h1>
+              <div className="flex h-6 w-6" />
+            </div>
+          </div>
           <div className="relative">
             <img
-              src={questData?.image}
-              alt={questData?.title}
+              src={event.image}
+              alt={event.title}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />
             <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
-              <div className="text-2xl font-bold">{questData?.title}</div>
+              <div className="text-2xl font-bold">{event.title}</div>
               <div className="flex items-center justify-start gap-2">
                 <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
-                  {questData?.type}
+                  {event.type}
                 </div>
                 <div className="flex items-center justify-center rounded-full bg-[#2462FF] px-2">
-                  {questData?.category}
+                  {event.category}
                 </div>
               </div>
             </div>
@@ -187,19 +199,19 @@ function RouteComponent() {
             <>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Описание</div>
-                <div>{questData?.description}</div>
+                <div>{event.description}</div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Локация</div>
-                <div>{questData?.location}</div>
+                <div>{event.location}</div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Организатор</div>
-                <div className="text-l font-bold">{questData?.organizer}</div>
+                <div className="text-l font-bold">{event.organizer}</div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Этапы квеста</div>
-                {questData?.stages.map((stage, idx) => (
+                {event.stages.map((stage, idx) => (
                   <div
                     key={idx}
                     className="flex flex-col items-start justify-center gap-2"
@@ -211,12 +223,12 @@ function RouteComponent() {
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Расписание</div>
-                <div className="text-l font-bold">{questData?.date}</div>
+                <div className="text-l font-bold">{event.date}</div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
                 <div className="flex items-center justify-start text-2xl font-bold">
                   <div className="text-2xl font-bold">Награда </div>
-                  <div className="text-l pl-2 font-bold">+ {questData?.reward}</div>
+                  <div className="text-l pl-2 font-bold">+ {event.reward}</div>
                   <Coin />
                 </div>
                 <div>За успешное выполнение квеста</div>
@@ -257,7 +269,7 @@ function RouteComponent() {
                   onClick={() => setIsOpen(true)}
                   className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                 >
-                  <div>Купить за {questData?.price}</div>
+                  <div>Купить за {event.price}</div>
                   <Coin />
                 </button>
                 <div className="flex flex-col items-center">

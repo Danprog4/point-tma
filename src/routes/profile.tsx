@@ -28,7 +28,7 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const queryClient = useQueryClient();
   const [page, setPage] = useState<"info" | "friends">("info");
-  const { data: activeQuest } = useQuery(trpc.quest.getMyQuests.queryOptions());
+  const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
 
   const hashPhoto = useMemo(
@@ -188,7 +188,7 @@ function RouteComponent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-black">
-                  {activeQuest?.length || 0}
+                  {activeEvents?.length || 0}
                 </div>
                 <div
                   onClick={() => {

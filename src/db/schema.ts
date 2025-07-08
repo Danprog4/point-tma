@@ -23,7 +23,7 @@ export const usersTable = pgTable("users", {
   phone: varchar("phone", { length: 255 }),
   bio: varchar("bio", { length: 255 }),
   inventory: jsonb("inventory")
-    .$type<Array<{ type: string; questId: number; isActive?: boolean }>>()
+    .$type<Array<{ type: string; eventId: number; isActive?: boolean; name: string }>>()
     .default([]),
   balance: integer("balance").default(0),
   sex: varchar("sex", { length: 255 }),
@@ -31,9 +31,10 @@ export const usersTable = pgTable("users", {
   gallery: jsonb("gallery").$type<string[]>(),
 });
 
-export const activeQuestsTable = pgTable("active_quests", {
+export const activeEventsTable = pgTable("active_events", {
   id: serial("id").primaryKey(),
-  questId: bigint("questId", { mode: "number" }),
+  eventId: bigint("eventId", { mode: "number" }),
+  name: varchar("name", { length: 255 }),
   userId: bigint("userId", { mode: "number" }),
   isCompleted: boolean("isCompleted").default(false),
   createdAt: timestamp("created_at").defaultNow(),

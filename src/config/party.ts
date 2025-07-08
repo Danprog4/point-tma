@@ -8,7 +8,7 @@ export const partiesData = [
     location: "г.Алматы",
     price: 7000,
     type: "Тематические",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Welcome Zone",
@@ -38,7 +38,7 @@ export const partiesData = [
     location: "г.Нур-Султан",
     price: 9000,
     type: "Тематические",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Фотосессия",
@@ -67,7 +67,7 @@ export const partiesData = [
     location: "г.Караганда",
     price: 6000,
     type: "Тематические",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Дресс-код",
@@ -96,7 +96,7 @@ export const partiesData = [
     location: "г.Шымкент",
     price: 8000,
     type: "Тематические",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Вручение масок",
@@ -125,7 +125,7 @@ export const partiesData = [
     location: "г.Актау",
     price: 12000,
     type: "Пляжные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Открытие",
@@ -154,7 +154,7 @@ export const partiesData = [
     location: "г.Актау",
     price: 10000,
     type: "Пляжные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Лаунж-зона",
@@ -183,7 +183,7 @@ export const partiesData = [
     location: "г.Актау",
     price: 11000,
     type: "Пляжные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Пенная зона",
@@ -212,7 +212,7 @@ export const partiesData = [
     location: "г.Актау",
     price: 9500,
     type: "Пляжные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Фруктовый бар",
@@ -241,7 +241,7 @@ export const partiesData = [
     location: "г.Алматы",
     price: 13000,
     type: "Клубные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Открытие",
@@ -270,7 +270,7 @@ export const partiesData = [
     location: "г.Нур-Султан",
     price: 14000,
     type: "Клубные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Лазерное шоу",
@@ -299,7 +299,7 @@ export const partiesData = [
     location: "г.Алматы",
     price: 9000,
     type: "Клубные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Breakdance Battle",
@@ -328,7 +328,7 @@ export const partiesData = [
     location: "г.Караганда",
     price: 7000,
     type: "Клубные",
-    category: "Вечерника",
+    category: "Вечеринка",
     stages: [
       {
         title: "Регистрация участников",

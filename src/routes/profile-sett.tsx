@@ -16,7 +16,9 @@ function RouteComponent() {
   const navigate = useNavigate();
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+
   const [name, setName] = useState("");
+
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
@@ -83,6 +85,7 @@ function RouteComponent() {
         phone: phone,
         bio: bio,
         gallery: filteredGallery,
+        photo: photoToSend,
       };
     });
   };
@@ -180,7 +183,7 @@ function RouteComponent() {
           return (
             <div
               key={item || idx}
-              className="flex aspect-square w-[23%] items-center justify-center rounded-lg bg-[#F3E5FF]"
+              className="flex aspect-square w-[21.5%] items-center justify-center rounded-lg bg-[#F3E5FF]"
             >
               <img
                 src={isBase64 ? item : getImageUrl(item)}
@@ -193,7 +196,7 @@ function RouteComponent() {
 
         <label
           htmlFor="gallery-upload"
-          className="flex aspect-square w-[23%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+          className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
         >
           <div className="flex flex-col items-center gap-1 px-2">
             <PlusIcon />

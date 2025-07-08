@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -12,7 +12,7 @@ import {
   Settings,
   Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
@@ -26,9 +26,22 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const queryClient = useQueryClient();
   const [page, setPage] = useState<"info" | "friends">("info");
   const { data: activeQuest } = useQuery(trpc.quest.getMyQuests.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
+
+  const hashPhoto = useMemo(
+    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.photo,
+    [queryClient, trpc],
+  );
+
+  const hashGallery = useMemo(
+    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.gallery,
+    [queryClient, trpc],
+  );
+
+  console.log(hashPhoto, "hashPhoto");
 
   useScroll();
 
@@ -36,7 +49,7 @@ function RouteComponent() {
     ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
     : new Date().getFullYear() - new Date().getFullYear();
 
-  console.log(user?.photo);
+  console.log(user?.photo, "user?.photo");
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
@@ -74,7 +87,15 @@ function RouteComponent() {
             <div className="relative h-60">
               {/* Level Badge */}
               <img
-                src={getImageUrl(user?.photo || "")}
+                src={
+                  hashPhoto
+                    ? hashPhoto.startsWith("data:image/")
+                      ? hashPhoto
+                      : getImageUrl(hashPhoto)
+                    : user?.photo?.startsWith("data:image/")
+                      ? user?.photo
+                      : getImageUrl(user?.photo || "")
+                }
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
                 onClick={() => setIsClicked(!isClicked)}
@@ -93,9 +114,9 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2 pt-8">
-                      {user?.gallery?.map((img) => (
+                      {hashGallery?.map((img) => (
                         <img
-                          src={getImageUrl(img)}
+                          src={img.startsWith("data:image/") ? img : getImageUrl(img)}
                           alt=""
                           className="h-12 w-12 rounded-lg object-cover"
                         />

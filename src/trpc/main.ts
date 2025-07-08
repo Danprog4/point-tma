@@ -92,8 +92,15 @@ export const router = {
       if (input.gallery) {
         const galleryUUIDs = await Promise.all(
           input.gallery.map(async (image) => {
-            const imageUUID = await uploadBase64Image(image);
-            return imageUUID;
+            if (typeof image === "string" && image.startsWith("data:image/")) {
+              console.log("uploading");
+              console.log(image);
+              const imageUUID = await uploadBase64Image(image);
+              console.log("uploaded");
+              console.log(imageUUID);
+              return imageUUID;
+            }
+            return image;
           }),
         );
         await db.update(usersTable).set({

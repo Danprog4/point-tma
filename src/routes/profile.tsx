@@ -28,6 +28,7 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
   const { data: activeQuest } = useQuery(trpc.quest.getMyQuests.queryOptions());
+  const [isClicked, setIsClicked] = useState(false);
 
   useScroll();
 
@@ -76,33 +77,47 @@ function RouteComponent() {
                 src={getImageUrl(user?.photo || "")}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
+                onClick={() => setIsClicked(!isClicked)}
               />
-              <div className="absolute bottom-4 left-4">
-                <div className="relative">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
-                    <span className="text-xl font-bold text-white">1</span>
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 transform">
-                    <div className="rounded bg-purple-600 px-2 py-1 text-xs font-bold text-white">
-                      Уровень
+              {isClicked && (
+                <>
+                  <div className="absolute bottom-2 left-2 flex items-center">
+                    <div className="relative flex items-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
+                        <span className="text-xl font-bold text-white">1</span>
+                      </div>
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 transform">
+                        <div className="rounded-lg bg-purple-600 px-2 py-1 text-xs font-bold text-white">
+                          Уровень
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ml-4 flex gap-2 pt-8">
+                      {user?.gallery?.map((img) => (
+                        <img
+                          src={getImageUrl(img)}
+                          alt=""
+                          className="h-12 w-12 rounded-lg object-cover"
+                        />
+                      ))}
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">
-                <div className="font-medium text-black">Пройти верификацию</div>
-                <ArrowRight className="h-4 w-4 text-black" />
-              </div>
+                  <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">
+                    <div className="font-medium text-black">Пройти верификацию</div>
+                    <ArrowRight className="h-4 w-4 text-black" />
+                  </div>
 
-              {/* Edit Button */}
-              <div className="absolute top-4 right-4">
-                <button
-                  onClick={() => navigate({ to: "/profile-sett" })}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-                >
-                  <Settings className="h-4 w-4 text-black" />
-                </button>
-              </div>
+                  {/* Edit Button */}
+                  <div className="absolute top-4 right-4">
+                    <button
+                      onClick={() => navigate({ to: "/profile-sett" })}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+                    >
+                      <Settings className="h-4 w-4 text-black" />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

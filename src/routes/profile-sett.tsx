@@ -59,22 +59,22 @@ function RouteComponent() {
     }),
   );
 
+  console.log(gallery);
+
   const handleUpdateProfile = () => {
     navigate({ to: "/profile" });
 
-    const galleryToSend = gallery.filter(
-      (item) => typeof item === "string" && item.startsWith("data:image/"),
+    const filteredGallery = gallery.filter(
+      (item) => typeof item === "string" && item.length > 0,
     );
-
-    const isBase64Photo = typeof base64 === "string" && base64.startsWith("data:image/");
-    const photoToSend = isBase64Photo ? base64 : "";
+    const photoToSend = base64 && base64.startsWith("data:image/") ? base64 : "";
 
     updateProfile.mutate({
       email: email || "",
       phone: phone || "",
       bio: bio || "",
       photo: photoToSend,
-      gallery: galleryToSend,
+      gallery: filteredGallery,
     });
     queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
       return {
@@ -82,7 +82,7 @@ function RouteComponent() {
         email: email,
         phone: phone,
         bio: bio,
-        gallery: gallery,
+        gallery: filteredGallery,
       };
     });
   };
@@ -139,9 +139,15 @@ function RouteComponent() {
           className="flex cursor-pointer flex-col items-center"
         >
           <div className="flex h-[82px] w-[82px] items-center justify-center overflow-hidden rounded-full bg-gray-300">
-            {base64 || user?.photo ? (
+            {base64 ? (
               <img
-                src={base64 ? base64 : getImageUrl(user?.photo || "")}
+                src={base64}
+                alt="Аватар"
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : user?.photo ? (
+              <img
+                src={getImageUrl(user.photo || "")}
                 alt="Аватар"
                 className="h-full w-full rounded-full object-cover"
               />

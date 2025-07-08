@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Settings } from "lucide-react";
 import { useScroll } from "~/components/hooks/useScroll";
@@ -6,6 +7,7 @@ import { QuestCard } from "~/components/QuestCard";
 import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
 import { getEventData } from "~/lib/utils/getEventData";
+import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
 });
@@ -14,6 +16,9 @@ function RouteComponent() {
   useScroll();
   const navigate = useNavigate();
   const { id } = Route.useParams();
+  const trpc = useTRPC();
+
+  const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
 
   const meeting = meetingsConfig.find((m) => m.id === parseInt(id));
 
@@ -106,7 +111,12 @@ function RouteComponent() {
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 text-white">
         <div className="rounded-2xl bg-[#2462FF] px-4 py-2">Подписаться</div>
-        <div className="rounded-2xl bg-[#9924FF] px-4 py-2">Добавить в друзья</div>
+        <div
+          className="rounded-2xl bg-[#9924FF] px-4 py-2"
+          onClick={() => sendRequest.mutate({ userId: organizer?.id! })}
+        >
+          Добавить в друзья
+        </div>
       </div>
       <div className="mt-4 flex flex-col gap-2 px-4">
         <div className="text-2xl font-bold">Интересы</div>

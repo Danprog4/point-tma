@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { openTelegramLink } from "@telegram-apps/sdk";
 import { ArrowLeft } from "lucide-react";
@@ -32,6 +32,7 @@ function RouteComponent() {
   const [isBought, setIsBought] = useState(false);
   const [count, setCount] = useState(1);
   const { useActivateEvent } = useActivate();
+  const queryClient = useQueryClient();
 
   const navigate = useNavigate();
 
@@ -134,6 +135,7 @@ function RouteComponent() {
                   id={Number(id)}
                   open={isActiveDrawerOpen}
                   onOpenChange={setIsActiveDrawerOpen}
+                  name={name}
                 >
                   <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
                     Активировать билет
@@ -288,6 +290,7 @@ function RouteComponent() {
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                 <ActiveDrawer
                   id={Number(id)}
+                  name={name}
                   open={isActiveDrawerOpen}
                   onOpenChange={setIsActiveDrawerOpen}
                 >

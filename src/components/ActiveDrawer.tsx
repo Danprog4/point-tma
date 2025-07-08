@@ -10,23 +10,31 @@ export default function ActiveDrawer({
   onOpenChange,
   children,
   id,
+  name,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   id: number;
+  name: string;
 }) {
   const [isActive, setIsActive] = useState(false);
   const trpc = useTRPC();
-  const activateQuest = useMutation(trpc.quest.activateQuest.mutationOptions());
+  const activateQuest = useMutation(trpc.event.activateEvent.mutationOptions());
   const queryClient = useQueryClient();
 
   const handleActivateTicket = () => {
-    console.log("activateQuest", id);
-    activateQuest.mutate({
-      questId: id,
-    });
+    console.log("activateQuest", id, name);
     setIsActive(true);
+    activateQuest.mutate(
+      {
+        id: id,
+        name: name,
+      },
+      {
+        onSuccess: () => {},
+      },
+    );
   };
 
   const handleOpenLink = () => {
@@ -35,17 +43,38 @@ export default function ActiveDrawer({
       return {
         ...old,
         inventory: old?.inventory.map((ticket: any) =>
-          ticket.questId === id ? { ...ticket, isActive: true } : ticket,
+          ticket.eventId === id && ticket.name === name
+            ? { ...ticket, isActive: true }
+            : ticket,
         ),
       };
     });
   };
 
+  const updateHasActiveTicket = (isActive: boolean) => {
+    if (isActive) {
+      queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+        return {
+          ...old,
+          inventory: old?.inventory.map((ticket: any) =>
+            ticket.eventId === id && ticket.name === name
+              ? { ...ticket, isActive: true }
+              : ticket,
+          ),
+        };
+      });
+    }
+  };
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Drawer.Overlay
+          className="fixed inset-0 z-50 bg-black/40"
+          onClick={() => {
+            updateHasActiveTicket(isActive);
+          }}
+        />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[300px] flex-col rounded-t-[16px] bg-white px-4 py-4 pb-20">
           {!isActive ? (
             <>
@@ -78,11 +107,16 @@ export default function ActiveDrawer({
               </div>
             </>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2">
+            <div
+              className="flex h-full flex-col items-center justify-center gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               <div className="text-xl font-bold text-[#00A349]">Билет активирован!</div>
               <div className="text-center text-lg">
                 Вам предоставлена ссылка на телеграмм-чат квеста и там будет вся
-                информация по квесту
+                информация
               </div>
               <div
                 className="absolute right-4 bottom-4 left-4 mx-auto mt-4 flex w-auto items-center justify-center gap-2 rounded-lg px-4 py-3 text-center font-semibold text-white"

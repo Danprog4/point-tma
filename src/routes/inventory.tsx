@@ -51,7 +51,7 @@ function RouteComponent() {
               />
 
               <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
-                Билет на {getEvent(ticket.eventId, ticket.name)?.title}
+                Билет {getEvent(ticket.eventId, ticket.name)?.category}
               </div>
             </div>
           ))}

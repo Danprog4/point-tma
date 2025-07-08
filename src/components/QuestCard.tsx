@@ -17,7 +17,10 @@ export function QuestCard({
       className="mb-4 flex items-start gap-4"
       onClick={() => {
         if (isNavigable) {
-          navigate({ to: "/quest/$id", params: { id: quest.id.toString() } });
+          navigate({
+            to: "/event/$name/$id",
+            params: { name: "Квест", id: quest.id.toString() },
+          });
         }
       }}
     >

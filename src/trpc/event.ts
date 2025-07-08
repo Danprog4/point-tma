@@ -80,7 +80,7 @@ export const eventRouter = createTRPCRouter({
         .where(eq(usersTable.id, ctx.userId));
     }),
 
-  activateQuest: procedure
+  activateEvent: procedure
     .input(
       z.object({
         id: z.number(),

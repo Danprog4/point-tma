@@ -73,6 +73,13 @@ export const router = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      console.log("updateProfile input.photo:", input.photo?.slice(0, 100));
+      console.log(
+        "updateProfile input.gallery:",
+        Array.isArray(input.gallery)
+          ? input.gallery.map((i) => (typeof i === "string" ? i.slice(0, 40) : i))
+          : input.gallery,
+      );
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
       });
@@ -84,7 +91,7 @@ export const router = {
         });
       }
 
-      if (input.photo) {
+      if (input.photo && input.photo.startsWith("data:image/")) {
         const imageUUID = await uploadBase64Image(input.photo);
         await db
           .update(usersTable)

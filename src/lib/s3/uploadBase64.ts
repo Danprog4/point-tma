@@ -11,6 +11,7 @@ const s3 = new S3Client({
 });
 
 export async function uploadBase64Image(data: string): Promise<string> {
+  console.log("uploadBase64Image called with:", data?.slice(0, 100)); // логируем первые 100 символов
   const match = data.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
   if (!match) throw new Error("Invalid Base64 image");
   const [, mime, b64] = match;

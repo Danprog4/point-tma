@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -25,27 +25,12 @@ export const Route = createFileRoute("/profile")({
 function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
-  const { data: user } = useQuery({
-    ...trpc.main.getUser.queryOptions(),
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-  const queryClient = useQueryClient();
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
 
   useScroll();
-
-  const hashPhoto = useMemo(
-    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.photo,
-    [queryClient, trpc],
-  );
-
-  const hashGallery = useMemo(
-    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.gallery,
-    [queryClient, trpc],
-  );
 
   const activeQuests = useMemo(() => {
     return activeEvents?.filter((event) => event.name === "Квест");
@@ -93,13 +78,9 @@ function RouteComponent() {
               {/* Level Badge */}
               <img
                 src={
-                  hashPhoto
-                    ? hashPhoto?.startsWith("data:image/")
-                      ? hashPhoto
-                      : getImageUrl(hashPhoto || "")
-                    : user?.photo?.startsWith("data:image/")
-                      ? user?.photo
-                      : getImageUrl(user?.photo || "")
+                  user?.photo?.startsWith("data:image/")
+                    ? user?.photo
+                    : getImageUrl(user?.photo || "")
                 }
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
@@ -119,20 +100,16 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2 pt-8">
-                      {(hashGallery ? hashGallery : user?.gallery || []).map(
-                        (img, idx) => (
-                          <img
-                            key={idx}
-                            src={
-                              img?.startsWith("data:image/")
-                                ? img
-                                : getImageUrl(img || "")
-                            }
-                            alt=""
-                            className="h-12 w-12 rounded-lg object-cover"
-                          />
-                        ),
-                      )}
+                      {user?.gallery?.map((img, idx) => (
+                        <img
+                          key={idx}
+                          src={
+                            img?.startsWith("data:image/") ? img : getImageUrl(img || "")
+                          }
+                          alt=""
+                          className="h-12 w-12 rounded-lg object-cover"
+                        />
+                      ))}
                     </div>
                   </div>
                   <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">

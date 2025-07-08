@@ -85,7 +85,9 @@ function RouteComponent() {
     const filteredGallery = gallery.filter(
       (item) => typeof item === "string" && item.length > 0,
     );
-    const photoToSend = base64 && base64.startsWith("data:image/") ? base64 : "";
+    // Отправляем base64 только если пользователь выбрал новое фото
+    const photoToSend =
+      selectedFile && base64 && base64.startsWith("data:image/") ? base64 : "";
 
     updateProfile.mutate({
       email: email || "",
@@ -133,6 +135,7 @@ function RouteComponent() {
     <div className="h-full overflow-y-auto pb-24">
       <div className="flex items-center justify-between p-4 pb-2">
         <button
+          disabled={updateProfile.isPending}
           onClick={() => navigate({ to: "/profile" })}
           className="flex h-6 w-6 items-center justify-center"
         >

@@ -88,7 +88,15 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      <div className="mt-2 flex flex-col items-center justify-center">
+      <div
+        className="mt-2 flex flex-col items-center justify-center"
+        onClick={() =>
+          navigate({
+            to: "/user-profile/$id",
+            params: { id: organizer?.id!.toString()! },
+          })
+        }
+      >
         <div className="text-2xl font-bold">
           {organizer?.name} {organizer?.surname}
         </div>

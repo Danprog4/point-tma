@@ -19,6 +19,16 @@ export const router = {
     return user;
   }),
 
+  getUserById: procedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, Number(input.id)),
+      });
+
+      return user;
+    }),
+
   getOnBoarding: procedure
     .input(
       z.object({

@@ -54,3 +54,10 @@ export const subscriptionsTable = pgTable("subscriptions", {
   targetUserId: bigint("target_user_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const favoritesTable = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
+  toUserId: bigint("to_user_id", { mode: "number" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});

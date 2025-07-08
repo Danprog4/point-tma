@@ -233,9 +233,6 @@ function RouteComponent() {
                 </div>
               )}
             </div>
-            <div className="">
-              <p className="text-sm leading-relaxed text-black">{user?.interests}</p>
-            </div>
           </div>
 
           {/* Menu Items */}

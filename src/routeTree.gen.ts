@@ -26,7 +26,7 @@ import { Route as FillProfileImport } from './routes/fill-profile'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
-import { Route as ProfileIdImport } from './routes/profile.$id'
+import { Route as UserProfileIdImport } from './routes/user-profile.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
 import { Route as CreateMeetNameImport } from './routes/createMeet.$name'
 import { Route as AllNameImport } from './routes/all.$name'
@@ -124,10 +124,10 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProfileIdRoute = ProfileIdImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ProfileRoute,
+const UserProfileIdRoute = UserProfileIdImport.update({
+  id: '/user-profile/$id',
+  path: '/user-profile/$id',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const MeetIdRoute = MeetIdImport.update({
@@ -284,12 +284,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetIdImport
       parentRoute: typeof rootRoute
     }
-    '/profile/$id': {
-      id: '/profile/$id'
-      path: '/$id'
-      fullPath: '/profile/$id'
-      preLoaderRoute: typeof ProfileIdImport
-      parentRoute: typeof ProfileImport
+    '/user-profile/$id': {
+      id: '/user-profile/$id'
+      path: '/user-profile/$id'
+      fullPath: '/user-profile/$id'
+      preLoaderRoute: typeof UserProfileIdImport
+      parentRoute: typeof rootRoute
     }
     '/event/$name/$id': {
       id: '/event/$name/$id'
@@ -303,17 +303,6 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-interface ProfileRouteChildren {
-  ProfileIdRoute: typeof ProfileIdRoute
-}
-
-const ProfileRouteChildren: ProfileRouteChildren = {
-  ProfileIdRoute: ProfileIdRoute,
-}
-
-const ProfileRouteWithChildren =
-  ProfileRoute._addFileChildren(ProfileRouteChildren)
-
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
@@ -325,7 +314,7 @@ export interface FileRoutesByFullPath {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
-  '/profile': typeof ProfileRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -333,7 +322,7 @@ export interface FileRoutesByFullPath {
   '/all/$name': typeof AllNameRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
-  '/profile/$id': typeof ProfileIdRoute
+  '/user-profile/$id': typeof UserProfileIdRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
 
@@ -348,7 +337,7 @@ export interface FileRoutesByTo {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
-  '/profile': typeof ProfileRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -356,7 +345,7 @@ export interface FileRoutesByTo {
   '/all/$name': typeof AllNameRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
-  '/profile/$id': typeof ProfileIdRoute
+  '/user-profile/$id': typeof UserProfileIdRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
 
@@ -372,7 +361,7 @@ export interface FileRoutesById {
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
-  '/profile': typeof ProfileRouteWithChildren
+  '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
@@ -380,7 +369,7 @@ export interface FileRoutesById {
   '/all/$name': typeof AllNameRoute
   '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
-  '/profile/$id': typeof ProfileIdRoute
+  '/user-profile/$id': typeof UserProfileIdRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
 
@@ -405,7 +394,7 @@ export interface FileRouteTypes {
     | '/all/$name'
     | '/createMeet/$name'
     | '/meet/$id'
-    | '/profile/$id'
+    | '/user-profile/$id'
     | '/event/$name/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -427,7 +416,7 @@ export interface FileRouteTypes {
     | '/all/$name'
     | '/createMeet/$name'
     | '/meet/$id'
-    | '/profile/$id'
+    | '/user-profile/$id'
     | '/event/$name/$id'
   id:
     | '__root__'
@@ -449,7 +438,7 @@ export interface FileRouteTypes {
     | '/all/$name'
     | '/createMeet/$name'
     | '/meet/$id'
-    | '/profile/$id'
+    | '/user-profile/$id'
     | '/event/$name/$id'
   fileRoutesById: FileRoutesById
 }
@@ -465,7 +454,7 @@ export interface RootRouteChildren {
   NotifRoute: typeof NotifRoute
   OnboardingRoute: typeof OnboardingRoute
   PointsRoute: typeof PointsRoute
-  ProfileRoute: typeof ProfileRouteWithChildren
+  ProfileRoute: typeof ProfileRoute
   ProfileSettRoute: typeof ProfileSettRoute
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
@@ -473,6 +462,7 @@ export interface RootRouteChildren {
   AllNameRoute: typeof AllNameRoute
   CreateMeetNameRoute: typeof CreateMeetNameRoute
   MeetIdRoute: typeof MeetIdRoute
+  UserProfileIdRoute: typeof UserProfileIdRoute
   EventNameIdRoute: typeof EventNameIdRoute
 }
 
@@ -487,7 +477,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotifRoute: NotifRoute,
   OnboardingRoute: OnboardingRoute,
   PointsRoute: PointsRoute,
-  ProfileRoute: ProfileRouteWithChildren,
+  ProfileRoute: ProfileRoute,
   ProfileSettRoute: ProfileSettRoute,
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
@@ -495,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   AllNameRoute: AllNameRoute,
   CreateMeetNameRoute: CreateMeetNameRoute,
   MeetIdRoute: MeetIdRoute,
+  UserProfileIdRoute: UserProfileIdRoute,
   EventNameIdRoute: EventNameIdRoute,
 }
 
@@ -526,6 +517,7 @@ export const routeTree = rootRoute
         "/all/$name",
         "/createMeet/$name",
         "/meet/$id",
+        "/user-profile/$id",
         "/event/$name/$id"
       ]
     },
@@ -560,10 +552,7 @@ export const routeTree = rootRoute
       "filePath": "points.tsx"
     },
     "/profile": {
-      "filePath": "profile.tsx",
-      "children": [
-        "/profile/$id"
-      ]
+      "filePath": "profile.tsx"
     },
     "/profile-sett": {
       "filePath": "profile-sett.tsx"
@@ -586,9 +575,8 @@ export const routeTree = rootRoute
     "/meet/$id": {
       "filePath": "meet.$id.tsx"
     },
-    "/profile/$id": {
-      "filePath": "profile.$id.tsx",
-      "parent": "/profile"
+    "/user-profile/$id": {
+      "filePath": "user-profile.$id.tsx"
     },
     "/event/$name/$id": {
       "filePath": "event.$name.$id.tsx"

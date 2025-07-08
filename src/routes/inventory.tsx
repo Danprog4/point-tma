@@ -23,13 +23,13 @@ function RouteComponent() {
 
   return (
     <div>
-      <div className="z-10 flex items-center justify-between p-4 pb-2">
-        <button
-          onClick={() => navigate({ to: "/profile" })}
-          className="flex h-6 w-6 items-center justify-center"
-        >
-          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-        </button>
+      <button
+        onClick={() => navigate({ to: "/profile" })}
+        className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
+      >
+        <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+      </button>
+      <div className="flex items-center justify-center p-4 pb-2">
         <div className="flex-1">
           <h1 className="text-center text-base font-bold text-gray-800">Инвентарь</h1>
         </div>

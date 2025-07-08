@@ -43,7 +43,11 @@ function RouteComponent() {
   const ticket = user?.inventory?.find(
     (ticket) => ticket.eventId === Number(id) && ticket.name === name,
   );
-  const isActive = ticket?.isActive;
+  const isActive = queryClient
+    .getQueryData(trpc.main.getUser.queryKey())
+    ?.inventory?.find(
+      (ticket) => ticket.eventId === Number(id) && ticket.name === name,
+    )?.isActive;
   const isTicketAvailable = !!ticket;
 
   if (!event) {
@@ -138,7 +142,7 @@ function RouteComponent() {
                   name={name}
                 >
                   <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                    Активировать билет
+                    {isActive ? "Билет активирован" : "Активировать билет"}
                   </button>
                 </ActiveDrawer>
               </div>

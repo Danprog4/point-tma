@@ -50,7 +50,7 @@ function RouteComponent() {
             onClick={() =>
               navigate({
                 to: "/event/$name/$id",
-                params: { name: event?.type!, id: event?.id!.toString()! },
+                params: { name: event?.category!, id: event?.id!.toString()! },
               })
             }
             className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3"

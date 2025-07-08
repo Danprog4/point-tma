@@ -3,8 +3,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { Close } from "~/components/Icons/Close";
 import { Selecter } from "~/components/Selecter";
+import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
+import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 
@@ -18,7 +19,12 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
   const [name, setName] = useState("");
-  const [age, setAge] = useState<number | undefined>();
+  const [surname, setSurname] = useState("");
+  const [login, setLogin] = useState("");
+  const [sex, setSex] = useState<"male" | "female" | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [base64, setBase64] = useState<string | null>(null);
+  const [birthday, setBirthday] = useState("");
   const [city, setCity] = useState<string>("");
   const [bio, setBio] = useState("");
   const navigate = useNavigate();
@@ -39,8 +45,40 @@ function RouteComponent() {
   const TOTAL_CARDS = 5;
   const LAST_STEP = TOTAL_CARDS + 1;
 
+  const isHeicFile = (file: File): boolean => {
+    return file.name.toLowerCase().endsWith(".heic");
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    setSelectedFile(file);
+
+    let fileToProcess: File = file;
+
+    // If file is HEIC, convert to PNG first
+    if (isHeicFile(fileToProcess)) {
+      fileToProcess = await convertHeicToPng(fileToProcess);
+    }
+
+    const base64 = await convertToBase64(fileToProcess);
+
+    setBase64(base64);
+  };
+
   const handleSubmit = () => {
-    onBoarding.mutate({ name, age: age!, city, bio });
+    onBoarding.mutate({
+      name,
+      surname,
+      login,
+      birthday,
+      city,
+      bio,
+      sex: sex || "",
+      photo: base64 || "",
+    });
   };
 
   const handleNext = () =>
@@ -59,7 +97,20 @@ function RouteComponent() {
     setIsOnboarded(true);
   };
 
-  const isDisabled = step === LAST_STEP && (!name || !age || !city || !bio);
+  const isDisabled =
+    step === LAST_STEP &&
+    (!name ||
+      !surname ||
+      !login ||
+      !birthday ||
+      !city ||
+      !bio ||
+      !sex ||
+      !base64 ||
+      !selectedFile);
+
+  console.log(base64);
+  console.log(selectedFile);
 
   console.log(step);
   const Card = ({
@@ -90,12 +141,8 @@ function RouteComponent() {
   );
 
   return (
-    <div className="fixed inset-0 mx-auto flex h-screen w-screen flex-col items-end overflow-hidden bg-[#71339b] p-4">
-      <header className="z-[100] flex items-center justify-end">
-        <button onClick={handleClose}>
-          <Close />
-        </button>
-      </header>
+    <div className="flex h-full w-screen flex-col items-center overflow-x-hidden overflow-y-auto bg-[#71339b] px-4 pb-10">
+      <header className="z-[100] flex items-center justify-end"></header>
 
       {step === 0 ? (
         <>
@@ -230,7 +277,7 @@ function RouteComponent() {
         {step === LAST_STEP && (
           <motion.div
             key="final-block-wrapper"
-            className="absolute inset-0 z-20 flex w-screen items-center justify-center px-8"
+            className="inset-0 z-20 flex w-screen items-center justify-center overflow-x-hidden px-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -244,24 +291,92 @@ function RouteComponent() {
               transition={{ duration: 0.6, ease: "easeOut" }}
               className="flex flex-col items-center justify-center text-white"
             >
-              <div className="flex w-screen flex-col px-8">
+              <div className="flex h-full w-screen flex-col overflow-y-auto px-8 pb-10">
+                <label htmlFor="photo-upload" className="block cursor-pointer">
+                  <div className="mx-auto mt-40 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-x-hidden overflow-y-auto rounded-full bg-white">
+                    <div className="flex h-[45px] w-[45px] items-center justify-center rounded-full bg-[#F3E5FF] pt-[10px]">
+                      <svg
+                        width="30"
+                        height="35"
+                        viewBox="0 0 30 35"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M20.3134 21.9187C23.8472 20.0218 26.25 16.2915 26.25 12.0001C26.25 5.7869 21.2132 0.750053 15 0.750053C8.7869 0.750053 3.75005 5.7869 3.75005 12.0001C3.75005 16.2916 6.15305 20.0219 9.6869 21.9188C5.89824 23.2763 2.7812 26.0441 0.968262 29.5895C4.81565 32.6628 9.69343 34.5001 15.0003 34.5001C20.3071 34.5001 25.1849 32.6628 29.0322 29.5897C27.2193 26.0441 24.1021 23.2762 20.3134 21.9187Z"
+                          fill="#721DBD"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-sm text-[#787878]">
+                      {selectedFile
+                        ? selectedFile.name.length > 14
+                          ? selectedFile.name.substring(0, 14) + "..."
+                          : selectedFile.name
+                        : "Загрузить фото"}
+                    </div>
+                  </div>
+                  <input
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
                 <h2 className="mb-4 text-start text-xl font-bold text-white">
                   Расскажите коротко о себе
                 </h2>
-
+                <div className="mb-4 text-start text-sm font-bold text-white">Пол</div>
+                <div className="mb-4 flex items-center justify-start gap-6">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`h-4 w-4 rounded-full border-2 border-white ${
+                        sex === "female" ? "bg-[#FFD943]" : "bg-white"
+                      }`}
+                      onClick={() => setSex("female")}
+                    ></div>
+                    <span className="text-white">Женский</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`h-4 w-4 rounded-full border-2 border-white ${
+                        sex === "male" ? "bg-[#FFD943]" : "bg-white"
+                      }`}
+                      onClick={() => setSex("male")}
+                    ></div>
+                    <span className="text-white">Мужской</span>
+                  </div>
+                </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Как вас зовут?"
+                  placeholder="Имя"
                   className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
                 />
 
                 <input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(Number(e.target.value))}
-                  placeholder="Сколько вам лет?"
+                  type="text"
+                  value={surname}
+                  onChange={(e) => setSurname(e.target.value)}
+                  placeholder="Фамилия"
+                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                />
+
+                <input
+                  type="text"
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
+                  placeholder="@логин"
+                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                />
+
+                <input
+                  type="text"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  placeholder="Дата рождения"
                   className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
                 />
 
@@ -275,7 +390,7 @@ function RouteComponent() {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Коротко о себе"
+                  placeholder="Опишите ваши интересы"
                   className="h-28 rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
                 />
               </div>
@@ -293,7 +408,7 @@ function RouteComponent() {
           Далее
         </button>
       ) : (
-        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
+        <div className="absolute right-0 bottom-2 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
           <button
             onClick={handleBack}
             className="z-[100] ml-4 bg-transparent px-4 text-white"
@@ -303,7 +418,7 @@ function RouteComponent() {
           <button
             onClick={handleNext}
             disabled={isDisabled}
-            className={`z-[100] mx-4 flex-1 ${isDisabled && "opacity-50"} rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white`}
+            className={`z-[100] mx-4 flex-1 ${isDisabled && "bg-gray-500"} rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white`}
           >
             Далее
           </button>

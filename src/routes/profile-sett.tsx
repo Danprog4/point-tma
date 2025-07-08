@@ -3,6 +3,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "~/components/Icons/Plus";
+import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
+import { convertToBase64 } from "~/lib/utils/convertToBase64";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/profile-sett")({
@@ -16,6 +19,9 @@ function RouteComponent() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
+  const [base64, setBase64] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [bio, setBio] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -32,13 +38,20 @@ function RouteComponent() {
     if (user?.bio) {
       setBio(user.bio);
     }
-  }, [user?.name, user?.email, user?.phone, user?.bio]);
+    if (user?.photo) {
+      setBase64(getImageUrl(user.photo));
+    }
+    if (user?.gallery) {
+      setGallery(user.gallery);
+    }
+  }, [user?.name, user?.email, user?.phone, user?.bio, user?.photo, user?.gallery]);
 
   const isDisabled =
     name === user?.name &&
     email === user?.email &&
     phone === user?.phone &&
-    bio === user?.bio;
+    bio === user?.bio &&
+    base64 === user?.photo;
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
@@ -47,10 +60,21 @@ function RouteComponent() {
   );
 
   const handleUpdateProfile = () => {
+    navigate({ to: "/profile" });
+
+    const galleryToSend = gallery.filter(
+      (item) => typeof item === "string" && item.startsWith("data:image/"),
+    );
+
+    const isBase64Photo = typeof base64 === "string" && base64.startsWith("data:image/");
+    const photoToSend = isBase64Photo ? base64 : "";
+
     updateProfile.mutate({
       email: email || "",
       phone: phone || "",
       bio: bio || "",
+      photo: photoToSend,
+      gallery: galleryToSend,
     });
     queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
       return {
@@ -58,11 +82,41 @@ function RouteComponent() {
         email: email,
         phone: phone,
         bio: bio,
+        gallery: gallery,
       };
     });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+
+    let fileToProcess: File = file;
+    // If file is HEIC, convert to PNG first
+    if (file.name.toLowerCase().endsWith(".heic")) {
+      fileToProcess = await convertHeicToPng(fileToProcess);
+    }
+    const base64str = await convertToBase64(fileToProcess);
+    setBase64(base64str);
+  };
+
+  const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    let fileToProcess: File = file;
+
+    if (file.name.toLowerCase().endsWith(".heic")) {
+      fileToProcess = await convertHeicToPng(fileToProcess);
+    }
+    const base64str = await convertToBase64(fileToProcess);
+    setGallery([...gallery, base64str]);
+  };
+
   console.log(user?.email);
+
+  console.log(gallery);
 
   return (
     <div className="h-full overflow-y-auto pb-24">
@@ -80,8 +134,73 @@ function RouteComponent() {
         </div>
       </div>
       <div className="mt-8 mb-4 flex flex-col items-center gap-2">
-        <div className="h-[82px] w-[82px] rounded-full bg-gray-500"></div>
-        <div>Изменить</div>
+        <label
+          htmlFor="profile-photo-upload"
+          className="flex cursor-pointer flex-col items-center"
+        >
+          <div className="flex h-[82px] w-[82px] items-center justify-center overflow-hidden rounded-full bg-gray-300">
+            {base64 || user?.photo ? (
+              <img
+                src={base64 ? base64 : getImageUrl(user?.photo || "")}
+                alt="Аватар"
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="20" fill="#ABABAB" />
+                <path
+                  d="M20 22c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+                  fill="#fff"
+                />
+              </svg>
+            )}
+          </div>
+          <div className="mt-2 text-sm font-medium text-[#9924FF]">
+            {user?.photo ? "Изменить" : "Добавить"}
+          </div>
+          <input
+            id="profile-photo-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </label>
+      </div>
+      <div className="mb-4 px-4 text-2xl font-bold">Галерея</div>
+      <div className="mb-4 flex flex-wrap gap-4 px-4">
+        {gallery.map((item, idx) => {
+          const isBase64 = typeof item === "string" && item.startsWith("data:image/");
+          return (
+            <div
+              key={item || idx}
+              className="flex aspect-square w-[23%] items-center justify-center rounded-lg bg-[#F3E5FF]"
+            >
+              <img
+                src={isBase64 ? item : getImageUrl(item)}
+                alt={`Галерея ${idx + 1}`}
+                className="h-full w-full rounded-lg object-cover"
+              />
+            </div>
+          );
+        })}
+
+        <label
+          htmlFor="gallery-upload"
+          className="flex aspect-square w-[23%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+        >
+          <div className="flex flex-col items-center gap-1 px-2">
+            <PlusIcon />
+            <div className="text-center text-xs text-[#9924FF]">добавить еще</div>
+          </div>
+        </label>
+        <input
+          id="gallery-upload"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleAddGallery}
+        />
       </div>
       <div className="flex flex-col items-center justify-center gap-4 px-4">
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">

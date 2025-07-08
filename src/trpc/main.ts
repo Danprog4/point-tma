@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { usersTable } from "~/db/schema";
+import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { procedure, publicProcedure } from "./init";
 export const router = {
   getHello: publicProcedure.query(() => {
@@ -22,9 +23,13 @@ export const router = {
     .input(
       z.object({
         name: z.string(),
-        age: z.number(),
+        surname: z.string(),
+        login: z.string(),
+        birthday: z.string(),
         city: z.string(),
         bio: z.string(),
+        sex: z.string(),
+        photo: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -39,11 +44,17 @@ export const router = {
         });
       }
 
+      const imageUUID = await uploadBase64Image(input.photo);
+
       await db.update(usersTable).set({
         name: input.name,
-        age: input.age,
+        surname: input.surname,
+        login: input.login,
+        birthday: input.birthday,
         city: input.city,
         bio: input.bio,
+        sex: input.sex,
+        photo: imageUUID,
       });
 
       return user;
@@ -55,6 +66,8 @@ export const router = {
         email: z.string(),
         phone: z.string(),
         bio: z.string(),
+        photo: z.string(),
+        gallery: z.array(z.string()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -66,6 +79,25 @@ export const router = {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
+        });
+      }
+
+      if (input.photo) {
+        const imageUUID = await uploadBase64Image(input.photo);
+        await db.update(usersTable).set({
+          photo: imageUUID,
+        });
+      }
+
+      if (input.gallery) {
+        const galleryUUIDs = await Promise.all(
+          input.gallery.map(async (image) => {
+            const imageUUID = await uploadBase64Image(image);
+            return imageUUID;
+          }),
+        );
+        await db.update(usersTable).set({
+          gallery: galleryUUIDs,
         });
       }
 

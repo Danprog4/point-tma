@@ -16,6 +16,7 @@ import { useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -29,6 +30,12 @@ function RouteComponent() {
   const { data: activeQuest } = useQuery(trpc.quest.getMyQuests.queryOptions());
 
   useScroll();
+
+  const userAge = user?.birthday
+    ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
+    : new Date().getFullYear() - new Date().getFullYear();
+
+  console.log(user?.photo);
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
@@ -63,8 +70,13 @@ function RouteComponent() {
       {page === "info" && (
         <>
           <div className="relative">
-            <div className="relative h-60 bg-gradient-to-br from-purple-400 to-pink-300">
+            <div className="relative h-60">
               {/* Level Badge */}
+              <img
+                src={getImageUrl(user?.photo || "")}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
               <div className="absolute bottom-4 left-4">
                 <div className="relative">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
@@ -104,7 +116,7 @@ function RouteComponent() {
                 </div>
               </div>
               <p className="text-sm text-gray-500">
-                г. {user?.city}, {user?.age} лет
+                г. {user?.city}, {userAge} лет
               </p>
             </div>
           </div>

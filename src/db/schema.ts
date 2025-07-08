@@ -14,7 +14,9 @@ export const usersTable = pgTable("users", {
   referrerId: bigint("referrerId", { mode: "number" }),
   photoUrl: varchar("photoUrl", { length: 255 }),
   name: varchar("name", { length: 255 }),
-  age: integer("age"),
+  surname: varchar("surname", { length: 255 }),
+  login: varchar("login", { length: 255 }),
+  birthday: varchar("birthday", { length: 255 }),
   city: varchar("city", { length: 255 }),
   interests: varchar("interests", { length: 255 }),
   email: varchar("email", { length: 255 }),
@@ -24,6 +26,9 @@ export const usersTable = pgTable("users", {
     .$type<Array<{ type: string; questId: number; isActive?: boolean }>>()
     .default([]),
   balance: integer("balance").default(0),
+  sex: varchar("sex", { length: 255 }),
+  photo: varchar("photo", { length: 255 }),
+  gallery: jsonb("gallery").$type<string[]>(),
 });
 
 export const activeQuestsTable = pgTable("active_quests", {

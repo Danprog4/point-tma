@@ -13,7 +13,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { id } = Route.useParams();
   return (
-    <div className="flex h-full flex-col pt-14 pb-10">
+    <div className="flex h-full flex-col overflow-y-auto pt-14 pb-10">
       <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4">
         <ArrowLeft
           className="absolute left-4 h-6 w-6"

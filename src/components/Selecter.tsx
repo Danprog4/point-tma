@@ -1,3 +1,4 @@
+import { fakeUsers } from "~/config/fakeUsers";
 import {
   Select,
   SelectContent,
@@ -13,7 +14,8 @@ export const Selecter = ({
 
   setValue,
   placeholder = "Выберите город",
-  cities = ["Москва", "Санкт-Петербург", "Новосибирск"],
+
+  cities = fakeUsers.map((user) => user.city),
 }: {
   height?: string;
   width?: string;

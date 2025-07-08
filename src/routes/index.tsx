@@ -11,6 +11,12 @@ import { Selecter } from "~/components/Selecter";
 import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
+import { EventCard } from "~/components/EventCard";
+import { conferencesData } from "~/config/conf";
+import { kinoData } from "~/config/kino";
+import { partiesData } from "~/config/party";
+import { questsData } from "~/config/quests";
+
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
     const isOnboarded = localStorage.getItem("isOnboarded");
@@ -44,6 +50,33 @@ function Home() {
 
   useScroll();
 
+  function ConferenceCard({ conf }: { conf: any }) {
+    return (
+      <div className="flex flex-col items-center gap-4 text-center text-sm text-nowrap">
+        <div className={`h-48 w-36 ${conf.bg || ""} relative overflow-hidden rounded-lg`}>
+          {conf.image && (
+            <img
+              src={conf.image}
+              alt={conf.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
+          <div className="absolute bottom-2 left-2 z-10">
+            <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
+              🎉 Конференция
+            </span>
+          </div>
+          {conf.image && (
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          )}
+        </div>
+        <div className="flex-1">
+          <h3 className="font-medium text-gray-900">{conf.title}</h3>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
       {/* Top Navigation */}
@@ -66,18 +99,14 @@ function Home() {
         {/* Filter Chips */}
         <div className="flex items-center gap-6 p-4 pb-6">
           <div className="flex items-center gap-2">
-            {/* <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <span className="text-sm font-medium">Алматы</span>
-              <ChevronDown className="h-4 w-4 text-gray-500" />
-            </div> */}
-            <Selecter height="h-10" width="w-full" placeholder="Москва" />
+            <Selecter height="h-10" width="w-full" placeholder="Алматы" />
           </div>
           <div className="flex flex-nowrap gap-8 overflow-x-auto">
             {[
               { emoji: "🎞", name: "Кино" },
               { emoji: "🏛", name: "Театр" },
               { emoji: "🎄", name: "Новый год" },
-              { emoji: "💃", name: "Конценты" },
+              { emoji: "💃", name: "Концерты" },
               { emoji: "💞", name: "Клубы знакомств" },
               { emoji: "📈", name: "Конференции" },
             ].map((chip) => (
@@ -144,48 +173,8 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {[
-              {
-                title: "Пневмослон",
-                subtitle: "17 января • По барабану",
-                tag: "💃 Концерт",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-purple-400 to-pink-400",
-              },
-              {
-                title: "Человек-паук",
-                subtitle: "20 января • Сары-Арка",
-                tag: "🎞 Кино",
-                price: "2 500 ₸",
-                bg: "bg-gradient-to-br from-blue-400 to-purple-400",
-              },
-              {
-                title: "KazDrilling 2024",
-                subtitle: "Renaissance Hotel",
-                tag: "💃 Концерт",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-green-400 to-blue-400",
-              },
-            ].map((event, idx) => (
-              <div
-                key={idx}
-                className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-              >
-                <div className={`h-32 ${event.bg} relative`}>
-                  <div className="absolute bottom-2 left-2 flex gap-1">
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.tag}
-                    </span>
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.price}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
-                  <p className="text-sm text-gray-500">{event.subtitle}</p>
-                </div>
-              </div>
+            {(kinoData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
+              <EventCard key={idx} event={event} />
             ))}
           </div>
         </div>
@@ -200,48 +189,8 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {[
-              {
-                title: "Квест для дизайнеров",
-                subtitle: "Получи любой курс за прохождение",
-                tag: "🕹 Квест",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-orange-400 to-red-400",
-              },
-              {
-                title: "Квест на поиск для развития коммуникационных навыков",
-                subtitle: "Приз 1 ton",
-                tag: "🕹 Квест",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-teal-400 to-blue-400",
-              },
-              {
-                title: "KazDrilling 2024",
-                subtitle: "Renaissance Hotel",
-                tag: "💃 Концерт",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-green-400 to-blue-400",
-              },
-            ].map((event, idx) => (
-              <div
-                key={idx}
-                className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-              >
-                <div className={`h-32 ${event.bg} relative`}>
-                  <div className="absolute bottom-2 left-2 flex gap-1">
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.tag}
-                    </span>
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.price}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
-                  <p className="text-sm text-gray-500">{event.subtitle}</p>
-                </div>
-              </div>
+            {(questsData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
+              <EventCard key={idx} event={event} />
             ))}
           </div>
         </div>
@@ -270,35 +219,8 @@ function Home() {
             />
           </div>
           <div className="flex w-full gap-4 overflow-x-auto px-4">
-            {[
-              {
-                title: "Для костюмеров",
-                bg: "bg-gradient-to-br from-yellow-400 to-orange-400",
-              },
-              {
-                title: "Для DevOps",
-                bg: "bg-gradient-to-br from-blue-400 to-purple-400",
-              },
-              {
-                title: "Для инженеров",
-                bg: "bg-gradient-to-br from-green-400 to-teal-400",
-              },
-            ].map((conf, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center gap-4 text-center text-sm text-nowrap"
-              >
-                <div className={`h-48 w-36 ${conf.bg} relative rounded-lg`}>
-                  <div className="absolute bottom-2 left-2">
-                    <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
-                      🎉 Конференция
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{conf.title}</h3>
-                </div>
-              </div>
+            {(conferencesData?.slice?.(0, 3) || []).map((conf: any, idx: number) => (
+              <ConferenceCard key={idx} conf={conf} />
             ))}
           </div>
         </div>
@@ -315,48 +237,8 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {[
-              {
-                title: "Пост- новогодний вечер",
-                subtitle: "15 января • Мозайка",
-                tag: "🎄 Новый год",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-red-400 to-pink-400",
-              },
-              {
-                title: "Гангстеры и розы",
-                subtitle: "21 января • Алькатрас",
-                tag: "💞 Клубы знакомств",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-pink-400 to-purple-400",
-              },
-              {
-                title: "KazDrilling 2024",
-                subtitle: "Renaissance Hotel",
-                tag: "💃 Концерт",
-                price: "3 000 ₸",
-                bg: "bg-gradient-to-br from-green-400 to-blue-400",
-              },
-            ].map((event, idx) => (
-              <div
-                key={idx}
-                className="w-48 flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-              >
-                <div className={`h-32 ${event.bg} relative`}>
-                  <div className="absolute bottom-2 left-2 flex gap-1">
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.tag}
-                    </span>
-                    <span className="rounded-lg bg-white px-2 py-1 text-xs font-bold">
-                      {event.price}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <h3 className="mb-1 font-medium text-gray-900">{event.title}</h3>
-                  <p className="text-sm text-gray-500">{event.subtitle}</p>
-                </div>
-              </div>
+            {(partiesData?.slice?.(0, 3) || []).map((event: any, idx: number) => (
+              <EventCard key={idx} event={event} />
             ))}
           </div>
         </div>

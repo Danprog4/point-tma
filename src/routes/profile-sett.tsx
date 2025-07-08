@@ -22,6 +22,7 @@ function RouteComponent() {
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
+  const [surname, setSurname] = useState<string | null>(null);
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [bio, setBio] = useState<string | null>(null);
@@ -30,6 +31,9 @@ function RouteComponent() {
   useEffect(() => {
     if (user?.name) {
       setName(user.name);
+    }
+    if (user?.surname) {
+      setSurname(user.surname);
     }
     if (user?.email) {
       setEmail(user.email);
@@ -46,10 +50,19 @@ function RouteComponent() {
     if (user?.gallery) {
       setGallery(user.gallery);
     }
-  }, [user?.name, user?.email, user?.phone, user?.bio, user?.photo, user?.gallery]);
+  }, [
+    user?.name,
+    user?.surname,
+    user?.email,
+    user?.phone,
+    user?.bio,
+    user?.photo,
+    user?.gallery,
+  ]);
 
   const isDisabled =
     name === user?.name &&
+    surname === user?.surname &&
     email === user?.email &&
     phone === user?.phone &&
     bio === user?.bio &&
@@ -57,15 +70,18 @@ function RouteComponent() {
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
-      onSuccess: () => {},
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.main.getUser.queryKey(),
+        });
+        navigate({ to: "/profile" });
+      },
     }),
   );
 
   console.log(gallery);
 
   const handleUpdateProfile = () => {
-    navigate({ to: "/profile" });
-
     const filteredGallery = gallery.filter(
       (item) => typeof item === "string" && item.length > 0,
     );
@@ -77,16 +93,8 @@ function RouteComponent() {
       bio: bio || "",
       photo: photoToSend,
       gallery: filteredGallery,
-    });
-    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
-      return {
-        ...old,
-        email: email,
-        phone: phone,
-        bio: bio,
-        gallery: filteredGallery,
-        photo: photoToSend,
-      };
+      name: name,
+      surname: surname || "",
     });
   };
 
@@ -214,11 +222,22 @@ function RouteComponent() {
       <div className="flex flex-col items-center justify-center gap-4 px-4">
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Имя и фамилия</div>
+            <div className="text-[#ABABAB]">Имя</div>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="border-none bg-transparent text-black outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+          <div className="flex flex-col items-start text-sm">
+            <div className="text-[#ABABAB]">Фамилия</div>
+            <input
+              type="text"
+              value={surname || ""}
+              onChange={(e) => setSurname(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
           </div>
@@ -288,7 +307,7 @@ function RouteComponent() {
         onClick={handleUpdateProfile}
         className={`absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "bg-gray-300"}`}
       >
-        Сохранить изменения
+        {updateProfile.isPending ? "Сохраняем..." : "Сохранить изменения"}
       </button>
     </div>
   );

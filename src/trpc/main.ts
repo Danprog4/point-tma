@@ -68,6 +68,8 @@ export const router = {
         bio: z.string(),
         photo: z.string(),
         gallery: z.array(z.string()),
+        name: z.string(),
+        surname: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -120,6 +122,8 @@ export const router = {
           email: input.email,
           phone: input.phone,
           bio: input.bio,
+          name: input.name,
+          surname: input.surname,
         })
         .where(eq(usersTable.id, ctx.userId));
 

@@ -5,17 +5,17 @@ import {
   Award,
   BarChart3,
   Calendar,
-  ChevronRight,
   History,
   Package,
   Search,
   Settings,
   Star,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
+import { MenuItem } from "~/components/MenuItem";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
@@ -25,23 +25,15 @@ export const Route = createFileRoute("/profile")({
 function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: user } = useQuery({
+    ...trpc.main.getUser.queryOptions(),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
   const queryClient = useQueryClient();
   const [page, setPage] = useState<"info" | "friends">("info");
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
-
-  const hashPhoto = useMemo(
-    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.photo,
-    [queryClient, trpc],
-  );
-
-  const hashGallery = useMemo(
-    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.gallery,
-    [queryClient, trpc],
-  );
-
-  console.log(hashPhoto, "hashPhoto");
 
   useScroll();
 
@@ -51,17 +43,16 @@ function RouteComponent() {
 
   console.log(user?.photo, "user?.photo");
 
+  console.log(user?.name, "user?.name");
+
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
-      {/* Top Navigation */}
       <Header />
 
-      {/* Page Title */}
       <div className="px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Профиль</h1>
       </div>
 
-      {/* Segment Control */}
       <div className="flex gap-4 px-4 pb-4">
         <button
           className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
@@ -88,13 +79,9 @@ function RouteComponent() {
               {/* Level Badge */}
               <img
                 src={
-                  hashPhoto
-                    ? hashPhoto.startsWith("data:image/")
-                      ? hashPhoto
-                      : getImageUrl(hashPhoto)
-                    : user?.photo?.startsWith("data:image/")
-                      ? user?.photo
-                      : getImageUrl(user?.photo || "")
+                  user?.photo?.startsWith("data:image/")
+                    ? user?.photo
+                    : getImageUrl(user?.photo || "")
                 }
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
@@ -114,7 +101,7 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2 pt-8">
-                      {hashGallery?.map((img) => (
+                      {user?.gallery?.map((img) => (
                         <img
                           src={img.startsWith("data:image/") ? img : getImageUrl(img)}
                           alt=""
@@ -146,7 +133,9 @@ function RouteComponent() {
           <div className="px-4 py-4">
             <div className="text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
-                <h2 className="text-xl font-bold text-black">{user?.name}</h2>
+                <h2 className="text-xl font-bold text-black">
+                  {user?.name} {user?.surname}
+                </h2>
                 <div className="flex items-center">
                   <Star className="h-5 w-5 fill-blue-500 text-blue-500" />
                 </div>
@@ -183,7 +172,6 @@ function RouteComponent() {
             </div>
           </div> */}
 
-          {/* Statistics */}
           <div className="mt-4 mb-6 px-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
@@ -307,29 +295,6 @@ function RouteComponent() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function MenuItem({
-  icon,
-  title,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  onClick?: () => void;
-}) {
-  return (
-    <div
-      className="flex items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0"
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-3">
-        {icon}
-        <span className="text-base font-medium text-black">{title}</span>
-      </div>
-      <ChevronRight className="h-5 w-5 text-gray-400" />
     </div>
   );
 }

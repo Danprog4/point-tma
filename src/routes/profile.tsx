@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -23,14 +23,17 @@ export const Route = createFileRoute("/profile")({
 });
 
 function RouteComponent() {
+  useScroll();
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+  const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
 
-  useScroll();
+  console.log(requests, "requests");
 
   const activeQuests = useMemo(() => {
     return activeEvents?.filter((event) => event.name === "Квест");
@@ -40,9 +43,8 @@ function RouteComponent() {
     ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
     : new Date().getFullYear() - new Date().getFullYear();
 
-  console.log(user?.photo, "user?.photo");
-
-  console.log(user?.name, "user?.name");
+  const acceptRequest = useMutation(trpc.friends.acceptRequest.mutationOptions());
+  const declineRequest = useMutation(trpc.friends.declineRequest.mutationOptions());
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
@@ -290,7 +292,42 @@ function RouteComponent() {
             <div className="absolute top-7 right-7">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
-            <div>0 друзей</div>
+            {requests && requests?.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <div>Запросы</div>
+                <div>
+                  {requests?.map((request) => (
+                    <div
+                      key={request.id}
+                      className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                    >
+                      <div className="mb-2 font-medium text-black">
+                        {request.fromUserId}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          className="rounded bg-green-500 px-3 py-1 text-white transition hover:bg-green-600"
+                          onClick={() =>
+                            acceptRequest.mutate({ userId: request.fromUserId! })
+                          }
+                        >
+                          Принять
+                        </button>
+                        <button
+                          className="rounded bg-red-500 px-3 py-1 text-white transition hover:bg-red-600"
+                          onClick={() =>
+                            declineRequest.mutate({ userId: request.fromUserId! })
+                          }
+                        >
+                          Отклонить
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div>{friends?.length || 0} друзей</div>
           </div>
         </>
       )}

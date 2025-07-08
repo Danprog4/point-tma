@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { friendRequestsTable } from "~/db/schema";
@@ -11,6 +11,19 @@ export const friendsRouter = createTRPCRouter({
     });
 
     return requests;
+  }),
+
+  getFriends: procedure.query(async ({ ctx }) => {
+    const friends = await db.query.friendRequestsTable.findMany({
+      where: or(
+        eq(friendRequestsTable.toUserId, ctx.userId),
+        eq(friendRequestsTable.fromUserId, ctx.userId),
+      ),
+    });
+
+    const acceptedFriends = friends.filter((friend) => friend.status === "accepted");
+
+    return acceptedFriends;
   }),
 
   sendRequest: procedure

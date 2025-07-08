@@ -3,7 +3,9 @@ import { ArrowLeft, ArrowRight, Settings } from "lucide-react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { questsData } from "~/config/quests";
+import { fakeUsers } from "~/config/fakeUsers";
+import { meetingsConfig } from "~/config/meetings";
+import { getEventData } from "~/lib/utils/getEventData";
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
 });
@@ -12,6 +14,16 @@ function RouteComponent() {
   useScroll();
   const navigate = useNavigate();
   const { id } = Route.useParams();
+
+  const meeting = meetingsConfig.find((m) => m.id === parseInt(id));
+
+  const event = getEventData(meeting?.eventType!, meeting?.eventId!);
+
+  const organizer = fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
+
+  const age = new Date().getFullYear() - new Date(organizer?.birthday!).getFullYear();
+
+  console.log(event);
   return (
     <div className="flex h-full flex-col overflow-y-auto pt-14 pb-10">
       <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4">
@@ -22,14 +34,14 @@ function RouteComponent() {
         <div className="flex flex-1 justify-center text-xl font-bold">Встреча</div>
       </header>
       <div className="flex flex-col p-4">
-        <QuestCard quest={questsData[0]} />
-        {questsData[0].description}
+        <QuestCard quest={event!} />
+        {event?.description}
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
             + Достижение
           </div>
           <div className="flex items-center gap-1">
-            + {questsData[0].reward} points <Coin />
+            + {event?.reward} points <Coin />
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between gap-6 text-white">
@@ -72,8 +84,12 @@ function RouteComponent() {
         </div>
       </div>
       <div className="mt-2 flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold">Евгения Воробьёва</div>
-        <div className="text-sm text-gray-500">г. Караганда, 24 года</div>
+        <div className="text-2xl font-bold">
+          {organizer?.name} {organizer?.surname}
+        </div>
+        <div className="text-sm text-gray-500">
+          {organizer?.city}, {age}
+        </div>
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 text-white">
         <div className="rounded-2xl bg-[#2462FF] px-4 py-2">Подписаться</div>
@@ -81,11 +97,7 @@ function RouteComponent() {
       </div>
       <div className="mt-4 flex flex-col gap-2 px-4">
         <div className="text-2xl font-bold">Интересы</div>
-        <div className="text-sm text-gray-500">
-          Просто парень, который любит кофе, спорт и хорошие шутки. В поисках новых
-          приключений и смыслов. Иногда в игре, но чаще в реальности. Если хочешь добавить
-          что-то уникальное про свои проекты или увлечения, скажи – подправлю! 😊
-        </div>
+        <div className="text-sm text-gray-500">{organizer?.bio}</div>
       </div>
       <div className="mt-4 flex flex-col gap-2 px-4">
         <div className="text-2xl font-bold">Достижения</div>

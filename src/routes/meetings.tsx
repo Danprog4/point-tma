@@ -6,6 +6,10 @@ import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import { fakeUsers } from "~/config/fakeUsers";
+import { meetingsConfig } from "~/config/meetings";
+import { getEventData } from "~/lib/utils/getEventData";
+
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
@@ -14,58 +18,35 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
   const [isOpen, setIsOpen] = useState(false);
-  const meetings = [
-    {
-      id: 1,
-      name: "Евгения Воробьёва",
-      description: "Встреча в ресторане",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#4FEBCC",
-    },
-    {
-      id: 2,
-      name: "Мария Петрова",
-      description: "Посещение конференции",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#31DB37",
-    },
-    {
-      id: 3,
-      name: "Владимир Баранов",
-      description: "Поход на концерт",
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#85C4F1",
-    },
-    {
-      id: 4,
-      name: "Анна Яковлева",
-      description: "Поход в мастерскую",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#E15151",
-    },
-    {
-      id: 5,
-      name: "Андрей Григорьев",
-      description: "Нетворкинг для дизайнеров",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#CFD89A",
-    },
-    {
-      id: 6,
-      name: "Анна Морозова",
-      description: "Концерт «Gogol Bordelo»",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-      statusColor: "#EFDEEF",
-    },
-  ];
 
-  const filters = ["Все", "Конференции", "Вечеринки", "Турниры"];
+  const meetings = meetingsConfig.map((meeting) => {
+    const organizer = fakeUsers.find((u) => u.meetings.includes(meeting.id));
+    const event = getEventData(meeting.eventType, meeting.eventId);
+
+    return {
+      id: meeting.id,
+      name: organizer ? `${organizer.name} ${organizer.surname}` : "Неизвестно",
+      description: event ? event.title : "Без названия",
+      avatar: organizer ? organizer.photoUrl : "",
+      statusColor: "#4FEBCC",
+      eventType: meeting.eventType,
+      eventId: meeting.eventId,
+      event,
+      organizer,
+    };
+  });
+
+  const filters = ["Все", "Конференции", "Вечеринки", "Квесты", "Кино", "Нетворкинг"];
+  const filterMap = {
+    Все: null,
+    Конференции: "Конференция",
+    Вечеринки: "Вечеринка",
+    Квесты: "Квест",
+    Кино: "Кино",
+    Нетворкинг: "Нетворкинг",
+  };
+
+  console.log(meetings);
 
   useScroll();
 
@@ -160,43 +141,53 @@ function RouteComponent() {
                 ))}
               </div>
             </div>
-            {meetings.map((meeting, index) => (
-              <div key={meeting.id} className="">
-                {/* Profile Card */}
-                <div
-                  className="overflow-hidden"
-                  onClick={() =>
-                    navigate({ to: "/meet/$id", params: { id: meeting.id.toString() } })
-                  }
-                >
-                  {/* Avatar Section */}
-                  <div className="relative h-36">
-                    <img
-                      src={meeting.avatar}
-                      alt={meeting.name}
-                      className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
-                    />
-                    {/* Status Indicator */}
-                    <div
-                      className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600"
-                      style={{ backgroundColor: meeting.statusColor }}
-                    />
-                  </div>
+            {meetings
+              .filter((meeting) => {
+                if (activeFilter === "Все") return true;
+                return (
+                  meeting.eventType === filterMap[activeFilter as keyof typeof filterMap]
+                );
+              })
+              .map((meeting, index) => (
+                <div key={meeting.id} className="">
+                  {/* Profile Card */}
+                  <div
+                    className="overflow-hidden"
+                    onClick={() =>
+                      navigate({
+                        to: "/meet/$id",
+                        params: { id: meeting.id.toString() },
+                      })
+                    }
+                  >
+                    {/* Avatar Section */}
+                    <div className="relative h-36">
+                      <img
+                        src={meeting.avatar}
+                        alt={meeting.name}
+                        className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
+                      />
+                      {/* Status Indicator */}
+                      <div
+                        className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600"
+                        style={{ backgroundColor: meeting.statusColor }}
+                      />
+                    </div>
 
-                  {/* Text Content */}
-                  <div className="p-2">
-                    <div className="space-y-1">
-                      <h3 className="text-sm leading-tight font-medium text-gray-900">
-                        {meeting.name}
-                      </h3>
-                      <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                        {meeting.description}
-                      </p>
+                    {/* Text Content */}
+                    <div className="p-2">
+                      <div className="space-y-1">
+                        <h3 className="text-sm leading-tight font-medium text-gray-900">
+                          {meeting.name}
+                        </h3>
+                        <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                          {meeting.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </>
       </div>

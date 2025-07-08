@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
@@ -7,7 +7,6 @@ import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
-import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
@@ -55,7 +54,10 @@ export function getTypeColor(type: string) {
   }
 }
 
-const filters = ["Все", "Конференции", "Вечеринки", "Турниры"];
+const filters = [
+  "Все",
+  ...Array.from(new Set(questsData.map((quest) => quest.category))),
+];
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -106,144 +108,40 @@ function RouteComponent() {
           </button>
         ))}
       </div>
-      {/* Quest Lists by Date */}
       <div className="space-y-4">
-        {/* 19 декабря */}
-        <div>
-          <h3 className="px-4 pb-2 text-xs font-normal text-black">19 декабря</h3>
-          <div className="px-4">
-            <QuestCard quest={questsData[0]} isNavigable={true} />
-            <p className="mb-4 text-xs leading-4 text-black">
-              {questsData[0].description}
-            </p>
-            <div className="mb-6 flex items-center justify-between">
-              {questsData[0].hasAchievement && (
-                <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                  + Достижение
-                </span>
-              )}
-              <div className="ml-auto flex items-center gap-1">
-                <span className="text-base font-medium text-black">
-                  + {questsData[0].reward.toLocaleString()}
-                </span>
-                <span className="text-base font-medium text-black">points</span>
-                <Coin />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 20 декабря */}
-        <div>
-          <h3 className="px-4 pb-2 text-xs font-normal text-black">20 декабря</h3>
-          <div className="space-y-6 px-4">
-            {/* Quest 2 */}
-            <div>
-              <QuestCard quest={questsData[1]} isNavigable={true} />
-              <p className="mb-2 text-xs leading-4 text-black">
-                {questsData[1].description}
-              </p>
-              <div className="flex items-center justify-end">
-                <div className="flex items-center gap-1">
-                  <span className="text-base font-medium text-black">
-                    + {questsData[1].reward.toLocaleString()}
-                  </span>
-                  <span className="text-base font-medium text-black">points</span>
-                  <Coin />
-                </div>
-              </div>
-            </div>
-            <div className="col-span-2 w-full">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Актуальные квесты</h2>
-                <ArrowRight className="h-5 w-5 text-gray-500" />
-              </div>
-              <div className="flex gap-4 overflow-x-auto">
-                {[
-                  {
-                    title: "Пост- новогодний вечер",
-                    subtitle: "15 января • Мозайка",
-                    tag: "🎄 Новый год",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-red-400 to-pink-400",
-                  },
-                  {
-                    title: "Гангстеры и розы",
-                    subtitle: "21 января • Алькатрас",
-                    tag: "💞 Клубы знакомств",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-pink-400 to-purple-400",
-                  },
-                  {
-                    title: "KazDrilling 2024",
-                    subtitle: "Renaissance Hotel",
-                    tag: "💃 Концерт",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-green-400 to-blue-400",
-                  },
-                ].map((event, idx) => (
-                  <div
-                    key={idx}
-                    className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-                  >
-                    <div className={`h-full w-full ${event.bg} relative`}>
-                      <div className="absolute bottom-2 left-2 flex gap-1">
-                        <div>{event.tag}</div>
-                      </div>
-                    </div>
+        {questsData
+          .filter(
+            (quest) =>
+              (activeFilter === "Все" && questsData) || quest.category === activeFilter,
+          )
+          .map((quest, idx) => (
+            <div key={quest.id}>
+              <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
+              <div className="px-4">
+                <QuestCard quest={quest} isNavigable={true} />
+                <p className="mb-4 text-xs leading-4 text-black">{quest.description}</p>
+                <div className="mb-6 flex items-center justify-between">
+                  {quest.hasAchievement && (
+                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                      + Достижение
+                    </span>
+                  )}
+                  <div className="ml-auto flex items-center gap-1">
+                    <span className="text-base font-medium text-black">
+                      + {quest.reward.toLocaleString()}
+                    </span>
+                    <span className="text-base font-medium text-black">points</span>
+                    <Coin />
                   </div>
-                ))}
-              </div>
-            </div>
-            {/* Quest 3 */}
-            <div>
-              <h3 className="pb-2 text-xs font-normal text-black">23 декабря</h3>
-              <QuestCard quest={questsData[2]} isNavigable={true} />
-              <p className="mb-2 text-xs leading-4 text-black">
-                {questsData[2].description}
-              </p>
-              <div className="flex items-center justify-between">
-                {questsData[2].hasAchievement && (
-                  <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                    + Достижение
-                  </span>
-                )}
-                <div className="ml-auto flex items-center gap-1">
-                  <span className="text-base font-medium text-black">
-                    + {questsData[2].reward.toLocaleString()}
-                  </span>
-                  <span className="text-base font-medium text-black">points</span>
-                  <Coin />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* 23 декабря */}
-        <div>
-          <h3 className="px-4 pb-2 text-xs font-normal text-black">23 декабря</h3>
-          <div className="px-4">
-            <QuestCard quest={questsData[3]} isNavigable={true} />
-            <p className="mb-4 text-xs leading-4 text-black">
-              {questsData[3].description}
-            </p>
-            <div className="mb-6 flex items-center justify-end">
-              <div className="flex items-center gap-2">
-                <span className="text-base font-medium text-black">
-                  + {questsData[3].reward.toLocaleString()}
-                </span>
-                <span className="text-base font-medium text-black">points</span>
-                <Coin />
-              </div>
-            </div>
-          </div>
-        </div>
+          ))}
       </div>
 
       {/* Create Quest Button */}
 
-      <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
+      {/* <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
         <div className="mx-auto flex w-full items-center gap-2 px-4">
           <button
             onClick={() =>
@@ -263,7 +161,7 @@ function RouteComponent() {
             <span className="text-xs">Ещё</span>
           </div>
         </div>
-      </div>
+      </div> */}
       {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
     </div>
   );

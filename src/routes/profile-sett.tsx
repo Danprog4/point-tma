@@ -19,13 +19,13 @@ function RouteComponent() {
 
   const [name, setName] = useState("");
 
-  const [email, setEmail] = useState<string | null>(null);
-  const [phone, setPhone] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
   const [base64, setBase64] = useState<string | null>(null);
-  const [surname, setSurname] = useState<string | null>(null);
+  const [surname, setSurname] = useState<string>("");
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [bio, setBio] = useState<string | null>(null);
+  const [bio, setBio] = useState<string>("");
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -61,12 +61,12 @@ function RouteComponent() {
   ]);
 
   const isDisabled =
-    name === user?.name &&
-    surname === user?.surname &&
-    email === user?.email &&
-    phone === user?.phone &&
-    bio === user?.bio &&
-    base64 === user?.photo;
+    name === (user?.name ?? "") &&
+    surname === (user?.surname ?? "") &&
+    email === (user?.email ?? "") &&
+    phone === (user?.phone ?? "") &&
+    bio === (user?.bio ?? "") &&
+    !selectedFile;
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({

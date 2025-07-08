@@ -11,7 +11,7 @@ import {
   Settings,
   Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
@@ -36,6 +36,20 @@ function RouteComponent() {
   const [isClicked, setIsClicked] = useState(false);
 
   useScroll();
+
+  const hashPhoto = useMemo(
+    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.photo,
+    [queryClient, trpc],
+  );
+
+  const hashGallery = useMemo(
+    () => queryClient.getQueryData(trpc.main.getUser.queryKey())?.gallery,
+    [queryClient, trpc],
+  );
+
+  const activeQuests = useMemo(() => {
+    return activeEvents?.filter((event) => event.name === "Квест");
+  }, [activeEvents]);
 
   const userAge = user?.birthday
     ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
@@ -79,9 +93,13 @@ function RouteComponent() {
               {/* Level Badge */}
               <img
                 src={
-                  user?.photo?.startsWith("data:image/")
-                    ? user?.photo
-                    : getImageUrl(user?.photo || "")
+                  hashPhoto
+                    ? hashPhoto?.startsWith("data:image/")
+                      ? hashPhoto
+                      : getImageUrl(hashPhoto || "")
+                    : user?.photo?.startsWith("data:image/")
+                      ? user?.photo
+                      : getImageUrl(user?.photo || "")
                 }
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
@@ -101,13 +119,20 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2 pt-8">
-                      {user?.gallery?.map((img) => (
-                        <img
-                          src={img.startsWith("data:image/") ? img : getImageUrl(img)}
-                          alt=""
-                          className="h-12 w-12 rounded-lg object-cover"
-                        />
-                      ))}
+                      {(hashGallery ? hashGallery : user?.gallery || []).map(
+                        (img, idx) => (
+                          <img
+                            key={idx}
+                            src={
+                              img?.startsWith("data:image/")
+                                ? img
+                                : getImageUrl(img || "")
+                            }
+                            alt=""
+                            className="h-12 w-12 rounded-lg object-cover"
+                          />
+                        ),
+                      )}
                     </div>
                   </div>
                   <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">
@@ -176,7 +201,7 @@ function RouteComponent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-black">
-                  {activeEvents?.length || 0}
+                  {activeQuests?.length || 0}
                 </div>
                 <div
                   onClick={() => {

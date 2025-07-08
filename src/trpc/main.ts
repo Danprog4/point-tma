@@ -94,6 +94,13 @@ export const router = {
           .where(eq(usersTable.id, ctx.userId));
       }
 
+      if (input.gallery.length > 7) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Gallery must be less than 7 images",
+        });
+      }
+
       if (input.gallery) {
         const galleryUUIDs = await Promise.all(
           input.gallery.map(async (image) => {

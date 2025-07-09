@@ -85,7 +85,11 @@ export const authRouter = {
             city: null,
             inventory: [],
             balance: 0,
-            age: null,
+            birthday: null,
+            surname: null,
+            sex: null,
+            photo: null,
+            gallery: [],
           })
           .returning();
 

@@ -1,11 +1,13 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Settings } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
+import { useMemo } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
 import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
+import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/meet/$id")({
@@ -16,15 +18,92 @@ function RouteComponent() {
   useScroll();
   const navigate = useNavigate();
   const { id } = Route.useParams();
-  const trpc = useTRPC();
-
-  const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
-
+  const queryClient = useQueryClient();
   const meeting = meetingsConfig.find((m) => m.id === parseInt(id));
 
-  const event = getEventData(meeting?.eventType!, meeting?.eventId!);
-
   const organizer = fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
+
+  const trpc = useTRPC();
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: userSubscriptions } = useQuery(
+    trpc.main.getUserSubscriptions.queryOptions(),
+  );
+
+  const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
+  const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
+  const { data: userRequests } = useQuery(trpc.main.getMyRequests.queryOptions());
+
+  const isRequest = useMemo(() => {
+    return userRequests?.some((f) => f.toUserId === organizer?.id);
+  }, [userRequests, organizer?.id]);
+
+  const subscribe = useMutation(trpc.main.subscribe.mutationOptions());
+  const unsubscribe = useMutation(trpc.main.unSubscribe.mutationOptions());
+
+  const addToFavorites = useMutation(trpc.main.addToFavorites.mutationOptions());
+  const removeFromFavorites = useMutation(
+    trpc.main.removeFromFavorites.mutationOptions(),
+  );
+  const { data: userFavorites } = useQuery(trpc.main.getUserFavorites.queryOptions());
+
+  const handleSendRequest = () => {
+    if (isRequest) {
+      unSendRequest.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getMyRequests.queryKey(), (old: any) => {
+        return old.filter((f: any) => f.toUserId !== organizer?.id);
+      });
+    } else {
+      sendRequest.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getMyRequests.queryKey(), (old: any) => {
+        return [...(old || []), { fromUserId: user?.id!, toUserId: organizer?.id! }];
+      });
+    }
+  };
+
+  const handleSubscribe = () => {
+    if (isSubscribed) {
+      unsubscribe.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getUserSubscriptions.queryKey(), (old: any) => {
+        return old.filter((s: any) => s.targetUserId !== organizer?.id);
+      });
+    } else {
+      subscribe.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getUserSubscriptions.queryKey(), (old: any) => {
+        return [
+          ...(old || []),
+          { subscriberId: user?.id!, targetUserId: organizer?.id! },
+        ];
+      });
+    }
+  };
+
+  const isFavorite = useMemo(() => {
+    return userFavorites?.some(
+      (f) => f.toUserId === organizer?.id && f.fromUserId === user?.id,
+    );
+  }, [userFavorites, organizer?.id]);
+
+  const handleToFavorites = () => {
+    if (isFavorite) {
+      removeFromFavorites.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return old.filter((f: any) => f.toUserId !== organizer?.id);
+      });
+    } else {
+      addToFavorites.mutate({ userId: organizer?.id! });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return [...(old || []), { fromUserId: user?.id!, toUserId: organizer?.id! }];
+      });
+    }
+  };
+
+  const isSubscribed = useMemo(() => {
+    return userSubscriptions?.some(
+      (s) => s.targetUserId === organizer?.id && s.subscriberId === user?.id,
+    );
+  }, [userSubscriptions, organizer?.id]);
+
+  const event = getEventData(meeting?.eventType!, meeting?.eventId!);
 
   const age = new Date().getFullYear() - new Date(organizer?.birthday!).getFullYear();
 
@@ -80,15 +159,13 @@ function RouteComponent() {
               </div>
             </div>
           </div>
-          <div className="absolute top-4 left-4 flex items-center justify-center gap-2 rounded-md bg-[#FFD943] px-2 py-1">
-            <div className="font-medium text-black">Пройти верификацию</div>
-            <ArrowRight className="h-4 w-4 text-black" />
-          </div>
 
-          {/* Edit Button */}
           <div className="absolute top-4 right-4">
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50">
-              <Settings className="h-4 w-4 text-black" />
+            <button
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+              onClick={() => handleToFavorites()}
+            >
+              <Heart className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")} />
             </button>
           </div>
         </div>
@@ -110,12 +187,17 @@ function RouteComponent() {
         </div>
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 text-white">
-        <div className="rounded-2xl bg-[#2462FF] px-4 py-2">Подписаться</div>
+        <div
+          className="rounded-2xl bg-[#2462FF] px-4 py-2"
+          onClick={() => handleSubscribe()}
+        >
+          {isSubscribed ? "Отписаться" : "Подписаться"}
+        </div>
         <div
           className="rounded-2xl bg-[#9924FF] px-4 py-2"
-          onClick={() => sendRequest.mutate({ userId: organizer?.id! })}
+          onClick={() => handleSendRequest()}
         >
-          Добавить в друзья
+          {isRequest ? "Отменить запрос" : "Добавить в друзья"}
         </div>
       </div>
       <div className="mt-4 flex flex-col gap-2 px-4">

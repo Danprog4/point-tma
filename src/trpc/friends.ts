@@ -41,6 +41,25 @@ export const friendsRouter = createTRPCRouter({
       return request;
     }),
 
+  unSendRequest: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const request = await db
+        .delete(friendRequestsTable)
+        .where(
+          and(
+            eq(friendRequestsTable.fromUserId, ctx.userId),
+            eq(friendRequestsTable.toUserId, input.userId),
+          ),
+        );
+
+      return request;
+    }),
+
   declineRequest: procedure
     .input(
       z.object({

@@ -1,8 +1,13 @@
 import { TRPCError, TRPCRouterRecord } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { usersTable } from "~/db/schema";
+import {
+  favoritesTable,
+  friendRequestsTable,
+  subscriptionsTable,
+  usersTable,
+} from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { procedure, publicProcedure } from "./init";
 export const router = {
@@ -153,6 +158,168 @@ export const router = {
 
       return user;
     }),
+
+  addToFavorites: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db.insert(favoritesTable).values({
+        fromUserId: ctx.userId,
+        toUserId: input.userId,
+      });
+
+      return user;
+    }),
+
+  getMyRequests: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+
+    return await db.query.friendRequestsTable.findMany({
+      where: eq(friendRequestsTable.fromUserId, user.id),
+    });
+  }),
+
+  getUserFavorites: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+
+    return await db.query.favoritesTable.findMany({
+      where: eq(favoritesTable.fromUserId, user.id),
+    });
+  }),
+
+  removeFromFavorites: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db
+        .delete(favoritesTable)
+        .where(
+          and(
+            eq(favoritesTable.fromUserId, ctx.userId),
+            eq(favoritesTable.toUserId, input.userId),
+          ),
+        );
+
+      return user;
+    }),
+
+  subscribe: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db.insert(subscriptionsTable).values({
+        subscriberId: ctx.userId,
+        targetUserId: input.userId,
+      });
+
+      return user;
+    }),
+
+  unSubscribe: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db
+        .delete(subscriptionsTable)
+        .where(
+          and(
+            eq(subscriptionsTable.subscriberId, ctx.userId),
+            eq(subscriptionsTable.targetUserId, input.userId),
+          ),
+        );
+
+      return user;
+    }),
+
+  getUserSubscriptions: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+    return await db.query.subscriptionsTable.findMany({
+      where: eq(subscriptionsTable.subscriberId, ctx.userId),
+    });
+  }),
 } satisfies TRPCRouterRecord;
 
 export type Router = typeof router;

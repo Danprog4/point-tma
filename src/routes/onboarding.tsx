@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { Selecter } from "~/components/Selecter";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
@@ -16,8 +17,8 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [step, setStep] = useState(0);
   const queryClient = useQueryClient();
+  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
   const [name, setName] = useState("");
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [surname, setSurname] = useState("");
   const [login, setLogin] = useState("");
   const [sex, setSex] = useState<"male" | "female" | null>(null);
@@ -34,6 +35,12 @@ function RouteComponent() {
       },
     }),
   );
+
+  useEffect(() => {
+    if (isOnboarded) {
+      navigate({ to: "/" });
+    }
+  }, [isOnboarded, navigate]);
 
   const TOTAL_CARDS = 5;
   const LAST_STEP = TOTAL_CARDS + 1;
@@ -71,15 +78,6 @@ function RouteComponent() {
       bio,
       sex: sex || "",
       photo: base64 || "",
-      isOnboarded: true,
-    });
-
-    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old) => {
-      if (!old) return old;
-      return {
-        ...old,
-        isOnboarded: true,
-      };
     });
   };
 
@@ -88,6 +86,7 @@ function RouteComponent() {
       if (prev === LAST_STEP) {
         handleSubmit();
         navigate({ to: "/" });
+        setIsOnboarded(true);
       }
       return prev + 1;
     });
@@ -95,6 +94,7 @@ function RouteComponent() {
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 0));
   const handleClose = () => {
     navigate({ to: "/" });
+    setIsOnboarded(true);
   };
 
   const isDisabled =

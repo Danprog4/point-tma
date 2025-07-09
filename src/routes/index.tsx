@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 import { Calendar } from "~/components/Calendar";
 import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
 import { Header } from "~/components/Header";
@@ -30,25 +29,20 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  useScroll();
   const trpc = useTRPC();
   const navigate = useNavigate();
-  const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const queryClient = useQueryClient();
+  const hashUser = queryClient.getQueryData(trpc.main.getUser.queryKey());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
 
   useEffect(() => {
-    if (!isOnboarded) {
+    if (hashUser?.isOnboarded ? !hashUser?.isOnboarded : !user?.isOnboarded) {
       navigate({ to: "/onboarding" });
       return;
     }
-  }, [isOnboarded, navigate]);
-
-  if (!isOnboarded) {
-    return null;
-  }
-
-  useScroll();
+  }, [hashUser?.isOnboarded, user?.isOnboarded, navigate]);
 
   function ConferenceCard({ conf }: { conf: any }) {
     return (

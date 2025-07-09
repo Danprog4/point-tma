@@ -40,6 +40,7 @@ export const router = {
         bio: z.string(),
         sex: z.string(),
         photo: z.string(),
+        isOnboarded: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -65,6 +66,7 @@ export const router = {
         bio: input.bio,
         sex: input.sex,
         photo: imageUUID,
+        isOnboarded: true,
       });
 
       return user;

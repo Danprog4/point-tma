@@ -79,7 +79,7 @@ function RouteComponent() {
 
       <Calendar />
 
-      <div className="flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+      <div className="scrollbar-hidden flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
         {filters.map((filter) => (
           <button
             key={filter}

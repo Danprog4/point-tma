@@ -61,3 +61,10 @@ export const favoritesTable = pgTable("favorites", {
   toUserId: bigint("to_user_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const historyTable = pgTable("history", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  eventId: bigint("event_id", { mode: "number" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});

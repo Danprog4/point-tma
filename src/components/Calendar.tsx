@@ -144,10 +144,7 @@ export const Calendar = () => {
           );
         })}
       </div>
-      <AnimatePresence
-        mode="wait"
-        onExitComplete={() => console.log("Exit animation completed")}
-      >
+      <AnimatePresence mode="wait">
         {isOpen && <FullCalendar key="calendar" />}
       </AnimatePresence>
     </div>

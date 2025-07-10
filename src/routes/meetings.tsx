@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Settings } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
@@ -61,7 +61,12 @@ function RouteComponent() {
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold text-black">Встречи</h1>
         </div>
-        <Settings className="h-5 w-5 text-black" />
+        <div
+          className="cursor-pointer text-[#2462FF]"
+          onClick={() => navigate({ to: "/my-meetings" })}
+        >
+          Мои встречи
+        </div>
       </div>
 
       <div className="mb-4 flex items-center justify-center gap-6 px-4">

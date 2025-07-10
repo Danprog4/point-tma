@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import { Calendar1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FullCalendar } from "./ui/calendar";
@@ -143,7 +144,12 @@ export const Calendar = () => {
           );
         })}
       </div>
-      {isOpen && <FullCalendar />}
+      <AnimatePresence
+        mode="wait"
+        onExitComplete={() => console.log("Exit animation completed")}
+      >
+        {isOpen && <FullCalendar key="calendar" />}
+      </AnimatePresence>
     </div>
   );
 };

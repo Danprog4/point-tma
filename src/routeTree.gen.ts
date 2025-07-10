@@ -19,6 +19,7 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as PointsImport } from './routes/points'
 import { Route as OnboardingImport } from './routes/onboarding'
 import { Route as NotifImport } from './routes/notif'
+import { Route as MyMeetingsImport } from './routes/my-meetings'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
@@ -79,6 +80,12 @@ const OnboardingRoute = OnboardingImport.update({
 const NotifRoute = NotifImport.update({
   id: '/notif',
   path: '/notif',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MyMeetingsRoute = MyMeetingsImport.update({
+  id: '/my-meetings',
+  path: '/my-meetings',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -207,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetingsImport
       parentRoute: typeof rootRoute
     }
+    '/my-meetings': {
+      id: '/my-meetings'
+      path: '/my-meetings'
+      fullPath: '/my-meetings'
+      preLoaderRoute: typeof MyMeetingsImport
+      parentRoute: typeof rootRoute
+    }
     '/notif': {
       id: '/notif'
       path: '/notif'
@@ -311,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
@@ -334,6 +349,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
@@ -358,6 +374,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/meetings': typeof MeetingsRoute
+  '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
   '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
@@ -383,6 +400,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/my-meetings'
     | '/notif'
     | '/onboarding'
     | '/points'
@@ -405,6 +423,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/my-meetings'
     | '/notif'
     | '/onboarding'
     | '/points'
@@ -427,6 +446,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/meetings'
+    | '/my-meetings'
     | '/notif'
     | '/onboarding'
     | '/points'
@@ -451,6 +471,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
   MeetingsRoute: typeof MeetingsRoute
+  MyMeetingsRoute: typeof MyMeetingsRoute
   NotifRoute: typeof NotifRoute
   OnboardingRoute: typeof OnboardingRoute
   PointsRoute: typeof PointsRoute
@@ -474,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
   MeetingsRoute: MeetingsRoute,
+  MyMeetingsRoute: MyMeetingsRoute,
   NotifRoute: NotifRoute,
   OnboardingRoute: OnboardingRoute,
   PointsRoute: PointsRoute,
@@ -506,6 +528,7 @@ export const routeTree = rootRoute
         "/history",
         "/inventory",
         "/meetings",
+        "/my-meetings",
         "/notif",
         "/onboarding",
         "/points",
@@ -541,6 +564,9 @@ export const routeTree = rootRoute
     },
     "/meetings": {
       "filePath": "meetings.tsx"
+    },
+    "/my-meetings": {
+      "filePath": "my-meetings.tsx"
     },
     "/notif": {
       "filePath": "notif.tsx"

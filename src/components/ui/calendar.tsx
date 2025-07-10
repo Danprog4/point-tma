@@ -33,7 +33,7 @@ function FullCalendar({
       }}
       onAnimationStart={() => console.log("Animation started")}
       onAnimationComplete={() => console.log("Animation completed")}
-      className="fixed top-[20vh] right-4 z-10 w-[70vw]"
+      className="fixed top-[20vh] right-4 z-[1000] w-[70vw]"
     >
       <DayPicker
         mode={mode}

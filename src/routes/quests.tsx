@@ -54,10 +54,7 @@ export function getTypeColor(type: string) {
   }
 }
 
-const filters = [
-  "Все",
-  ...Array.from(new Set(questsData.map((quest) => quest.category))),
-];
+const filters = ["Все", ...Array.from(new Set(questsData.map((quest) => quest.type)))];
 
 function RouteComponent() {
   const [search, setSearch] = useState("");

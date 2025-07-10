@@ -184,26 +184,6 @@ body {
   background-color: white;
 }
 
-/* Override Telegram WebApp specific behaviors if needed */
-@media (max-width: 768px) {
-  body,
-  html {
-    position: fixed;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  #root {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-  }
-}
-
 input,
 textarea {
   touch-action: manipulation;

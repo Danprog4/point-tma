@@ -17,6 +17,7 @@ export const Route = createFileRoute("/meetings")({
 function RouteComponent() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
+  const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const meetings = meetingsConfig.map((meeting) => {
@@ -67,6 +68,8 @@ function RouteComponent() {
         <input
           type="text"
           placeholder="Поиск встреч"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
 
@@ -146,6 +149,12 @@ function RouteComponent() {
                 if (activeFilter === "Все") return true;
                 return (
                   meeting.eventType === filterMap[activeFilter as keyof typeof filterMap]
+                );
+              })
+              .filter((meeting) => {
+                return (
+                  meeting.description.toLowerCase().includes(search.toLowerCase()) ||
+                  meeting.name.toLowerCase().includes(search.toLowerCase())
                 );
               })
               .map((meeting, index) => (

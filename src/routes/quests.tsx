@@ -60,6 +60,7 @@ const filters = [
 ];
 
 function RouteComponent() {
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -80,6 +81,8 @@ function RouteComponent() {
 
       <div className="mb-4 flex items-center justify-center gap-6 px-4">
         <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           type="text"
           placeholder="Поиск квестов"
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
@@ -114,6 +117,12 @@ function RouteComponent() {
             (quest) =>
               (activeFilter === "Все" && questsData) || quest.category === activeFilter,
           )
+          .filter((quest) => {
+            return (
+              quest.title.toLowerCase().includes(search.toLowerCase()) ||
+              quest.description.toLowerCase().includes(search.toLowerCase())
+            );
+          })
           .map((quest, idx) => (
             <div key={quest.id}>
               <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>

@@ -33,13 +33,13 @@ function FullCalendar({
       }}
       onAnimationStart={() => console.log("Animation started")}
       onAnimationComplete={() => console.log("Animation completed")}
-      className="fixed top-[20vh] right-4 z-[1000] w-[70vw]"
+      className="fixed top-[20vh] right-4 z-[10000000] w-[70vw]"
     >
       <DayPicker
         mode={mode}
         showOutsideDays={showOutsideDays}
         className={cn(
-          "bg-background group/calendar rounded-2xl border border-black p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+          "bg-background group/calendar z-[10000000] rounded-2xl border border-black p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
           String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
           String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
           className,

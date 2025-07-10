@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
+import { createPortal } from "react-dom";
 
 import { Button, buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -22,7 +23,7 @@ function FullCalendar({
 }) {
   const defaultClassNames = getDefaultClassNames();
 
-  return (
+  const calendarContent = (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -168,6 +169,8 @@ function FullCalendar({
       />
     </motion.div>
   );
+
+  return createPortal(calendarContent, document.body);
 }
 
 function CalendarDayButton({

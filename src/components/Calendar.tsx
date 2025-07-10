@@ -100,6 +100,18 @@ export const Calendar = () => {
     }
   }, [allDays]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   return (
     <div className="w-full overflow-x-hidden px-4">
       {isOpen && <div className="fixed inset-0" onClick={() => setIsOpen(false)}></div>}

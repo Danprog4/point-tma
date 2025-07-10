@@ -180,7 +180,7 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
+      <div className="z-10"> {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}</div>
     </div>
   );
 }

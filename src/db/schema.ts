@@ -31,6 +31,17 @@ export const usersTable = pgTable("users", {
   gallery: jsonb("gallery").$type<string[]>(),
 });
 
+export const meetTable = pgTable("meets", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }),
+  description: varchar("description", { length: 255 }),
+  type: varchar("type", { length: 255 }),
+  invited: jsonb("invited").$type<string[]>(),
+  locations: jsonb("locations").$type<string[]>(),
+  numberOfParticipants: integer("number_of_participants"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const activeEventsTable = pgTable("active_events", {
   id: serial("id").primaryKey(),
   eventId: bigint("eventId", { mode: "number" }),

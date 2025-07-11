@@ -23,15 +23,15 @@ export const Step2 = ({
   isDisabled: boolean;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
-
+  const [length, setLength] = useState(2);
   return (
     <>
       {isBasic ? (
-        <div className="flex flex-col">
+        <div className="flex flex-col overflow-y-auto pb-20">
           <div className="mb-6 text-xl font-bold">
             В скольки локациях будет вечеринка?
           </div>
-          <div className="mb-4 flex w-full gap-2">
+          <div className="flex w-full gap-2">
             <div
               onClick={() => setType("one")}
               className={`flex-1 rounded-full py-[10px] text-center ${
@@ -50,7 +50,7 @@ export const Step2 = ({
             </div>
           </div>
           {type === "one" ? (
-            <div className="flex items-center justify-between gap-2">
+            <div className="mt-4 flex items-center justify-between gap-2">
               <input
                 type="text"
                 placeholder="Локация вечеринки"
@@ -62,38 +62,52 @@ export const Step2 = ({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              <div className="mt-2 px-4 text-xl font-bold">Локации</div>
-              <div className="items-between flex flex-col justify-between gap-2 px-4">
-                {/* First location */}
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="shrink-0 text-2xl font-bold">1</div>
-                  <input
-                    type="text"
-                    placeholder="Введите адрес"
-                    className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
-                  />
-                  <div className="flex h-6 w-6 shrink-0 items-start">
-                    <Drag />
-                  </div>
-                </div>
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-4">
+                <div className="px-4 text-xl font-bold">Локации</div>
+                {Array.from({ length: length }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="items-between flex flex-col justify-between gap-2 px-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
+                      <input
+                        type="text"
+                        placeholder="Введите адрес"
+                        className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
+                      />
+                      <div className="flex h-6 w-6 shrink-0 items-start">
+                        <Drag />
+                      </div>
+                    </div>
 
-                {/* Second location with bin */}
-                <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
-                  <div className="">
-                    <Bin />
+                    <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
+                      <div
+                        className=""
+                        onClick={() => setLength(length > 2 ? length - 1 : length)}
+                      >
+                        <Bin />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Введите адрес"
+                        className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Введите адрес"
+                        className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                      />
+                    </div>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Введите адрес"
-                    className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Введите адрес"
-                    className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                  />
-                </div>
+                ))}
+              </div>
+              <div
+                className="mt-2 text-center text-[#9924FF]"
+                onClick={() => setLength(length + 1)}
+              >
+                Добавить
               </div>
             </div>
           )}

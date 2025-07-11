@@ -87,7 +87,7 @@ function RouteComponent() {
       {(step < 4 && isBasic) || (step > 0 && !isBasic && step !== 4) ? (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
-            disabled={isDisabled}
+            disabled={!isBasic ? isDisabled : false}
             onClick={handleNext}
             className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
           >

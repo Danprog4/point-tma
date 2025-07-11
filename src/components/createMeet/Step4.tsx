@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { Bin } from "../Icons/Bin";
 import { Drag } from "../Icons/Drag";
-
 export const Step4 = ({
   name,
   isBasic,
@@ -10,6 +10,7 @@ export const Step4 = ({
   isBasic: boolean;
   item: any;
 }) => {
+  const [length, setLength] = useState(2);
   return (
     <>
       {isBasic ? (
@@ -49,66 +50,49 @@ export const Step4 = ({
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="mt-2 px-4 text-xl font-bold">Локации</div>
-            <div className="items-between flex flex-col justify-between gap-2 px-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="shrink-0 text-2xl font-bold">1</div>
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
-                />
-                <div className="flex h-6 w-6 shrink-0 items-start">
-                  <Drag />
+            {Array.from({ length: length }).map((_, index) => (
+              <div
+                key={index}
+                className="items-between flex flex-col justify-between gap-2 px-4"
+              >
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
+                  <input
+                    type="text"
+                    placeholder="Введите адрес"
+                    className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
+                  />
+                  <div className="flex h-6 w-6 shrink-0 items-start">
+                    <Drag />
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
-                <div className="">
-                  <Bin />
+                <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
+                  <div
+                    className=""
+                    onClick={() => setLength(length > 2 ? length - 1 : length)}
+                  >
+                    <Bin />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Введите адрес"
+                    className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Введите адрес"
+                    className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
               </div>
+            ))}
+            <div
+              className="text-center text-[#9924FF]"
+              onClick={() => setLength(length + 1)}
+            >
+              Добавить
             </div>
-            <div className="items-between flex flex-col justify-between gap-2 px-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="shrink-0 text-2xl font-bold">2</div>
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
-                />
-                <div className="flex h-6 w-6 shrink-0 items-start">
-                  <Drag />
-                </div>
-              </div>
-
-              <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
-                <div className="">
-                  <Bin />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
-                <input
-                  type="text"
-                  placeholder="Введите адрес"
-                  className="h-11 w-[calc(100%-24px)] flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
-              </div>
-            </div>
-            <div className="text-center text-[#9924FF]">Добавить</div>
           </div>
         </div>
       )}

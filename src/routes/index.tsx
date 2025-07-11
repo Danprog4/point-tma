@@ -4,7 +4,7 @@ import { ArrowRight, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { Calendar } from "~/components/Calendar";
-import { CreateQuestDrawer } from "~/components/CreateQuestDrawer";
+import { CreateMeetDrawer } from "~/components/CreateMeetDrawer";
 import { Header } from "~/components/Header";
 import { Filters } from "~/components/Icons/Filters";
 import { Selecter } from "~/components/Selecter";
@@ -79,10 +79,8 @@ function Home() {
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
-      {/* Top Navigation */}
       <Header />
 
-      {/* Page Title */}
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Афиша</h1>
         <div className="flex items-center gap-4">
@@ -96,7 +94,6 @@ function Home() {
       </div>
 
       <div className="w-full flex-1 overflow-x-hidden overflow-y-auto">
-        {/* Filter Chips */}
         <div className="flex items-center gap-6 p-4 pb-6">
           <div className="flex items-center gap-2">
             <Selecter height="h-10" width="w-full" placeholder="Алматы" />
@@ -123,7 +120,6 @@ function Home() {
           </div>
         </div>
 
-        {/* Featured Event */}
         <div className="relative mb-2 w-full overflow-x-hidden">
           <div className="relative h-80 w-full overflow-hidden">
             <img
@@ -148,7 +144,6 @@ function Home() {
           </div>
         </div>
 
-        {/* Calendar */}
         <Calendar />
         <div className="mx-auto mb-4 flex max-w-[145px] items-center justify-center">
           <Selecter
@@ -165,7 +160,7 @@ function Home() {
             ]}
           />
         </div>
-        {/* Recommendations Section */}
+
         <div className="mb-6 w-full overflow-x-hidden">
           <div className="mb-4 flex items-center justify-between px-4">
             <h2 className="text-xl font-bold text-gray-900">Кино</h2>
@@ -282,7 +277,6 @@ function Home() {
         </div>
       </div>
 
-      {/* Create Meeting Button */}
       <div className="fixed right-4 bottom-20 left-4">
         <button
           onClick={() => setIsDrawerOpen(true)}
@@ -292,10 +286,7 @@ function Home() {
         </button>
       </div>
 
-      {/* Bottom Navigation */}
-
-      {/* Create Quest Drawer */}
-      <CreateQuestDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+      <CreateMeetDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   );
 }

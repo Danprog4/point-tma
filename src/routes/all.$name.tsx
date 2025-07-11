@@ -83,7 +83,7 @@ function RouteComponent() {
         {data.slice(0, 1).map((item) => {
           return (
             <div>
-              <h3 className="relative aspect-square w-full">
+              <div className="relative aspect-square w-full">
                 <img
                   src={item.image}
                   alt={item.title}
@@ -98,7 +98,7 @@ function RouteComponent() {
                     </div>
                   </div>
                 </div>
-              </h3>
+              </div>
             </div>
           );
         })}
@@ -191,6 +191,13 @@ function RouteComponent() {
                   <div className="absolute bottom-2 left-2 flex gap-1 text-black">
                     <div className="rounded-full bg-white p-1 text-sm">{item.date}</div>
                     <div className="rounded-full bg-white p-1 text-sm">{item.price}</div>
+                  </div>
+                </div>
+                <div className="flex flex-col p-2">
+                  <div className="flex text-start">{item.title}</div>
+                  <div className="text-sm text-gray-500">
+                    {item.description?.slice(0, 10) +
+                      (item.description?.length > 10 ? "..." : "")}
                   </div>
                 </div>
               </div>

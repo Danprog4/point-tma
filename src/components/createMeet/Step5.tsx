@@ -4,9 +4,11 @@ import { Right } from "./images/Right";
 export const Step5 = ({
   isLoading,
   setIsLoading,
+  name,
 }: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  name: string;
 }) => {
   useEffect(() => {
     setTimeout(() => {

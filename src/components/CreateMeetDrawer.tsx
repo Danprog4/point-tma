@@ -3,12 +3,12 @@ import { ChevronRight, X } from "lucide-react";
 import { Drawer } from "vaul";
 import { eventTypes } from "~/types/events";
 
-interface CreateQuestDrawerProps {
+interface CreateMeetDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps) {
+export function CreateMeetDrawer({ open, onOpenChange }: CreateMeetDrawerProps) {
   const navigate = useNavigate();
 
   const handleEventTypeSelect = (eventType: string) => {
@@ -21,7 +21,7 @@ export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[576px] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit flex-col rounded-t-[16px] bg-white">
           <div className="flex-1 rounded-t-[16px] bg-white p-4">
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">
@@ -48,7 +48,7 @@ export function CreateQuestDrawer({ open, onOpenChange }: CreateQuestDrawerProps
                   }}
                   className={`w-full rounded-2xl p-4 ${eventType.bgColor} flex items-center justify-between transition-opacity hover:opacity-80`}
                 >
-                  <div className="flex-1 text-left">
+                  <div className="text-left">
                     <div className="mb-1 flex items-center gap-2">
                       <span className="text-base">{eventType.emoji}</span>
                       <span className="text-base font-medium text-gray-900">

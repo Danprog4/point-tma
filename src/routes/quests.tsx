@@ -94,7 +94,7 @@ function RouteComponent() {
             } else {
               unlockBodyScroll();
             }
-            setIsOpen(!open);
+            setIsOpen(open);
           }}
         >
           <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">

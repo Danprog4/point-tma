@@ -18,6 +18,8 @@ export const Route = createFileRoute("/createMeet/$name")({
 function RouteComponent() {
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
+  const [title2, setTitle2] = useState("");
+  const [description2, setDescription2] = useState("");
   const trpc = useTRPC();
   const [friendName, setFriendName] = useState("");
   const [title, setTitle] = useState("");
@@ -31,7 +33,8 @@ function RouteComponent() {
   const emoji = eventTypes.find((e) => e.name === name)?.emoji;
   const isBasic = name !== "Совместное посещение";
   const [type, setType] = useState("");
-  const isDisabled = title === "" || description === "";
+  const isDisabled = !title && !description;
+  const isDisabled2 = !title2 && !description2;
 
   const handleNext = () => {
     setStep(step + 1);
@@ -40,7 +43,8 @@ function RouteComponent() {
       setIsForAll(true);
     }
 
-    if (step === 3 && !isBasic) {
+    if (step === 3) {
+      console.log("step 3");
       handleCreateMeeting();
     }
   };
@@ -48,20 +52,24 @@ function RouteComponent() {
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
 
   const handleCreateMeeting = () => {
-    createMeeting.mutate({
-      name: title,
-      description,
-      type,
-      idOfEvent: selectedItem.id,
-      typeOfEvent,
-    });
+    const idOfEvent = selectedItem?.id;
 
+    createMeeting.mutate({
+      name: title || title2,
+      description: description || description2,
+      type,
+      ...(idOfEvent ? { idOfEvent } : {}),
+      typeOfEvent,
+      isCustom: isBasic,
+    });
     queryClient.invalidateQueries({ queryKey: trpc.meetings.getMeetings.queryKey() });
   };
 
   console.log(createMeeting.data);
 
   console.log(step);
+
+  console.log(isDisabled, isDisabled2);
 
   return (
     <div className="relative flex h-screen w-screen flex-col p-4">
@@ -94,6 +102,12 @@ function RouteComponent() {
           selectedItem={selectedItem}
           setStep={setStep}
           setTypeOfEvent={setTypeOfEvent}
+          title2={title2}
+          setTitle2={setTitle2}
+          description2={description2}
+          description={description}
+          setDescription2={setDescription2}
+          setDescription={setDescription}
         />
       )}
       {step === 1 && (
@@ -127,6 +141,8 @@ function RouteComponent() {
           item={selectedItem}
           eventType={name}
           isBasic={isBasic}
+          title2={title2}
+          description2={description2}
         />
       )}
 
@@ -156,7 +172,7 @@ function RouteComponent() {
       (step > 0 && !isBasic && step !== 4 && step !== 2 && step !== 3) ? (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
-            disabled={!isBasic ? isDisabled : false}
+            disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
             className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
           >

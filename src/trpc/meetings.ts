@@ -11,12 +11,13 @@ export const meetingRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         description: z.string(),
-        type: z.string(),
+        type: z.string().optional(),
         invited: z.array(z.string()).optional(),
         locations: z.array(z.string()).optional(),
-        idOfEvent: z.number(),
-        typeOfEvent: z.string(),
+        idOfEvent: z.number().optional(),
+        typeOfEvent: z.string().optional(),
         numberOfParticipants: z.number().optional(),
+        isCustom: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -29,6 +30,7 @@ export const meetingRouter = createTRPCRouter({
         idOfEvent,
         typeOfEvent,
         numberOfParticipants,
+        isCustom,
       } = input;
       const { userId } = ctx;
 
@@ -50,6 +52,7 @@ export const meetingRouter = createTRPCRouter({
         typeOfEvent,
         userId: user.id,
         numberOfParticipants,
+        isCustom,
       });
 
       return meet;

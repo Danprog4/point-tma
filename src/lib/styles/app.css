@@ -1,6 +1,7 @@
 @import "tailwindcss" source("../../");
 @import "tw-animate-css";
 
+/* Вариант для тёмной темы */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -110,22 +111,35 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Базовые стили */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: contain; /* Исправлено */
+    touch-action: manipulation; /* Исправлено */
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: static; /* Исправлено */
+    min-height: 100vh;
+    background-color: white;
+    color: black;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
   }
 }
 
+/* Скрытие скроллбаров */
 .scrollbar-hidden {
   scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  -ms-overflow-style: none; /* IE 10+ */
 }
-
 .scrollbar-hidden::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none; /* Safari/Chrome */
 }
 
 html,
@@ -133,26 +147,10 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
-  overscroll-behavior: none;
+  min-height: 100vh;
   background-color: white;
   color: black;
-}
-
-body {
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: relative;
-  touch-action: pan-y;
-  -webkit-touch-callout: none;
-  padding-bottom: 0;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  background-color: white;
-  overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
+  overscroll-behavior: contain; /* Исправлено */
 }
 
 /* App root container styles */
@@ -161,43 +159,40 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  min-height: -webkit-fill-available;
   background-color: white;
+  position: relative; /* Исправлено */
+  overflow-y: auto;
 }
 
+/* iOS Safari fix */
 @supports (-webkit-touch-callout: none) {
   .height-fix {
-    height: 100vh; /* Fallback for browsers that do not support custom properties */
-    height: calc(var(--vh, 1vh) * 100);
-    min-height: -webkit-fill-available; /* For iOS Safari */
+    height: 100vh;
+    min-height: -webkit-fill-available;
   }
 }
 
-/* Override Telegram WebApp specific behaviors if needed */
+/* Мобильный медиа-запрос — исправлено */
 @media (max-width: 768px) {
   body,
   html {
-    position: fixed;
-    overflow: hidden;
+    position: static; /* Исправлено */
+    overflow: auto; /* Исправлено */
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto; /* Исправлено */
   }
-
   #root {
-    position: absolute;
+    position: relative; /* Исправлено */
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     overflow-y: auto;
   }
-
-  /* Ensure fixed positioned elements (like calendar) work properly in TMA */
   .fixed {
     position: fixed !important;
   }
-
-  /* Special z-index handling for TMA */
   [style*="z-index: 9999"],
   .z-\[9999\] {
     z-index: 9999 !important;

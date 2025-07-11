@@ -8,6 +8,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getEventData } from "~/lib/utils/getEventData";
 
 export const Route = createFileRoute("/meetings")({
@@ -78,7 +79,17 @@ function RouteComponent() {
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
 
-        <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
+        <FilterDrawer
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (open) {
+              lockBodyScroll();
+            } else {
+              unlockBodyScroll();
+            }
+            setIsOpen(open);
+          }}
+        >
           <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
             <WhiteFilter />
           </div>

@@ -11,6 +11,7 @@ import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
 import { questsData } from "~/config/quests";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -87,9 +88,13 @@ function RouteComponent() {
 
         <FilterDrawer
           open={isOpen}
-          onOpenChange={() => {
-            document.body.classList.add("body--drawer-open");
-            setIsOpen(!isOpen);
+          onOpenChange={(open) => {
+            if (open) {
+              lockBodyScroll();
+            } else {
+              unlockBodyScroll();
+            }
+            setIsOpen(!open);
           }}
         >
           <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">

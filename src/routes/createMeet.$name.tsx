@@ -58,7 +58,7 @@ function RouteComponent() {
       name: title || title2,
       description: description || description2,
       type,
-      ...(idOfEvent ? { idOfEvent } : {}),
+      idOfEvent,
       typeOfEvent,
       isCustom: isBasic,
     });

@@ -40,6 +40,9 @@ export const meetTable = pgTable("meets", {
   locations: jsonb("locations").$type<string[]>(),
   numberOfParticipants: integer("number_of_participants"),
   createdAt: timestamp("created_at").defaultNow(),
+  userId: bigint("user_id", { mode: "number" }),
+  idOfEvent: bigint("id_of_event", { mode: "number" }),
+  typeOfEvent: varchar("type_of_event", { length: 255 }),
 });
 
 export const activeEventsTable = pgTable("active_events", {

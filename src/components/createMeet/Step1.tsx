@@ -17,6 +17,7 @@ export const Step1 = ({
   selectedItem,
   setSelectedItem,
   setStep,
+  setTypeOfEvent,
 }: {
   name: string;
   isBasic: boolean;
@@ -25,6 +26,7 @@ export const Step1 = ({
   selectedItem: any;
   setSelectedItem: (item: any) => void;
   setStep: (step: number) => void;
+  setTypeOfEvent: (type: string) => void;
 }) => {
   const [isExtra, setIsExtra] = useState(false);
   const [search, setSearch] = useState("");
@@ -133,6 +135,7 @@ export const Step1 = ({
                 onClick={() => {
                   setSelectedItem(item);
                   setIsExtra(true);
+                  setTypeOfEvent(item.category);
                 }}
               >
                 <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">

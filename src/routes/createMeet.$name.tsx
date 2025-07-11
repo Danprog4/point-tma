@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
@@ -6,18 +7,23 @@ import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
 import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
+import { useTRPC } from "~/trpc/init/react";
+
 import { eventTypes } from "~/types/events";
+
 export const Route = createFileRoute("/createMeet/$name")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const [typeOfEvent, setTypeOfEvent] = useState("");
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+  const [friendName, setFriendName] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [search, setSearch] = useState("");
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("Все");
+  const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
   const { name } = useParams({ from: "/createMeet/$name" });
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +35,31 @@ function RouteComponent() {
 
   const handleNext = () => {
     setStep(step + 1);
+
+    if (step === 2 && !isBasic) {
+      setIsForAll(true);
+    }
+
+    if (step === 3 && !isBasic) {
+      handleCreateMeeting();
+    }
   };
+
+  const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
+
+  const handleCreateMeeting = () => {
+    createMeeting.mutate({
+      name: title,
+      description,
+      type,
+      idOfEvent: selectedItem.id,
+      typeOfEvent,
+    });
+
+    queryClient.invalidateQueries({ queryKey: trpc.meetings.getMeetings.queryKey() });
+  };
+
+  console.log(createMeeting.data);
 
   console.log(step);
 
@@ -63,6 +93,7 @@ function RouteComponent() {
           setSelectedItem={setSelectedItem}
           selectedItem={selectedItem}
           setStep={setStep}
+          setTypeOfEvent={setTypeOfEvent}
         />
       )}
       {step === 1 && (
@@ -77,14 +108,52 @@ function RouteComponent() {
           isDisabled={isDisabled}
         />
       )}
-      {step === 2 && <Step3 name={name} isBasic={isBasic} />}
+      {step === 2 && (
+        <Step3
+          name={name}
+          isBasic={isBasic}
+          friendName={friendName}
+          setFriendName={setFriendName}
+        />
+      )}
       {step === 3 && <Step4 name={name} isBasic={isBasic} item={selectedItem} />}
 
       {step === 4 && (
-        <Step5 isLoading={isLoading} setIsLoading={setIsLoading} name={name} />
+        <Step5
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          name={name}
+          type={type}
+          item={selectedItem}
+          eventType={name}
+          isBasic={isBasic}
+        />
       )}
 
-      {(step < 4 && isBasic) || (step > 0 && !isBasic && step !== 4) ? (
+      {step === 2 && !isBasic && (
+        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
+          <button
+            onClick={handleNext}
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+          >
+            Сделать открытым для всех
+          </button>
+        </div>
+      )}
+
+      {step === 3 && !isBasic && (
+        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
+          <button
+            onClick={handleNext}
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+          >
+            Пропустить и создать {type}
+          </button>
+        </div>
+      )}
+
+      {(step < 4 && isBasic) ||
+      (step > 0 && !isBasic && step !== 4 && step !== 2 && step !== 3) ? (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
             disabled={!isBasic ? isDisabled : false}
@@ -95,12 +164,10 @@ function RouteComponent() {
           </button>
         </div>
       ) : (
-        !isLoading && (
+        !isLoading &&
+        (isBasic ? (
           <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
-            <button
-              // onClick={handleNext}
-              className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
-            >
+            <button className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
               Пригласить знакомых
             </button>
             <button
@@ -110,7 +177,11 @@ function RouteComponent() {
               Перейдите в афишу
             </button>
           </div>
-        )
+        ) : (
+          <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
+            <button onClick={() => navigate({ to: "/" })}>Вернуться в афишу</button>
+          </div>
+        ))
       )}
     </div>
   );

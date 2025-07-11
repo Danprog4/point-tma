@@ -24,6 +24,12 @@ export const router = {
     return user;
   }),
 
+  getUsers: procedure.query(async ({ ctx }) => {
+    const users = await db.query.usersTable.findMany();
+
+    return users;
+  }),
+
   getUserById: procedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

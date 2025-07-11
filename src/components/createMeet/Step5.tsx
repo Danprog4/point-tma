@@ -5,10 +5,18 @@ export const Step5 = ({
   isLoading,
   setIsLoading,
   name,
+  item,
+  type,
+  eventType,
+  isBasic,
 }: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   name: string;
+  item: any;
+  type: string;
+  eventType: string;
+  isBasic: boolean;
 }) => {
   useEffect(() => {
     setTimeout(() => {
@@ -21,7 +29,7 @@ export const Step5 = ({
       {isLoading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="mb-8 text-center text-xl font-bold text-[#2462FF]">
-            Создаем ваш квест
+            Создаем ваш {type}
           </div>
           <div className="flex w-full items-center justify-between gap-4">
             <Left />
@@ -32,12 +40,17 @@ export const Step5 = ({
                 className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
-                <div className="rounded-2xl bg-white px-2 text-gray-600">Квест</div>
-                <div className="rounded-2xl bg-white px-2 text-gray-600">3000</div>
+                <div className="rounded-2xl bg-white px-2 text-gray-600">{type}</div>
+                <div className="rounded-2xl bg-white px-2 text-gray-600">
+                  {item.price}
+                </div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xl font-bold text-gray-600">Квест для дизайнера</div>
-                <div className="text-sm text-gray-400">Получи любой курс...</div>
+                <div className="font-bold text-gray-600">{item.title}</div>
+                <div className="text-sm text-gray-400">
+                  {item.description?.slice(0, 20) +
+                    (item.description?.length > 20 ? "..." : "")}
+                </div>
               </div>
             </div>
             <Right />
@@ -46,7 +59,7 @@ export const Step5 = ({
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="mb-8 text-center text-xl font-bold text-[#00A349]">
-            Квест создан!
+            {type} создан!
           </div>
           <div className="mb-6 flex w-full items-center justify-between gap-4">
             <Left />
@@ -57,16 +70,19 @@ export const Step5 = ({
                 className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
-                <div className="rounded-2xl bg-white px-2">Квест</div>
-                <div className="rounded-2xl bg-white px-2">3000</div>
+                <div className="rounded-2xl bg-white px-2">{type}</div>
+                <div className="rounded-2xl bg-white px-2">{item.price}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xl font-bold">Квест для дизайнера</div>
-                <div className="text-sm">Получи любой курс...</div>
+                <div className="font-bold">{item.title}</div>
+                <div className="text-sm text-gray-400">
+                  {item.description?.slice(0, 20) +
+                    (item.description?.length > 20 ? "..." : "")}
+                </div>
               </div>
             </div>
             <Right />
-          </div>
+          </div>{" "}
           <div className="flex flex-col gap-4 px-4">
             <div>
               Ваше событие добавлено в ленту событий и будет отображаться первым в списке

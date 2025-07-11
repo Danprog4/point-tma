@@ -85,7 +85,13 @@ function RouteComponent() {
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
 
-        <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
+        <FilterDrawer
+          open={isOpen}
+          onOpenChange={() => {
+            document.body.classList.add("body--drawer-open");
+            setIsOpen(!isOpen);
+          }}
+        >
           <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
             <WhiteFilter />
           </div>

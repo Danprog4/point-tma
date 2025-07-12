@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
+import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
 import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
@@ -54,8 +55,8 @@ function RouteComponent() {
   console.log(meeting, "meeting");
 
   const organizer = isUserMeeting
-    ? user
-    : meetingsWithEvents?.find((m) => m.id === meeting?.id)?.organizer;
+    ? meetingsWithEvents?.find((m) => m.id === meeting?.id)?.organizer
+    : fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
 
   console.log(organizer, "organizer");
 

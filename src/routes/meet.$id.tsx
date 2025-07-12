@@ -41,9 +41,7 @@ function RouteComponent() {
   console.log(meetingsWithEvents, "meetingsWithEvents");
 
   const isUserMeeting = useMemo(() => {
-    return meetingsWithEvents?.some(
-      (m) => m.id === parseInt(id) && m.userId === user?.id,
-    );
+    return meetingsWithEvents?.some((m) => m.id === parseInt(id));
   }, [meetingsWithEvents, user?.id]);
 
   console.log(isUserMeeting, "isUserMeeting");

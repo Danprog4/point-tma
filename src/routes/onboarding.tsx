@@ -417,7 +417,6 @@ function RouteComponent() {
           </button>
           <button
             onClick={handleNext}
-            disabled={isDisabled}
             className={`z-[100] mx-4 flex-1 ${isDisabled && "bg-gray-500"} rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white`}
           >
             Далее

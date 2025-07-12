@@ -62,9 +62,7 @@ export const meetingRouter = createTRPCRouter({
   getMeetings: procedure.query(async ({ ctx }) => {
     const { userId } = ctx;
 
-    const meetings = await db.query.meetTable.findMany({
-      where: eq(meetTable.userId, userId),
-    });
+    const meetings = await db.query.meetTable.findMany({});
 
     return meetings;
   }),
@@ -72,9 +70,7 @@ export const meetingRouter = createTRPCRouter({
   getMeetingsWithEvents: procedure.query(async ({ ctx }) => {
     const { userId } = ctx;
 
-    const meetings = await db.query.meetTable.findMany({
-      where: eq(meetTable.userId, userId),
-    });
+    const meetings = await db.query.meetTable.findMany({});
 
     const meetingsWithEvents = getMeetings(meetings);
 

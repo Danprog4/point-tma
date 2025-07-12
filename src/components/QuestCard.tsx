@@ -7,16 +7,20 @@ export function QuestCard({
   quest,
   isNavigable = true,
 }: {
-  quest: Quest;
+  quest?: Quest;
   isNavigable?: boolean;
 }) {
   const navigate = useNavigate();
+
+  if (!quest) {
+    return null;
+  }
 
   return (
     <div
       className="mb-4 flex items-start gap-4"
       onClick={() => {
-        if (isNavigable) {
+        if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
           navigate({
             to: "/event/$name/$id",
             params: { name: "Квест", id: quest.id.toString() },

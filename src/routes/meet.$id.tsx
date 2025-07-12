@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
 import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
@@ -16,18 +15,49 @@ export const Route = createFileRoute("/meet/$id")({
 
 function RouteComponent() {
   useScroll();
+  const trpc = useTRPC();
   const navigate = useNavigate();
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
-  const meeting = meetingsConfig.find((m) => m.id === parseInt(id));
-
-  const organizer = fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
-
-  const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: userSubscriptions } = useQuery(
     trpc.main.getUserSubscriptions.queryOptions(),
   );
+
+  const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+
+  const meetingsWithEvents = meetingsData?.map((meeting) => {
+    const organizer = users?.find((u) => u.id === meeting.userId);
+    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+    return {
+      ...meeting,
+      organizer,
+      event,
+    };
+  });
+
+  console.log(meetingsWithEvents, "meetingsWithEvents");
+
+  const isUserMeeting = useMemo(() => {
+    return meetingsWithEvents?.some(
+      (m) => m.id === parseInt(id) && m.userId === user?.id,
+    );
+  }, [meetingsWithEvents, user?.id]);
+
+  console.log(isUserMeeting, "isUserMeeting");
+
+  const meeting = isUserMeeting
+    ? meetingsWithEvents?.find((m) => m.id === parseInt(id))
+    : meetingsConfig.find((m) => m.id === parseInt(id));
+
+  console.log(meeting, "meeting");
+
+  const organizer = isUserMeeting
+    ? user
+    : meetingsWithEvents?.find((m) => m.id === meeting?.id)?.organizer;
+
+  console.log(organizer, "organizer");
 
   const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
@@ -39,6 +69,18 @@ function RouteComponent() {
 
   const subscribe = useMutation(trpc.main.subscribe.mutationOptions());
   const unsubscribe = useMutation(trpc.main.unSubscribe.mutationOptions());
+
+  const joinMeeting = useMutation(trpc.meetings.joinMeeting.mutationOptions());
+  const leaveMeeting = useMutation(trpc.meetings.leaveMeeting.mutationOptions());
+  const { data: userParticipants } = useQuery(
+    trpc.meetings.getParticipants.queryOptions(),
+  );
+
+  const isJoined = useMemo(() => {
+    return userParticipants?.some(
+      (p) => p.meetId === meeting?.id && p.fromUserId === user?.id,
+    );
+  }, [userParticipants, meeting?.id, user?.id]);
 
   const addToFavorites = useMutation(trpc.main.addToFavorites.mutationOptions());
   const removeFromFavorites = useMutation(
@@ -103,9 +145,44 @@ function RouteComponent() {
     );
   }, [userSubscriptions, organizer?.id]);
 
-  const event = getEventData(meeting?.eventType!, meeting?.eventId!);
+  const isParticipant = useMemo(() => {
+    return userParticipants?.some(
+      (p) => p.meetId === meeting?.id && p.fromUserId === user?.id,
+    );
+  }, [userParticipants, meeting?.id, user?.id]);
+
+  // @ts-ignore
+  const eventType = isUserMeeting ? meeting?.typeOfEvent : meeting?.type;
+  // @ts-ignore
+  const eventId = isUserMeeting ? meeting?.idOfEvent : meeting?.id;
+  const event = getEventData(eventType ?? "", eventId ?? 0);
+  console.log(event, "event");
 
   const age = new Date().getFullYear() - new Date(organizer?.birthday!).getFullYear();
+
+  const isOwner = useMemo(() => {
+    return organizer?.id === user?.id;
+  }, [organizer?.id, user?.id]);
+
+  console.log(isOwner, "isOwner");
+
+  const handleJoin = () => {
+    if (isOwner) {
+      return;
+    }
+
+    if (isJoined) {
+      leaveMeeting.mutate({ id: meeting?.id! });
+      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
+        return old.filter((p: any) => p.meetId !== meeting?.id);
+      });
+    } else {
+      joinMeeting.mutate({ id: meeting?.id! });
+      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
+        return [...(old || []), { fromUserId: user?.id!, meetId: meeting?.id! }];
+      });
+    }
+  };
 
   console.log(event);
   return (
@@ -131,15 +208,10 @@ function RouteComponent() {
         <div className="mt-4 flex items-center justify-between gap-6 text-white">
           <div className="p-3 text-black">Отказать</div>
           <div
-            onClick={() =>
-              navigate({
-                to: "/event/$name/$id",
-                params: { name: event?.category!, id: event?.id!.toString()! },
-              })
-            }
+            onClick={() => handleJoin()}
             className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3"
           >
-            Присоединиться
+            {isParticipant ? "Покинуть" : "Присоединиться"}
           </div>
         </div>
       </div>
@@ -183,7 +255,7 @@ function RouteComponent() {
           {organizer?.name} {organizer?.surname}
         </div>
         <div className="text-sm text-gray-500">
-          {organizer?.city}, {age}
+          {organizer?.city}, {organizer?.birthday}
         </div>
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 text-white">

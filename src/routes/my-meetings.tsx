@@ -1,13 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 export const Route = createFileRoute("/my-meetings")({
@@ -15,40 +11,17 @@ export const Route = createFileRoute("/my-meetings")({
 });
 
 function RouteComponent() {
+  const [activeFilter, setActiveFilter] = useState("Мои встречи");
   const trpc = useTRPC();
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
 
-  const meetingsWithEvents = meetings?.map((meeting) => {
-    switch (meeting.typeOfEvent) {
-      case "Кино":
-        return {
-          ...meeting,
-          event: kinoData?.find((event) => event.id === meeting.idOfEvent),
-        };
-      case "Вечеринка":
-        return {
-          ...meeting,
-          event: partiesData?.find((event) => event.id === meeting.idOfEvent),
-        };
-      case "Конференция":
-        return {
-          ...meeting,
-          event: conferencesData?.find((event) => event.id === meeting.idOfEvent),
-        };
-      case "Нетворкинг":
-        return {
-          ...meeting,
-          event: networkingData?.find((event) => event.id === meeting.idOfEvent),
-        };
-      case "Квест":
-        return {
-          ...meeting,
-          event: questsData?.find((quest) => quest.id === meeting.idOfEvent),
-        };
-    }
-  });
+  const { data: meetingsWithEvents } = useQuery(
+    trpc.meetings.getMeetingsWithEvents.queryOptions(),
+  );
 
-  console.log(meetingsWithEvents, "meetingsWithEvents");
+  const filters = ["Мои встречи", "Приглашения", "Заявки"];
+
+  console.log(JSON.stringify(meetingsWithEvents), "meetingsWithEvents");
 
   console.log(meetings, "meetings");
 
@@ -64,6 +37,22 @@ function RouteComponent() {
         <div className="flex w-full items-center justify-center p-4">
           <h1 className="text-center text-base font-bold text-gray-800">Мои встречи</h1>
         </div>
+      </div>
+
+      <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-10 overflow-x-auto px-4">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              activeFilter === filter
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
+            }`}
+          >
+            {filter}
+          </button>
+        ))}
       </div>
       {meetingsWithEvents?.map((quest) => {
         return (

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -11,12 +12,26 @@ import { fakeUsers } from "~/config/fakeUsers";
 import { meetingsConfig } from "~/config/meetings";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getEventData } from "~/lib/utils/getEventData";
-
+import { getImageUrl } from "~/lib/utils/getImageURL";
+import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const trpc = useTRPC();
+  const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+
+  const meetingsWithEvents = meetingsData?.map((meeting) => {
+    const organizer = users?.find((u) => u.id === meeting.userId);
+    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+    return {
+      ...meeting,
+      organizer,
+      event,
+    };
+  });
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
   const [search, setSearch] = useState("");
@@ -50,7 +65,7 @@ function RouteComponent() {
     Нетворкинг: "Нетворкинг",
   };
 
-  console.log(meetings);
+  console.log(meetingsWithEvents, "meetingsWithEvents");
 
   useScroll();
 
@@ -65,7 +80,8 @@ function RouteComponent() {
           <h1 className="text-3xl font-bold text-black">Встречи</h1>
         </div>
         <div
-          className="cursor-pointer text-[#2462FF]"
+          className="cursor-pointer rounded-full bg-[#F3E5FF] px-4 py-2.5 text-sm font-medium text-black"
+          style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
           onClick={() => navigate({ to: "/my-meetings" })}
         >
           Мои встречи
@@ -118,50 +134,91 @@ function RouteComponent() {
 
       {/* Meetings List */}
       <div className="flex-1 overflow-y-auto px-4">
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 mt-4 w-full">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Актуальные встречи</h2>
-                <ArrowRight className="h-5 w-5 text-gray-500" />
-              </div>
-              <div className="flex gap-4 overflow-x-auto">
-                {[
-                  {
-                    title: "Пост- новогодний вечер",
-                    subtitle: "15 января • Мозайка",
-                    tag: "🎄 Новый год",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-red-400 to-pink-400",
-                  },
-                  {
-                    title: "Гангстеры и розы",
-                    subtitle: "21 января • Алькатрас",
-                    tag: "💞 Клубы знакомств",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-pink-400 to-purple-400",
-                  },
-                  {
-                    title: "KazDrilling 2024",
-                    subtitle: "Renaissance Hotel",
-                    tag: "💃 Концерт",
-                    price: "3 000 ₸",
-                    bg: "bg-gradient-to-br from-green-400 to-blue-400",
-                  },
-                ].map((event, idx) => (
-                  <div
-                    key={idx}
-                    className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-                  >
-                    <div className={`h-full w-full ${event.bg} relative`}>
-                      <div className="absolute bottom-2 left-2 flex gap-1">
-                        <div>{event.tag}</div>
-                      </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2 mt-4 w-full">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Актуальные встречи</h2>
+              <ArrowRight className="h-5 w-5 text-gray-500" />
+            </div>
+            <div className="flex gap-4 overflow-x-auto">
+              {[
+                {
+                  title: "Пост- новогодний вечер",
+                  subtitle: "15 января • Мозайка",
+                  tag: "🎄 Новый год",
+                  price: "3 000 ₸",
+                  bg: "bg-gradient-to-br from-red-400 to-pink-400",
+                },
+                {
+                  title: "Гангстеры и розы",
+                  subtitle: "21 января • Алькатрас",
+                  tag: "💞 Клубы знакомств",
+                  price: "3 000 ₸",
+                  bg: "bg-gradient-to-br from-pink-400 to-purple-400",
+                },
+                {
+                  title: "KazDrilling 2024",
+                  subtitle: "Renaissance Hotel",
+                  tag: "💃 Концерт",
+                  price: "3 000 ₸",
+                  bg: "bg-gradient-to-br from-green-400 to-blue-400",
+                },
+              ].map((event, idx) => (
+                <div
+                  key={idx}
+                  className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
+                >
+                  <div className={`h-full w-full ${event.bg} relative`}>
+                    <div className="absolute bottom-2 left-2 flex gap-1">
+                      <div>{event.tag}</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
+          </div>
+          {/* Featured Meetings List */}
+          <div className="col-span-2 grid grid-cols-2 gap-4">
+            {meetingsWithEvents?.map((meeting) => (
+              <div key={meeting.id} className="">
+                {/* Profile Card */}
+                <div
+                  className="overflow-hidden"
+                  onClick={() =>
+                    navigate({
+                      to: "/meet/$id",
+                      params: { id: meeting.id.toString() },
+                    })
+                  }
+                >
+                  {/* Avatar Section */}
+                  <div className="relative h-36">
+                    <img
+                      src={
+                        meeting.organizer?.photo
+                          ? getImageUrl(meeting.organizer.photo)
+                          : ""
+                      }
+                      alt={meeting.organizer?.name!}
+                      className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
+                    />
+                    {/* Status Indicator */}
+                    <div className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600 bg-amber-300" />
+                  </div>
+                  {/* Text Content */}
+                  <div className="p-2">
+                    <div className="space-y-1">
+                      <h3 className="text-sm leading-tight font-medium text-gray-900">
+                        {meeting.name}
+                      </h3>
+                      <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                        {meeting.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
             {meetings
               .filter((meeting) => {
                 if (activeFilter === "Все") return true;
@@ -175,7 +232,7 @@ function RouteComponent() {
                   meeting.name.toLowerCase().includes(search.toLowerCase())
                 );
               })
-              .map((meeting, index) => (
+              .map((meeting) => (
                 <div key={meeting.id} className="">
                   {/* Profile Card */}
                   <div
@@ -216,7 +273,7 @@ function RouteComponent() {
                 </div>
               ))}
           </div>
-        </>
+        </div>
       </div>
       <div className="fixed right-4 bottom-20 left-4">
         <button

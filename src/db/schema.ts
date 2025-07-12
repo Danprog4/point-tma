@@ -46,6 +46,15 @@ export const meetTable = pgTable("meets", {
   isCustom: boolean("is_custom").default(false),
 });
 
+export const meetParticipantsTable = pgTable("meet_participants", {
+  id: serial("id").primaryKey(),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
+  toUserId: bigint("to_user_id", { mode: "number" }),
+  status: varchar("status", { length: 32 }).default("pending"), // pending, accepted, rejected
+  meetId: bigint("meet_id", { mode: "number" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const activeEventsTable = pgTable("active_events", {
   id: serial("id").primaryKey(),
   eventId: bigint("eventId", { mode: "number" }),

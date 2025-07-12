@@ -1,22 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Plus, Search } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { Calendar } from "~/components/Calendar";
-import { CreateMeetDrawer } from "~/components/CreateMeetDrawer";
 import { Header } from "~/components/Header";
-import { Filters } from "~/components/Icons/Filters";
 import { Selecter } from "~/components/Selecter";
 import { useScroll } from "~/components/hooks/useScroll";
 import { useTRPC } from "~/trpc/init/react";
 
 import { EventCard } from "~/components/EventCard";
+import FilterDrawer from "~/components/FilterDrawer";
+import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
-
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
     const isOnboarded = localStorage.getItem("isOnboarded");
@@ -30,12 +30,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const [selectedFilter, setSelectedFilter] = useState("Все");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
+  const [search, setSearch] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (!isOnboarded) {
@@ -83,14 +86,32 @@ function Home() {
 
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Афиша</h1>
-        <div className="flex items-center gap-4">
-          <button className="">
-            <Filters />
-          </button>
-          <button>
-            <Search className="h-6 w-6 text-gray-900" />
-          </button>
-        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <input
+          type="text"
+          placeholder="Поиск событий"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+
+        <FilterDrawer
+          open={isOpen}
+          onOpenChange={(open) => {
+            if (open) {
+              lockBodyScroll();
+            } else {
+              unlockBodyScroll();
+            }
+            setIsOpen(open);
+          }}
+        >
+          <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <WhiteFilter />
+          </div>
+        </FilterDrawer>
       </div>
 
       <div className="w-full flex-1 overflow-x-hidden overflow-y-auto">
@@ -98,7 +119,8 @@ function Home() {
           <div className="flex items-center gap-2">
             <Selecter height="h-10" width="w-full" placeholder="Алматы" />
           </div>
-          <div className="flex flex-nowrap gap-8 overflow-x-auto">
+
+          <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
             {[
               { emoji: "🎞", name: "Кино" },
               { emoji: "💃", name: "Вечеринки" },
@@ -108,9 +130,14 @@ function Home() {
             ].map((chip) => (
               <div
                 key={chip.name}
-                className="flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap"
+                className={`flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap ${
+                  selectedFilter === chip.name
+                    ? "bg-black text-white"
+                    : "border-gray-200 bg-white text-black"
+                }`}
                 onClick={() => {
                   navigate({ to: "/all/$name", params: { name: chip.name } });
+                  setSelectedFilter(chip.name);
                 }}
               >
                 <div>{chip.emoji}</div>
@@ -170,18 +197,20 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(kinoData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
-              <div
-                onClick={() => {
-                  navigate({
-                    to: "/event/$name/$id",
-                    params: { name: event.category, id: event.id },
-                  });
-                }}
-              >
-                <EventCard key={idx} event={event} />
-              </div>
-            ))}
+            {(kinoData?.slice?.(0, 5) || [])
+              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .map((event: any, idx: number) => (
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/event/$name/$id",
+                      params: { name: event.category, id: event.id },
+                    });
+                  }}
+                >
+                  <EventCard key={idx} event={event} />
+                </div>
+              ))}
           </div>
         </div>
 
@@ -195,18 +224,20 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(questsData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
-              <div
-                onClick={() => {
-                  navigate({
-                    to: "/event/$name/$id",
-                    params: { name: event.category, id: event.id },
-                  });
-                }}
-              >
-                <EventCard key={idx} event={event} />
-              </div>
-            ))}
+            {(questsData?.slice?.(0, 5) || [])
+              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .map((event: any, idx: number) => (
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/event/$name/$id",
+                      params: { name: event.category, id: event.id },
+                    });
+                  }}
+                >
+                  <EventCard key={idx} event={event} />
+                </div>
+              ))}
           </div>
         </div>
 
@@ -234,18 +265,20 @@ function Home() {
             />
           </div>
           <div className="flex w-full gap-4 overflow-x-auto px-4">
-            {(conferencesData?.slice?.(0, 5) || []).map((conf: any, idx: number) => (
-              <div
-                onClick={() => {
-                  navigate({
-                    to: "/event/$name/$id",
-                    params: { name: conf.category, id: conf.id },
-                  });
-                }}
-              >
-                <ConferenceCard key={idx} conf={conf} />
-              </div>
-            ))}
+            {(conferencesData?.slice?.(0, 5) || [])
+              .filter((conf) => conf.title.toLowerCase().includes(search.toLowerCase()))
+              .map((conf: any, idx: number) => (
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/event/$name/$id",
+                      params: { name: conf.category, id: conf.id },
+                    });
+                  }}
+                >
+                  <ConferenceCard key={idx} conf={conf} />
+                </div>
+              ))}
           </div>
         </div>
 
@@ -261,32 +294,23 @@ function Home() {
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4">
-            {(partiesData?.slice?.(0, 5) || []).map((event: any, idx: number) => (
-              <div
-                onClick={() => {
-                  navigate({
-                    to: "/event/$name/$id",
-                    params: { name: event.category, id: event.id },
-                  });
-                }}
-              >
-                <EventCard key={idx} event={event} />
-              </div>
-            ))}
+            {(partiesData?.slice?.(0, 5) || [])
+              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .map((event: any, idx: number) => (
+                <div
+                  onClick={() => {
+                    navigate({
+                      to: "/event/$name/$id",
+                      params: { name: event.category, id: event.id },
+                    });
+                  }}
+                >
+                  <EventCard key={idx} event={event} />
+                </div>
+              ))}
           </div>
         </div>
       </div>
-
-      <div className="fixed right-4 bottom-20 left-4">
-        <button
-          onClick={() => setIsDrawerOpen(true)}
-          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-        >
-          Создать встречу
-        </button>
-      </div>
-
-      <CreateMeetDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   );
 }

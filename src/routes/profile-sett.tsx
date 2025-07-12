@@ -20,6 +20,8 @@ function RouteComponent() {
   const [name, setName] = useState("");
 
   const [email, setEmail] = useState<string>("");
+  const [birthday, setBithtday] = useState<string>("");
+  const [city, setCity] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [base64, setBase64] = useState<string | null>(null);
   const [surname, setSurname] = useState<string>("");
@@ -97,6 +99,8 @@ function RouteComponent() {
       gallery: filteredGallery,
       name: name,
       surname: surname || "",
+      birthday: birthday || "",
+      city: city || "",
     });
   };
 
@@ -227,6 +231,7 @@ function RouteComponent() {
           <div className="flex flex-col items-start text-sm">
             <div className="text-[#ABABAB]">Имя</div>
             <input
+              placeholder="Введите имя"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -238,6 +243,7 @@ function RouteComponent() {
           <div className="flex flex-col items-start text-sm">
             <div className="text-[#ABABAB]">Фамилия</div>
             <input
+              placeholder="Введите фамилию"
               type="text"
               value={surname || ""}
               onChange={(e) => setSurname(e.target.value)}
@@ -247,8 +253,33 @@ function RouteComponent() {
         </div>
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex flex-col items-start text-sm">
+            <div className="text-[#ABABAB]">День рождения</div>
+            <input
+              placeholder="00.00.0000"
+              type="text"
+              value={birthday || ""}
+              onChange={(e) => setBithtday(e.target.value)}
+              className="border-none bg-transparent text-black outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+          <div className="flex flex-col items-start text-sm">
+            <div className="text-[#ABABAB]">Город</div>
+            <input
+              placeholder="Введите город"
+              type="text"
+              value={city || ""}
+              onChange={(e) => setCity(e.target.value)}
+              className="border-none bg-transparent text-black outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+          <div className="flex flex-col items-start text-sm">
             <div className="text-[#ABABAB]">Email</div>
             <input
+              placeholder="example@mail.com"
               type="text"
               value={email || ""}
               onChange={(e) => setEmail(e.target.value)}
@@ -260,6 +291,7 @@ function RouteComponent() {
           <div className="flex flex-col items-start text-sm">
             <div className="text-[#ABABAB]">Номер телефона</div>
             <input
+              placeholder="+7 000 000 00 00"
               type="text"
               value={phone || ""}
               onChange={(e) => setPhone(e.target.value)}
@@ -270,8 +302,8 @@ function RouteComponent() {
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex flex-col items-start text-sm">
             <div className="text-[#ABABAB]">Описание</div>
-            <input
-              type="text"
+            <textarea
+              placeholder="Введите описание"
               value={bio || ""}
               onChange={(e) => setBio(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
@@ -308,7 +340,7 @@ function RouteComponent() {
       <button
         disabled={isDisabled}
         onClick={handleUpdateProfile}
-        className={`absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "bg-gray-300"}`}
+        className={`fixed right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "bg-gray-300"}`}
       >
         {updateProfile.isPending ? "Сохраняем..." : "Сохранить изменения"}
       </button>

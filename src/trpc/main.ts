@@ -91,6 +91,8 @@ export const router = {
         gallery: z.array(z.string()),
         name: z.string(),
         surname: z.string(),
+        birthday: z.string(),
+        city: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -159,6 +161,8 @@ export const router = {
           bio: input.bio,
           name: input.name,
           surname: input.surname,
+          birthday: input.birthday,
+          city: input.city,
         })
         .where(eq(usersTable.id, ctx.userId));
 

@@ -104,7 +104,7 @@ function RouteComponent() {
       </div>
 
       <Calendar />
-      <div className="mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+      <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
         {filters.map((filter) => (
           <button
             key={filter}
@@ -123,7 +123,7 @@ function RouteComponent() {
         {questsData
           .filter(
             (quest) =>
-              (activeFilter === "Все" && questsData) || quest.category === activeFilter,
+              (activeFilter === "Все" && questsData) || quest.type === activeFilter,
           )
           .filter((quest) => {
             return (

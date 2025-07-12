@@ -60,7 +60,7 @@ function RouteComponent() {
         <div className="flex items-center gap-2">
           <Selecter height="h-10" width="w-full" placeholder="Москва" />
         </div>
-        <div className="flex flex-nowrap gap-8 overflow-x-auto">
+        <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
           {[
             { emoji: "🎞", name: "Кино" },
             { emoji: "🏛", name: "Театр" },

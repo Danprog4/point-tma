@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { Selecter } from "~/components/Selecter";
 import { conferencesData } from "~/config/conf";
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/all/$name")({
 
 function RouteComponent() {
   const { name } = Route.useParams();
+  const [selectedFilter, setSelectedFilter] = useState(name);
   const navigate = useNavigate();
   console.log(name);
 
@@ -44,7 +46,7 @@ function RouteComponent() {
       <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
         <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => navigate({ to: "/" })}
             className="flex h-6 w-6 items-center justify-center"
           >
             <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
@@ -63,15 +65,22 @@ function RouteComponent() {
         <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
           {[
             { emoji: "🎞", name: "Кино" },
-            { emoji: "🏛", name: "Театр" },
-            { emoji: "🎄", name: "Новый год" },
-            { emoji: "💃", name: "Конценты" },
-            { emoji: "💞", name: "Клубы знакомств" },
+            { emoji: "💃", name: "Вечеринки" },
             { emoji: "📈", name: "Конференции" },
+            { emoji: "🤝", name: "Нетворкинг" },
+            { emoji: "🕵️‍♂️", name: "Квесты" },
           ].map((chip) => (
             <div
+              onClick={() => {
+                navigate({ to: "/all/$name", params: { name: chip.name } });
+                setSelectedFilter(chip.name);
+              }}
               key={chip.name}
-              className="flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap"
+              className={`flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-medium text-nowrap transition-colors ${
+                selectedFilter === chip.name
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
+              }`}
             >
               <div>{chip.emoji}</div>
               <div>{chip.name}</div>

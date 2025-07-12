@@ -19,6 +19,8 @@ function RouteComponent() {
     trpc.meetings.getMeetingsWithEvents.queryOptions(),
   );
 
+  const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
+
   const filters = ["Мои встречи", "Приглашения", "Заявки"];
 
   console.log(JSON.stringify(meetingsWithEvents), "meetingsWithEvents");
@@ -54,32 +56,42 @@ function RouteComponent() {
           </button>
         ))}
       </div>
-      {meetingsWithEvents?.map((quest) => {
-        return (
-          <div key={quest?.id}>
-            <div className="px-4">
-              <QuestCard quest={quest?.event || ({} as Quest)} isNavigable={true} />
-              <p className="mb-4 text-xs leading-4 text-black">
-                {quest?.event?.description}
-              </p>
-              <div className="mb-6 flex items-center justify-between">
-                {quest?.event?.hasAchievement && (
-                  <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                    + Достижение
-                  </span>
-                )}
-                <div className="ml-auto flex items-center gap-1">
-                  <span className="text-base font-medium text-black">
-                    + {quest?.event?.reward.toLocaleString()}
-                  </span>
-                  <span className="text-base font-medium text-black">points</span>
-                  <Coin />
+      {activeFilter === "Мои встречи" && (
+        <div className="flex flex-col gap-4 px-4">
+          {meetingsWithEvents?.map((quest) => (
+            <div key={quest?.id}>
+              <div className="px-4">
+                <QuestCard quest={quest?.event || ({} as Quest)} isNavigable={true} />
+                <p className="mb-4 text-xs leading-4 text-black">
+                  {quest?.event?.description}
+                </p>
+                <div className="mb-6 flex items-center justify-between">
+                  {quest?.event?.hasAchievement && (
+                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                      + Достижение
+                    </span>
+                  )}
+                  <div className="ml-auto flex items-center gap-1">
+                    <span className="text-base font-medium text-black">
+                      + {quest?.event?.reward?.toLocaleString()}
+                    </span>
+                    <span className="text-base font-medium text-black">points</span>
+                    <Coin />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      )}
+
+      {activeFilter === "Приглашения" && <div className="flex flex-col gap-4 px-4"></div>}
+
+      {activeFilter === "Заявки" && (
+        <div className="flex flex-col gap-4 px-4">
+          {requests?.map((request) => <div key={request?.id}>{request?.fromUserId}</div>)}
+        </div>
+      )}
     </div>
   );
 }

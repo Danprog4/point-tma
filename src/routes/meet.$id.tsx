@@ -205,12 +205,11 @@ function RouteComponent() {
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between gap-6 text-white">
-          <div className="p-3 text-black">Отказать</div>
           <div
             onClick={() => handleJoin()}
             className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3"
           >
-            {isParticipant ? "Покинуть" : "Присоединиться"}
+            {isParticipant ? "Отменить запрос" : "Присоединиться"}
           </div>
         </div>
       </div>

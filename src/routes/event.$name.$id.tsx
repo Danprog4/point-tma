@@ -268,11 +268,13 @@ function RouteComponent() {
 
                 <div>За успешное выполнение квеста</div>
                 <div className="flex gap-2">
-                  <div className="flex h-25 w-25 items-center justify-center rounded-lg bg-blue-200">
+                  <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
                     <img src="/shit.png" alt="coin" className="h-10 w-10" />
+                    <span className="mt-1 text-sm">Кепка BUCS</span>
                   </div>
-                  <div className="flex h-25 w-25 items-center justify-center rounded-lg bg-red-200">
+                  <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-red-200">
                     <img src="/cap.png" alt="coin" className="h-10 w-10" />
+                    <span className="mt-1 text-sm">Любитель к...</span>
                   </div>
                 </div>
               </div>

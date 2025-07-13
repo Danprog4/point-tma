@@ -67,16 +67,19 @@ export const router = {
 
       const imageUUID = await uploadBase64Image(input.photo);
 
-      await db.update(usersTable).set({
-        name: input.name,
-        surname: input.surname,
-        login: input.login,
-        birthday: input.birthday,
-        city: input.city,
-        bio: input.bio,
-        sex: input.sex,
-        photo: imageUUID,
-      });
+      await db
+        .update(usersTable)
+        .set({
+          name: input.name,
+          surname: input.surname,
+          login: input.login,
+          birthday: input.birthday,
+          city: input.city,
+          bio: input.bio,
+          sex: input.sex,
+          photo: imageUUID,
+        })
+        .where(eq(usersTable.id, ctx.userId));
 
       return user;
     }),

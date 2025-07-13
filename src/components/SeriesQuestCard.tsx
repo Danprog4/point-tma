@@ -8,10 +8,10 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
 
   return (
     <div className="relative mx-4 mb-6">
-      <div className="absolute inset-x-0 top-3 h-3 rounded-b-2xl bg-[#F3E5FF] opacity-50"></div>
-      <div className="absolute inset-x-4 top-1.5 h-3 rounded-b-2xl bg-[#F3E5FF] opacity-70"></div>
+      <div className="absolute inset-x-2 top-[180px] h-4 rounded-b-2xl bg-purple-100"></div>
+      <div className="absolute inset-x-4 top-[190px] h-4 rounded-b-2xl bg-purple-100"></div>
       <div
-        className="relative cursor-pointer rounded-2xl bg-[#F3E5FF] p-4"
+        className="relative cursor-pointer rounded-2xl bg-purple-100 p-4"
         onClick={() => {
           if (quest && quest.id !== undefined && quest.id !== null) {
             navigate({

@@ -154,7 +154,9 @@ function RouteComponent() {
               <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
               <div className="px-4">
                 <QuestCard quest={quest as Quest} isNavigable={true} />
-                <p className="mb-4 text-xs leading-4 text-black">{quest.description}</p>
+                <p className="mt-2 mb-4 text-xs leading-4 text-black">
+                  {quest.description}
+                </p>
                 <div className="mb-6 flex items-center justify-between">
                   {quest.hasAchievement && (
                     <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">

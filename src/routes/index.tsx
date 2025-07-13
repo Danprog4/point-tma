@@ -248,7 +248,12 @@ function Home() {
         <div className="mb-6 px-4">
           <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-bold">Квесты для компании</span>
+              <span
+                className="text-lg font-bold"
+                onClick={() => navigate({ to: "/all/$name", params: { name: "Квесты" } })}
+              >
+                Квесты для компании
+              </span>
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white">
                 <Plus className="h-6 w-6 text-blue-500" />
               </div>

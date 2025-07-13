@@ -10,6 +10,7 @@ export const kinoData = [
     category: "Кино",
     stages: [{ title: "Сеанс", desc: "Просмотр фильма" }],
     reward: 0,
+    quests: [],
     hasAchievement: false,
     organizer: "Яндекс Афиша",
     image:
@@ -25,6 +26,7 @@ export const kinoData = [
     type: "Семейный",
     category: "Кино",
     stages: [{ title: "Сеанс", desc: "Просмотр фильма" }],
+    quests: [],
     reward: 0,
     hasAchievement: false,
     organizer: "Яндекс Афиша",
@@ -39,6 +41,7 @@ export const kinoData = [
     location: "Москва",
     price: 300,
     type: "Комедия",
+    quests: [],
     category: "Кино",
     stages: [{ title: "Сеанс", desc: "Просмотр фильма" }],
     reward: 0,

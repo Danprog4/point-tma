@@ -42,6 +42,15 @@ function RouteComponent() {
     }
   }, [isOnboarded, navigate]);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   const TOTAL_CARDS = 5;
   const LAST_STEP = TOTAL_CARDS + 1;
 
@@ -141,7 +150,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className="flex min-h-screen w-screen flex-col items-center overflow-x-hidden overflow-y-auto bg-[#71339b] px-4 pb-10">
+    <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
       <header className="z-[100] flex items-center justify-end"></header>
 
       {step === 0 ? (
@@ -281,7 +290,7 @@ function RouteComponent() {
         {step === LAST_STEP && (
           <motion.div
             key="final-block-wrapper"
-            className="inset-0 z-20 flex w-screen items-center justify-center overflow-x-hidden px-8"
+            className="absolute inset-0 z-20 flex w-screen items-center justify-center overflow-hidden px-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -293,11 +302,11 @@ function RouteComponent() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex flex-col items-center justify-center text-white"
+              className="flex h-full w-full flex-col items-center justify-start text-white"
             >
-              <div className="flex h-full w-screen flex-col overflow-y-auto px-8 pb-10">
+              <div className="flex h-full w-screen flex-col px-8 pb-20">
                 <label htmlFor="photo-upload" className="block cursor-pointer">
-                  <div className="mx-auto mt-4 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-x-hidden overflow-y-auto rounded-full bg-white">
+                  <div className="mx-auto mt-4 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-hidden rounded-full bg-white">
                     <div className="flex h-[45px] w-[45px] items-center justify-center rounded-full bg-[#F3E5FF] pt-[10px]">
                       <svg
                         width="30"
@@ -407,12 +416,12 @@ function RouteComponent() {
       {step === 0 ? (
         <button
           onClick={handleNext}
-          className="fixed right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
+          className="absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
         >
           Далее
         </button>
       ) : (
-        <div className="fixed right-0 bottom-0 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
+        <div className="absolute bottom-4 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
           <button
             onClick={handleBack}
             className="z-[100] ml-4 bg-transparent px-4 text-white"

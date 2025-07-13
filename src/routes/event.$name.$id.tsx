@@ -11,6 +11,7 @@ import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
 import { BuyQuest } from "~/components/quest/BuyQuest";
+import { QuestCard } from "~/components/QuestCard";
 import { useActivate } from "~/hooks/useActivate";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
@@ -238,8 +239,20 @@ function RouteComponent() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-2 px-4 py-4">
-                  <div className="text-2xl font-bold">Расписание</div>
-                  <div className="text-l font-bold">{event.date}</div>
+                  {event.quests?.map((quest) => (
+                    <>
+                      <QuestCard key={quest.id} quest={quest as any} isNavigable={true} />
+                      {event?.description.slice(0, 100)}
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
+                          + Достижение
+                        </div>
+                        <div className="flex items-center gap-1">
+                          + {event?.reward} points <Coin />
+                        </div>
+                      </div>
+                    </>
+                  ))}
                 </div>
               )}
               <div className="flex flex-col gap-2 px-4 py-4">

@@ -16,9 +16,11 @@ export function QuestCard({
     return null;
   }
 
+  console.log(quest);
+
   return (
     <div
-      className="mb-4 flex items-start gap-4"
+      className="flex items-start gap-4"
       onClick={() => {
         if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
           navigate({

@@ -9,6 +9,7 @@ export const networkingData = [
     price: 5000,
     type: "Глобальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Welcome & Registration",
@@ -37,6 +38,7 @@ export const networkingData = [
     date: "10 февраля",
     location: "г.Нур-Султан",
     price: 3000,
+    quests: [],
     type: "Локальный",
     category: "Нетворкинг",
     stages: [
@@ -69,6 +71,7 @@ export const networkingData = [
     price: 4000,
     type: "Региональный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Keynote & Inspiration",
@@ -99,6 +102,7 @@ export const networkingData = [
     price: 0,
     type: "Локальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Lightning Talks",
@@ -129,6 +133,7 @@ export const networkingData = [
     price: 3500,
     type: "Региональный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Icebreaker Games",
@@ -152,13 +157,13 @@ export const networkingData = [
   {
     id: 6,
     title: "HR Professionals Connect",
-    description:
-      "Нетворкинг для специалистов по управлению персоналом и рекрутеров.",
+    description: "Нетворкинг для специалистов по управлению персоналом и рекрутеров.",
     date: "5 июня",
     location: "г.Нур-Султан",
     price: 2500,
     type: "Локальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "HR Trends",
@@ -182,13 +187,13 @@ export const networkingData = [
   {
     id: 7,
     title: "Young Entrepreneurs Meetup",
-    description:
-      "Встреча молодых предпринимателей для обмена опытом и поиска партнеров.",
+    description: "Встреча молодых предпринимателей для обмена опытом и поиска партнеров.",
     date: "18 июля",
     location: "г.Караганда",
     price: 2000,
     type: "Региональный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Pitch Session",
@@ -212,13 +217,13 @@ export const networkingData = [
   {
     id: 8,
     title: "Tech Product Managers Night",
-    description:
-      "Нетворкинг для менеджеров по продукту в сфере IT и технологий.",
+    description: "Нетворкинг для менеджеров по продукту в сфере IT и технологий.",
     date: "2 августа",
     location: "г.Алматы",
     price: 4500,
     type: "Глобальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Product Demos",
@@ -249,6 +254,7 @@ export const networkingData = [
     price: 4000,
     type: "Региональный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Legal Insights",
@@ -272,13 +278,13 @@ export const networkingData = [
   {
     id: 10,
     title: "Marketing Leaders Connect",
-    description:
-      "Нетворкинг для маркетологов и специалистов по рекламе.",
+    description: "Нетворкинг для маркетологов и специалистов по рекламе.",
     date: "28 октября",
     location: "г.Шымкент",
     price: 3500,
     type: "Локальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Trends & Insights",
@@ -309,6 +315,7 @@ export const networkingData = [
     price: 0,
     type: "Глобальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Green Talks",
@@ -339,6 +346,7 @@ export const networkingData = [
     price: 6000,
     type: "Глобальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Welcome Speech",
@@ -369,6 +377,7 @@ export const networkingData = [
     price: 1500,
     type: "Локальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Freelance Stories",
@@ -399,6 +408,7 @@ export const networkingData = [
     price: 0,
     type: "Региональный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Poster Session",
@@ -429,6 +439,7 @@ export const networkingData = [
     price: 0,
     type: "Глобальный",
     category: "Нетворкинг",
+    quests: [],
     stages: [
       {
         title: "Inspiring Talks",

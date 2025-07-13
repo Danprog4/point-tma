@@ -36,7 +36,7 @@ function RouteComponent() {
   console.log(requests, "requests");
 
   const activeQuests = useMemo(() => {
-    return activeEvents?.filter((event) => event.name === "Квест");
+    return activeEvents?.filter((event) => event.type === "Квест") || [];
   }, [activeEvents]);
 
   const userAge = user?.birthday

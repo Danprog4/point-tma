@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { Selecter } from "~/components/Selecter";
 import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { questsData } from "~/config/quests";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
+import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/quests")({
@@ -71,7 +73,32 @@ function RouteComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
+  const trpc = useTRPC();
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
+
   useScroll();
+
+  const filteredEvents = data?.filter((event) => event.type === "Квест");
+  const userQuestsData = filteredEvents?.map((event) => {
+    const quest = questsData.find((q) => q.id === event.eventId);
+    return quest
+      ? {
+          ...event,
+          description: quest.description,
+          hasAchievement: quest.hasAchievement,
+          reward: quest.reward,
+          title: quest.title,
+          date: quest.date,
+          location: quest.location,
+          price: quest.price,
+          type: quest.type,
+          category: quest.category,
+          organizer: quest.organizer,
+          image: quest.image,
+        }
+      : event;
+  });
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-30">
@@ -128,7 +155,51 @@ function RouteComponent() {
           </button>
         ))}
       </div>
+
       <div className="space-y-4">
+        {/* User Active Quests Section */}
+        {userQuestsData && userQuestsData.length > 0 && (
+          <div className="mb-6">
+            <h2 className="px-4 pb-4 text-lg font-semibold text-black">Мои квесты</h2>
+            {userQuestsData.map((quest) => {
+              const questData = questsData.find((q) => q.id === quest.eventId);
+              return (
+                <div key={quest.id} className="mb-4 px-4">
+                  <QuestCard quest={quest as Quest} isNavigable={true} />
+                  <p className="mb-4 text-xs leading-4 text-black">
+                    {questData?.description?.slice(0, 100)}
+                    {questData?.description && questData.description.length > 100
+                      ? "..."
+                      : ""}
+                  </p>
+
+                  <div className="mb-6 flex w-full items-center justify-between">
+                    {questData?.hasAchievement ? (
+                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                        + Достижение
+                      </span>
+                    ) : (
+                      <span
+                        style={{ visibility: "hidden" }}
+                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                      >
+                        + Достижение
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <span className="text-base font-medium text-black">
+                        + {questData?.reward?.toLocaleString() || 0}
+                      </span>
+                      <span className="text-base font-medium text-black">points</span>
+                      <Coin />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="mb-6">
           {questsData
             .filter((quest) => quest.isSeries)

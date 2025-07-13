@@ -7,13 +7,19 @@ export type Quest = {
   price: number;
   type: string;
   category: string;
-  stages: {
+  stages?: {
     title: string;
     desc: string;
+  }[];
+  quests?: {
+    id: number;
+    title: string;
+    description: string;
   }[];
   reward: number;
   hasAchievement: boolean;
   organizer: string;
   image: string;
-  isActive?: boolean;
+
+  isSeries?: boolean;
 };

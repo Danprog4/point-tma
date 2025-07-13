@@ -10,6 +10,8 @@ import { meetingsConfig } from "~/config/meetings";
 import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
+import { Quest } from "~/types/quest";
+
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
 });
@@ -194,7 +196,7 @@ function RouteComponent() {
         <div className="flex flex-1 justify-center text-xl font-bold">Встреча</div>
       </header>
       <div className="flex flex-col p-4">
-        <QuestCard quest={event!} />
+        <QuestCard quest={event as Quest} />
         {event?.description}
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">

@@ -14,6 +14,8 @@ import { BuyQuest } from "~/components/quest/BuyQuest";
 import { useActivate } from "~/hooks/useActivate";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
+import { Quest } from "~/types/quest";
+
 export const Route = createFileRoute("/event/$name/$id")({
   component: RouteComponent,
 });
@@ -94,7 +96,7 @@ function RouteComponent() {
         <>
           <BuyQuest
             isBought={isBought}
-            quest={event}
+            quest={event as Quest}
             setIsOpen={setIsOpen}
             count={count}
             setCount={setCount}
@@ -205,7 +207,13 @@ function RouteComponent() {
             <>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Описание</div>
-                <div>{event.description}</div>
+                <div>
+                  {event.description.split(/\n{2,}/).map((paragraph, idx) => (
+                    <p key={idx} className="mb-3 last:mb-0">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Локация</div>
@@ -215,18 +223,25 @@ function RouteComponent() {
                 <div className="text-2xl font-bold">Организатор</div>
                 <div className="text-l font-bold">{event.organizer}</div>
               </div>
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Этапы квеста</div>
-                {event.stages.map((stage, idx) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col items-start justify-center gap-2"
-                  >
-                    <div className="text-l font-bold">{stage.title}</div>
-                    <div>{stage.desc}</div>
-                  </div>
-                ))}
-              </div>
+              {event.stages && event.stages.length > 0 ? (
+                <div className="flex flex-col gap-2 px-4 py-4">
+                  <div className="text-2xl font-bold">Этапы квеста</div>
+                  {event.stages.map((stage, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-col items-start justify-center gap-2"
+                    >
+                      <div className="text-l font-bold">{stage.title}</div>
+                      <div>{stage.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 px-4 py-4">
+                  <div className="text-2xl font-bold">Расписание</div>
+                  <div className="text-l font-bold">{event.date}</div>
+                </div>
+              )}
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Расписание</div>
                 <div className="text-l font-bold">{event.date}</div>

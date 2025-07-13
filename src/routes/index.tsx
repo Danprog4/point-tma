@@ -159,12 +159,12 @@ function Home() {
             />
             <div className="absolute top-4 left-4">
               <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-medium text-black">
-                Концерт
+                Футбол
               </span>
             </div>
             <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4">
               <h2 className="mb-2 text-xl font-bold text-white">
-                Панк-сказка «Король и Шут»
+                Матч Динамо Минск и Динамо Москва
               </h2>
               <div className="flex items-center gap-2 text-sm text-white">
                 <span>15 января</span>

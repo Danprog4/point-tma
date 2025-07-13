@@ -15,4 +15,5 @@ export type Quest = {
   hasAchievement: boolean;
   organizer: string;
   image: string;
+  isActive?: boolean;
 };

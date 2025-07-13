@@ -141,7 +141,7 @@ function RouteComponent() {
   );
 
   return (
-    <div className="flex h-full w-screen flex-col items-center overflow-x-hidden overflow-y-auto bg-[#71339b] px-4 pb-10">
+    <div className="flex min-h-screen w-screen flex-col items-center overflow-x-hidden overflow-y-auto bg-[#71339b] px-4 pb-10">
       <header className="z-[100] flex items-center justify-end"></header>
 
       {step === 0 ? (
@@ -297,7 +297,7 @@ function RouteComponent() {
             >
               <div className="flex h-full w-screen flex-col overflow-y-auto px-8 pb-10">
                 <label htmlFor="photo-upload" className="block cursor-pointer">
-                  <div className="mx-auto mt-40 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-x-hidden overflow-y-auto rounded-full bg-white">
+                  <div className="mx-auto mt-4 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-x-hidden overflow-y-auto rounded-full bg-white">
                     <div className="flex h-[45px] w-[45px] items-center justify-center rounded-full bg-[#F3E5FF] pt-[10px]">
                       <svg
                         width="30"
@@ -407,12 +407,12 @@ function RouteComponent() {
       {step === 0 ? (
         <button
           onClick={handleNext}
-          className="absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
+          className="fixed right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
         >
           Далее
         </button>
       ) : (
-        <div className="absolute right-0 bottom-2 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
+        <div className="fixed right-0 bottom-0 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
           <button
             onClick={handleBack}
             className="z-[100] ml-4 bg-transparent px-4 text-white"
@@ -420,6 +420,7 @@ function RouteComponent() {
             Назад
           </button>
           <button
+            disabled={isDisabled}
             onClick={handleNext}
             className={`z-[100] mx-4 flex-1 ${isDisabled && "bg-gray-500"} rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white`}
           >

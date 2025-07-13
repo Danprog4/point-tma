@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useState } from "react";
+import { ActiveQuestCard } from "~/components/ActiveQuestCard";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
@@ -12,6 +13,7 @@ import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
 import { questsData } from "~/config/quests";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
+
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
 });
@@ -55,7 +57,12 @@ export function getTypeColor(type: string) {
   }
 }
 
-const filters = ["Все", ...Array.from(new Set(questsData.map((quest) => quest.type)))];
+const filters = [
+  "Все",
+  ...Array.from(
+    new Set(questsData.filter((quest) => !quest.isActive).map((quest) => quest.type)),
+  ),
+];
 
 function RouteComponent() {
   const [search, setSearch] = useState("");
@@ -104,6 +111,19 @@ function RouteComponent() {
       </div>
 
       <Calendar />
+
+      {/* Active Quests Section */}
+      {questsData.filter((quest) => quest.isActive).length > 0 && (
+        <div className="mb-6">
+          <h2 className="mb-4 px-4 text-lg font-semibold text-black">Активные</h2>
+          {questsData
+            .filter((quest) => quest.isActive)
+            .map((quest) => (
+              <ActiveQuestCard key={quest.id} quest={quest} />
+            ))}
+        </div>
+      )}
+
       <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
         {filters.map((filter) => (
           <button
@@ -121,6 +141,7 @@ function RouteComponent() {
       </div>
       <div className="space-y-4">
         {questsData
+          .filter((quest) => !quest.isActive) // Exclude active quests from main list
           .filter(
             (quest) =>
               (activeFilter === "Все" && questsData) || quest.type === activeFilter,

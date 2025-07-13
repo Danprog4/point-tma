@@ -1,5 +1,35 @@
 export const questsData = [
   {
+    id: 0,
+    title: "Квест «Побарам»",
+    description: "Серия квестов по барам. Каждый бар это квест",
+    date: "19 декабря",
+    location: "г.Караганда",
+    price: 15000,
+    type: "Серия квестов",
+    category: "Тематический",
+    stages: [
+      {
+        title: "Этап 1: Первый бар",
+        desc: "Посещение первого бара и выполнение задания",
+      },
+      {
+        title: "Этап 2: Второй бар",
+        desc: "Переход ко второму бару и новое испытание",
+      },
+      {
+        title: "Этап 3: Финальный бар",
+        desc: "Завершение квеста в финальном баре",
+      },
+    ],
+    reward: 200,
+    hasAchievement: true,
+    organizer: "БарХоп",
+    image:
+      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
+    isActive: true,
+  },
+  {
     id: 1,
     title: "Квест «Дизайнер»",
     description:

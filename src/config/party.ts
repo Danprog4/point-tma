@@ -1,352 +1,81 @@
 export const partiesData = [
   {
     id: 1,
-    title: "Neon Party",
+    title: "GOKON — Большой GOKON (VIP)",
     description:
-      "Вечеринка в стиле неоновых 80-х с яркими огнями, музыкой и танцами до утра.",
-    date: "14 февраля",
-    location: "г.Алматы",
-    price: 7000,
-    type: "Тематические",
+      "Эксклюзивное групповое свидание 15×15 в ресторане с ужином, живым вокалом и ведущими от GOKON.",
+    date: "30 августа",
+    location: "Москва",
+    price: 5500,
+    type: "VIP‑свидание",
     category: "Вечеринка",
     stages: [
-      {
-        title: "Welcome Zone",
-        desc: "Гости получают неоновые браслеты и welcome drink.",
-      },
-      {
-        title: "DJ Set",
-        desc: "Лучшие диджеи города играют хиты 80-х и современные треки.",
-      },
-      {
-        title: "Танцевальный баттл",
-        desc: "Участники соревнуются за звание лучшего танцора вечера.",
-      },
+      { title: "Ужин", desc: "Гости за большим столом" },
+      { title: "Интерактивы", desc: "Игры и знакомство" },
+      { title: "Живой вокал", desc: "Певец создаёт атмосферу" },
     ],
     reward: 0,
     hasAchievement: false,
-    organizer: "Neon Events",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=88&h=88&fit=crop&crop=center",
+    organizer: "GOKON / FastLife",
+    image: "https://cdn.pixabay.com/photo/2018/01/15/21/50/concert-3084876_1280.jpg", // реальное фото вечеринки :contentReference[oaicite:2]{index=2}
   },
   {
     id: 2,
-    title: "White Party",
+    title: "GOKON — Японские свидания 4×4",
     description:
-      "Элегантная вечеринка, где все гости одеты в белое. Живая музыка и фотозона.",
-    date: "8 марта",
-    location: "г.Нур-Султан",
-    price: 9000,
-    type: "Тематические",
+      "Формат вслепую: 4 мужчины и 4 женщины, матч‑мейкер подбирает участников по интересам.",
+    date: "еженедельно",
+    location: "Москва",
+    price: 4500,
+    type: "Свидание по интересам",
     category: "Вечеринка",
     stages: [
-      {
-        title: "Фотосессия",
-        desc: "Профессиональный фотограф делает снимки гостей.",
-      },
-      {
-        title: "Живой концерт",
-        desc: "Выступление кавер-группы с популярными хитами.",
-      },
-      {
-        title: "Розыгрыш призов",
-        desc: "Среди гостей разыгрываются подарки от партнеров.",
-      },
+      { title: "Ужин", desc: "Небольшая группа за столом" },
+      { title: "Ведущий", desc: "Помогает начать разговор" },
+      { title: "Симпатии", desc: "Обмен контактами" },
     ],
     reward: 0,
     hasAchievement: false,
-    organizer: "White Club",
-    image:
-      "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=88&h=88&fit=crop&crop=center",
+    organizer: "GOKON",
+    image: "https://cdn.pixabay.com/photo/2020/03/01/17/14/beer-4893536_1280.jpg", // фото мероприятия на сайте FastLife :contentReference[oaicite:3]{index=3}
   },
+
   {
     id: 3,
-    title: "Retro Disco",
-    description: "Вечеринка в стиле 90-х с тематическим дресс-кодом и ретро-музыкой.",
-    date: "5 мая",
-    location: "г.Караганда",
-    price: 6000,
-    type: "Тематические",
+    title: "GOKON — Ужин‑знакомства (еженедельно)",
+    description:
+      "Групповое свидание с матч‑мейкером, ужин и интерактивы в уютной обстановке.",
+    date: "каждый четверг, 19:00",
+    location: "Москва, ул. Покровка, 16",
+    price: 3600,
+    type: "Групповое свидание",
     category: "Вечеринка",
     stages: [
-      {
-        title: "Дресс-код",
-        desc: "Лучший образ 90-х получает приз.",
-      },
-      {
-        title: "Караоке",
-        desc: "Гости поют любимые хиты прошлого.",
-      },
-      {
-        title: "Танцы до утра",
-        desc: "Дискотека с ретро-диджеем.",
-      },
+      { title: "Ужин", desc: "В ресторане" },
+      { title: "Интерактив", desc: "Знакомство и Q&A" },
     ],
-    reward: 1000,
-    hasAchievement: true,
-    organizer: "Retro Club",
-    image:
-      "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=88&h=88&fit=crop&crop=center",
+    reward: 0,
+    hasAchievement: false,
+    organizer: "GOKON",
+    image: "https://cdn.pixabay.com/photo/2023/11/11/19/58/whisky-8381774_1280.jpg", // реальное фото с мероприятия :contentReference[oaicite:5]{index=5}
   },
   {
     id: 4,
-    title: "Masquerade Night",
-    description: "Загадочная маскарадная ночь с конкурсом на лучший костюм.",
-    date: "10 октября",
-    location: "г.Шымкент",
-    price: 8000,
-    type: "Тематические",
+    title: "FastLife — VIP Speed Dating 35+",
+    description:
+      "Закрытая вечеринка для 35+, до 100 участников. Умеренный формат общения.",
+    date: "26 июля",
+    location: "Москва, премиум-ресторан",
+    price: 2999,
+    type: "VIP Speed Dating",
     category: "Вечеринка",
     stages: [
-      {
-        title: "Вручение масок",
-        desc: "Гости получают маски на входе.",
-      },
-      {
-        title: "Парад костюмов",
-        desc: "Дефиле участников в маскарадных костюмах.",
-      },
-      {
-        title: "Танцы и конкурсы",
-        desc: "Развлекательная программа и танцы.",
-      },
+      { title: "Сет знакомств", desc: "5–7 минут на пару" },
+      { title: "Финишная анкета", desc: "Симпатии и контакты" },
     ],
-    reward: 1500,
+    reward: 0,
     hasAchievement: false,
-    organizer: "Mask Club",
-    image:
-      "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 5,
-    title: "Summer Beach Party",
-    description: "Летняя вечеринка на пляже с коктейлями, музыкой и конкурсами.",
-    date: "20 июня",
-    location: "г.Актау",
-    price: 12000,
-    type: "Пляжные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Открытие",
-        desc: "Встреча гостей и запуск бумажных фонариков.",
-      },
-      {
-        title: "Пенная дискотека",
-        desc: "Танцы в пене под открытым небом.",
-      },
-      {
-        title: "Конкурсы",
-        desc: "Весёлые пляжные конкурсы с призами.",
-      },
-    ],
-    reward: 3000,
-    hasAchievement: true,
-    organizer: "BeachFun",
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 6,
-    title: "Sunset Chill",
-    description: "Вечеринка на закате с лаунж-музыкой и коктейлями.",
-    date: "15 июля",
-    location: "г.Актау",
-    price: 10000,
-    type: "Пляжные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Лаунж-зона",
-        desc: "Отдых на пуфах под музыку.",
-      },
-      {
-        title: "Бармен-шоу",
-        desc: "Показательные выступления барменов.",
-      },
-      {
-        title: "Закатная фотосессия",
-        desc: "Профессиональные фото на фоне заката.",
-      },
-    ],
-    reward: 2000,
-    hasAchievement: false,
-    organizer: "Chill Events",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 7,
-    title: "Foam Beach Fest",
-    description: "Пенная вечеринка на пляже с конкурсами и призами.",
-    date: "22 июля",
-    location: "г.Актау",
-    price: 11000,
-    type: "Пляжные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Пенная зона",
-        desc: "Танцы в пене для всех желающих.",
-      },
-      {
-        title: "Музыкальный марафон",
-        desc: "Выступления диджеев и музыкантов.",
-      },
-      {
-        title: "Игры на пляже",
-        desc: "Командные игры и эстафеты.",
-      },
-    ],
-    reward: 2500,
-    hasAchievement: true,
-    organizer: "Foam Team",
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 8,
-    title: "Tropical Night",
-    description: "Тропическая вечеринка с фруктами, коктейлями и танцами.",
-    date: "29 июля",
-    location: "г.Актау",
-    price: 9500,
-    type: "Пляжные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Фруктовый бар",
-        desc: "Свежие фрукты и напитки для гостей.",
-      },
-      {
-        title: "Танцы на песке",
-        desc: "Танцевальная программа на пляже.",
-      },
-      {
-        title: "Конкурс лимбо",
-        desc: "Соревнование на гибкость и ловкость.",
-      },
-    ],
-    reward: 1800,
-    hasAchievement: false,
-    organizer: "Tropic Events",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 9,
-    title: "Night Club Fever",
-    description: "Вечеринка в ночном клубе с лучшими диджеями города.",
-    date: "3 марта",
-    location: "г.Алматы",
-    price: 13000,
-    type: "Клубные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Открытие",
-        desc: "Встреча гостей и welcome drink.",
-      },
-      {
-        title: "DJ Battle",
-        desc: "Соревнование диджеев за пультами.",
-      },
-      {
-        title: "Afterparty",
-        desc: "Танцы до утра.",
-      },
-    ],
-    reward: 3500,
-    hasAchievement: true,
-    organizer: "ClubX",
-    image:
-      "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 10,
-    title: "Electro Night",
-    description: "Электронная вечеринка с лазерным шоу и спецэффектами.",
-    date: "17 апреля",
-    location: "г.Нур-Султан",
-    price: 14000,
-    type: "Клубные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Лазерное шоу",
-        desc: "Захватывающее световое представление.",
-      },
-      {
-        title: "Сет диджея",
-        desc: "Электронная музыка всю ночь.",
-      },
-      {
-        title: "Танцевальный флешмоб",
-        desc: "Общий танец для всех гостей.",
-      },
-    ],
-    reward: 4000,
-    hasAchievement: false,
-    organizer: "Electro Club",
-    image:
-      "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 11,
-    title: "Hip-Hop Jam",
-    description: "Вечеринка для любителей хип-хопа и уличной культуры.",
-    date: "12 мая",
-    location: "г.Алматы",
-    price: 9000,
-    type: "Клубные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Breakdance Battle",
-        desc: "Соревнования по брейк-дансу.",
-      },
-      {
-        title: "Rap Open Mic",
-        desc: "Свободный микрофон для рэп-исполнителей.",
-      },
-      {
-        title: "Graffiti Show",
-        desc: "Показ граффити-арта.",
-      },
-    ],
-    reward: 2000,
-    hasAchievement: true,
-    organizer: "HipHop Crew",
-    image:
-      "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=88&h=88&fit=crop&crop=center",
-  },
-  {
-    id: 12,
-    title: "Karaoke Star",
-    description: "Караоке-вечеринка с конкурсом на лучший вокал.",
-    date: "25 июня",
-    location: "г.Караганда",
-    price: 7000,
-    type: "Клубные",
-    category: "Вечеринка",
-    stages: [
-      {
-        title: "Регистрация участников",
-        desc: "Запись на конкурс караоке.",
-      },
-      {
-        title: "Основной конкурс",
-        desc: "Выступления участников на сцене.",
-      },
-      {
-        title: "Награждение",
-        desc: "Вручение призов лучшим исполнителям.",
-      },
-    ],
-    reward: 1200,
-    hasAchievement: false,
-    organizer: "Karaoke Club",
-    image:
-      "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=88&h=88&fit=crop&crop=center",
+    organizer: "FastLife",
+    image: "https://cdn.pixabay.com/photo/2022/03/08/13/41/drinks-7055770_1280.jpg", // фото локации FastLife :contentReference[oaicite:6]{index=6}
   },
 ];

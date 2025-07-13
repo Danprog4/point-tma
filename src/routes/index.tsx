@@ -149,10 +149,13 @@ function Home() {
 
         <div className="relative mb-2 w-full overflow-x-hidden">
           <div className="relative h-80 w-full overflow-hidden">
-            <img
-              src="/korol.png"
-              alt="Панк-сказка «Король и Шут»"
-              className="h-full w-full rounded-t-xl object-cover"
+            <video
+              src="https://cdn.pixabay.com/video/2022/03/16/110945-689949688_large.mp4"
+              className="pointer-events-none absolute top-0 left-0 z-[-1] h-[100vh] w-[100vw] object-cover select-none"
+              autoPlay
+              muted
+              loop
+              playsInline
             />
             <div className="absolute top-4 left-4">
               <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-medium text-black">

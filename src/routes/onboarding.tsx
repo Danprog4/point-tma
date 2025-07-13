@@ -156,6 +156,10 @@ function RouteComponent() {
             muted
             loop
             playsInline
+            controls={false}
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate nofullscreen"
+            tabIndex={-1}
           />
         </>
       ) : step <= TOTAL_CARDS ? (

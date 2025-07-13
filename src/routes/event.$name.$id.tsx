@@ -225,17 +225,25 @@ function RouteComponent() {
                 <div className="text-l font-bold">{event.organizer}</div>
               </div>
               {event.stages && event.stages.length > 0 ? (
-                <div className="flex flex-col gap-2 px-4 py-4">
+                <div className="flex flex-col gap-4 px-4 py-4">
                   <div className="text-2xl font-bold">Этапы квеста</div>
-                  {event.stages.map((stage, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col items-start justify-center gap-2"
-                    >
-                      <div className="text-l font-bold">{stage.title}</div>
-                      <div>{stage.desc}</div>
-                    </div>
-                  ))}
+                  <div className="relative">
+                    {event.stages.map((stage, idx) => (
+                      <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
+                        <div className="relative flex w-8 flex-none items-start justify-center">
+                          <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
+                            {idx + 1}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <div className="font-bold text-black">{stage.title}</div>
+                          <div className="text-sm text-black/80">{stage.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2 px-4 py-4">

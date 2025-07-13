@@ -81,7 +81,7 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-10">
+    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-10">
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">

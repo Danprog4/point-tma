@@ -66,7 +66,7 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-30">
+    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-30">
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">

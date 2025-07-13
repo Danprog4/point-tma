@@ -70,7 +70,7 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+    <div className="min-h-screen overflow-y-auto bg-white pt-13 pb-20">
       {/* Top Navigation */}
       <Header />
 
@@ -80,7 +80,7 @@ function RouteComponent() {
           <h1 className="text-3xl font-bold text-black">Встречи</h1>
         </div>
         <div
-          className="cursor-pointer rounded-full bg-[#F3E5FF] px-4 py-2.5 text-sm font-medium text-black"
+          className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2.5 text-sm font-medium text-black"
           style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
           onClick={() => navigate({ to: "/my-meetings" })}
         >

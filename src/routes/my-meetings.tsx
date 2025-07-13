@@ -1,9 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Check } from "lucide-react";
+
+import { useMemo, useState } from "react";
+import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
+import { getEventData } from "~/lib/utils/getEventData";
+import { getImageUrl } from "~/lib/utils/getImageURL";
+
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 export const Route = createFileRoute("/my-meetings")({
@@ -11,19 +16,54 @@ export const Route = createFileRoute("/my-meetings")({
 });
 
 function RouteComponent() {
+  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState("Мои встречи");
   const trpc = useTRPC();
+
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
-
-  const { data: meetingsWithEvents } = useQuery(
-    trpc.meetings.getMeetingsWithEvents.queryOptions(),
-  );
-
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
+
+  const requestsWithInfo = useMemo(() => {
+    return requests
+      ?.filter((request) => request.status === "pending")
+      ?.map((request) => {
+        const meeting = meetings?.find((m) => m.id === request.meetId);
+        const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
+        const user = users?.find((user) => user.id === request.fromUserId);
+        return { ...request, event, user };
+      });
+  }, [requests, meetings]);
+
+  const meetingsWithEvents = meetings?.map((meeting) => {
+    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+    return {
+      ...meeting,
+      event,
+    };
+  });
+
+  const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
+  const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
+
+  const handleAcceptRequest = (request: any) => {
+    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
+      return old?.filter((r) => r.id !== request.id);
+    });
+  };
+
+  const handleDeclineRequest = (request: any) => {
+    declineRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
+      return old?.filter((r) => r.id !== request.id);
+    });
+  };
 
   const filters = ["Мои встречи", "Приглашения", "Заявки"];
 
-  console.log(JSON.stringify(meetingsWithEvents), "meetingsWithEvents");
+  console.log(JSON.stringify(meetings), "meetingsWithEvents");
 
   console.log(meetings, "meetings");
 
@@ -58,7 +98,7 @@ function RouteComponent() {
       </div>
       {activeFilter === "Мои встречи" && (
         <div className="flex flex-col gap-4 px-4">
-          {meetingsWithEvents?.map((quest) => (
+          {meetingsWithEvents?.map((quest: any) => (
             <div key={quest?.id}>
               <div className="px-4">
                 <QuestCard quest={quest?.event || ({} as Quest)} isNavigable={true} />
@@ -89,7 +129,44 @@ function RouteComponent() {
 
       {activeFilter === "Заявки" && (
         <div className="flex flex-col gap-4 px-4">
-          {requests?.map((request) => <div key={request?.id}>{request?.fromUserId}</div>)}
+          {requestsWithInfo?.map((request) => (
+            <div key={request?.id}>
+              <div className="flex items-center justify-start gap-2 px-4">
+                <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
+                <div className="flex h-full w-full flex-col items-start justify-between gap-2">
+                  <div className="text-lg">{request.event?.title}</div>
+                  <div className="rounded-2xl bg-blue-500 px-1 text-white">
+                    {request.event?.type}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-4">
+                <div className="flex items-center justify-start gap-2">
+                  <div className="mr-4 p-2" onClick={() => handleDeclineRequest(request)}>
+                    <CloseRed />
+                  </div>
+                  <img
+                    src={getImageUrl(request.user?.photo || "")}
+                    alt=""
+                    className="h-14 w-14 rounded-lg"
+                  />
+                  <div className="flex flex-col items-start justify-between gap-2">
+                    <div className="text-lg">
+                      {request.user?.name} {request.user?.surname}
+                    </div>
+                    <div>{request.user?.birthday}</div>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                  onClick={() => handleAcceptRequest(request)}
+                >
+                  <Check />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -57,6 +57,7 @@ export const meetParticipantsTable = pgTable("meet_participants", {
 
 export const activeEventsTable = pgTable("active_events", {
   id: serial("id").primaryKey(),
+  type: varchar("type", { length: 255 }),
   eventId: bigint("eventId", { mode: "number" }),
   name: varchar("name", { length: 255 }),
   userId: bigint("userId", { mode: "number" }),

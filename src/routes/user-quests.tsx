@@ -7,6 +7,7 @@ import { questsData } from "~/config/quests";
 
 import { QuestCard } from "~/components/QuestCard";
 import { useTRPC } from "~/trpc/init/react";
+import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/user-quests")({
   component: RouteComponent,
@@ -17,25 +18,29 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"active" | "completed">("active");
-  const { data: quests } = useQuery(trpc.quest.getMyQuests.queryOptions());
-  const newQuestsData = questsData.filter((quest) =>
-    quests
-      ?.filter((q) => q.questId === quest.id)
-      .map((q) => ({
-        ...q,
-        description: quest.description,
-        hasAchievement: quest.hasAchievement,
-        reward: quest.reward,
-        title: quest.title,
-        date: quest.date,
-        location: quest.location,
-        price: quest.price,
-        type: quest.type,
-        category: quest.category,
-        organizer: quest.organizer,
-        image: quest.image,
-      })),
-  );
+  const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
+  console.log(data);
+
+  const filteredEvents = data?.filter((event) => event.type === "Квест");
+  const newQuestsData = filteredEvents?.map((event) => {
+    const quest = questsData.find((q) => q.id === event.eventId);
+    return quest
+      ? {
+          ...event,
+          description: quest.description,
+          hasAchievement: quest.hasAchievement,
+          reward: quest.reward,
+          title: quest.title,
+          date: quest.date,
+          location: quest.location,
+          price: quest.price,
+          type: quest.type,
+          category: quest.category,
+          organizer: quest.organizer,
+          image: quest.image,
+        }
+      : event;
+  });
 
   return (
     <div className="flex flex-col overflow-y-auto px-4 pt-10">
@@ -75,34 +80,42 @@ function RouteComponent() {
       </div>
       {page === "active" ? (
         <>
-          {newQuestsData?.map((quest) => (
-            <>
-              <QuestCard quest={quest} isNavigable={true} />
-              <p className="mb-4 text-xs leading-4 text-black">{quest.description}</p>
+          {newQuestsData?.map((quest) => {
+            const questData = questsData.find((q) => q.id === quest.eventId);
+            return (
+              <div key={quest.id}>
+                <QuestCard quest={quest as Quest} isNavigable={true} />
+                <p className="mb-4 text-xs leading-4 text-black">
+                  {questData?.description?.slice(0, 100)}
+                  {questData?.description && questData.description.length > 100
+                    ? "..."
+                    : ""}
+                </p>
 
-              <div className="mb-6 flex w-full items-center justify-between">
-                {quest.hasAchievement ? (
-                  <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                    + Достижение
-                  </span>
-                ) : (
-                  <span
-                    style={{ visibility: "hidden" }}
-                    className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  >
-                    + Достижение
-                  </span>
-                )}
-                <div className="flex items-center gap-1">
-                  <span className="text-base font-medium text-black">
-                    + {quest.reward.toLocaleString()}
-                  </span>
-                  <span className="text-base font-medium text-black">points</span>
-                  <Coin />
+                <div className="mb-6 flex w-full items-center justify-between">
+                  {questData?.hasAchievement ? (
+                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                      + Достижение
+                    </span>
+                  ) : (
+                    <span
+                      style={{ visibility: "hidden" }}
+                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >
+                      + Достижение
+                    </span>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-base font-medium text-black">
+                      + {questData?.reward?.toLocaleString() || 0}
+                    </span>
+                    <span className="text-base font-medium text-black">points</span>
+                    <Coin />
+                  </div>
                 </div>
               </div>
-            </>
-          ))}
+            );
+          })}
         </>
       ) : (
         <div className="flex flex-col items-start justify-center">

@@ -150,6 +150,7 @@ export const eventRouter = createTRPCRouter({
         name: input.name,
         eventId: input.id,
         isCompleted: false,
+        type: eventData.category,
       });
 
       await sendTelegram(

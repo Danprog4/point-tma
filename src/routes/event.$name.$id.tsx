@@ -265,7 +265,16 @@ function RouteComponent() {
                   <div className="text-l pl-2 font-bold">+ {event.reward}</div>
                   <Coin />
                 </div>
+
                 <div>За успешное выполнение квеста</div>
+                <div className="flex gap-2">
+                  <div className="flex h-25 w-25 items-center justify-center rounded-lg bg-blue-200">
+                    <img src="/shit.png" alt="coin" className="h-10 w-10" />
+                  </div>
+                  <div className="flex h-25 w-25 items-center justify-center rounded-lg bg-red-200">
+                    <img src="/cap.png" alt="coin" className="h-10 w-10" />
+                  </div>
+                </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Достижение</div>

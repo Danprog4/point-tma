@@ -154,8 +154,9 @@ function RouteComponent() {
               <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
               <div className="px-4">
                 <QuestCard quest={quest as Quest} isNavigable={true} />
-                <p className="mt-2 mb-4 text-xs leading-4 text-black">
-                  {quest.description}
+                <p className="my-2 text-xs leading-4 text-black">
+                  {quest.description.slice(0, 100) +
+                    (quest.description.length > 100 ? "..." : "")}
                 </p>
                 <div className="mb-6 flex items-center justify-between">
                   {quest.hasAchievement && (

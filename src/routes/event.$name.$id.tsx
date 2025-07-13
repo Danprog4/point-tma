@@ -231,7 +231,7 @@ function RouteComponent() {
                     {event.stages.map((stage, idx) => (
                       <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
                         <div className="relative flex w-8 flex-none items-start justify-center">
-                          <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
+                          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
                             {idx + 1}
                           </span>
                         </div>

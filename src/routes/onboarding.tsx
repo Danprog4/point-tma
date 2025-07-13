@@ -146,9 +146,6 @@ function RouteComponent() {
 
       {step === 0 ? (
         <>
-          <div className="absolute right-0 bottom-50 left-0 z-10 px-4 text-center text-xl font-bold text-white">
-            Добро пожаловать в Point
-          </div>
           <video
             src="/intro_app.mp4"
             className="pointer-events-none absolute inset-0 object-cover select-none"
@@ -161,6 +158,9 @@ function RouteComponent() {
             controlsList="nodownload noplaybackrate nofullscreen"
             tabIndex={-1}
           />
+          <div className="absolute right-0 bottom-30 left-0 z-[1000] px-4 text-center text-2xl font-bold text-white drop-shadow-lg">
+            Добро пожаловать в Point
+          </div>
         </>
       ) : step <= TOTAL_CARDS ? (
         <div className="absolute top-50 right-0 left-0 z-10 px-4 text-center text-xl font-bold text-white">

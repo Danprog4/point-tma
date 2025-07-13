@@ -20,7 +20,7 @@ function RouteComponent() {
   const [name, setName] = useState("");
 
   const [email, setEmail] = useState<string>("");
-  const [birthday, setBithtday] = useState<string>("");
+  const [birthday, setBirthday] = useState<string>("");
   const [city, setCity] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [base64, setBase64] = useState<string | null>(null);
@@ -52,6 +52,12 @@ function RouteComponent() {
     if (user?.gallery) {
       setGallery(user.gallery);
     }
+    if (user?.birthday) {
+      setBirthday(user.birthday);
+    }
+    if (user?.city) {
+      setCity(user.city);
+    }
   }, [
     user?.name,
     user?.surname,
@@ -68,7 +74,10 @@ function RouteComponent() {
     email === (user?.email ?? "") &&
     phone === (user?.phone ?? "") &&
     bio === (user?.bio ?? "") &&
-    !selectedFile;
+    birthday === (user?.birthday ?? "") &&
+    city === (user?.city ?? "") &&
+    !selectedFile &&
+    JSON.stringify(gallery) === JSON.stringify(user?.gallery ?? []);
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
@@ -258,7 +267,7 @@ function RouteComponent() {
               placeholder="00.00.0000"
               type="text"
               value={birthday || ""}
-              onChange={(e) => setBithtday(e.target.value)}
+              onChange={(e) => setBirthday(e.target.value)}
               className="border-none bg-transparent text-black outline-none"
             />
           </div>

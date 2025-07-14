@@ -10,12 +10,10 @@ import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
-import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { useActivate } from "~/hooks/useActivate";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
-import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/event/$name/$id")({
   component: RouteComponent,
@@ -92,16 +90,9 @@ function RouteComponent() {
   // };
 
   return (
-    <>
+    <div className="min-h-screen overflow-y-auto">
       {isOpen ? (
         <>
-          <BuyQuest
-            isBought={isBought}
-            quest={event as Quest}
-            setIsOpen={setIsOpen}
-            count={count}
-            setCount={setCount}
-          />
           <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
             {!isBought ? (
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
@@ -153,7 +144,7 @@ function RouteComponent() {
           </div>
         </>
       ) : (
-        <div className="overflow-y-auto pt-18 pb-24">
+        <div className="pt-18 pb-24">
           <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
             <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
               <button
@@ -377,6 +368,6 @@ function RouteComponent() {
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
         </div>
       )}
-    </>
+    </div>
   );
 }

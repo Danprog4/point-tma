@@ -157,7 +157,6 @@ function RouteComponent() {
       </div>
 
       <div className="space-y-4">
-        {/* User Active Quests Section */}
         {userQuestsData && userQuestsData.length > 0 && (
           <div className="mb-6">
             <h2 className="px-4 pb-4 text-lg font-semibold text-black">Мои квесты</h2>
@@ -165,7 +164,7 @@ function RouteComponent() {
               const questData = questsData.find((q) => q.id === quest.eventId);
               return (
                 <div key={quest.id} className="mb-4 px-4">
-                  <QuestCard quest={quest as Quest} isNavigable={true} />
+                  <QuestCard quest={questData as Quest} isNavigable={true} />
                   <p className="mb-4 text-xs leading-4 text-black">
                     {questData?.description?.slice(0, 100)}
                     {questData?.description && questData.description.length > 100

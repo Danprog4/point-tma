@@ -199,7 +199,7 @@ function Home() {
               onClick={() => navigate({ to: "/all/$name", params: { name: "Кино" } })}
             />
           </div>
-          <div className="flex gap-4 overflow-x-auto px-4">
+          <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(kinoData?.slice?.(0, 5) || [])
               .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
               .map((event: any, idx: number) => (
@@ -226,7 +226,7 @@ function Home() {
               onClick={() => navigate({ to: "/all/$name", params: { name: "Квесты" } })}
             />
           </div>
-          <div className="flex gap-4 overflow-x-auto px-4">
+          <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(questsData?.slice?.(0, 5) || [])
               .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
               .map((event: any, idx: number) => (
@@ -272,7 +272,7 @@ function Home() {
               }
             />
           </div>
-          <div className="flex w-full gap-4 overflow-x-auto px-4">
+          <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4">
             {(conferencesData?.slice?.(0, 5) || [])
               .filter((conf) => conf.title.toLowerCase().includes(search.toLowerCase()))
               .map((conf: any, idx: number) => (
@@ -301,7 +301,7 @@ function Home() {
               }
             />
           </div>
-          <div className="flex gap-4 overflow-x-auto px-4">
+          <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(partiesData?.slice?.(0, 5) || [])
               .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
               .map((event: any, idx: number) => (

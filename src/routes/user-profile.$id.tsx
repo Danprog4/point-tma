@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,6 +23,8 @@ export const Route = createFileRoute("/user-profile/$id")({
 });
 
 function RouteComponent() {
+  const { state } = useRouterState({ select: (s) => s.location });
+  console.log(state, "state");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { id } = Route.useParams();
@@ -157,7 +159,7 @@ function RouteComponent() {
             </div>
             <div
               onClick={() => {
-                navigate({ to: "/user-quests" });
+                navigate({ to: "/user-quests/$page", params: { page: "active" } });
               }}
               className="flex items-center justify-center gap-1"
             >

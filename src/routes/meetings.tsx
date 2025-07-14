@@ -70,7 +70,7 @@ function RouteComponent() {
   useScroll();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-13 pb-20">
+    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-20">
       {/* Top Navigation */}
       <Header />
 

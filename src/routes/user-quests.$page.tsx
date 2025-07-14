@@ -9,20 +9,21 @@ import { QuestCard } from "~/components/QuestCard";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
-export const Route = createFileRoute("/user-quests")({
+export const Route = createFileRoute("/user-quests/$page")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { page } = Route.useParams();
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const [page, setPage] = useState<"active" | "completed">("active");
+  const [pageState, setPage] = useState(page);
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
   console.log(data);
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
-  const newQuestsData = filteredEvents?.map((event) => {
+  const QuestsData = filteredEvents?.map((event) => {
     const quest = questsData.find((q) => q.id === event.eventId);
     return quest
       ? {
@@ -42,6 +43,9 @@ function RouteComponent() {
       : event;
   });
 
+  const completedQuestsData = QuestsData?.filter((q) => q.isCompleted === true);
+  const uncompletedQuestsData = QuestsData?.filter((q) => q.isCompleted === false);
+
   return (
     <div className="flex flex-col overflow-y-auto px-4 pt-10">
       <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
@@ -55,15 +59,14 @@ function RouteComponent() {
           <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
             Квесты
           </h1>
-          {/* Empty div to balance the right side */}
+
           <div className="flex h-6 w-6" />
         </div>
       </div>
-      {/* Segment Control */}
       <div className="mt-4 flex gap-4 pb-4">
         <button
           className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-            page === "active" ? "bg-black text-white" : "bg-white text-black"
+            pageState === "active" ? "bg-black text-white" : "bg-white text-black"
           }`}
           onClick={() => setPage("active")}
         >
@@ -71,16 +74,56 @@ function RouteComponent() {
         </button>
         <button
           className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-            page === "completed" ? "bg-black text-white" : "bg-white text-black"
+            pageState === "completed" ? "bg-black text-white" : "bg-white text-black"
           }`}
           onClick={() => setPage("completed")}
         >
           Пройденные
         </button>
       </div>
-      {page === "active" ? (
+      {pageState === "active" ? (
         <>
-          {newQuestsData?.map((quest) => {
+          {uncompletedQuestsData?.map((quest) => {
+            const questData = questsData.find((q) => q.id === quest.eventId);
+            return (
+              <div key={quest.id}>
+                <QuestCard quest={questData as Quest} isNavigable={true} />
+                <p className="mb-4 text-xs leading-4 text-black">
+                  {questData?.description?.slice(0, 100)}
+
+                  {questData?.description && questData.description.length > 100
+                    ? "..."
+                    : ""}
+                </p>
+
+                <div className="mb-6 flex w-full items-center justify-between">
+                  {questData?.hasAchievement ? (
+                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                      + Достижение
+                    </span>
+                  ) : (
+                    <span
+                      style={{ visibility: "hidden" }}
+                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                    >
+                      + Достижение
+                    </span>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-base font-medium text-black">
+                      + {questData?.reward?.toLocaleString() || 0}
+                    </span>
+                    <span className="text-base font-medium text-black">points</span>
+                    <Coin />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          {completedQuestsData?.map((quest) => {
             const questData = questsData.find((q) => q.id === quest.eventId);
             return (
               <div key={quest.id}>
@@ -117,12 +160,6 @@ function RouteComponent() {
             );
           })}
         </>
-      ) : (
-        <div className="flex flex-col items-start justify-center">
-          <div className="mb-4 text-sm text-gray-500">
-            Пройденные квесты пока недоступны
-          </div>
-        </div>
       )}
     </div>
   );

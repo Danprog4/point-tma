@@ -16,6 +16,7 @@ import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { MenuItem } from "~/components/MenuItem";
+import { questsData } from "~/config/quests";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
@@ -33,6 +34,7 @@ function RouteComponent() {
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
+  const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [search, setSearch] = useState("");
   console.log(requests, "requests");
 
@@ -47,12 +49,46 @@ function RouteComponent() {
   const acceptRequest = useMutation(trpc.friends.acceptRequest.mutationOptions());
   const declineRequest = useMutation(trpc.friends.declineRequest.mutationOptions());
 
+  const filteredEvents = data?.filter((event) => event.type === "Квест");
+  const QuestsData = filteredEvents?.map((event) => {
+    const quest = questsData.find((q) => q.id === event.eventId);
+    return quest
+      ? {
+          ...event,
+          description: quest.description,
+          hasAchievement: quest.hasAchievement,
+          reward: quest.reward,
+          title: quest.title,
+          date: quest.date,
+          location: quest.location,
+          price: quest.price,
+          type: quest.type,
+          category: quest.category,
+          organizer: quest.organizer,
+          image: quest.image,
+        }
+      : event;
+  });
+
+  const completedQuestsData = QuestsData?.filter((q) => q.isCompleted === true);
+  console.log(completedQuestsData, "completedQuestsData");
+  const uncompletedQuestsData = QuestsData?.filter((q) => q.isCompleted === false);
+  console.log(uncompletedQuestsData, "uncompletedQuestsData");
+
+  const pageState = uncompletedQuestsData?.length === 0 ? "completed" : "active";
+  console.log(pageState, "pageState");
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-12 pb-20">
+    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-20">
       <Header />
 
-      <div className="px-4 py-5">
-        <h1 className="text-3xl font-bold text-black">Профиль</h1>
+      <div className="flex items-center justify-between px-4 py-5">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-black">Профиль</h1>
+        </div>
+        <Settings
+          className="h-5 w-5 cursor-pointer text-black"
+          onClick={() => navigate({ to: "/profile-sett" })}
+        />
       </div>
 
       <div className="flex gap-4 px-4 pb-4">
@@ -119,16 +155,6 @@ function RouteComponent() {
                     <div className="font-medium text-black">Пройти верификацию</div>
                     <ArrowRight className="h-4 w-4 text-black" />
                   </div>
-
-                  {/* Edit Button */}
-                  <div className="absolute top-4 right-4">
-                    <button
-                      onClick={() => navigate({ to: "/profile-sett" })}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-                    >
-                      <Settings className="h-4 w-4 text-black" />
-                    </button>
-                  </div>
                 </>
               )}
             </div>
@@ -179,32 +205,35 @@ function RouteComponent() {
 
           <div className="mt-4 mb-6 px-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
+              <div
+                className="rounded-xl bg-yellow-400 p-3 shadow-sm"
+                onClick={() => {
+                  navigate({
+                    to: "/user-quests/$page",
+                    params: { page: pageState },
+                  });
+                }}
+              >
                 <div className="mb-1 text-center text-xl font-bold text-black">
                   {activeQuests?.length || 0}
                 </div>
-                <div
-                  onClick={() => {
-                    navigate({ to: "/user-quests" });
-                  }}
-                  className="flex items-center justify-center gap-1"
-                >
+                <div className="flex items-center justify-center gap-1">
                   <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
                     !
                   </div>
                   <span className="text-sm text-black">Квесты</span>
                 </div>
               </div>
-              <div className="rounded-xl bg-purple-600 p-3 shadow-sm">
+              <div
+                className="rounded-xl bg-purple-600 p-3 shadow-sm"
+                onClick={() => {
+                  navigate({ to: "/points" });
+                }}
+              >
                 <div className="mb-1 text-center text-xl font-bold text-white">
                   {user?.balance || 0}
                 </div>
-                <div
-                  onClick={() => {
-                    navigate({ to: "/points" });
-                  }}
-                  className="flex items-center justify-center gap-1"
-                >
+                <div className="flex items-center justify-center gap-1">
                   <Coin />
                   <span className="text-sm text-white">Points</span>
                 </div>

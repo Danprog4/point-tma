@@ -91,7 +91,7 @@ function RouteComponent() {
               {isClicked && (
                 <>
                   <div className="absolute bottom-2 left-2 flex items-center">
-                    <div className="relative flex items-center">
+                    <div className="relative mb-2 flex items-center">
                       <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
                         <span className="text-xl font-bold text-white">1</span>
                       </div>

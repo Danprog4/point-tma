@@ -84,7 +84,7 @@ function RouteComponent() {
             const questData = questsData.find((q) => q.id === quest.eventId);
             return (
               <div key={quest.id}>
-                <QuestCard quest={quest as Quest} isNavigable={true} />
+                <QuestCard quest={questData as Quest} isNavigable={true} />
                 <p className="mb-4 text-xs leading-4 text-black">
                   {questData?.description?.slice(0, 100)}
                   {questData?.description && questData.description.length > 100

@@ -15,6 +15,53 @@ export const eventRouter = createTRPCRouter({
     return events;
   }),
 
+  endQuest: procedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const eventData = getEventData(input.name, input.id);
+
+      if (!eventData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Event not found",
+        });
+      }
+
+      const quest = await db.query.activeEventsTable.findFirst({
+        where: eq(activeEventsTable.eventId, input.id),
+      });
+
+      if (!quest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Quest not found",
+        });
+      }
+
+      await db
+        .update(activeEventsTable)
+        .set({
+          isCompleted: true,
+        })
+        .where(eq(activeEventsTable.id, quest.id));
+    }),
+
   buyEvent: procedure
     .input(
       z.object({

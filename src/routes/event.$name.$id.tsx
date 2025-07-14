@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { openTelegramLink } from "@telegram-apps/sdk";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ActiveDrawer from "~/components/ActiveDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { BlueTelegram } from "~/components/Icons/BlueTelegram";
@@ -10,10 +10,12 @@ import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
+import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { useActivate } from "~/hooks/useActivate";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
+import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/event/$name/$id")({
   component: RouteComponent,
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/event/$name/$id")({
 
 function RouteComponent() {
   useScroll();
+  const [isCompleted, setIsCompleted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
@@ -34,8 +37,21 @@ function RouteComponent() {
   const [count, setCount] = useState(1);
   const { useActivateEvent } = useActivate();
   const queryClient = useQueryClient();
+  const { data: userEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const activeEvent = userEvents?.find(
+      (activeEvent) => activeEvent.eventId === Number(id) && activeEvent.type === "Квест",
+    );
+
+    console.log(activeEvent, "event");
+
+    if (activeEvent?.isCompleted) {
+      setIsCompleted(true);
+    }
+  }, [name, id, userEvents]);
 
   const event = getEventData(name, Number(id));
 
@@ -89,10 +105,84 @@ function RouteComponent() {
   //   }
   // };
 
+  const endQuest = useMutation(trpc.event.endQuest.mutationOptions());
+
+  const handleEndQuest = () => {
+    if (isCompleted) {
+      navigate({ to: "/" });
+      return;
+    }
+
+    endQuest.mutate({
+      id: Number(id),
+      name,
+    });
+
+    setIsCompleted(true);
+  };
+
   return (
     <div className="min-h-screen overflow-y-auto">
       {isOpen ? (
         <>
+          <>
+            <BuyQuest
+              isBought={isBought}
+              quest={event as Quest}
+              setIsOpen={setIsOpen}
+              count={count}
+              setCount={setCount}
+            />
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              {!isBought ? (
+                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                  <button
+                    onClick={handleBuyEvent}
+                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                    disabled={isDisabled}
+                  >
+                    <div>
+                      {isDisabled
+                        ? "Недостаточно средств"
+                        : buyEvent.isPending
+                          ? "Покупка..."
+                          : `Купить за ${event.price * count}`}
+                    </div>
+                    <Coin />
+                  </button>
+                </div>
+              ) : (
+                <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
+                  <button
+                    onClick={() => {
+                      navigate({ to: "/" });
+                    }}
+                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                  >
+                    <div>Вернуться на главную</div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate({ to: "/inventory" });
+                    }}
+                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                  >
+                    <div>В инвентарь</div>
+                  </button>
+                  <ActiveDrawer
+                    id={Number(id)}
+                    open={isActiveDrawerOpen}
+                    onOpenChange={setIsActiveDrawerOpen}
+                    name={name}
+                  >
+                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                      {isActive ? "Билет активирован" : "Активировать билет"}
+                    </button>
+                  </ActiveDrawer>
+                </div>
+              )}
+            </div>
+          </>
           <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
             {!isBought ? (
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
@@ -346,12 +436,10 @@ function RouteComponent() {
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                 <button
-                  onClick={() => {
-                    navigate({ to: "/" });
-                  }}
+                  onClick={handleEndQuest}
                   className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
                 >
-                  <div>Завершить этап</div>
+                  <div>{isCompleted ? "Вернуться на главную" : "Завершить этап"}</div>
                 </button>
                 <div
                   className="flex flex-col items-center justify-center"

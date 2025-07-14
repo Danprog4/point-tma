@@ -416,8 +416,12 @@ function RouteComponent() {
           </div>
           <div className="mb-4 px-4 text-2xl font-bold">Организатор</div>
           <div className="relative">
-            <div className="relative h-[30vh] rounded-t-2xl bg-gradient-to-br from-purple-400 to-pink-300">
-              {/* Level Badge */}
+            <div className="relative h-[30vh] rounded-t-2xl">
+              <img
+                src={getImageUrl(organizer?.photo || "")}
+                alt={organizer?.name || ""}
+                className="h-full w-full rounded-t-2xl object-cover"
+              />
               <div className="absolute bottom-4 left-4">
                 <div className="relative">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">

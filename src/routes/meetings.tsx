@@ -202,17 +202,15 @@ function RouteComponent() {
                       alt={meeting.organizer?.name!}
                       className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
                     />
-                    {/* Status Indicator */}
-                    <div className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600 bg-amber-300" />
                   </div>
                   {/* Text Content */}
                   <div className="p-2">
                     <div className="space-y-1">
                       <h3 className="text-sm leading-tight font-medium text-gray-900">
-                        {meeting.name}
+                        {meeting.organizer?.name}
                       </h3>
                       <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                        {meeting.description}
+                        {meeting.event?.title || "Без названия"}
                       </p>
                     </div>
                   </div>

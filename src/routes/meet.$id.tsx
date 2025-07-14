@@ -10,6 +10,7 @@ import { meetingsConfig } from "~/config/meetings";
 import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/meet/$id")({
 function RouteComponent() {
   useScroll();
   const [page, setPage] = useState("info");
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -193,25 +195,33 @@ function RouteComponent() {
     }
   };
 
+  const handleBack = () => {
+    if (isClicked) {
+      setIsClicked(false);
+      return;
+    }
+
+    window.history.back();
+  };
   console.log(event);
   return (
     <>
+      <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
+        <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
+          <button
+            onClick={() => handleBack()}
+            className="flex h-6 w-6 items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+          </button>
+          <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
+            Встреча
+          </h1>
+          <div className="flex h-6 w-6" />
+        </div>
+      </div>
       {isClicked ? (
         <div className="overflow-y-auto pt-18 pb-24">
-          <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
-            <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
-              <button
-                onClick={() => window.history.back()}
-                className="flex h-6 w-6 items-center justify-center"
-              >
-                <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-              </button>
-              <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
-                {event?.category}
-              </h1>
-              <div className="flex h-6 w-6" />
-            </div>
-          </div>
           <div className="relative">
             <img
               src={event?.image}
@@ -366,30 +376,24 @@ function RouteComponent() {
             </div>
           )}
           <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 bg-white px-4 py-4">
-            <div className="rounded-2xl px-4 py-2" onClick={() => setIsClicked(false)}>
-              Отказать
-            </div>
             <div
-              className="rounded-2xl bg-[#9924FF] px-4 py-2 text-white"
+              className="flex-1 rounded-2xl bg-[#9924FF] px-4 py-2 text-center text-white"
               onClick={() => handleJoin()}
             >
-              {isParticipant
-                ? "Отменить"
-                : isOwner
-                  ? "Вы - организатор"
-                  : "Присоединиться"}
+              {isOwner ? (
+                <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
+                  <div>Управление</div>
+                </ManageDrawer>
+              ) : isParticipant ? (
+                "Отменить"
+              ) : (
+                "Присоединиться"
+              )}
             </div>
           </div>
         </div>
       ) : (
         <div className="overflow-y-auto pt-14 pb-10">
-          <header className="fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between bg-white p-4">
-            <ArrowLeft
-              className="absolute left-4 h-6 w-6"
-              onClick={() => window.history.back()}
-            />
-            <div className="flex flex-1 justify-center text-xl font-bold">Встреча</div>
-          </header>
           <div className="flex flex-col p-4">
             <QuestCard quest={event as Quest} />
             {event?.description}
@@ -406,11 +410,7 @@ function RouteComponent() {
                 onClick={() => handleJoin()}
                 className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3"
               >
-                {isParticipant
-                  ? "Отменить"
-                  : isOwner
-                    ? "Вы - организатор"
-                    : "Присоединиться"}
+                {isParticipant ? "Отменить" : isOwner ? "Управление" : "Присоединиться"}
               </div>
             </div>
           </div>

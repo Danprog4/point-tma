@@ -25,6 +25,7 @@ export const Route = createFileRoute("/profile")({
 function RouteComponent() {
   useScroll();
   const trpc = useTRPC();
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
@@ -32,7 +33,7 @@ function RouteComponent() {
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
-
+  const [search, setSearch] = useState("");
   console.log(requests, "requests");
 
   const activeQuests = useMemo(() => {
@@ -285,6 +286,10 @@ function RouteComponent() {
         <>
           <div className="relative px-4 py-4">
             <input
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+              value={search}
               type="text"
               placeholder="Поиск друзей"
               className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
@@ -292,6 +297,22 @@ function RouteComponent() {
             <div className="absolute top-7 right-7">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
+            {search && (
+              <div className="flex flex-col gap-2">
+                {users
+                  ?.filter((user) =>
+                    user?.name?.toLowerCase().includes(search.toLowerCase()),
+                  )
+                  .map((user) => (
+                    <div
+                      key={user.id}
+                      className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                    >
+                      <div className="mb-2 font-medium text-black">{user.name}</div>
+                    </div>
+                  ))}
+              </div>
+            )}
             {requests && requests?.length > 0 && (
               <div className="flex flex-col gap-2">
                 <div>Запросы</div>

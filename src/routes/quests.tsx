@@ -77,6 +77,8 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
 
+  console.log(activeFilter);
+
   useScroll();
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
@@ -160,48 +162,54 @@ function RouteComponent() {
         {userQuestsData && userQuestsData.length > 0 && (
           <div className="mb-6">
             <h2 className="px-4 pb-4 text-lg font-semibold text-black">Мои квесты</h2>
-            {userQuestsData.map((quest) => {
-              const questData = questsData.find((q) => q.id === quest.eventId);
-              return (
-                <div key={quest.id} className="mb-4 px-4">
-                  <QuestCard quest={questData as Quest} isNavigable={true} />
-                  <p className="mb-4 text-xs leading-4 text-black">
-                    {questData?.description?.slice(0, 100)}
-                    {questData?.description && questData.description.length > 100
-                      ? "..."
-                      : ""}
-                  </p>
+            {userQuestsData
+              .filter(
+                (quest) =>
+                  (activeFilter === "Все" && questsData) || quest.type === activeFilter,
+              )
+              .map((quest) => {
+                const questData = questsData.find((q) => q.id === quest.eventId);
+                return (
+                  <div key={quest.id} className="mb-4 px-4">
+                    <QuestCard quest={questData as Quest} isNavigable={true} />
+                    <p className="mb-4 text-xs leading-4 text-black">
+                      {questData?.description?.slice(0, 100)}
+                      {questData?.description && questData.description.length > 100
+                        ? "..."
+                        : ""}
+                    </p>
 
-                  <div className="mb-6 flex w-full items-center justify-between">
-                    {questData?.hasAchievement ? (
-                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                        + Достижение
-                      </span>
-                    ) : (
-                      <span
-                        style={{ visibility: "hidden" }}
-                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      >
-                        + Достижение
-                      </span>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <span className="text-base font-medium text-black">
-                        + {questData?.reward?.toLocaleString() || 0}
-                      </span>
-                      <span className="text-base font-medium text-black">points</span>
-                      <Coin />
+                    <div className="mb-6 flex w-full items-center justify-between">
+                      {questData?.hasAchievement ? (
+                        <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                          + Достижение
+                        </span>
+                      ) : (
+                        <span
+                          style={{ visibility: "hidden" }}
+                          className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        >
+                          + Достижение
+                        </span>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <span className="text-base font-medium text-black">
+                          + {questData?.reward?.toLocaleString() || 0}
+                        </span>
+                        <span className="text-base font-medium text-black">points</span>
+                        <Coin />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
 
         <div className="mb-6">
           {questsData
             .filter((quest) => quest.isSeries)
+
             .map((quest) => (
               <SeriesQuestCard key={quest.id} quest={quest as Quest} />
             ))}

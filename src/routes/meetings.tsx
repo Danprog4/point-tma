@@ -121,7 +121,7 @@ function RouteComponent() {
               <h2 className="text-xl font-bold text-gray-900">Актуальные встречи</h2>
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
-            <div className="flex gap-4 overflow-x-auto">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
               {[
                 {
                   title: "Пост- новогодний вечер",

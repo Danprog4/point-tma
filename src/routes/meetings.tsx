@@ -122,48 +122,21 @@ function RouteComponent() {
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
-              {[
-                {
-                  title: "Пост- новогодний вечер",
-                  subtitle: "15 января • Мозайка",
-                  tag: "🎄 Новый год",
-                  price: "3 000 ₸",
-                  bg: "bg-gradient-to-br from-red-400 to-pink-400",
-                  image:
-                    "https://cdn.pixabay.com/photo/2016/11/21/12/30/new-years-eve-1845065_1280.jpg",
-                },
-                {
-                  title: "Гангстеры и розы",
-                  subtitle: "21 января • Алькатрас",
-                  tag: "💞 Клубы знакомств",
-                  price: "3 000 ₸",
-                  bg: "bg-gradient-to-br from-pink-400 to-purple-400",
-                  image:
-                    "https://cdn.pixabay.com/photo/2017/09/19/06/37/calendar-2764200_1280.jpg",
-                },
-                {
-                  title: "KazDrilling 2024",
-                  subtitle: "Renaissance Hotel",
-                  tag: "💃 Концерт",
-                  price: "3 000 ₸",
-                  bg: "bg-gradient-to-br from-green-400 to-blue-400",
-                  image:
-                    "https://cdn.pixabay.com/photo/2023/05/06/12/17/music-7974197_1280.jpg",
-                },
-              ].map((event, idx) => (
+              {meetingsWithEvents?.slice(0, 3).map((event, idx) => (
                 <div
                   key={idx}
                   className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                 >
                   <div className={`relative h-full w-full`}>
                     <img
-                      src={event.image}
+                      src={event.event?.image}
                       alt=""
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute bottom-2 left-2">
                       <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
-                        {event.tag}
+                        {event.event?.title?.slice(0, 10) +
+                          (event.event?.title?.length! > 10 ? "..." : "")}
                       </span>
                     </div>
                   </div>

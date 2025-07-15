@@ -169,6 +169,8 @@ function RouteComponent() {
 
   console.log(isOwner, "isOwner");
 
+  console.log(event);
+
   const handleJoin = () => {
     if (!isClicked) {
       setIsClicked(true);

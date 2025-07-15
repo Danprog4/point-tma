@@ -494,25 +494,102 @@ function RouteComponent() {
           </div>
           <div className="mt-4 flex flex-col gap-2 px-4">
             <div className="text-2xl font-bold">Достижения</div>
-            <div className="text-sm text-gray-500">
-              У этого пользователя нет достижений
+
+            <div className="mt-2 flex w-full items-center gap-4 rounded-2xl border border-[#A3FFCD] bg-white p-4 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full">
+                <img src="/shit.png" alt="achievement" className="h-10 w-10" />
+              </div>
+
+              <div className="flex flex-1 flex-col gap-1">
+                <div className="text-base font-bold text-black">Любитель квестов</div>
+                <div className="text-sm text-[#00A349]">Продвинутое</div>
+                <div className="rounded-full bg-[#9924FF] px-2 text-white">10/10</div>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex flex-col gap-2 pl-4">
             <div className="text-2xl font-bold">Навыки</div>
-            <div className="flex w-full gap-2 overflow-x-auto pb-2">
-              {Array.from({ length: 3 }).map((_, index) => (
+            <div className="scrollbar-hidden flex w-full gap-3 overflow-x-auto pb-2">
+              {[
+                {
+                  title: (
+                    <>
+                      Физические
+                      <br />
+                      навыки
+                    </>
+                  ),
+                  bg: "#A3FFCD",
+                  skills: ["Сила", "Выносливость", "Ловкость"],
+                },
+                {
+                  title: "Интеллектуальные навыки",
+                  bg: "#A3BDFF",
+                  accent: "#002EA3",
+                  skills: ["Логика", "Память", "Внимание"],
+                },
+                {
+                  title: (
+                    <>
+                      Социальные <br />
+                      навыки
+                    </>
+                  ),
+                  bg: "#FFD4A3",
+                  accent: "#A35700",
+                  skills: ["Коммуникация", "Эмпатия", "Лидерство"],
+                },
+                {
+                  title: "Профессиональные умения",
+                  bg: "#FFA3A3",
+                  accent: "#A30000",
+                  skills: ["Экспертиза", "Планирование", "Адаптация"],
+                },
+              ].map((skill, idx) => (
                 <div
-                  key={index}
-                  className="h-[20vh] w-[40vw] flex-shrink-0 rounded-2xl bg-[#A3FFCD]"
-                ></div>
+                  key={idx}
+                  className="flex shrink-0 flex-col rounded-2xl"
+                  style={{ background: skill.bg, width: 148, padding: 12 }}
+                >
+                  <div className="text-xs font-bold">{skill.title}</div>
+
+                  <div className="mt-2 flex flex-col gap-3">
+                    {skill.skills.map((skillName, barIdx) => (
+                      <div key={barIdx} className="flex flex-col gap-1">
+                        <div className="h flex h-6 w-full items-center overflow-hidden rounded-full bg-[#1212121A]">
+                          <div
+                            className="flex h-full items-center rounded-full"
+                            style={{
+                              width: `${50 + barIdx * 20}%`,
+                              background: "white",
+                              transition: "width 0.3s",
+                            }}
+                          >
+                            <div className="px-2 text-xs text-black">{skillName}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-          <div className="mt-4 flex flex-col gap-2 px-4">
+          <div className="mt-4 flex w-full flex-col gap-2 px-4">
             <div className="text-2xl font-bold">Инвентарь</div>
-            <div className="text-sm text-gray-500">
-              Инвентарь этого пользователя пока пуст
+            <div className="flex w-full justify-between gap-2">
+              <div className="flex aspect-square h-25 flex-col items-center justify-center rounded-lg">
+                <img src="/green-cap.png" alt="coin" className="h-20 w-20" />
+                <span className="mt-1 text-sm">Fly Eagle! Fly! </span>
+              </div>
+              <div className="flex aspect-square h-25 flex-col items-center justify-center rounded-lg">
+                <img src="/knife.png" alt="coin" className="h-20 w-20" />
+                <span className="mt-1 text-sm">Меч берсер...</span>
+              </div>
+              <div className="flex aspect-square h-25 flex-col items-center justify-center rounded-lg">
+                <img src="/shit.png" alt="coin" className="h-20 w-20" />
+                <span className="mt-1 text-sm">Стальной щ...</span>
+              </div>
             </div>
           </div>
         </div>

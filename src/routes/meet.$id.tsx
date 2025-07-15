@@ -6,7 +6,6 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
 import { fakeUsers } from "~/config/fakeUsers";
-import { meetingsConfig } from "~/config/meetings";
 import { cn } from "~/lib/utils/cn";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -53,9 +52,7 @@ function RouteComponent() {
 
   console.log(isUserMeeting, "isUserMeeting");
 
-  const meeting = isUserMeeting
-    ? meetingsWithEvents?.find((m) => m.id === parseInt(id))
-    : meetingsConfig.find((m) => m.id === parseInt(id));
+  const meeting = meetingsWithEvents?.find((m) => m.id === parseInt(id));
 
   console.log(meeting, "meeting");
 
@@ -203,6 +200,8 @@ function RouteComponent() {
 
     window.history.back();
   };
+  console.log(event?.title);
+  console.log(JSON.stringify(organizer));
   console.log(event);
   return (
     <>
@@ -279,7 +278,11 @@ function RouteComponent() {
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-gray-200">
                     <img
-                      src={getImageUrl(organizer?.photoUrl || "")}
+                      src={
+                        organizer?.photo
+                          ? getImageUrl(organizer?.photo)
+                          : organizer?.photoUrl || ""
+                      }
                       alt={organizer?.name || ""}
                       className="h-10 w-10"
                     />
@@ -375,9 +378,9 @@ function RouteComponent() {
               ))}
             </div>
           )}
-          <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 bg-white px-4 py-4">
+          <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
             <div
-              className="flex-1 rounded-2xl bg-[#9924FF] px-4 py-2 text-center text-white"
+              className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
               onClick={() => handleJoin()}
             >
               {isOwner ? (
@@ -396,7 +399,9 @@ function RouteComponent() {
         <div className="overflow-y-auto pt-14 pb-10">
           <div className="flex flex-col p-4">
             <QuestCard quest={event as Quest} />
-            {event?.description}
+            {event?.description && event.description.length > 100
+              ? `${event.description.substring(0, 100)}...`
+              : event?.description}
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
                 + Достижение
@@ -418,7 +423,11 @@ function RouteComponent() {
           <div className="relative">
             <div className="relative h-[30vh] rounded-t-2xl">
               <img
-                src={getImageUrl(organizer?.photo || "")}
+                src={
+                  organizer?.photo
+                    ? getImageUrl(organizer?.photo)
+                    : organizer?.photoUrl || ""
+                }
                 alt={organizer?.name || ""}
                 className="h-full w-full rounded-t-2xl object-cover"
               />

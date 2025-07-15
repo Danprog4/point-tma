@@ -8,8 +8,6 @@ import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
-import { fakeUsers } from "~/config/fakeUsers";
-import { meetingsConfig } from "~/config/meetings";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -37,23 +35,6 @@ function RouteComponent() {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const meetings = meetingsConfig.map((meeting) => {
-    const organizer = fakeUsers.find((u) => u.meetings.includes(meeting.id));
-    const event = getEventData(meeting.eventType, meeting.eventId);
-
-    return {
-      id: meeting.id,
-      name: organizer ? `${organizer.name} ${organizer.surname}` : "Неизвестно",
-      description: event ? event.title : "Без названия",
-      avatar: organizer ? organizer.photoUrl : "",
-      statusColor: "#4FEBCC",
-      eventType: meeting.eventType,
-      eventId: meeting.eventId,
-      event,
-      organizer,
-    };
-  });
 
   const filters = ["Все", "Конференции", "Вечеринки", "Квесты", "Кино", "Нетворкинг"];
   const filterMap = {
@@ -148,6 +129,8 @@ function RouteComponent() {
                   tag: "🎄 Новый год",
                   price: "3 000 ₸",
                   bg: "bg-gradient-to-br from-red-400 to-pink-400",
+                  image:
+                    "https://cdn.pixabay.com/photo/2016/11/21/12/30/new-years-eve-1845065_1280.jpg",
                 },
                 {
                   title: "Гангстеры и розы",
@@ -155,6 +138,8 @@ function RouteComponent() {
                   tag: "💞 Клубы знакомств",
                   price: "3 000 ₸",
                   bg: "bg-gradient-to-br from-pink-400 to-purple-400",
+                  image:
+                    "https://cdn.pixabay.com/photo/2017/09/19/06/37/calendar-2764200_1280.jpg",
                 },
                 {
                   title: "KazDrilling 2024",
@@ -162,15 +147,24 @@ function RouteComponent() {
                   tag: "💃 Концерт",
                   price: "3 000 ₸",
                   bg: "bg-gradient-to-br from-green-400 to-blue-400",
+                  image:
+                    "https://cdn.pixabay.com/photo/2023/05/06/12/17/music-7974197_1280.jpg",
                 },
               ].map((event, idx) => (
                 <div
                   key={idx}
                   className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                 >
-                  <div className={`h-full w-full ${event.bg} relative`}>
-                    <div className="absolute bottom-2 left-2 flex gap-1">
-                      <div>{event.tag}</div>
+                  <div className={`relative h-full w-full`}>
+                    <img
+                      src={event.image}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute bottom-2 left-2">
+                      <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
+                        {event.tag}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -179,55 +173,20 @@ function RouteComponent() {
           </div>
           {/* Featured Meetings List */}
           <div className="col-span-2 grid grid-cols-2 gap-4">
-            {meetingsWithEvents?.map((meeting) => (
-              <div key={meeting.id} className="">
-                {/* Profile Card */}
-                <div
-                  className="overflow-hidden"
-                  onClick={() =>
-                    navigate({
-                      to: "/meet/$id",
-                      params: { id: meeting.id.toString() },
-                    })
-                  }
-                >
-                  {/* Avatar Section */}
-                  <div className="relative h-36">
-                    <img
-                      src={
-                        meeting.organizer?.photo
-                          ? getImageUrl(meeting.organizer.photo)
-                          : ""
-                      }
-                      alt={meeting.organizer?.name!}
-                      className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
-                    />
-                  </div>
-                  {/* Text Content */}
-                  <div className="p-2">
-                    <div className="space-y-1">
-                      <h3 className="text-sm leading-tight font-medium text-gray-900">
-                        {meeting.organizer?.name}
-                      </h3>
-                      <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                        {meeting.event?.title || "Без названия"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {meetings
-              .filter((meeting) => {
+            {meetingsWithEvents
+              ?.filter((meeting) => {
                 if (activeFilter === "Все") return true;
                 return (
-                  meeting.eventType === filterMap[activeFilter as keyof typeof filterMap]
+                  meeting.typeOfEvent ===
+                  filterMap[activeFilter as keyof typeof filterMap]
                 );
               })
               .filter((meeting) => {
+                const eventTitle = meeting.event?.title || "Без названия";
+                const organizerName = meeting.organizer?.name || "Неизвестно";
                 return (
-                  meeting.description.toLowerCase().includes(search.toLowerCase()) ||
-                  meeting.name.toLowerCase().includes(search.toLowerCase())
+                  eventTitle.toLowerCase().includes(search.toLowerCase()) ||
+                  organizerName.toLowerCase().includes(search.toLowerCase())
                 );
               })
               .map((meeting) => (
@@ -245,25 +204,23 @@ function RouteComponent() {
                     {/* Avatar Section */}
                     <div className="relative h-36">
                       <img
-                        src={meeting.avatar}
-                        alt={meeting.name}
+                        src={
+                          meeting.organizer?.photo
+                            ? getImageUrl(meeting.organizer.photo)
+                            : meeting.organizer?.photoUrl || ""
+                        }
+                        alt={meeting.organizer?.name!}
                         className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
                       />
-                      {/* Status Indicator */}
-                      <div
-                        className="absolute bottom-2 left-2 h-12 w-12 rounded-full border-2 border-purple-600"
-                        style={{ backgroundColor: meeting.statusColor }}
-                      />
                     </div>
-
                     {/* Text Content */}
                     <div className="p-2">
                       <div className="space-y-1">
                         <h3 className="text-sm leading-tight font-medium text-gray-900">
-                          {meeting.name}
+                          {meeting.organizer?.name}
                         </h3>
                         <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                          {meeting.description}
+                          {meeting.event?.title || "Без названия"}
                         </p>
                       </div>
                     </div>

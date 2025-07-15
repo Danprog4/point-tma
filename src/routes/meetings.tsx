@@ -124,6 +124,12 @@ function RouteComponent() {
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
               {meetingsWithEvents?.slice(0, 3).map((event, idx) => (
                 <div
+                  onClick={() =>
+                    navigate({
+                      to: "/meet/$id",
+                      params: { id: event.id.toString() },
+                    })
+                  }
                   key={idx}
                   className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                 >

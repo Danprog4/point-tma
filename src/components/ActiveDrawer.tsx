@@ -3,6 +3,7 @@ import { openTelegramLink } from "@telegram-apps/sdk";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
+import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Telegram } from "./Icons/Telegram";
 export default function ActiveDrawer({
@@ -36,6 +37,8 @@ export default function ActiveDrawer({
       },
     );
   };
+
+  const event = getEventData(name, id);
 
   const handleOpenLink = () => {
     openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
@@ -83,14 +86,16 @@ export default function ActiveDrawer({
                   <X className="h-6 w-6 text-gray-900" />
                 </button>
               </header>
-              <div className="flex h-full flex-col items-center justify-center pb-12 text-center">
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="text-xl font-bold">Активировать билет?</div>
-                  <div className="text-lg">
-                    Активируя билет, вы подтверждаете своё участие
+              {name === "Квест" && (
+                <div className="flex h-full flex-col items-center justify-center pb-12 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="text-xl font-bold">Активировать билет?</div>
+                    <div className="text-lg">
+                      Активируя билет, вы подтверждаете своё участие
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               <div className="absolute right-4 bottom-4 left-4 mx-auto mt-4 flex w-auto items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
                 <div
                   onClick={() => handleActivateTicket()}

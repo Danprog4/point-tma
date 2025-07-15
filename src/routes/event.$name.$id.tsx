@@ -105,8 +105,10 @@ function RouteComponent() {
   //   }
   // };
 
-  const endQuest = useMutation(trpc.event.endQuest.mutationOptions());
+  console.log(event.category === "Квест", "event cat2");
 
+  const endQuest = useMutation(trpc.event.endQuest.mutationOptions());
+  console.log(event.category, "event cat");
   const handleEndQuest = () => {
     if (isCompleted) {
       navigate({ to: "/" });
@@ -152,34 +154,7 @@ function RouteComponent() {
                   </button>
                 </div>
               ) : (
-                <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
-                  <button
-                    onClick={() => {
-                      navigate({ to: "/" });
-                    }}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
-                  >
-                    <div>Вернуться на главную</div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigate({ to: "/inventory" });
-                    }}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
-                  >
-                    <div>В инвентарь</div>
-                  </button>
-                  <ActiveDrawer
-                    id={Number(id)}
-                    open={isActiveDrawerOpen}
-                    onOpenChange={setIsActiveDrawerOpen}
-                    name={name}
-                  >
-                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                      {isActive ? "Билет активирован" : "Активировать билет"}
-                    </button>
-                  </ActiveDrawer>
-                </div>
+                <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4"></div>
               )}
             </div>
           </>
@@ -225,9 +200,13 @@ function RouteComponent() {
                   onOpenChange={setIsActiveDrawerOpen}
                   name={name}
                 >
-                  <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                    {isActive ? "Билет активирован" : "Активировать билет"}
-                  </button>
+                  {event.category === "Квест" ? (
+                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                      {isActive ? "Билет активирован" : "Активировать билет"}
+                    </button>
+                  ) : (
+                    <div></div>
+                  )}
                 </ActiveDrawer>
               </div>
             )}
@@ -419,18 +398,26 @@ function RouteComponent() {
             </div>
           ) : isActive === false ? (
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                <ActiveDrawer
-                  id={Number(id)}
-                  name={name}
-                  open={isActiveDrawerOpen}
-                  onOpenChange={setIsActiveDrawerOpen}
-                >
+              {event.category === "Квест" ? (
+                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                  <ActiveDrawer
+                    id={Number(id)}
+                    name={name}
+                    open={isActiveDrawerOpen}
+                    onOpenChange={setIsActiveDrawerOpen}
+                  >
+                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                      <div>Активировать</div>
+                    </button>
+                  </ActiveDrawer>
+                </div>
+              ) : (
+                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                    <div>Активировать</div>
+                    <div>QR CODE</div>
                   </button>
-                </ActiveDrawer>
-              </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">

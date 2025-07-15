@@ -51,7 +51,9 @@ function RouteComponent() {
               />
 
               <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
-                Билет {getEvent(ticket.eventId, ticket.name)?.category}
+                {getEventData(ticket.name, ticket.eventId)?.category === "Квест"
+                  ? "Билет на квест"
+                  : "Ваучер"}
               </div>
             </div>
           ))}

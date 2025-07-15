@@ -10,6 +10,7 @@ import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
+import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { useActivate } from "~/hooks/useActivate";
@@ -27,6 +28,7 @@ function RouteComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
+  const [isQrOpen, setIsQrOpen] = useState(false);
   // const [isActivated, setIsActivated] = useState(false); // Not used, remove
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -412,11 +414,11 @@ function RouteComponent() {
                   </ActiveDrawer>
                 </div>
               ) : (
-                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <QrDrawer open={isQrOpen} onOpenChange={setIsQrOpen}>
                   <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
                     <div>QR CODE</div>
                   </button>
-                </div>
+                </QrDrawer>
               )}
             </div>
           ) : (

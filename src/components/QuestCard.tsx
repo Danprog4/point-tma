@@ -6,9 +6,11 @@ import { Quest } from "~/types/quest";
 export function QuestCard({
   quest,
   isNavigable = true,
+  id,
 }: {
   quest?: Quest;
   isNavigable?: boolean;
+  id?: number;
 }) {
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export function QuestCard({
         if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
           navigate({
             to: "/event/$name/$id",
-            params: { name: "Квест", id: quest.id.toString() },
+            params: { name: quest.category, id: quest.id.toString() },
           });
         }
       }}

@@ -400,7 +400,7 @@ function RouteComponent() {
       ) : (
         <div className="overflow-y-auto pt-14 pb-10">
           <div className="flex flex-col p-4">
-            <QuestCard quest={event as Quest} />
+            <QuestCard quest={event as Quest} id={Number(id)} />
             {event?.description && event.description.length > 100
               ? `${event.description.substring(0, 100)}...`
               : event?.description}

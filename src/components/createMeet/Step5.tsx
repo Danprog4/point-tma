@@ -55,7 +55,6 @@ export const Step5 = ({
               </div>
               <div className="flex flex-col items-center">
                 <div className="font-bold text-gray-600">{title}</div>
-                <div className="text-sm text-gray-400">{desc}</div>
               </div>
             </div>
             <Right />

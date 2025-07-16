@@ -101,23 +101,32 @@ function RouteComponent() {
           {meetingsWithEvents?.map((quest: any) => (
             <div key={quest?.id}>
               <div className="px-4">
-                <QuestCard quest={quest?.event || ({} as Quest)} isNavigable={true} />
+                <QuestCard
+                  quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
+                  isNavigable={true}
+                />
                 <p className="mb-4 text-xs leading-4 text-black">
-                  {quest?.event?.description}
+                  {quest?.isCustom ? quest?.description : quest?.event?.description}
                 </p>
                 <div className="mb-6 flex items-center justify-between">
-                  {quest?.event?.hasAchievement && (
+                  {quest?.event?.hasAchievement ? (
                     <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
                       + Достижение
                     </span>
+                  ) : (
+                    <div></div>
                   )}
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="text-base font-medium text-black">
-                      + {quest?.event?.reward?.toLocaleString()}
-                    </span>
-                    <span className="text-base font-medium text-black">points</span>
-                    <Coin />
-                  </div>
+                  {quest?.event?.reward ? (
+                    <div className="ml-auto flex items-center gap-1">
+                      <span className="text-base font-medium text-black">
+                        + {quest?.event?.reward?.toLocaleString()}
+                      </span>
+                      <span className="text-base font-medium text-black">points</span>
+                      <Coin />
+                    </div>
+                  ) : (
+                    <div></div>
+                  )}
                 </div>
               </div>
             </div>

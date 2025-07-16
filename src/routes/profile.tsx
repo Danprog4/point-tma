@@ -5,6 +5,7 @@ import {
   Award,
   BarChart3,
   Calendar,
+  Check,
   History,
   Package,
   Search,
@@ -14,6 +15,8 @@ import {
 import { useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+
+import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MenuItem } from "~/components/MenuItem";
 import { questsData } from "~/config/quests";
@@ -326,11 +329,14 @@ function RouteComponent() {
             <div className="absolute top-7 right-7">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
+
             {search && (
               <div className="flex flex-col gap-2">
                 {users
-                  ?.filter((user) =>
-                    user?.name?.toLowerCase().includes(search.toLowerCase()),
+                  ?.filter(
+                    (user) =>
+                      user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+                      user?.surname?.toLowerCase().includes(search.toLowerCase()),
                   )
                   .map((user) => (
                     <div
@@ -343,41 +349,50 @@ function RouteComponent() {
               </div>
             )}
             {requests && requests?.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <div>Запросы</div>
-                <div>
-                  {requests?.map((request) => (
-                    <div
-                      key={request.id}
-                      className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
-                    >
-                      <div className="mb-2 font-medium text-black">
-                        {request.fromUserId}
+              <div className="flex flex-col gap-4">
+                <div className="text-lg font-medium">Запросы</div>
+                {requests
+                  ?.filter((request) => request.status === "pending")
+                  .map((request) => {
+                    const requestUser = users?.find((u) => u.id === request.fromUserId);
+                    return (
+                      <div key={request.id}>
+                        <div className="flex items-center justify-between py-4">
+                          <div className="flex items-center justify-start gap-2">
+                            <div
+                              className="mr-4 p-2"
+                              onClick={() =>
+                                declineRequest.mutate({ userId: request.fromUserId! })
+                              }
+                            >
+                              <CloseRed />
+                            </div>
+                            <img
+                              src={getImageUrl(requestUser?.photo || "")}
+                              alt=""
+                              className="h-14 w-14 rounded-lg"
+                            />
+                            <div className="flex flex-col items-start justify-between gap-2">
+                              <div className="text-lg">
+                                {requestUser?.name} {requestUser?.surname}
+                              </div>
+                              <div>{requestUser?.birthday}</div>
+                            </div>
+                          </div>
+                          <div
+                            className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                            onClick={() =>
+                              acceptRequest.mutate({ userId: request.fromUserId! })
+                            }
+                          >
+                            <Check className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          className="rounded bg-green-500 px-3 py-1 text-white transition hover:bg-green-600"
-                          onClick={() =>
-                            acceptRequest.mutate({ userId: request.fromUserId! })
-                          }
-                        >
-                          Принять
-                        </button>
-                        <button
-                          className="rounded bg-red-500 px-3 py-1 text-white transition hover:bg-red-600"
-                          onClick={() =>
-                            declineRequest.mutate({ userId: request.fromUserId! })
-                          }
-                        >
-                          Отклонить
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  })}
               </div>
             )}
-            <div>{friends?.length || 0} друзей</div>
           </div>
         </>
       )}

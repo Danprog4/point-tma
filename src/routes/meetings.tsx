@@ -122,7 +122,7 @@ function RouteComponent() {
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
-              {meetingsWithEvents?.slice(1, 4).map((event, idx) => (
+              {meetingsWithEvents?.slice(0, 7).map((event, idx) => (
                 <div
                   onClick={() =>
                     navigate({

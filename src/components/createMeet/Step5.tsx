@@ -43,17 +43,17 @@ export const Step5 = ({
           </div>
           <div className="flex w-full items-center justify-between gap-4">
             <Left />
-            <div className="relative flex flex-col items-center gap-2 opacity-50">
+            <div className="relative flex flex-col items-center gap-2">
               <img
                 src={base64}
                 alt="quest"
-                className="aspect-square h-[150px] rounded-2xl object-cover"
+                className="h-[20vh] w-[50vw] rounded-2xl object-cover"
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
-                <div className="rounded-2xl bg-white px-2 text-gray-600">{type}</div>
+                <div className="rounded-2xl bg-white px-2">{type}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="font-bold text-gray-600">{title}</div>
+                <div className="font-bold">{title}</div>
               </div>
             </div>
             <Right />

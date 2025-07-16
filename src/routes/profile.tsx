@@ -47,7 +47,7 @@ function RouteComponent() {
 
   const userAge = user?.birthday
     ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
-    : new Date().getFullYear() - new Date().getFullYear();
+    : user?.birthday;
 
   const acceptRequest = useMutation(trpc.friends.acceptRequest.mutationOptions());
   const declineRequest = useMutation(trpc.friends.declineRequest.mutationOptions());

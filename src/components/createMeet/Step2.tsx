@@ -88,6 +88,7 @@ export const Step2 = ({
                         onClick={() => setLength(length > 2 ? length - 1 : length)}
                       >
                         <Bin />
+                        локация
                       </div>
                       <input
                         type="text"

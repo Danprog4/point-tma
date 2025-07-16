@@ -135,14 +135,19 @@ function RouteComponent() {
                 >
                   <div className={`relative h-full w-full`}>
                     <img
-                      src={event.event?.image}
+                      src={
+                        !event.isCustom ? event.event?.image : getImageUrl(event.image!)
+                      }
                       alt=""
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute bottom-2 left-2">
                       <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
-                        {event.event?.title?.slice(0, 10) +
-                          (event.event?.title?.length! > 10 ? "..." : "")}
+                        {event.isCustom
+                          ? event.name?.slice(0, 10) +
+                            (event.name?.length! > 10 ? "..." : "")
+                          : event.event?.title?.slice(0, 10) +
+                            (event.event?.title?.length! > 10 ? "..." : "")}
                       </span>
                     </div>
                   </div>

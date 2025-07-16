@@ -345,7 +345,9 @@ function RouteComponent() {
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
                 <div className="flex items-center justify-start text-2xl font-bold">
                   <div className="text-2xl font-bold">Награда </div>
-                  <div className="text-l pl-2 font-bold">+ {event?.reward || 0}</div>
+                  <div className="text-l pl-2 font-bold">
+                    + {meeting?.isCustom ? meeting?.reward : event?.reward}
+                  </div>
                   <Coin />
                 </div>
 

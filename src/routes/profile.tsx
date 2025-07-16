@@ -349,7 +349,7 @@ function RouteComponent() {
               </div>
             )}
             {requests && requests?.length > 0 && (
-              <div className="flex flex-col gap-4">
+              <div className="mb-4 flex flex-col gap-4">
                 <div className="text-lg font-medium">Запросы</div>
                 {requests
                   ?.filter((request) => request.status === "pending")
@@ -386,6 +386,35 @@ function RouteComponent() {
                             }
                           >
                             <Check className="h-5 w-5 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+            {friends && friends?.length > 0 && (
+              <div className="gap- flex flex-col">
+                <div className="text-lg font-medium">Друзья</div>
+                {friends
+                  ?.filter((request) => request.status === "accepted")
+                  .map((request) => {
+                    const requestUser = users?.find((u) => u.id === request.fromUserId);
+                    return (
+                      <div key={request.id}>
+                        <div className="flex items-center justify-between pb-4">
+                          <div className="flex items-center justify-start gap-2">
+                            <img
+                              src={getImageUrl(requestUser?.photo || "")}
+                              alt=""
+                              className="h-14 w-14 rounded-lg"
+                            />
+                            <div className="flex flex-col items-start justify-between gap-2">
+                              <div className="text-lg">
+                                {requestUser?.name} {requestUser?.surname}
+                              </div>
+                              <div>{requestUser?.birthday}</div>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -58,23 +58,33 @@ function RouteComponent() {
   };
 
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
-
   const handleCreateMeeting = () => {
     const idOfEvent = selectedItem?.id;
 
-    createMeeting.mutate({
-      name: title || title2,
-      description: description || description2,
-      type: type || name,
-      idOfEvent,
-      typeOfEvent,
-      isCustom: isBasic,
-      participants,
-      location,
-      reward,
-      image: base64,
-    });
-    queryClient.invalidateQueries({ queryKey: trpc.meetings.getMeetings.queryKey() });
+    createMeeting.mutate(
+      {
+        name: title || title2,
+        description: description || description2,
+        type: type || name,
+        idOfEvent,
+        typeOfEvent,
+        isCustom: isBasic,
+        participants: participants || 0,
+        location,
+        reward: reward || 0,
+        image: base64,
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: trpc.meetings.getMeetings.queryKey(),
+          });
+        },
+        onError: (error) => {
+          console.error("Error creating meeting:", error);
+        },
+      },
+    );
   };
 
   console.log(base64, "base64");

@@ -10,8 +10,10 @@ export const Step2 = ({
   title,
   description,
   setTitle,
+  setLocation,
   setDescription,
   isDisabled,
+  location,
 }: {
   name: string;
   isBasic: boolean;
@@ -19,8 +21,10 @@ export const Step2 = ({
   title: string;
   description: string;
   setTitle: (title: string) => void;
+  setLocation: (location: string) => void;
   setDescription: (description: string) => void;
   isDisabled: boolean;
+  location: string;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
   const [length, setLength] = useState(2);
@@ -74,7 +78,8 @@ export const Step2 = ({
                       <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
                       <input
                         type="text"
-                        placeholder="Введите адрес"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                         className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
                       />
                       <div className="flex h-6 w-6 shrink-0 items-start">

@@ -29,7 +29,6 @@ function RouteComponent() {
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
   const { name } = useParams({ from: "/createMeet/$name" });
-  const [isLoading, setIsLoading] = useState(true);
   const [step, setStep] = useState(0);
   const emoji = eventTypes.find((e) => e.name === name)?.emoji;
   const isBasic = name !== "Совместное посещение";
@@ -148,6 +147,8 @@ function RouteComponent() {
           setTitle={setTitle}
           setDescription={setDescription}
           isDisabled={isDisabled}
+          location={location}
+          setLocation={setLocation}
         />
       )}
       {step === 2 && (
@@ -172,10 +173,9 @@ function RouteComponent() {
 
       {step === 4 && (
         <Step5
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
+          isLoading={createMeeting.isPending}
           name={name}
-          type={type}
+          type={type || name}
           item={selectedItem}
           eventType={name}
           isBasic={isBasic}
@@ -221,22 +221,24 @@ function RouteComponent() {
           </button>
         </div>
       ) : (
-        !isLoading &&
+        !createMeeting.isPending &&
         (isBasic ? (
           <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
             <button className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
               Пригласить знакомых
             </button>
             <button
-              onClick={() => navigate({ to: "/" })}
+              onClick={() => navigate({ to: "/my-meetings" })}
               className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-white px-4 py-3 text-center text-black"
             >
-              Перейдите в афишу
+              Перейти в мои встречи
             </button>
           </div>
         ) : (
           <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
-            <button onClick={() => navigate({ to: "/" })}>Вернуться в афишу</button>
+            <button onClick={() => navigate({ to: "/meetings" })}>
+              Вернуться во встречи
+            </button>
           </div>
         ))
       )}

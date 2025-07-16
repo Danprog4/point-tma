@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 
 import { useMemo, useState } from "react";
@@ -19,7 +19,7 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState("Мои встречи");
   const trpc = useTRPC();
-
+  const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
@@ -71,7 +71,7 @@ function RouteComponent() {
     <div className="min-h-screen overflow-y-auto bg-white pt-16 pb-10">
       <div className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white">
         <button
-          onClick={() => window.history.back()}
+          onClick={() => navigate({ to: "/meetings" })}
           className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
@@ -98,39 +98,44 @@ function RouteComponent() {
       </div>
       {activeFilter === "Мои встречи" && (
         <div className="flex flex-col gap-4 px-4">
-          {meetingsWithEvents?.map((quest: any) => (
-            <div key={quest?.id}>
-              <div className="px-4">
-                <QuestCard
-                  quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
-                  isNavigable={true}
-                />
-                <p className="mb-4 text-xs leading-4 text-black">
-                  {quest?.isCustom ? quest?.description : quest?.event?.description}
-                </p>
-                <div className="mb-6 flex items-center justify-between">
-                  {quest?.event?.hasAchievement ? (
-                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                      + Достижение
-                    </span>
-                  ) : (
-                    <div></div>
-                  )}
-                  {quest?.event?.reward ? (
-                    <div className="ml-auto flex items-center gap-1">
-                      <span className="text-base font-medium text-black">
-                        + {quest?.event?.reward?.toLocaleString()}
+          {meetingsWithEvents
+            ?.sort(
+              (a, b) =>
+                new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+            )
+            .map((quest: any) => (
+              <div key={quest?.id}>
+                <div className="px-4">
+                  <QuestCard
+                    quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
+                    isNavigable={true}
+                  />
+                  <p className="mb-4 text-xs leading-4 text-black">
+                    {quest?.isCustom ? quest?.description : quest?.event?.description}
+                  </p>
+                  <div className="mb-6 flex items-center justify-between">
+                    {quest?.event?.hasAchievement ? (
+                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                        + Достижение
                       </span>
-                      <span className="text-base font-medium text-black">points</span>
-                      <Coin />
-                    </div>
-                  ) : (
-                    <div></div>
-                  )}
+                    ) : (
+                      <div></div>
+                    )}
+                    {quest?.event?.reward ? (
+                      <div className="ml-auto flex items-center gap-1">
+                        <span className="text-base font-medium text-black">
+                          + {quest?.event?.reward?.toLocaleString()}
+                        </span>
+                        <span className="text-base font-medium text-black">points</span>
+                        <Coin />
+                      </div>
+                    ) : (
+                      <div></div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
 

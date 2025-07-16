@@ -1,10 +1,9 @@
-import { useEffect } from "react";
 import { Left } from "./images/Left";
 import { Right } from "./images/Right";
 
 export const Step5 = ({
   isLoading,
-  setIsLoading,
+
   name,
   item,
   type,
@@ -17,7 +16,7 @@ export const Step5 = ({
   setReward,
 }: {
   isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
+
   name: string;
   item: any;
   type: string;
@@ -29,12 +28,6 @@ export const Step5 = ({
   setReward: (reward: number) => void;
   base64: string;
 }) => {
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  }, []);
-
   // Defensive helpers without excessive typeof checks
   const price = item?.price ?? title2;
   const title = item?.title ?? title2;
@@ -83,7 +76,6 @@ export const Step5 = ({
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
                 <div className="rounded-2xl bg-white px-2">{type}</div>
-                <div className="rounded-2xl bg-white px-2">{price}</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="font-bold">{title}</div>

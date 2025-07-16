@@ -277,7 +277,7 @@ function RouteComponent() {
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Локация</div>
                 <div>
-                  {meeting?.isCustom ? meeting?.locations : event?.location || "Москва"}
+                  {meeting?.isCustom ? meeting?.location : event?.location || "Москва"}
                 </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
@@ -340,7 +340,7 @@ function RouteComponent() {
               )}
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Расписание</div>
-                <div className="text-l font-bold">{event?.date || "Сегодня"}</div>
+                <div>{event?.date || "Сегодня"}</div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
                 <div className="flex items-center justify-start text-2xl font-bold">

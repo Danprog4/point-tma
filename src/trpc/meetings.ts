@@ -15,7 +15,7 @@ export const meetingRouter = createTRPCRouter({
         description: z.string(),
         type: z.string().optional(),
         invited: z.array(z.string()).optional(),
-        locations: z.array(z.string()).optional(),
+
         idOfEvent: z.number().optional(),
         typeOfEvent: z.string().optional(),
         isCustom: z.boolean().optional(),
@@ -31,7 +31,7 @@ export const meetingRouter = createTRPCRouter({
         description,
         type,
         invited,
-        locations,
+
         idOfEvent,
         typeOfEvent,
         participants,
@@ -61,7 +61,7 @@ export const meetingRouter = createTRPCRouter({
         description,
         type,
         invited,
-        locations,
+
         idOfEvent,
         typeOfEvent,
         userId: user.id,

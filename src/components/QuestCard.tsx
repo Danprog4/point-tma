@@ -19,6 +19,7 @@ export function QuestCard({
     return null;
   }
 
+  const path = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
   console.log(quest, "quest");
 
   return (
@@ -27,8 +28,11 @@ export function QuestCard({
       onClick={() => {
         if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
           navigate({
-            to: "/event/$name/$id",
-            params: { name: quest.category, id: quest.id.toString() },
+            to: path,
+            params: {
+              name: quest.isCustom ? quest.type : quest.category,
+              id: quest.id.toString(),
+            },
           });
         }
       }}

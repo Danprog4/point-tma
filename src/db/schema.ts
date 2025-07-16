@@ -37,7 +37,7 @@ export const meetTable = pgTable("meets", {
   description: varchar("description", { length: 255 }),
   type: varchar("type", { length: 255 }),
   invited: jsonb("invited").$type<string[]>(),
-  locations: jsonb("locations").$type<string[]>(),
+
   participants: integer("participants"),
   location: varchar("location", { length: 255 }),
   reward: integer("reward"),

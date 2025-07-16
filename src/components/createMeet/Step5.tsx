@@ -47,11 +47,10 @@ export const Step5 = ({
               <img
                 src={base64}
                 alt="quest"
-                className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
+                className="aspect-square h-[150px] rounded-2xl object-cover"
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
                 <div className="rounded-2xl bg-white px-2 text-gray-600">{type}</div>
-                <div className="rounded-2xl bg-white px-2 text-gray-600">{price}</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="font-bold text-gray-600">{title}</div>
@@ -71,14 +70,13 @@ export const Step5 = ({
               <img
                 src={base64}
                 alt="quest"
-                className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
+                className="h-[20vh] w-[50vw] rounded-2xl object-cover"
               />
               <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
                 <div className="rounded-2xl bg-white px-2">{type}</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="font-bold">{title}</div>
-                <div className="text-sm text-gray-400">{desc}</div>
               </div>
             </div>
             <Right />

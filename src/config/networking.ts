@@ -27,8 +27,7 @@ export const networkingData = [
     reward: 0,
     hasAchievement: false,
     organizer: "Digital Leaders Club",
-    image:
-      "https://images.unsplash.com/photo-1515168833906-d2a3b82b3029?w=88&h=88&fit=crop&crop=center",
+    image: "https://cdn.pixabay.com/photo/2018/07/13/09/30/network-3535305_1280.jpg",
   },
   {
     id: 2,

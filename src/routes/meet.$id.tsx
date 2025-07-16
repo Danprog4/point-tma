@@ -224,11 +224,7 @@ function RouteComponent() {
         <div className="overflow-y-auto pt-18 pb-24">
           <div className="relative">
             <img
-              src={
-                meeting?.image?.startsWith("data:")
-                  ? meeting.image
-                  : getImageUrl(meeting?.image as string)
-              }
+              src={!meeting?.isCustom ? event?.image : getImageUrl(meeting?.image!)}
               alt={event?.title}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />

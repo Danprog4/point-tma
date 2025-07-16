@@ -122,7 +122,7 @@ function RouteComponent() {
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
-              {meetingsWithEvents?.slice(0, 3).map((event, idx) => (
+              {meetingsWithEvents?.slice(1, 4).map((event, idx) => (
                 <div
                   onClick={() =>
                     navigate({
@@ -199,7 +199,7 @@ function RouteComponent() {
                           {meeting.organizer?.name}
                         </h3>
                         <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                          {meeting.event?.title || "Без названия"}
+                          {meeting.event?.title || meeting.name || "Без названия"}
                         </p>
                       </div>
                     </div>

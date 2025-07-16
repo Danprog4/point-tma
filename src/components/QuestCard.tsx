@@ -34,7 +34,7 @@ export function QuestCard({
       }}
     >
       <img
-        src={quest.image?.startsWith("data:") ? quest.image : getImageUrl(quest.image)}
+        src={!quest.isCustom ? quest.image : getImageUrl(quest.image)}
         alt={quest.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />

@@ -6,11 +6,15 @@ export const Step3 = ({
   isBasic,
   friendName,
   setFriendName,
+  setParticipants,
+  participants,
 }: {
   name: string;
   isBasic: boolean;
   friendName: string;
   setFriendName: (friendName: string) => void;
+  setParticipants: (participants: number) => void;
+  participants: number;
 }) => {
   const trpc = useTRPC();
   const { data: friends } = useQuery(trpc.main.getUserFavorites.queryOptions());
@@ -34,17 +38,21 @@ export const Step3 = ({
           <div className="mb-4 flex flex-col items-start gap-2">
             <input
               type="text"
-              placeholder="Локация вечеринки"
+              placeholder="Введите количество участников"
               className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+              onChange={(e) => setParticipants(Number(e.target.value))}
             />
             <div className="px-4 text-xs">
               Допустимое количество людей, не из числа ваших друзей
             </div>
           </div>
-          <div className="mb-2 flex w-full gap-2 text-xl font-bold">
-            Пригласите друзей
-          </div>
-          <div className="text-sm text-gray-500">У вас пока нет друзей</div>
+          <div className="flex w-full gap-2 text-xl font-bold">Пригласите друзей</div>
+
+          <input
+            type="text"
+            placeholder="Поиск"
+            className="mt-2 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+          />
         </>
       ) : (
         <>

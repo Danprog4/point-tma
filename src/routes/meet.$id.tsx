@@ -11,7 +11,6 @@ import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
-import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
@@ -225,7 +224,11 @@ function RouteComponent() {
         <div className="overflow-y-auto pt-18 pb-24">
           <div className="relative">
             <img
-              src={event?.image}
+              src={
+                meeting?.image?.startsWith("data:")
+                  ? meeting.image
+                  : getImageUrl(meeting?.image as string)
+              }
               alt={event?.title}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />
@@ -235,9 +238,11 @@ function RouteComponent() {
                 <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
                   {event?.type}
                 </div>
-                <div className="flex items-center justify-center rounded-full bg-[#2462FF] px-2">
-                  {event?.category}
-                </div>
+                {!meeting?.isCustom && (
+                  <div className="flex items-center justify-center rounded-full bg-[#2462FF] px-2">
+                    {event?.category}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -264,16 +269,20 @@ function RouteComponent() {
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Описание</div>
                 <div>
-                  {event?.description.split(/\n{2,}/).map((paragraph, idx) => (
-                    <p key={idx} className="mb-3 last:mb-0">
-                      {paragraph}
-                    </p>
-                  ))}
+                  {meeting?.isCustom
+                    ? meeting?.description
+                    : event?.description.split(/\n{2,}/).map((paragraph, idx) => (
+                        <p key={idx} className="mb-3 last:mb-0">
+                          {paragraph}
+                        </p>
+                      ))}
                 </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Локация</div>
-                <div>{event?.location}</div>
+                <div>
+                  {meeting?.isCustom ? meeting?.locations : event?.location || "Москва"}
+                </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Организатор</div>
@@ -286,7 +295,7 @@ function RouteComponent() {
                           : organizer?.photoUrl || ""
                       }
                       alt={organizer?.name || ""}
-                      className="h-10 w-10"
+                      className="h-10 w-10 rounded-full"
                     />
                   </div>
                   <div>
@@ -335,12 +344,12 @@ function RouteComponent() {
               )}
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Расписание</div>
-                <div className="text-l font-bold">{event?.date}</div>
+                <div className="text-l font-bold">{event?.date || "Сегодня"}</div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
                 <div className="flex items-center justify-start text-2xl font-bold">
                   <div className="text-2xl font-bold">Награда </div>
-                  <div className="text-l pl-2 font-bold">+ {event?.reward}</div>
+                  <div className="text-l pl-2 font-bold">+ {event?.reward || 0}</div>
                   <Coin />
                 </div>
 
@@ -400,17 +409,26 @@ function RouteComponent() {
       ) : (
         <div className="overflow-y-auto pt-14 pb-10">
           <div className="flex flex-col p-4">
-            <QuestCard quest={event as Quest} id={Number(id)} />
-            {event?.description && event.description.length > 100
-              ? `${event.description.substring(0, 100)}...`
-              : event?.description}
+            <QuestCard
+              quest={meeting?.isCustom ? meeting : (event as any)}
+              id={Number(id)}
+            />
+            {!meeting?.isCustom
+              ? event?.description && event.description.length > 100
+                ? `${event.description.substring(0, 100)}...`
+                : event?.description
+              : meeting?.description && meeting.description.length > 100
+                ? `${meeting.description.substring(0, 100)}...`
+                : meeting?.description}
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
                 + Достижение
               </div>
-              <div className="flex items-center gap-1">
-                + {event?.reward} points <Coin />
-              </div>
+              {event?.reward && (
+                <div className="flex items-center gap-1">
+                  + {event?.reward} points <Coin />
+                </div>
+              )}
             </div>
             <div className="mt-4 flex items-center justify-between gap-6 text-white">
               <div

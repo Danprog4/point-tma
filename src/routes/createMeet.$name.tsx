@@ -16,6 +16,7 @@ export const Route = createFileRoute("/createMeet/$name")({
 });
 
 function RouteComponent() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
   const [title2, setTitle2] = useState("");
@@ -35,6 +36,13 @@ function RouteComponent() {
   const [type, setType] = useState("");
   const isDisabled = !title && !description;
   const isDisabled2 = !title2 && !description2;
+  const [base64, setBase64] = useState("");
+  const [participants, setParticipants] = useState(0);
+  const [location, setLocation] = useState("");
+  const [reward, setReward] = useState(0);
+  const isHeicFile = (file: File): boolean => {
+    return file.name.toLowerCase().endsWith(".heic");
+  };
 
   const handleNext = () => {
     setStep(step + 1);
@@ -57,14 +65,19 @@ function RouteComponent() {
     createMeeting.mutate({
       name: title || title2,
       description: description || description2,
-      type,
+      type: type || name,
       idOfEvent,
       typeOfEvent,
       isCustom: isBasic,
+      participants,
+      location,
+      reward,
+      image: base64,
     });
     queryClient.invalidateQueries({ queryKey: trpc.meetings.getMeetings.queryKey() });
   };
 
+  console.log(base64, "base64");
   console.log(createMeeting.data);
 
   console.log(step);
@@ -108,6 +121,11 @@ function RouteComponent() {
           description={description}
           setDescription2={setDescription2}
           setDescription={setDescription}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
+          base64={base64}
+          setBase64={setBase64}
+          isHeicFile={isHeicFile}
         />
       )}
       {step === 1 && (
@@ -128,9 +146,19 @@ function RouteComponent() {
           isBasic={isBasic}
           friendName={friendName}
           setFriendName={setFriendName}
+          setParticipants={setParticipants}
+          participants={participants}
         />
       )}
-      {step === 3 && <Step4 name={name} isBasic={isBasic} item={selectedItem} />}
+      {step === 3 && (
+        <Step4
+          name={name}
+          isBasic={isBasic}
+          item={selectedItem}
+          reward={reward}
+          setReward={setReward}
+        />
+      )}
 
       {step === 4 && (
         <Step5
@@ -143,6 +171,9 @@ function RouteComponent() {
           isBasic={isBasic}
           title2={title2}
           description2={description2}
+          reward={reward}
+          setReward={setReward}
+          base64={base64}
         />
       )}
 

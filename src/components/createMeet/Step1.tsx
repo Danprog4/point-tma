@@ -5,6 +5,8 @@ import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
+import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
+import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import FilterDrawer from "../FilterDrawer";
 import { WhiteFilter } from "../Icons/WhiteFilter";
 import { ExtraStep1 } from "./ExtraStep1";
@@ -24,6 +26,11 @@ export const Step1 = ({
   setDescription2,
   description,
   setDescription,
+  selectedFile,
+  setSelectedFile,
+  base64,
+  setBase64,
+  isHeicFile,
 }: {
   name: string;
   isBasic: boolean;
@@ -39,6 +46,11 @@ export const Step1 = ({
   setDescription2: (description: string) => void;
   description: string;
   setDescription: (description: string) => void;
+  selectedFile: File | null;
+  setSelectedFile: (file: File | null) => void;
+  base64: string;
+  setBase64: (base64: string) => void;
+  isHeicFile: (file: File) => boolean;
 }) => {
   const [isExtra, setIsExtra] = useState(false);
   const [search, setSearch] = useState("");
@@ -80,15 +92,48 @@ export const Step1 = ({
       data = [];
   }
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    setSelectedFile(file);
+
+    let fileToProcess: File = file;
+
+    // If file is HEIC, convert to PNG first
+    if (isHeicFile(fileToProcess)) {
+      fileToProcess = await convertHeicToPng(fileToProcess);
+    }
+
+    const base64 = await convertToBase64(fileToProcess);
+
+    setBase64(base64);
+  };
+
   return (
     <>
       {isBasic ? (
         <>
           <div className="flex flex-col items-center gap-4">
-            <div className="flex h-40 w-40 items-center justify-center rounded-2xl bg-[#F0F0F0]"></div>
-            <div className="text-lg text-[#9924FF]">
-              Загрузить фото/афишу для вечеринки
-            </div>
+            <label
+              htmlFor="photo-upload"
+              className="flex cursor-pointer flex-col items-center gap-2"
+            >
+              {base64 ? (
+                <img src={base64} alt="photo" className="h-40 w-40 rounded-2xl" />
+              ) : (
+                <div className="flex h-40 w-40 items-center justify-center rounded-2xl bg-[#F0F0F0]"></div>
+              )}
+              <div className="text-lg text-[#9924FF]">Загрузить фото/афишу</div>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </label>
           </div>
           <div className="flex flex-col items-start gap-2 py-4 pb-4">
             <div className="text-xl font-bold">Название</div>

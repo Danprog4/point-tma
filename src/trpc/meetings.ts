@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { meetParticipantsTable, meetTable, usersTable } from "~/db/schema";
+import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { getMeetings } from "~/lib/utils/getMeetings";
 import { createTRPCRouter, procedure } from "./init";
 
@@ -17,8 +18,11 @@ export const meetingRouter = createTRPCRouter({
         locations: z.array(z.string()).optional(),
         idOfEvent: z.number().optional(),
         typeOfEvent: z.string().optional(),
-        numberOfParticipants: z.number().optional(),
         isCustom: z.boolean().optional(),
+        image: z.string().optional(),
+        participants: z.number().optional(),
+        location: z.string().optional(),
+        reward: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -30,7 +34,10 @@ export const meetingRouter = createTRPCRouter({
         locations,
         idOfEvent,
         typeOfEvent,
-        numberOfParticipants,
+        participants,
+        location,
+        reward,
+        image,
         isCustom,
       } = input;
       const { userId } = ctx;
@@ -43,6 +50,12 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
       }
 
+      let imageUrl = null;
+
+      if (image) {
+        imageUrl = await uploadBase64Image(image);
+      }
+
       const meet = await db.insert(meetTable).values({
         name,
         description,
@@ -52,7 +65,10 @@ export const meetingRouter = createTRPCRouter({
         idOfEvent,
         typeOfEvent,
         userId: user.id,
-        numberOfParticipants,
+        participants,
+        location,
+        reward,
+        image: imageUrl,
         isCustom,
       });
 

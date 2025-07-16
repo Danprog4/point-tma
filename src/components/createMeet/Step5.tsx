@@ -12,6 +12,9 @@ export const Step5 = ({
   isBasic,
   title2,
   description2,
+  reward,
+  base64,
+  setReward,
 }: {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
@@ -22,6 +25,9 @@ export const Step5 = ({
   isBasic: boolean;
   title2: string;
   description2: string;
+  reward: number;
+  setReward: (reward: number) => void;
+  base64: string;
 }) => {
   useEffect(() => {
     setTimeout(() => {
@@ -40,13 +46,13 @@ export const Step5 = ({
       {isLoading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="mb-8 text-center text-xl font-bold text-[#2462FF]">
-            Создаем ваш {type || name}
+            Создаем вашу встречу
           </div>
           <div className="flex w-full items-center justify-between gap-4">
             <Left />
             <div className="relative flex flex-col items-center gap-2 opacity-50">
               <img
-                src="/quest.png"
+                src={base64}
                 alt="quest"
                 className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
               />
@@ -65,13 +71,13 @@ export const Step5 = ({
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="mb-8 text-center text-xl font-bold text-[#00A349]">
-            {type || name} создан!
+            Встреча создана!
           </div>
           <div className="mb-6 flex w-full items-center justify-between gap-4">
             <Left />
             <div className="relative flex flex-col items-center gap-2">
               <img
-                src="/quest.png"
+                src={base64}
                 alt="quest"
                 className="max-h-[150px] max-w-[250px] rounded-2xl object-cover"
               />

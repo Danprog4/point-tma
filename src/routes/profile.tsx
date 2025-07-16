@@ -399,7 +399,13 @@ function RouteComponent() {
                 {friends
                   ?.filter((request) => request.status === "accepted")
                   .map((request) => {
-                    const requestUser = users?.find((u) => u.id === request.fromUserId);
+                    const requestUser = users?.find(
+                      (u) =>
+                        u.id ===
+                        (request.fromUserId === user?.id
+                          ? request.toUserId
+                          : request.fromUserId),
+                    );
                     return (
                       <div key={request.id}>
                         <div className="flex items-center justify-between pb-4">

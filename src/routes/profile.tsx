@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -28,6 +28,7 @@ export const Route = createFileRoute("/profile")({
 
 function RouteComponent() {
   useScroll();
+  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const navigate = useNavigate();
@@ -49,8 +50,10 @@ function RouteComponent() {
     ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
     : user?.birthday;
 
-  const acceptRequest = useMutation(trpc.friends.acceptRequest.mutationOptions());
-  const declineRequest = useMutation(trpc.friends.declineRequest.mutationOptions());
+  const acceptRequestMutation = useMutation(trpc.friends.acceptRequest.mutationOptions());
+  const declineRequestMutation = useMutation(
+    trpc.friends.declineRequest.mutationOptions(),
+  );
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
   const QuestsData = filteredEvents?.map((event) => {
@@ -79,6 +82,25 @@ function RouteComponent() {
   console.log(uncompletedQuestsData, "uncompletedQuestsData");
 
   const pageState = uncompletedQuestsData?.length === 0 ? "completed" : "active";
+
+  const acceptRequest = (userId: number) => {
+    acceptRequestMutation.mutate({ userId });
+    queryClient.setQueryData(trpc.friends.getRequests.queryKey(), (old: any) => {
+      return old.map(
+        (request: any) => request.id === request.id && { ...request, status: "accepted" },
+      );
+    });
+  };
+
+  const declineRequest = (userId: number) => {
+    declineRequestMutation.mutate({ userId });
+    queryClient.setQueryData(trpc.friends.getRequests.queryKey(), (old: any) => {
+      return old.map(
+        (request: any) => request.id === request.id && { ...request, status: "rejected" },
+      );
+    });
+  };
+
   console.log(pageState, "pageState");
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-20">
@@ -370,7 +392,7 @@ function RouteComponent() {
             )}
             {requests && requests?.length > 0 && (
               <div className="flex flex-col gap-4">
-                <div className="text-lg font-medium">Запросы</div>
+                <div className="text-lg font-medium">Запросы {}</div>
                 {requests
                   ?.filter((request) => request.status === "pending")
                   .map((request) => {
@@ -389,9 +411,7 @@ function RouteComponent() {
                           <div className="flex items-center justify-start gap-2">
                             <div
                               className="mr-4 p-2"
-                              onClick={() =>
-                                declineRequest.mutate({ userId: request.fromUserId! })
-                              }
+                              onClick={() => declineRequest(request.fromUserId!)}
                             >
                               <CloseRed />
                             </div>
@@ -409,9 +429,7 @@ function RouteComponent() {
                           </div>
                           <div
                             className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                            onClick={() =>
-                              acceptRequest.mutate({ userId: request.fromUserId! })
-                            }
+                            onClick={() => acceptRequest(request.fromUserId!)}
                           >
                             <Check className="h-5 w-5 text-white" />
                           </div>

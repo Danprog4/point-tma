@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
@@ -112,15 +112,6 @@ function RouteComponent() {
   return (
     <div className="mx-auto min-h-screen w-full bg-white">
       {/* Header */}
-      <div className="relative flex items-center justify-center p-4">
-        <button
-          onClick={() => navigate({ to: "/profile" })}
-          className="absolute left-4 flex h-6 w-6 items-center justify-center"
-        >
-          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-        </button>
-        <h1 className="text-base font-bold text-gray-800">Календарь</h1>
-      </div>
 
       {/* Month Navigation */}
       <div className="flex items-center justify-center gap-1 py-2">

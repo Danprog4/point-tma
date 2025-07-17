@@ -175,7 +175,7 @@ function RouteComponent() {
                 </div>
               </div>
               <p className="text-sm text-gray-500">
-                г. {user?.city}, {userAge} лет
+                г. {user?.city}, {userAge}
               </p>
             </div>
           </div>
@@ -331,7 +331,8 @@ function RouteComponent() {
             </div>
 
             {search && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
+                <div className="text-lg font-medium">Пользователи</div>
                 {users
                   ?.filter(
                     (user) =>
@@ -341,23 +342,50 @@ function RouteComponent() {
                   .map((user) => (
                     <div
                       key={user.id}
-                      className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
+                      onClick={() => {
+                        navigate({
+                          to: "/user-profile/$id",
+                          params: { id: user.id.toString() },
+                        });
+                      }}
                     >
-                      <div className="mb-2 font-medium text-black">{user.name}</div>
+                      <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <img
+                            src={getImageUrl(user?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between gap-2">
+                            <div className="text-lg">
+                              {user?.name} {user?.surname}
+                            </div>
+                            <div>{user?.birthday}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
               </div>
             )}
             {requests && requests?.length > 0 && (
-              <div className="mb-4 flex flex-col gap-4">
+              <div className="flex flex-col gap-4">
                 <div className="text-lg font-medium">Запросы</div>
                 {requests
                   ?.filter((request) => request.status === "pending")
                   .map((request) => {
                     const requestUser = users?.find((u) => u.id === request.fromUserId);
                     return (
-                      <div key={request.id}>
-                        <div className="flex items-center justify-between py-4">
+                      <div
+                        key={request.id}
+                        onClick={() => {
+                          navigate({
+                            to: "/user-profile/$id",
+                            params: { id: requestUser?.id.toString() || "" },
+                          });
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center justify-start gap-2">
                             <div
                               className="mr-4 p-2"
@@ -394,7 +422,7 @@ function RouteComponent() {
               </div>
             )}
             {friends && friends?.length > 0 && (
-              <div className="gap- flex flex-col">
+              <div className="flex flex-col gap-4">
                 <div className="text-lg font-medium">Друзья</div>
                 {friends
                   ?.filter((request) => request.status === "accepted")
@@ -407,7 +435,15 @@ function RouteComponent() {
                           : request.fromUserId),
                     );
                     return (
-                      <div key={request.id}>
+                      <div
+                        key={request.id}
+                        onClick={() => {
+                          navigate({
+                            to: "/user-profile/$id",
+                            params: { id: requestUser?.id.toString() || "" },
+                          });
+                        }}
+                      >
                         <div className="flex items-center justify-between pb-4">
                           <div className="flex items-center justify-start gap-2">
                             <img

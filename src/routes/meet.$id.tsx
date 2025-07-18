@@ -596,6 +596,11 @@ function RouteComponent() {
                 </div>
               ))}
             </div>
+            <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
+              <div className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white">
+                Пригласить
+              </div>
+            </div>
           </div>
           <div className="mt-4 flex w-full flex-col gap-2 px-4">
             <div className="text-2xl font-bold">Инвентарь</div>

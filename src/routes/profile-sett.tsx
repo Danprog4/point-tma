@@ -25,6 +25,7 @@ function RouteComponent() {
   const [phone, setPhone] = useState<string>("");
   const [base64, setBase64] = useState<string | null>(null);
   const [surname, setSurname] = useState<string>("");
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [bio, setBio] = useState<string>("");
@@ -77,7 +78,8 @@ function RouteComponent() {
     birthday === (user?.birthday ?? "") &&
     city === (user?.city ?? "") &&
     !selectedFile &&
-    JSON.stringify(gallery) === JSON.stringify(user?.gallery ?? []);
+    gallery.length === (user?.gallery?.length ?? 0) &&
+    gallery.every((item, index) => item === user?.gallery?.[index]);
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
@@ -96,7 +98,7 @@ function RouteComponent() {
     const filteredGallery = gallery.filter(
       (item) => typeof item === "string" && item.length > 0,
     );
-    // Отправляем base64 только если пользователь выбрал новое фото
+
     const photoToSend =
       selectedFile && base64 && base64.startsWith("data:image/") ? base64 : "";
 
@@ -113,6 +115,21 @@ function RouteComponent() {
     });
   };
 
+  const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setGalleryFile(file);
+
+    if (galleryFile) {
+      if (galleryFile.name.toLowerCase().endsWith(".heic")) {
+        await convertHeicToPng(galleryFile);
+      }
+      const base64str = await convertToBase64(galleryFile);
+      setGallery([...gallery, base64str]);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -125,19 +142,6 @@ function RouteComponent() {
     }
     const base64str = await convertToBase64(fileToProcess);
     setBase64(base64str);
-  };
-
-  const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    let fileToProcess: File = file;
-
-    if (file.name.toLowerCase().endsWith(".heic")) {
-      fileToProcess = await convertHeicToPng(fileToProcess);
-    }
-    const base64str = await convertToBase64(fileToProcess);
-    setGallery([...gallery, base64str]);
   };
 
   console.log(user?.email);

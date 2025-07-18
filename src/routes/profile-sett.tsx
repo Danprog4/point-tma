@@ -119,15 +119,15 @@ function RouteComponent() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setGalleryFile(file);
+    let fileToProcess = file;
 
-    if (galleryFile) {
-      if (galleryFile.name.toLowerCase().endsWith(".heic")) {
-        await convertHeicToPng(galleryFile);
-      }
-      const base64str = await convertToBase64(galleryFile);
-      setGallery([...gallery, base64str]);
+    if (fileToProcess.name.toLowerCase().endsWith(".heic")) {
+      fileToProcess = await convertHeicToPng(fileToProcess);
     }
+
+    const base64str = await convertToBase64(fileToProcess);
+
+    setGallery((prev) => [...prev, base64str]);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -409,7 +409,11 @@ function RouteComponent() {
           <div className="flex flex-col p-4">
             <QuestCard
               quest={meeting?.isCustom ? meeting : (event as any)}
-              id={Number(id)}
+              id={meeting?.isCustom ? meeting.id : (event?.id as any)}
+              onClick={() => {
+                setIsClicked(true);
+              }}
+              isNavigable={false}
             />
             {!meeting?.isCustom
               ? event?.description && event.description.length > 100
@@ -422,10 +426,12 @@ function RouteComponent() {
               <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
                 + Достижение
               </div>
-              {event?.reward && (
+              {event?.reward ? (
                 <div className="flex items-center gap-1">
                   + {event?.reward} points <Coin />
                 </div>
+              ) : (
+                <div></div>
               )}
             </div>
             <div className="mt-4 flex items-center justify-between gap-6 text-white">

@@ -8,10 +8,14 @@ export function QuestCard({
   quest,
   isNavigable = true,
   id,
+
+  onClick,
 }: {
   quest?: Quest | any;
   isNavigable?: boolean;
   id?: number;
+
+  onClick?: () => void;
 }) {
   const navigate = useNavigate();
 
@@ -19,16 +23,19 @@ export function QuestCard({
     return null;
   }
 
-  const path = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
+  const pathUrl = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
   console.log(quest, "quest");
 
   return (
     <div
       className="flex items-start gap-4"
       onClick={() => {
+        if (onClick) {
+          onClick();
+        }
         if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
           navigate({
-            to: path,
+            to: pathUrl,
             params: {
               name: quest.isCustom ? quest.type : quest.category,
               id: quest.id.toString(),

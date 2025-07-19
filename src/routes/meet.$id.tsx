@@ -7,6 +7,7 @@ import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
 import { fakeUsers } from "~/config/fakeUsers";
 import { cn } from "~/lib/utils/cn";
+import { getAge } from "~/lib/utils/getAge";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
@@ -160,7 +161,7 @@ function RouteComponent() {
   const event = getEventData(eventType ?? "", eventId ?? 0);
   console.log(event, "event");
 
-  const age = new Date().getFullYear() - new Date(organizer?.birthday!).getFullYear();
+  const age = getAge(organizer?.birthday ?? undefined);
 
   const isOwner = useMemo(() => {
     return organizer?.id === user?.id;

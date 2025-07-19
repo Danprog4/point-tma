@@ -24,6 +24,7 @@ import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MenuItem } from "~/components/MenuItem";
 import { questsData } from "~/config/quests";
+import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
@@ -67,9 +68,7 @@ function RouteComponent() {
     return activeEvents?.filter((event) => event.type === "Квест") || [];
   }, [activeEvents]);
 
-  const userAge = user?.birthday
-    ? new Date().getFullYear() - new Date(user.birthday).getFullYear()
-    : user?.birthday;
+  const userAge = user?.birthday ? getAge(user.birthday) : undefined;
 
   const acceptRequestMutation = useMutation(trpc.friends.acceptRequest.mutationOptions());
   const declineRequestMutation = useMutation(

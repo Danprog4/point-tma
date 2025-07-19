@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { cn } from "~/lib/utils/cn";
+import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/user-profile/$id")({
@@ -122,7 +123,7 @@ function RouteComponent() {
     );
   }, [userSubscriptions, user?.id]);
 
-  const age = new Date().getFullYear() - new Date(user?.birthday!).getFullYear();
+  const age = getAge(user?.birthday ?? undefined);
 
   const isOwner = useMemo(() => {
     return user?.id === user?.id;

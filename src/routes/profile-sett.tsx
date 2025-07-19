@@ -6,6 +6,7 @@ import { PlusIcon } from "~/components/Icons/Plus";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { isHeicFile } from "~/lib/utils/isHeicFile";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/profile-sett")({
@@ -121,7 +122,7 @@ function RouteComponent() {
 
     let fileToProcess = file;
 
-    if (fileToProcess.name.toLowerCase().endsWith(".heic")) {
+    if (isHeicFile(fileToProcess)) {
       fileToProcess = await convertHeicToPng(fileToProcess);
     }
 
@@ -137,7 +138,7 @@ function RouteComponent() {
 
     let fileToProcess: File = file;
     // If file is HEIC, convert to PNG first
-    if (file.name.toLowerCase().endsWith(".heic")) {
+    if (isHeicFile(fileToProcess)) {
       fileToProcess = await convertHeicToPng(fileToProcess);
     }
     const base64str = await convertToBase64(fileToProcess);

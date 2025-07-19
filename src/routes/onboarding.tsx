@@ -55,7 +55,14 @@ function RouteComponent() {
   const LAST_STEP = TOTAL_CARDS + 1;
 
   const isHeicFile = (file: File): boolean => {
-    return file.name.toLowerCase().endsWith(".heic");
+    const ext = file.name.toLowerCase();
+    const mime = file.type.toLowerCase();
+    return (
+      ext.endsWith(".heic") ||
+      ext.endsWith(".heif") ||
+      mime === "image/heic" ||
+      mime === "image/heif"
+    );
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

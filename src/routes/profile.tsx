@@ -6,13 +6,17 @@ import {
   BarChart3,
   Calendar,
   Check,
+  ChevronLeft,
+  ChevronRight,
   History,
+  Maximize2,
   Package,
   Search,
   Settings,
   Star,
+  X as XIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 
@@ -34,6 +38,23 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
+  const [mainPhoto, setMainPhoto] = useState<string | undefined>(
+    user?.photo || undefined,
+  );
+  const [galleryPhotos, setGalleryPhotos] = useState<string[]>(user?.gallery ?? []);
+
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const allPhotos = useMemo(() => {
+    return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
+  }, [mainPhoto, galleryPhotos]);
+
+  useEffect(() => {
+    setMainPhoto(user?.photo || undefined);
+    setGalleryPhotos(user?.gallery ?? []);
+  }, [user]);
+
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
@@ -139,12 +160,21 @@ function RouteComponent() {
         <>
           <div className="relative">
             <div className="relative h-60">
-              {/* Level Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                <Maximize2
+                  className="h-6 w-6 cursor-pointer text-black drop-shadow"
+                  onClick={() => {
+                    setCurrentIndex(0);
+                    setIsFullScreen(true);
+                  }}
+                />
+              </div>
+
               <img
                 src={
-                  user?.photo?.startsWith("data:image/")
-                    ? user?.photo
-                    : getImageUrl(user?.photo || "")
+                  mainPhoto && mainPhoto.startsWith("data:image/")
+                    ? mainPhoto
+                    : getImageUrl(mainPhoto ?? "")
                 }
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
@@ -164,14 +194,22 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2 pt-8">
-                      {user?.gallery?.map((img, idx) => (
+                      {galleryPhotos.map((img, idx) => (
                         <img
                           key={idx}
                           src={
                             img?.startsWith("data:image/") ? img : getImageUrl(img || "")
                           }
                           alt=""
-                          className="h-12 w-12 rounded-lg object-cover"
+                          className="h-12 w-12 cursor-pointer rounded-lg object-cover"
+                          onClick={() => {
+                            setGalleryPhotos((prev) => {
+                              const newGallery = prev.filter((i) => i !== img);
+                              if (mainPhoto) newGallery.push(mainPhoto);
+                              return newGallery;
+                            });
+                            setMainPhoto(img);
+                          }}
                         />
                       ))}
                     </div>
@@ -484,6 +522,45 @@ function RouteComponent() {
             )}
           </div>
         </>
+      )}
+
+      {isFullScreen && allPhotos.length > 0 && (
+        <div className="bg-opacity-90 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          {/* Left arrow */}
+          {allPhotos.length > 1 && (
+            <ChevronLeft
+              className="absolute left-4 h-10 w-10 cursor-pointer text-white"
+              onClick={() =>
+                setCurrentIndex(
+                  (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
+                )
+              }
+            />
+          )}
+
+          {(() => {
+            const imgSrc = allPhotos[currentIndex];
+            return (
+              <img
+                src={imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)}
+                alt="Full view"
+                className="max-h-full max-w-full object-contain"
+              />
+            );
+          })()}
+
+          {allPhotos.length > 1 && (
+            <ChevronRight
+              className="absolute right-4 h-10 w-10 cursor-pointer text-white"
+              onClick={() => setCurrentIndex((prev) => (prev + 1) % allPhotos.length)}
+            />
+          )}
+
+          <XIcon
+            className="absolute top-4 right-4 h-8 w-8 cursor-pointer text-white"
+            onClick={() => setIsFullScreen(false)}
+          />
+        </div>
       )}
     </div>
   );

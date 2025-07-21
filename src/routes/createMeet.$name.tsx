@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useParams,
+  useSearch,
+} from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Step1 } from "~/components/createMeet/Step1";
@@ -16,6 +21,14 @@ export const Route = createFileRoute("/createMeet/$name")({
 });
 
 function RouteComponent() {
+  const search = useSearch({ from: "/createMeet/$name" }) as {
+    step?: number;
+    isExtra?: boolean;
+    isBasic?: boolean;
+    typeOfEvent?: string;
+    item?: any;
+  };
+  console.log({ search }, "search");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
@@ -29,9 +42,10 @@ function RouteComponent() {
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
   const { name } = useParams({ from: "/createMeet/$name" });
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState((search as any).step || 0);
+  const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
   const emoji = eventTypes.find((e) => e.name === name)?.emoji;
-  const isBasic = name !== "Совместное посещение";
+  const isBasic = search.isExtra ? false : name !== "Совместное посещение";
   const [type, setType] = useState("");
   const isDisabled = !title && !description;
   const isDisabled2 = !title2 && !description2;
@@ -142,13 +156,17 @@ function RouteComponent() {
           base64={base64}
           setBase64={setBase64}
           isHeicFile={isHeicFile}
+          isExtra={isExtra}
+          setIsExtra={setIsExtra}
+          typeOfEvent={search.typeOfEvent || ""}
+          item={search.item}
         />
       )}
       {step === 1 && (
         <Step2
           name={name}
           isBasic={isBasic}
-          item={selectedItem}
+          item={selectedItem || search.item}
           title={title}
           description={description}
           setTitle={setTitle}
@@ -172,7 +190,7 @@ function RouteComponent() {
         <Step4
           name={name}
           isBasic={isBasic}
-          item={selectedItem}
+          item={selectedItem || search.item}
           reward={reward}
           setReward={setReward}
         />
@@ -182,15 +200,15 @@ function RouteComponent() {
         <Step5
           isLoading={createMeeting.isPending}
           name={name}
-          type={type || name}
-          item={selectedItem}
+          type={type || name || search.typeOfEvent || ""}
+          item={selectedItem || search.item}
           eventType={name}
           isBasic={isBasic}
           title2={title2}
           description2={description2}
           reward={reward}
           setReward={setReward}
-          base64={base64}
+          base64={base64 || search.item?.image || selectedItem?.image}
         />
       )}
 
@@ -229,7 +247,7 @@ function RouteComponent() {
         </div>
       ) : (
         !createMeeting.isPending &&
-        (isBasic ? (
+        isBasic && (
           <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
             <button className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
               Пригласить знакомых
@@ -241,13 +259,14 @@ function RouteComponent() {
               Перейти в мои встречи
             </button>
           </div>
-        ) : (
-          <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
-            <button onClick={() => navigate({ to: "/meetings" })}>
-              Вернуться во встречи
-            </button>
-          </div>
-        ))
+        )
+      )}
+      {step === 1 && (
+        <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
+          <button onClick={() => navigate({ to: "/meetings" })}>
+            Вернуться во встречи
+          </button>
+        </div>
       )}
     </div>
   );

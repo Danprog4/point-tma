@@ -31,6 +31,10 @@ export const Step1 = ({
   base64,
   setBase64,
   isHeicFile,
+  isExtra,
+  setIsExtra,
+  typeOfEvent,
+  item,
 }: {
   name: string;
   isBasic: boolean;
@@ -51,8 +55,11 @@ export const Step1 = ({
   base64: string;
   setBase64: (base64: string) => void;
   isHeicFile: (file: File) => boolean;
+  isExtra: boolean;
+  setIsExtra: (isExtra: boolean) => void;
+  typeOfEvent: string;
+  item: any;
 }) => {
-  const [isExtra, setIsExtra] = useState(false);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -110,6 +117,7 @@ export const Step1 = ({
 
     setBase64(base64);
   };
+  console.log(isExtra, "isExtra");
 
   return (
     <>
@@ -156,7 +164,12 @@ export const Step1 = ({
           </div>
         </>
       ) : isExtra ? (
-        <ExtraStep1 item={selectedItem} type={type} setType={setType} setStep={setStep} />
+        <ExtraStep1
+          item={selectedItem || item}
+          type={typeOfEvent || type}
+          setType={setType}
+          setStep={setStep}
+        />
       ) : (
         <div className="overflow-y-auto">
           <div className="scrollbar-hidden mb-4 flex items-center justify-center gap-6">

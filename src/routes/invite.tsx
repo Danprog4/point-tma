@@ -48,6 +48,8 @@ function RouteComponent() {
     default:
       data = [];
   }
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [typeOfEvent, setTypeOfEvent] = useState<string>("");
 
   return (
     <div className="flex flex-col">
@@ -104,7 +106,24 @@ function RouteComponent() {
             </div>
             <div className="grid grid-cols-2 gap-2 px-4">
               {data.map((item, index) => (
-                <div key={index}>
+                <div
+                  key={index}
+                  onClick={() => {
+                    setSelectedItem(item);
+                    setTypeOfEvent(item.category);
+                    navigate({
+                      to: "/createMeet/$name",
+                      params: { name: item.title },
+                      search: {
+                        step: 0,
+                        isExtra: true,
+                        isBasic: false,
+                        typeOfEvent: typeOfEvent,
+                        item: item,
+                      },
+                    });
+                  }}
+                >
                   <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
                     <img
                       src={item.image}

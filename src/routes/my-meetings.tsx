@@ -31,7 +31,7 @@ function RouteComponent() {
         (request) =>
           request.status === "pending" &&
           !request.isCreator &&
-          request.fromUserId === user?.id,
+          request.toUserId === user?.id,
       )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
@@ -47,7 +47,7 @@ function RouteComponent() {
         (request) =>
           request.status === "pending" &&
           request.toUserId === user?.id &&
-          request.fromUserId !== user?.id,
+          request.isCreator,
       )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
@@ -200,7 +200,7 @@ function RouteComponent() {
                     ? request.event.description.slice(0, 100) + "..."
                     : request.event?.description}
                 </p>
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex items-center justify-between px-4">
                   {request.event?.hasAchievement && (
                     <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
                       + Достижение
@@ -224,7 +224,7 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-4">
+              <div className="mt-4 flex items-center justify-center gap-4 px-4">
                 <div
                   className="rounded-2xl px-4 py-2 text-black"
                   onClick={() => handleDeclineRequest(request)}
@@ -247,7 +247,7 @@ function RouteComponent() {
         <div className="flex flex-col gap-4">
           {requestsWithInfo?.map((request) => (
             <div key={request?.id}>
-              <div className="flex items-center justify-start gap-2 px-4">
+              <div className="flex items-center justify-start gap-2">
                 <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
                 <div className="flex h-full w-full flex-col items-start justify-between gap-2">
                   <div className="text-lg">{request.event?.title}</div>
@@ -257,7 +257,7 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-4">
+              <div className="flex items-center justify-between px-4 py-4">
                 <div className="flex items-center justify-start gap-2">
                   <div className="mr-4 p-2" onClick={() => handleDeclineRequest(request)}>
                     <CloseRed />

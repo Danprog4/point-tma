@@ -161,38 +161,49 @@ function RouteComponent() {
         <div className="flex flex-col gap-4 px-4">
           {invitesWithInfo?.map((request) => (
             <div key={request?.id}>
-              <div className="flex items-center justify-start gap-2 px-4">
-                <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
-                <div className="flex h-full w-full flex-col items-start justify-between gap-2">
-                  <div className="text-lg">{request.event?.title}</div>
-                  <div className="rounded-2xl bg-blue-500 px-1 text-white">
-                    {request.event?.type}
+              <div className="px-4">
+                <div className="flex items-center gap-2 pb-2">
+                  <img
+                    src={getImageUrl(request.user?.photo || request.user?.photoUrl || "")}
+                    alt=""
+                    className="h-10 w-10 rounded-full"
+                  />
+                  {request.user?.name} {request.user?.surname} приглашает
+                </div>
+                <QuestCard quest={request.event || ({} as Quest)} isNavigable={true} />
+                <p className="my-2 text-xs leading-4 text-black">
+                  {request.event?.description && request.event.description.length > 100
+                    ? request.event.description.slice(0, 100) + "..."
+                    : request.event?.description}
+                </p>
+                <div className="mb-6 flex items-center justify-between">
+                  {request.event?.hasAchievement && (
+                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                      + Достижение
+                    </span>
+                  )}
+                  <div className="ml-auto flex items-center gap-1">
+                    <span className="text-base font-medium text-black">
+                      + {request.event?.reward?.toLocaleString()}
+                    </span>
+                    <span className="text-base font-medium text-black">points</span>
+                    <Coin />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-4">
-                <div className="flex items-center justify-start gap-2">
-                  <div className="mr-4 p-2" onClick={() => handleDeclineRequest(request)}>
-                    <CloseRed />
-                  </div>
-                  <img
-                    src={getImageUrl(request.user?.photo || "")}
-                    alt=""
-                    className="h-14 w-14 rounded-lg"
-                  />
-                  <div className="flex flex-col items-start justify-between gap-2">
-                    <div className="text-lg">
-                      {request.user?.name} {request.user?.surname}
-                    </div>
-                    <div>{request.user?.birthday}</div>
-                  </div>
+              <div className="mt-4 flex items-center justify-center gap-4">
+                <div
+                  className="rounded-2xl px-4 py-2 text-black"
+                  onClick={() => handleDeclineRequest(request)}
+                >
+                  Отказать
                 </div>
                 <div
-                  className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                  className="flex flex-1 justify-center rounded-2xl bg-[#9924FF] px-4 py-2 text-center text-white"
                   onClick={() => handleAcceptRequest(request)}
                 >
-                  <Check />
+                  Присоединиться
                 </div>
               </div>
             </div>

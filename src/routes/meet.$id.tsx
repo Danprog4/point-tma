@@ -29,6 +29,7 @@ function RouteComponent() {
   const [page, setPage] = useState("info");
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [isGalleryClicked, setIsGalleryClicked] = useState(false);
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { id } = Route.useParams();
@@ -470,37 +471,49 @@ function RouteComponent() {
           </div>
           <div className="mb-4 px-4 text-2xl font-bold">Организатор</div>
           <div className="relative">
-            <div className="absolute top-5 right-12 left-6 z-10">
-              <Maximize2
-                className="h-6 w-6 cursor-pointer text-white drop-shadow"
-                onClick={() => {
-                  setCurrentPhotoIndex(0);
-                  setIsGalleryFullScreen(true);
-                }}
-              />
-            </div>
             <div className="relative h-[30vh] rounded-t-2xl">
+              <div className="absolute top-5 right-12 left-6 z-10">
+                <Maximize2
+                  className="h-6 w-6 cursor-pointer text-white drop-shadow"
+                  onClick={() => {
+                    setCurrentPhotoIndex(0);
+                    setIsGalleryFullScreen(true);
+                  }}
+                />
+              </div>
+
               <img
                 src={
-                  organizer?.photo
-                    ? getImageUrl(organizer?.photo)
-                    : organizer?.photoUrl || ""
+                  mainPhoto
+                    ? getImageUrl(mainPhoto)
+                    : user?.photo
+                      ? getImageUrl(user?.photo ?? "")
+                      : user?.photoUrl || ""
                 }
-                alt={organizer?.name || ""}
+                alt={user?.name || ""}
                 className="h-full w-full rounded-t-2xl object-cover"
+                onClick={() => setIsGalleryClicked(!isGalleryClicked)}
               />
-              <div className="absolute bottom-4 left-4">
-                <div className="relative">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
-                    <span className="text-xl font-bold text-white">1</span>
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 transform">
-                    <div className="rounded bg-purple-600 px-2 py-1 text-xs font-bold text-white">
-                      Уровень
-                    </div>
-                  </div>
+              {isGalleryClicked && (
+                <div className="absolute bottom-2 left-4 flex gap-2 overflow-x-auto pt-8">
+                  {galleryPhotos.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
+                      alt=""
+                      className="h-12 w-12 cursor-pointer rounded-lg object-cover"
+                      onClick={() => {
+                        setGalleryPhotos((prev) => {
+                          const newGallery = prev.filter((i) => i !== img);
+                          if (mainPhoto) newGallery.push(mainPhoto);
+                          return newGallery;
+                        });
+                        setMainPhoto(img);
+                      }}
+                    />
+                  ))}
                 </div>
-              </div>
+              )}
 
               <div className="absolute top-4 right-4">
                 <button

@@ -13,6 +13,7 @@ import { More } from "~/components/More";
 import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
+import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { useActivate } from "~/hooks/useActivate";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -36,6 +37,7 @@ function RouteComponent() {
   const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
   const [page, setPage] = useState("info");
   const { name, id } = Route.useParams();
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const meeting = meetings?.find((event) => event.id === Number(id));
@@ -119,10 +121,7 @@ function RouteComponent() {
       return;
     }
 
-    endQuest.mutate({
-      id: Number(id),
-      name,
-    });
+    setIsReviewOpen(true);
 
     setIsCompleted(true);
   };
@@ -515,6 +514,14 @@ function RouteComponent() {
             ))}
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
         </div>
+      )}
+      {isReviewOpen && (
+        <ReviewEventDrawer
+          open={isReviewOpen}
+          onOpenChange={setIsReviewOpen}
+          id={Number(id)}
+          name={name}
+        />
       )}
     </div>
   );

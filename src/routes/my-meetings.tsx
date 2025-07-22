@@ -27,18 +27,28 @@ function RouteComponent() {
 
   const requestsWithInfo = useMemo(() => {
     return requests
-      ?.filter((request) => request.status === "pending" && !request.isCreator)
+      ?.filter(
+        (request) =>
+          request.status === "pending" &&
+          !request.isCreator &&
+          request.fromUserId === user?.id,
+      )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
         const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
-        const user = users?.find((user) => user.id === request.fromUserId);
-        return { ...request, event, user };
+        const toUser = users?.find((user) => user.id === request.toUserId);
+        return { ...request, event, user: toUser };
       });
-  }, [requests, meetings]);
+  }, [requests, meetings, user?.id]);
 
   const invitesWithInfo = useMemo(() => {
     return requests
-      ?.filter((request) => request.status === "pending" && request.toUserId === user?.id)
+      ?.filter(
+        (request) =>
+          request.status === "pending" &&
+          request.toUserId === user?.id &&
+          request.fromUserId !== user?.id,
+      )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
         const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);

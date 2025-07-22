@@ -27,6 +27,7 @@ function RouteComponent() {
     isBasic?: boolean;
     typeOfEvent?: string;
     item?: any;
+    id?: string;
   };
   console.log({ search }, "search");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -78,8 +79,13 @@ function RouteComponent() {
   };
 
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
+  const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
   const handleCreateMeeting = () => {
-    const idOfEvent = selectedItem?.id;
+    // предотвращаем повторный вызов
+    if (createMeeting.isPending || createMeeting.isSuccess) return;
+    const idOfEvent = selectedItem?.id ?? (search.item as any)?.id;
+
+    const finalTypeOfEvent = typeOfEvent || (search.typeOfEvent as string) || "";
 
     createMeeting.mutate(
       {
@@ -87,15 +93,24 @@ function RouteComponent() {
         description: description || description2,
         type: type || name,
         idOfEvent,
-        typeOfEvent,
+        typeOfEvent: finalTypeOfEvent,
         isCustom: isBasic,
         participants: participants || 0,
         location,
         reward: reward || 0,
         image: base64,
+        invitedId: search.id,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
+          // Если был передан id пользователя для приглашения – рассылаем инвайт
+          if (search?.id) {
+            inviteUsers.mutate({
+              meetId: data.id,
+              userIds: [Number(search.id)],
+            });
+          }
+
           queryClient.invalidateQueries({
             queryKey: trpc.meetings.getMeetings.queryKey(),
           });

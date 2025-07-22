@@ -14,8 +14,8 @@ export const meetingRouter = createTRPCRouter({
         name: z.string(),
         description: z.string(),
         type: z.string().optional(),
-        invited: z.array(z.string()).optional(),
 
+        invitedId: z.string().optional(),
         idOfEvent: z.number().optional(),
         typeOfEvent: z.string().optional(),
         isCustom: z.boolean().optional(),
@@ -30,8 +30,8 @@ export const meetingRouter = createTRPCRouter({
         name,
         description,
         type,
-        invited,
 
+        invitedId,
         idOfEvent,
         typeOfEvent,
         participants,
@@ -56,20 +56,33 @@ export const meetingRouter = createTRPCRouter({
         imageUrl = await uploadBase64Image(image);
       }
 
-      const meet = await db.insert(meetTable).values({
-        name,
-        description,
-        type,
-        invited,
+      // 1. Создаём встречу и сразу получаем её id через returning()
+      const [meet] = await db
+        .insert(meetTable)
+        .values({
+          name,
+          description,
+          type,
 
-        idOfEvent,
-        typeOfEvent,
-        userId: user.id,
-        participants,
-        location,
-        reward,
-        image: imageUrl,
-        isCustom,
+          invitedId,
+          idOfEvent,
+          typeOfEvent,
+          userId: user.id,
+          participants,
+          location,
+          reward,
+          image: imageUrl,
+          isCustom,
+        })
+        .returning();
+
+      // 2. Добавляем автора как участника (accepted, isCreator = true)
+      await db.insert(meetParticipantsTable).values({
+        fromUserId: user.id,
+        toUserId: user.id,
+        meetId: meet.id,
+        status: "accepted",
+        isCreator: true,
       });
 
       return meet;
@@ -81,6 +94,57 @@ export const meetingRouter = createTRPCRouter({
     const meetings = await db.query.meetTable.findMany({});
 
     return meetings;
+  }),
+
+  // ---------------------------------------------------------------------------
+  // Приглашение пользователей на уже созданную встречу
+  // ---------------------------------------------------------------------------
+
+  inviteUsers: procedure
+    .input(
+      z.object({
+        meetId: z.number(),
+        userIds: z.array(z.number()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, userIds } = input;
+
+      // Проверяем, что текущий пользователь является создателем встречи
+      const meet = await db.query.meetTable.findFirst({
+        where: eq(meetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      if (meet.userId !== ctx.userId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "You are not owner" });
+      }
+
+      const rows = userIds.map((toUserId) => ({
+        fromUserId: ctx.userId,
+        toUserId,
+        meetId,
+        status: "pending" as const,
+      }));
+
+      if (rows.length) {
+        await db.insert(meetParticipantsTable).values(rows).onConflictDoNothing(); // избегаем дубликатов
+      }
+
+      return { ok: true };
+    }),
+
+  // Список входящих приглашений (pending)
+  getInvites: procedure.query(async ({ ctx }) => {
+    return db.query.meetParticipantsTable.findMany({
+      where: and(
+        eq(meetParticipantsTable.toUserId, ctx.userId),
+        eq(meetParticipantsTable.status, "pending"),
+      ),
+    });
   }),
 
   getMeetingsWithEvents: procedure.query(async ({ ctx }) => {

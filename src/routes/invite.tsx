@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { conferencesData } from "~/config/conf";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/invite")({
 });
 
 function RouteComponent() {
+  const search = useSearch({ from: "/invite" }) as { id: string };
   const navigate = useNavigate();
   const [isCustom, setIsCustom] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<string>("Все");
@@ -118,8 +119,9 @@ function RouteComponent() {
                         step: 0,
                         isExtra: true,
                         isBasic: false,
-                        typeOfEvent: typeOfEvent,
-                        item: item,
+                        typeOfEvent: item.category,
+                        item,
+                        id: search.id,
                       },
                     });
                   }}

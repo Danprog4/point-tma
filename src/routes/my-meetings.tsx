@@ -27,7 +27,7 @@ function RouteComponent() {
 
   const requestsWithInfo = useMemo(() => {
     return requests
-      ?.filter((request) => request.status === "pending")
+      ?.filter((request) => request.status === "pending" && !request.isCreator)
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
         const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
@@ -35,6 +35,17 @@ function RouteComponent() {
         return { ...request, event, user };
       });
   }, [requests, meetings]);
+
+  const invitesWithInfo = useMemo(() => {
+    return requests
+      ?.filter((request) => request.status === "pending" && request.toUserId === user?.id)
+      ?.map((request) => {
+        const meeting = meetings?.find((m) => m.id === request.meetId);
+        const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
+        const fromUser = users?.find((user) => user.id === request.fromUserId);
+        return { ...request, event, user: fromUser };
+      });
+  }, [requests, meetings, user?.id]);
 
   const meetingsWithEvents = meetings?.map((meeting) => {
     const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
@@ -111,7 +122,14 @@ function RouteComponent() {
                     isNavigable={true}
                   />
                   <p className="mb-4 text-xs leading-4 text-black">
-                    {quest?.isCustom ? quest?.description : quest?.event?.description}
+                    {(() => {
+                      const description = quest?.isCustom
+                        ? quest?.description
+                        : quest?.event?.description;
+                      return description && description.length > 100
+                        ? description.slice(0, 100) + "..."
+                        : description;
+                    })()}
                   </p>
                   <div className="mb-6 flex items-center justify-between">
                     {quest?.event?.hasAchievement ? (
@@ -139,7 +157,48 @@ function RouteComponent() {
         </div>
       )}
 
-      {activeFilter === "Приглашения" && <div className="flex flex-col gap-4 px-4"></div>}
+      {activeFilter === "Приглашения" && (
+        <div className="flex flex-col gap-4 px-4">
+          {invitesWithInfo?.map((request) => (
+            <div key={request?.id}>
+              <div className="flex items-center justify-start gap-2 px-4">
+                <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
+                <div className="flex h-full w-full flex-col items-start justify-between gap-2">
+                  <div className="text-lg">{request.event?.title}</div>
+                  <div className="rounded-2xl bg-blue-500 px-1 text-white">
+                    {request.event?.type}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-4">
+                <div className="flex items-center justify-start gap-2">
+                  <div className="mr-4 p-2" onClick={() => handleDeclineRequest(request)}>
+                    <CloseRed />
+                  </div>
+                  <img
+                    src={getImageUrl(request.user?.photo || "")}
+                    alt=""
+                    className="h-14 w-14 rounded-lg"
+                  />
+                  <div className="flex flex-col items-start justify-between gap-2">
+                    <div className="text-lg">
+                      {request.user?.name} {request.user?.surname}
+                    </div>
+                    <div>{request.user?.birthday}</div>
+                  </div>
+                </div>
+                <div
+                  className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                  onClick={() => handleAcceptRequest(request)}
+                >
+                  <Check />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {activeFilter === "Заявки" && (
         <div className="flex flex-col gap-4 px-4">

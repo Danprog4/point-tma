@@ -36,8 +36,7 @@ export const meetTable = pgTable("meets", {
   name: varchar("name", { length: 255 }),
   description: varchar("description", { length: 255 }),
   type: varchar("type", { length: 255 }),
-  invited: jsonb("invited").$type<string[]>(),
-
+  invitedId: jsonb("invitedId").$type<string>(),
   participants: integer("participants"),
   location: varchar("location", { length: 255 }),
   reward: integer("reward"),
@@ -55,6 +54,7 @@ export const meetParticipantsTable = pgTable("meet_participants", {
   toUserId: bigint("to_user_id", { mode: "number" }),
   status: varchar("status", { length: 32 }).default("pending"), // pending, accepted, rejected
   meetId: bigint("meet_id", { mode: "number" }),
+  isCreator: boolean("is_creator").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

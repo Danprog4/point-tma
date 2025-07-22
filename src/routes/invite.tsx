@@ -1,22 +1,32 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { Coin } from "~/components/Icons/Coin";
+import { QuestCard } from "~/components/QuestCard";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
+import { getEventData } from "~/lib/utils/getEventData";
+import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
+import { Quest } from "~/types/quest";
 export const Route = createFileRoute("/invite")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const trpc = useTRPC();
+  const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const search = useSearch({ from: "/invite" }) as { id: string };
   const navigate = useNavigate();
-  const [isCustom, setIsCustom] = useState<boolean>(false);
+  const [type, setType] = useState<string>("Готовые");
   const [activeFilter, setActiveFilter] = useState<string>("Все");
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [typeOfEvent, setTypeOfEvent] = useState<string>("");
 
   let data: any[] = [];
 
@@ -49,8 +59,13 @@ function RouteComponent() {
     default:
       data = [];
   }
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [typeOfEvent, setTypeOfEvent] = useState<string>("");
+  const meetingsWithEvents = meetings?.map((meeting) => {
+    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+    return {
+      ...meeting,
+      event,
+    };
+  });
 
   return (
     <div className="flex flex-col">
@@ -70,25 +85,39 @@ function RouteComponent() {
       </div>
 
       <div className="pt-14">
-        <div className="mb-4 flex w-full items-center gap-6 overflow-x-auto px-4">
+        <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto px-4">
           <button
-            onClick={() => setIsCustom(false)}
+            onClick={() => setType("Готовые")}
             className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-              !isCustom ? "bg-black text-white" : "border-gray-200 bg-white text-black"
+              type === "Готовые"
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
             }`}
           >
             Выбрать
           </button>
           <button
-            onClick={() => setIsCustom(true)}
+            onClick={() => setType("Кастомные")}
             className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-              isCustom ? "bg-black text-white" : "border-gray-200 bg-white text-black"
+              type === "Кастомные"
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
             }`}
           >
             Создать свою встречу
           </button>
+          <button
+            onClick={() => setType("Мои встречи")}
+            className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              type === "Мои встречи"
+                ? "bg-black text-white"
+                : "border-gray-200 bg-white text-black"
+            }`}
+          >
+            Мои встречи
+          </button>
         </div>
-        {!isCustom ? (
+        {type === "Готовые" && (
           <>
             <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto px-4">
               {filters.map((filter, index) => (
@@ -150,7 +179,8 @@ function RouteComponent() {
               ))}
             </div>
           </>
-        ) : (
+        )}
+        {type === "Кастомные" && (
           <div className="flex-1 rounded-t-[16px] bg-white p-4">
             <div className="min-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
               {eventTypes.map((eventType, index) => (
@@ -179,6 +209,65 @@ function RouteComponent() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+        {type === "Мои встречи" && (
+          <div className="flex flex-col gap-4">
+            {meetingsWithEvents
+              ?.sort(
+                (a, b) =>
+                  new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+              )
+              .map((quest: any) => (
+                <div key={quest?.id}>
+                  <div className="px-4">
+                    <QuestCard
+                      quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
+                      isNavigable={true}
+                    />
+                    <p className="mb-4 text-xs leading-4 text-black">
+                      {(() => {
+                        const description = quest?.isCustom
+                          ? quest?.description
+                          : quest?.event?.description;
+                        return description && description.length > 100
+                          ? description.slice(0, 100) + "..."
+                          : description;
+                      })()}
+                    </p>
+                    <div className="mb-6 flex items-center justify-between">
+                      {quest?.event?.hasAchievement ? (
+                        <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                          + Достижение
+                        </span>
+                      ) : (
+                        <div></div>
+                      )}
+                      {(quest?.event as any)?.rewards?.find(
+                        (r: any) => r.type === "point",
+                      ) ? (
+                        <div className="ml-auto flex items-center gap-1">
+                          <span className="text-base font-medium text-black">
+                            +
+                            {(quest?.event as any)?.rewards
+                              ?.find((r: any) => r.type === "point")
+                              ?.value?.toLocaleString() || 0}
+                          </span>
+                          <span>
+                            {(quest?.event as any)?.rewards
+                              ?.filter((r: any) => r.type === "text")
+                              .map((r: any) => <span key={r.value}>{r.value}</span>)}
+                          </span>
+                          <span className="text-base font-medium text-black">points</span>
+                          <Coin />
+                        </div>
+                      ) : (
+                        <div></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
           </div>
         )}
       </div>

@@ -112,7 +112,7 @@ function RouteComponent() {
         ))}
       </div>
       {activeFilter === "Мои встречи" && (
-        <div className="flex flex-col gap-4 px-4">
+        <div className="flex flex-col gap-4">
           {meetingsWithEvents
             ?.sort(
               (a, b) =>
@@ -172,7 +172,7 @@ function RouteComponent() {
       )}
 
       {activeFilter === "Приглашения" && (
-        <div className="flex flex-col gap-4 px-4">
+        <div className="flex flex-col gap-4">
           {invitesWithInfo?.map((request) => (
             <div key={request?.id}>
               <div className="px-4">
@@ -234,7 +234,7 @@ function RouteComponent() {
       )}
 
       {activeFilter === "Заявки" && (
-        <div className="flex flex-col gap-4 px-4">
+        <div className="flex flex-col gap-4">
           {requestsWithInfo?.map((request) => (
             <div key={request?.id}>
               <div className="flex items-center justify-start gap-2 px-4">

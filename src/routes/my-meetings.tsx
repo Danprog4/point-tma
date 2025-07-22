@@ -72,7 +72,11 @@ function RouteComponent() {
     });
   };
 
-  const filters = ["Мои встречи", "Приглашения", "Заявки"];
+  const filters = [
+    { name: "Мои встречи", count: meetingsWithEvents?.length || 0 },
+    { name: "Приглашения", count: invitesWithInfo?.length || 0 },
+    { name: "Заявки", count: requestsWithInfo?.length || 0 },
+  ];
 
   console.log(JSON.stringify(meetings), "meetingsWithEvents");
 
@@ -95,15 +99,15 @@ function RouteComponent() {
       <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-10 overflow-x-auto px-4">
         {filters.map((filter) => (
           <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
+            key={filter.name}
+            onClick={() => setActiveFilter(filter.name)}
             className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-              activeFilter === filter
+              activeFilter === filter.name
                 ? "bg-black text-white"
                 : "border-gray-200 bg-white text-black"
             }`}
           >
-            {filter}
+            {filter.name} ({filter.count})
           </button>
         ))}
       </div>

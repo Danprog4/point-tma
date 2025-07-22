@@ -26,6 +26,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { id } = Route.useParams();
+  const { data: me } = useQuery(trpc.main.getUser.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const user = users?.find((user) => user.id === Number(id));
 
@@ -367,6 +368,21 @@ function RouteComponent() {
             className="absolute top-4 right-4 h-8 w-8 cursor-pointer text-white"
             onClick={() => setIsFullScreen(false)}
           />
+        </div>
+      )}
+      {user?.id !== me?.id && (
+        <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
+          <div
+            onClick={() =>
+              navigate({
+                to: "/invite",
+                search: { id: user?.id!.toString()! },
+              })
+            }
+            className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
+          >
+            Пригласить
+          </div>
         </div>
       )}
     </div>

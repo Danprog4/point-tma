@@ -26,6 +26,7 @@ export const Route = createFileRoute("/meet/$id")({
 
 function RouteComponent() {
   useScroll();
+
   const [page, setPage] = useState("info");
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -34,13 +35,17 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: allParticipants } = useQuery(
+    trpc.meetings.getParticipants.queryOptions(),
+  );
+
   const { data: userSubscriptions } = useQuery(
     trpc.main.getUserSubscriptions.queryOptions(),
   );
 
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
 
   const meetingsWithEvents = meetingsData?.map((meeting) => {
     const organizer = users?.find((u) => u.id === meeting.userId);
@@ -74,6 +79,9 @@ function RouteComponent() {
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(
     organizer?.photo || undefined,
   );
+
+  const organizerId = meeting?.userId; // id создателя встречи
+
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>(organizer?.gallery ?? []);
   const [isGalleryFullScreen, setIsGalleryFullScreen] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -415,21 +423,36 @@ function RouteComponent() {
             </>
           ) : (
             <div className="flex flex-col">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex flex-col gap-2 px-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-full bg-gray-200"></div>
-                      <div className="flex flex-col">
-                        <div className="text-lg font-bold">Сергей</div>
-                        <div className="text-sm text-gray-500">участник</div>
+              {meeting?.participantsIds?.map((p) => {
+                const user = users?.find((u) => u.id === Number(p));
+                return (
+                  <div key={p} className="flex flex-col gap-2 px-4 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-10 w-10 rounded-full bg-gray-200">
+                          <img
+                            src={
+                              user?.photo
+                                ? getImageUrl(user?.photo)
+                                : user?.photoUrl || ""
+                            }
+                            alt={user?.name || ""}
+                            className="h-10 w-10 rounded-full"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="text-lg font-bold">
+                            {user?.name} {user?.surname}
+                          </div>
+                          <div className="text-sm text-gray-500">участник</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="h-0.5 w-full bg-gray-200"></div>
-                </div>
-              ))}
+                    <div className="h-0.5 w-full bg-gray-200"></div>
+                  </div>
+                );
+              })}
             </div>
           )}
           <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">

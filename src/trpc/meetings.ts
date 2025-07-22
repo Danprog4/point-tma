@@ -56,19 +56,17 @@ export const meetingRouter = createTRPCRouter({
         imageUrl = await uploadBase64Image(image);
       }
 
-      // 1. Создаём встречу и сразу получаем её id через returning()
       const [meet] = await db
         .insert(meetTable)
         .values({
-          name,
           description,
           type,
 
-          invitedId,
+          participantsIds: invitedId ? [invitedId] : [],
           idOfEvent,
           typeOfEvent,
           userId: user.id,
-          participants,
+
           location,
           reward,
           image: imageUrl,
@@ -76,7 +74,6 @@ export const meetingRouter = createTRPCRouter({
         })
         .returning();
 
-      // 2. Добавляем автора как участника (accepted, isCreator = true)
       await db.insert(meetParticipantsTable).values({
         fromUserId: user.id,
         toUserId: user.id,
@@ -296,6 +293,26 @@ export const meetingRouter = createTRPCRouter({
           ),
         );
 
+      const meet = await db.query.meetTable.findFirst({
+        where: eq(meetTable.id, input.meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const newParticipantsIds = [
+        ...(meet.participantsIds || []),
+        input.fromUserId.toString(),
+      ];
+
+      await db
+        .update(meetTable)
+        .set({
+          participantsIds: newParticipantsIds,
+        })
+        .where(eq(meetTable.id, input.meetId));
+
       return request;
     }),
 
@@ -312,6 +329,23 @@ export const meetingRouter = createTRPCRouter({
             eq(meetParticipantsTable.meetId, id),
           ),
         );
+
+      const meet = await db.query.meetTable.findFirst({
+        where: eq(meetTable.id, id),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const newParticipantsIds = meet.participantsIds?.filter(
+        (id) => id !== ctx.userId.toString(),
+      );
+
+      await db
+        .update(meetTable)
+        .set({ participantsIds: newParticipantsIds })
+        .where(eq(meetTable.id, id));
 
       return request;
     }),

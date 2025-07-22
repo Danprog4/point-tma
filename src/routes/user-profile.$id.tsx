@@ -189,35 +189,26 @@ function RouteComponent() {
               ))}
             </div>
           )}
-          <div className="absolute bottom-4 left-4">
-            <div className="relative">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
-                <span className="text-xl font-bold text-white">1</span>
-              </div>
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 transform">
-                <div className="rounded bg-purple-600 px-2 py-1 text-xs font-bold text-white">
-                  Уровень
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute top-4 right-4">
-            <button
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-              onClick={() => handleToFavorites()}
-            >
-              <Heart className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")} />
-            </button>
-          </div>
+          <div className="absolute bottom-4 left-4"></div>
         </div>
       </div>
-      <div className="mt-2 flex flex-col items-center justify-center">
-        <div className="text-2xl font-bold">
-          {user?.name} {user?.surname}
+      <div className="flex items-center justify-between gap-4 px-4">
+        <div className="h-8 w-8"></div>
+        <div className="mt-2 flex flex-col items-center justify-center">
+          <div className="text-2xl font-bold">
+            {user?.name} {user?.surname}
+          </div>
+          <div className="text-sm text-gray-500">
+            {user?.city}, {age || "не указано"}
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          {user?.city}, {age || "не указано"}
+        <div className="">
+          <button
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+            onClick={() => handleToFavorites()}
+          >
+            <Heart className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")} />
+          </button>
         </div>
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 text-white">

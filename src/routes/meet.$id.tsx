@@ -548,16 +548,7 @@ function RouteComponent() {
                 </div>
               )}
 
-              <div className="absolute top-4 right-4">
-                <button
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-                  onClick={() => handleToFavorites()}
-                >
-                  <Heart
-                    className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")}
-                  />
-                </button>
-              </div>
+              <div className="absolute top-4 right-4"></div>
             </div>
           </div>
           <div
@@ -569,11 +560,29 @@ function RouteComponent() {
               })
             }
           >
-            <div className="text-2xl font-bold">
-              {organizer?.name} {organizer?.surname}
-            </div>
-            <div className="text-sm text-gray-500">
-              {organizer?.city}, {organizer?.birthday}
+            <div className="flex items-center justify-between gap-4 px-4">
+              <div className="h-8 w-8"></div>
+              <div className="mt-2 flex flex-col items-center justify-center">
+                <div className="text-2xl font-bold">
+                  {user?.name} {user?.surname}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {user?.city}, {age || "не указано"}
+                </div>
+              </div>
+              <div className="">
+                <button
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToFavorites();
+                  }}
+                >
+                  <Heart
+                    className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")}
+                  />
+                </button>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex items-center justify-center gap-4 text-white">

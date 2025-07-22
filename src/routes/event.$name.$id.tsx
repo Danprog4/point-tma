@@ -334,7 +334,21 @@ function RouteComponent() {
                           + Достижение
                         </div>
                         <div className="flex items-center gap-1">
-                          + {event?.reward} points <Coin />
+                          <span className="text-base font-medium text-black">
+                            +
+                            {(event as any)?.rewards
+                              ?.find((reward: any) => reward.type === "point")
+                              ?.value?.toLocaleString() || 0}
+                          </span>
+                          <span>
+                            {(event as any)?.rewards
+                              ?.filter((reward: any) => reward.type === "text")
+                              .map((reward: any) => (
+                                <span key={reward.value}>{reward.value}</span>
+                              ))}
+                          </span>
+                          <span className="text-base font-medium text-black">points</span>
+                          <Coin />
                         </div>
                       </div>
                     </>
@@ -348,12 +362,48 @@ function RouteComponent() {
                 </div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
-                <div className="flex items-center justify-start text-2xl font-bold">
-                  <div className="text-2xl font-bold">Награда </div>
-                  <div className="text-l pl-2 font-bold">
-                    + {isCustom ? meeting?.reward : event?.reward}
+                <div className="flex flex-col items-start justify-start text-2xl font-bold">
+                  <div className="flex items-center">
+                    <div className="text-2xl font-bold">Награда </div>
+                    <div className="text-l pl-2 font-bold">
+                      +
+                      {isCustom
+                        ? (meeting as any)?.rewards
+                            ?.find((reward: any) => reward.type === "point")
+                            ?.value?.toLocaleString() || 0
+                        : (event as any)?.rewards
+                            ?.find((reward: any) => reward.type === "point")
+                            ?.value?.toLocaleString() || 0}
+                    </div>
+                    <Coin />
                   </div>
-                  <Coin />
+                  {name === "Квест" && (
+                    <div className="text-sm">
+                      {isCustom
+                        ? (meeting as any)?.rewards
+                            ?.filter((reward: any) => reward.type === "text")
+                            .map((reward: any) => (
+                              <div key={reward.value}>
+                                {reward.value
+                                  .split("\n")
+                                  .map((line: string, index: number) => (
+                                    <div key={index}>+ {line}</div>
+                                  ))}
+                              </div>
+                            ))
+                        : (event as any)?.rewards
+                            ?.filter((reward: any) => reward.type === "text")
+                            .map((reward: any) => (
+                              <div key={reward.value}>
+                                {reward.value
+                                  .split("\n")
+                                  .map((line: string, index: number) => (
+                                    <div key={index}>+ {line}</div>
+                                  ))}
+                              </div>
+                            ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>За успешное выполнение квеста</div>

@@ -83,7 +83,7 @@ function RouteComponent() {
           ...event,
           description: quest.description,
           hasAchievement: quest.hasAchievement,
-          reward: quest.reward,
+          reward: quest.rewards?.find((r) => r.type === "point")?.value || 0,
           title: quest.title,
           date: quest.date,
           location: quest.location,

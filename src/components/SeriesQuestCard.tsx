@@ -65,7 +65,7 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
           )}
           <div className="ml-auto flex items-center gap-1">
             <span className="text-base font-medium text-black">
-              + {quest.reward.toLocaleString()}
+              + {quest.rewards.find((r) => r.type === "point")?.value.toLocaleString()}
             </span>
             <span className="text-base font-medium text-black">points</span>
             <Coin />

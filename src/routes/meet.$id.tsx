@@ -357,7 +357,21 @@ function RouteComponent() {
                           + Достижение
                         </div>
                         <div className="flex items-center gap-1">
-                          + {event?.reward} points <Coin />
+                          <span className="text-base font-medium text-black">
+                            +
+                            {(event as any)?.rewards
+                              ?.find((reward: any) => reward.type === "point")
+                              ?.value?.toLocaleString() || 0}
+                          </span>
+                          <span>
+                            {(event as any)?.rewards
+                              ?.filter((reward: any) => reward.type === "text")
+                              .map((reward: any) => (
+                                <span key={reward.value}>{reward.value}</span>
+                              ))}
+                          </span>
+                          <span className="text-base font-medium text-black">points</span>
+                          <Coin />
                         </div>
                       </div>
                     </>
@@ -372,7 +386,12 @@ function RouteComponent() {
                 <div className="flex items-center justify-start text-2xl font-bold">
                   <div className="text-2xl font-bold">Награда </div>
                   <div className="text-l pl-2 font-bold">
-                    + {meeting?.isCustom ? meeting?.reward : event?.reward}
+                    +
+                    {meeting?.isCustom
+                      ? (meeting?.reward || 0).toLocaleString()
+                      : (event as any)?.rewards
+                          ?.find((reward: any) => reward.type === "point")
+                          ?.value?.toLocaleString() || 0}
                   </div>
                   <Coin />
                 </div>
@@ -452,9 +471,23 @@ function RouteComponent() {
               <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
                 + Достижение
               </div>
-              {event?.reward ? (
+              {(event as any)?.rewards?.find((reward: any) => reward.type === "point") ? (
                 <div className="flex items-center gap-1">
-                  + {event?.reward} points <Coin />
+                  <span className="text-base font-medium text-black">
+                    +
+                    {(event as any)?.rewards
+                      ?.find((reward: any) => reward.type === "point")
+                      ?.value?.toLocaleString() || 0}
+                  </span>
+                  <span>
+                    {(event as any)?.rewards
+                      ?.filter((reward: any) => reward.type === "text")
+                      .map((reward: any) => (
+                        <span key={reward.value}>{reward.value}</span>
+                      ))}
+                  </span>
+                  <span className="text-base font-medium text-black">points</span>
+                  <Coin />
                 </div>
               ) : (
                 <div></div>

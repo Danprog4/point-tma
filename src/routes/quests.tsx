@@ -15,7 +15,6 @@ import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { questsData } from "~/config/quests";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
-import { Quest } from "~/types/quest";
 
 export const Route = createFileRoute("/quests")({
   component: RouteComponent,
@@ -89,7 +88,7 @@ function RouteComponent() {
           ...event,
           description: quest.description,
           hasAchievement: quest.hasAchievement,
-          reward: quest.reward,
+          reward: quest.rewards?.find((reward) => reward.type === "point")?.value || 0,
           title: quest.title,
           date: quest.date,
           location: quest.location,
@@ -171,7 +170,7 @@ function RouteComponent() {
                 const questData = questsData.find((q) => q.id === quest.eventId);
                 return (
                   <div key={quest.id} className="mb-4 px-4">
-                    <QuestCard quest={questData as Quest} isNavigable={true} />
+                    <QuestCard quest={questData as any} isNavigable={true} />
                     <p className="mb-4 text-xs leading-4 text-black">
                       {questData?.description?.slice(0, 100)}
                       {questData?.description && questData.description.length > 100
@@ -194,7 +193,17 @@ function RouteComponent() {
                       )}
                       <div className="flex items-center gap-1">
                         <span className="text-base font-medium text-black">
-                          + {questData?.reward?.toLocaleString() || 0}
+                          +
+                          {questData?.rewards
+                            ?.find((reward) => reward.type === "point")
+                            ?.value.toLocaleString() || 0}
+                        </span>
+                        <span>
+                          {questData?.rewards
+                            ?.filter((reward) => reward.type === "text")
+                            .map((reward) => (
+                              <span key={reward.value}>{reward.value}</span>
+                            ))}
                         </span>
                         <span className="text-base font-medium text-black">points</span>
                         <Coin />
@@ -211,7 +220,7 @@ function RouteComponent() {
             .filter((quest) => quest.isSeries)
 
             .map((quest) => (
-              <SeriesQuestCard key={quest.id} quest={quest as Quest} />
+              <SeriesQuestCard key={quest.id} quest={quest as any} />
             ))}
         </div>
 
@@ -231,7 +240,7 @@ function RouteComponent() {
             <div key={quest.id}>
               <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
               <div className="px-4">
-                <QuestCard quest={quest as Quest} isNavigable={true} />
+                <QuestCard quest={quest as any} isNavigable={true} />
                 <p className="my-2 text-xs leading-4 text-black">
                   {quest.description.slice(0, 100) +
                     (quest.description.length > 100 ? "..." : "")}
@@ -244,8 +253,12 @@ function RouteComponent() {
                   )}
                   <div className="ml-auto flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {quest.reward.toLocaleString()}
+                      +
+                      {quest.rewards
+                        ?.find((reward) => reward.type === "point")
+                        ?.value.toLocaleString() || 0}
                     </span>
+
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />
                   </div>

@@ -143,10 +143,20 @@ function RouteComponent() {
                     ) : (
                       <div></div>
                     )}
-                    {quest?.event?.reward ? (
+                    {(quest?.event as any)?.rewards?.find(
+                      (r: any) => r.type === "point",
+                    ) ? (
                       <div className="ml-auto flex items-center gap-1">
                         <span className="text-base font-medium text-black">
-                          + {quest?.event?.reward?.toLocaleString()}
+                          +
+                          {(quest?.event as any)?.rewards
+                            ?.find((r: any) => r.type === "point")
+                            ?.value?.toLocaleString() || 0}
+                        </span>
+                        <span>
+                          {(quest?.event as any)?.rewards
+                            ?.filter((r: any) => r.type === "text")
+                            .map((r: any) => <span key={r.value}>{r.value}</span>)}
                         </span>
                         <span className="text-base font-medium text-black">points</span>
                         <Coin />
@@ -188,7 +198,15 @@ function RouteComponent() {
                   )}
                   <div className="ml-auto flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {request.event?.reward?.toLocaleString()}
+                      +
+                      {(request.event as any)?.rewards
+                        ?.find((r: any) => r.type === "point")
+                        ?.value?.toLocaleString() || 0}
+                    </span>
+                    <span>
+                      {(request.event as any)?.rewards
+                        ?.filter((r: any) => r.type === "text")
+                        .map((r: any) => <span key={r.value}>{r.value}</span>)}
                     </span>
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />

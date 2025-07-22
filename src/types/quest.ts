@@ -16,7 +16,10 @@ export type Quest = {
     title: string;
     description: string;
   }[];
-  reward: number;
+  rewards: {
+    type: string;
+    value: number;
+  }[];
   hasAchievement: boolean;
   organizer: string;
   image: string;

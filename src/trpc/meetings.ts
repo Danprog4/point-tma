@@ -96,10 +96,6 @@ export const meetingRouter = createTRPCRouter({
     return meetings;
   }),
 
-  // ---------------------------------------------------------------------------
-  // Приглашение пользователей на уже созданную встречу
-  // ---------------------------------------------------------------------------
-
   inviteUsers: procedure
     .input(
       z.object({
@@ -110,7 +106,6 @@ export const meetingRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { meetId, userIds } = input;
 
-      // Проверяем, что текущий пользователь является создателем встречи
       const meet = await db.query.meetTable.findFirst({
         where: eq(meetTable.id, meetId),
       });
@@ -119,8 +114,18 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
       }
 
-      if (meet.userId !== ctx.userId) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "You are not owner" });
+      if (
+        await db.query.meetParticipantsTable.findFirst({
+          where: and(
+            eq(meetParticipantsTable.meetId, meetId),
+            eq(meetParticipantsTable.toUserId, ctx.userId),
+          ),
+        })
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are already a participant",
+        });
       }
 
       const rows = userIds.map((toUserId) => ({
@@ -131,13 +136,10 @@ export const meetingRouter = createTRPCRouter({
       }));
 
       if (rows.length) {
-        await db.insert(meetParticipantsTable).values(rows).onConflictDoNothing(); // избегаем дубликатов
+        await db.insert(meetParticipantsTable).values(rows).onConflictDoNothing();
       }
-
-      return { ok: true };
     }),
 
-  // Список входящих приглашений (pending)
   getInvites: procedure.query(async ({ ctx }) => {
     return db.query.meetParticipantsTable.findMany({
       where: and(

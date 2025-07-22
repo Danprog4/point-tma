@@ -12,9 +12,9 @@ import {
   mockTelegramEnv,
   swipeBehavior,
 } from "@telegram-apps/sdk";
-
 import { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 import { AuthProvider } from "~/components/AuthProvider";
 import { Navbar } from "~/components/Navbar";
 import appCss from "~/lib/styles/app.css?url";
@@ -147,6 +147,17 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              backgroundColor: "#9924FF",
+              color: "#fff",
+              borderRadius: "16px",
+              border: "1px solid white",
+            },
+          }}
+        />
         <Scripts />
       </body>
     </html>

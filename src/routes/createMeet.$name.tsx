@@ -103,7 +103,6 @@ function RouteComponent() {
       },
       {
         onSuccess: (data: any) => {
-          // Если был передан id пользователя для приглашения – рассылаем инвайт
           if (search?.id) {
             inviteUsers.mutate({
               meetId: data.id,

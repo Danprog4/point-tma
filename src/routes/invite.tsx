@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
 import { conferencesData } from "~/config/conf";
@@ -19,7 +20,15 @@ export const Route = createFileRoute("/invite")({
 
 function RouteComponent() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const inviteUsers = useMutation(
+    trpc.meetings.inviteUsers.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.meetings.getMeetings.queryKey() });
+      },
+    }),
+  );
   const search = useSearch({ from: "/invite" }) as { id: string };
   const navigate = useNavigate();
   const [type, setType] = useState<string>("Готовые");
@@ -27,6 +36,24 @@ function RouteComponent() {
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [typeOfEvent, setTypeOfEvent] = useState<string>("");
+  const { data: participants } = useQuery(trpc.meetings.getParticipants.queryOptions());
+  console.log(search, "search");
+  console.log(Number(search.id), "Number(search.id)");
+
+  const handleInvite = () => {
+    if (participants?.some((participant) => participant.toUserId === Number(search.id))) {
+      toast.error("Вы уже приглашены на эту встречу!");
+      return;
+    }
+    inviteUsers.mutate({
+      meetId: selectedItem.id,
+      userIds: [Number(search.id)],
+    });
+    toast.success("Приглашение на встречу успешно отправлено!");
+    navigate({
+      to: "/my-meetings",
+    });
+  };
 
   let data: any[] = [];
 
@@ -223,7 +250,11 @@ function RouteComponent() {
                   <div className="px-4">
                     <QuestCard
                       quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
-                      isNavigable={true}
+                      isNavigable={false}
+                      onClick={() => {
+                        setSelectedItem(quest);
+                        handleInvite();
+                      }}
                     />
                     <p className="mb-4 text-xs leading-4 text-black">
                       {(() => {

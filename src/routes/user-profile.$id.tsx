@@ -158,7 +158,7 @@ function RouteComponent() {
           </div>
 
           <img
-            src={user?.photoUrl ? user?.photoUrl : getImageUrl(user?.photoUrl ?? "")}
+            src={user?.photo ? getImageUrl(user?.photo ?? "") : user?.photoUrl || ""}
             alt={user?.name || ""}
             className="h-full w-full rounded-t-2xl object-cover"
             onClick={() => setIsClicked(!isClicked)}

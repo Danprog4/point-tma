@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Heart } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Maximize2,
+  X as XIcon,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
@@ -61,6 +68,23 @@ function RouteComponent() {
     : fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
 
   console.log(organizer, "organizer");
+
+  // Gallery state for organizer photos
+  const [mainPhoto, setMainPhoto] = useState<string | undefined>(
+    organizer?.photo || undefined,
+  );
+  const [galleryPhotos, setGalleryPhotos] = useState<string[]>(organizer?.gallery ?? []);
+  const [isGalleryFullScreen, setIsGalleryFullScreen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
+  const allPhotos = useMemo(() => {
+    return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
+  }, [mainPhoto, galleryPhotos]);
+
+  useEffect(() => {
+    setMainPhoto(organizer?.photo || undefined);
+    setGalleryPhotos(organizer?.gallery ?? []);
+  }, [organizer]);
 
   const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
@@ -283,8 +307,8 @@ function RouteComponent() {
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Организатор</div>
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-gray-200">
+                <div className="relative flex items-center gap-4">
+                  <div className="relative h-10 w-10 rounded-full bg-gray-200">
                     <img
                       src={
                         organizer?.photo
@@ -292,7 +316,7 @@ function RouteComponent() {
                           : organizer?.photoUrl || ""
                       }
                       alt={organizer?.name || ""}
-                      className="h-10 w-10 rounded-full"
+                      className="h-10 w-10 cursor-pointer rounded-full"
                     />
                   </div>
                   <div>
@@ -446,6 +470,15 @@ function RouteComponent() {
           </div>
           <div className="mb-4 px-4 text-2xl font-bold">Организатор</div>
           <div className="relative">
+            <div className="absolute top-5 right-12 left-6 z-10">
+              <Maximize2
+                className="h-6 w-6 cursor-pointer text-white drop-shadow"
+                onClick={() => {
+                  setCurrentPhotoIndex(0);
+                  setIsGalleryFullScreen(true);
+                }}
+              />
+            </div>
             <div className="relative h-[30vh] rounded-t-2xl">
               <img
                 src={
@@ -630,6 +663,45 @@ function RouteComponent() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {isGalleryFullScreen && allPhotos.length > 0 && (
+        <div className="bg-opacity-90 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          {allPhotos.length > 1 && (
+            <ChevronLeft
+              className="absolute left-4 h-10 w-10 cursor-pointer text-white"
+              onClick={() =>
+                setCurrentPhotoIndex(
+                  (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
+                )
+              }
+            />
+          )}
+
+          {(() => {
+            const imgSrc = allPhotos[currentPhotoIndex];
+            return (
+              <img
+                src={imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)}
+                alt="Full view"
+                className="max-h-full max-w-full object-contain"
+              />
+            );
+          })()}
+
+          {allPhotos.length > 1 && (
+            <ChevronRight
+              className="absolute right-4 h-10 w-10 cursor-pointer text-white"
+              onClick={() =>
+                setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length)
+              }
+            />
+          )}
+
+          <XIcon
+            className="absolute top-4 right-4 h-8 w-8 cursor-pointer text-white"
+            onClick={() => setIsGalleryFullScreen(false)}
+          />
         </div>
       )}
     </>

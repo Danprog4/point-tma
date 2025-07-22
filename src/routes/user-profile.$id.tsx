@@ -193,7 +193,11 @@ function RouteComponent() {
         </div>
       </div>
       <div className="flex items-center justify-between gap-4 px-4">
-        <div className="h-8 w-8"></div>
+        <div className="relative flex items-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
+            <span className="text-xl font-bold text-white">1</span>
+          </div>
+        </div>
         <div className="mt-2 flex flex-col items-center justify-center">
           <div className="text-2xl font-bold">
             {user?.name} {user?.surname}
@@ -205,9 +209,12 @@ function RouteComponent() {
         <div className="">
           <button
             className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-            onClick={() => handleToFavorites()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToFavorites();
+            }}
           >
-            <Heart className={cn("h-4 w-4 text-black", isFavorite && "text-red-500")} />
+            <Heart className={cn("h-6 w-6 text-black", isFavorite && "text-red-500")} />
           </button>
         </div>
       </div>

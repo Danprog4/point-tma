@@ -12,7 +12,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { fakeUsers } from "~/config/fakeUsers";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
 import { getEventData } from "~/lib/utils/getEventData";
@@ -67,11 +66,11 @@ function RouteComponent() {
 
   const meeting = meetingsWithEvents?.find((m) => m.id === parseInt(id));
 
-  console.log(meeting, "meeting");
+  const organizer = meetingsWithEvents?.find(
+    (m) => m.id === parseInt(id) && m.name === meeting?.name,
+  )?.organizer;
 
-  const organizer = isUserMeeting
-    ? meetingsWithEvents?.find((m) => m.id === meeting?.id)?.organizer
-    : fakeUsers.find((u) => u.meetings.includes(meeting?.id!));
+  console.log(meeting, "meeting");
 
   console.log(organizer, "organizer");
 
@@ -181,10 +180,20 @@ function RouteComponent() {
     );
   }, [userSubscriptions, organizer?.id]);
 
+  const isMeetRequest = useMemo(() => {
+    return userRequests?.some((f) => f.toUserId === meeting?.userId);
+  }, [userRequests, meeting?.userId]);
+
   const isParticipant = useMemo(() => {
-    return userParticipants?.some(
-      (p) => p.meetId === meeting?.id && p.fromUserId === user?.id,
-    );
+    return userParticipants
+      ?.filter((p) => p.status === "accepted")
+      .some((p) => p.meetId === meeting?.id && p.fromUserId === user?.id);
+  }, [userParticipants, meeting?.id, user?.id]);
+
+  const isRequestParticipant = useMemo(() => {
+    return userParticipants
+      ?.filter((p) => p.status === "pending")
+      .some((p) => p.meetId === meeting?.id && p.fromUserId === user?.id);
   }, [userParticipants, meeting?.id, user?.id]);
 
   // @ts-ignore
@@ -214,7 +223,7 @@ function RouteComponent() {
       return;
     }
 
-    if (isJoined) {
+    if (isParticipant || isRequestParticipant) {
       leaveMeeting.mutate({ id: meeting?.id! });
       queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
         return old.filter((p: any) => p.meetId !== meeting?.id);
@@ -222,7 +231,10 @@ function RouteComponent() {
     } else {
       joinMeeting.mutate({ id: meeting?.id! });
       queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
-        return [...(old || []), { fromUserId: user?.id!, meetId: meeting?.id! }];
+        return [
+          ...(old || []),
+          { fromUserId: user?.id!, meetId: meeting?.id!, status: "pending" },
+        ];
       });
     }
   };
@@ -466,6 +478,8 @@ function RouteComponent() {
                 </ManageDrawer>
               ) : isParticipant ? (
                 "Отменить"
+              ) : isRequestParticipant ? (
+                "Отменить запрос"
               ) : (
                 "Присоединиться"
               )}
@@ -521,7 +535,13 @@ function RouteComponent() {
                 onClick={() => handleJoin()}
                 className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3"
               >
-                {isParticipant ? "Отменить" : isOwner ? "Управление" : "Присоединиться"}
+                {isOwner
+                  ? "Управление"
+                  : isParticipant
+                    ? "Отменить"
+                    : isRequestParticipant
+                      ? "Отменить запрос"
+                      : "Присоединиться"}
               </div>
             </div>
           </div>
@@ -542,11 +562,11 @@ function RouteComponent() {
                 src={
                   mainPhoto
                     ? getImageUrl(mainPhoto)
-                    : user?.photo
-                      ? getImageUrl(user?.photo ?? "")
-                      : user?.photoUrl || ""
+                    : organizer?.photo
+                      ? getImageUrl(organizer?.photo ?? "")
+                      : organizer?.photoUrl || ""
                 }
-                alt={user?.name || ""}
+                alt={organizer?.name || ""}
                 className="h-full w-full rounded-t-2xl object-cover"
                 onClick={() => setIsGalleryClicked(!isGalleryClicked)}
               />
@@ -591,10 +611,10 @@ function RouteComponent() {
               </div>
               <div className="mt-2 flex flex-col items-center justify-center">
                 <div className="text-2xl font-bold">
-                  {user?.name} {user?.surname}
+                  {organizer?.name} {organizer?.surname}
                 </div>
                 <div className="text-sm text-gray-500">
-                  {user?.city}, {age || "не указано"}
+                  {organizer?.city}, {age || "не указано"}
                 </div>
               </div>
               <div className="">
@@ -712,21 +732,22 @@ function RouteComponent() {
                 </div>
               ))}
             </div>
-            {user?.id !== organizer?.id && (
-              <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
-                <div
-                  onClick={() =>
-                    navigate({
-                      to: "/invite",
-                      search: { id: organizer?.id!.toString()! },
-                    })
-                  }
-                  className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
-                >
-                  Пригласить
+            {user?.id !== organizer?.id ||
+              (!isMeetRequest && (
+                <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
+                  <div
+                    onClick={() =>
+                      navigate({
+                        to: "/invite",
+                        search: { id: organizer?.id!.toString()! },
+                      })
+                    }
+                    className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
+                  >
+                    Пригласить
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
           </div>
           <div className="mt-4 flex w-full flex-col gap-2 px-4">
             <div className="text-2xl font-bold">Инвентарь</div>

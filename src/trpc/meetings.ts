@@ -339,14 +339,16 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
       }
 
-      const newParticipantsIds = meet.participantsIds?.filter(
-        (id) => id !== ctx.userId.toString(),
-      );
+      if (meet.participantsIds) {
+        const newParticipantsIds = meet.participantsIds.filter(
+          (uid) => uid !== ctx.userId.toString(),
+        );
 
-      await db
-        .update(meetTable)
-        .set({ participantsIds: newParticipantsIds })
-        .where(eq(meetTable.id, id));
+        await db
+          .update(meetTable)
+          .set({ participantsIds: newParticipantsIds })
+          .where(eq(meetTable.id, id));
+      }
 
       return request;
     }),

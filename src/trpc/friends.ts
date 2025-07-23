@@ -99,4 +99,32 @@ export const friendsRouter = createTRPCRouter({
 
       return request;
     }),
+
+  unFriend: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const deleted = await db
+        .delete(friendRequestsTable)
+        .where(
+          and(
+            eq(friendRequestsTable.status, "accepted"),
+            or(
+              and(
+                eq(friendRequestsTable.fromUserId, ctx.userId),
+                eq(friendRequestsTable.toUserId, input.userId),
+              ),
+              and(
+                eq(friendRequestsTable.fromUserId, input.userId),
+                eq(friendRequestsTable.toUserId, ctx.userId),
+              ),
+            ),
+          ),
+        );
+
+      return deleted;
+    }),
 });

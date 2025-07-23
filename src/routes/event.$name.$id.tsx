@@ -70,6 +70,7 @@ function RouteComponent() {
 
   const event = getEventData(name, Number(id));
 
+  const filteredReviews = reviews?.filter((review) => review.eventId === Number(id));
   console.log(event);
 
   const ticket = user?.inventory?.find(
@@ -425,7 +426,7 @@ function RouteComponent() {
             </>
           ) : (
             <div className="flex flex-col">
-              {reviews?.map((review) => {
+              {filteredReviews?.map((review) => {
                 const user = users?.find((user) => user.id === review.userId);
                 return (
                   <div key={review.id} className="flex flex-col gap-2 px-4 py-4">

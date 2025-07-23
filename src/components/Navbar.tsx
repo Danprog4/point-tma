@@ -1,14 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTRPC } from "~/trpc/init/react";
 import { Main } from "./Icons/NavBar.tsx/Main";
 import { Meet } from "./Icons/NavBar.tsx/Meet";
 import { Profile } from "./Icons/NavBar.tsx/Profile";
 import { Quests } from "./Icons/NavBar.tsx/Quests";
 
 export const Navbar = () => {
+  const trpc = useTRPC();
   const pathname = useLocation();
   const navigate = useNavigate();
-
+  const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
+  const activeRequests = requests?.filter((request) => request.status === "pending");
+  const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
+  const activeMeetRequests = meetRequests?.filter(
+    (request) => request.status === "pending",
+  );
   const [active, setActive] = useState<string>("");
 
   const isRender =
@@ -48,9 +56,16 @@ export const Navbar = () => {
               onClick={() => navigate({ to: "/meetings" })}
               className="flex flex-col items-center px-4 py-2"
             >
-              <div className="mb-1 h-6 w-6">
-                <Meet />
-              </div>
+              {activeMeetRequests && activeMeetRequests?.length > 0 ? (
+                <div className="relative mb-1 h-6 w-6">
+                  <Meet />
+                  <div className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></div>
+                </div>
+              ) : (
+                <div className="mb-1 h-6 w-6">
+                  <Meet />
+                </div>
+              )}
               <span
                 className={`text-xs font-medium ${active === "/meetings" ? "text-gray-900" : "text-gray-400"}`}
               >
@@ -85,7 +100,14 @@ export const Navbar = () => {
               className="flex flex-col items-center px-4 py-2"
             >
               <div className="mb-1 h-6 w-6">
-                <Profile />
+                {activeRequests && activeRequests?.length > 0 ? (
+                  <div className="relative">
+                    <Profile />
+                    <div className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></div>
+                  </div>
+                ) : (
+                  <Profile />
+                )}
               </div>
               <span
                 className={`text-xs font-medium ${active === "/profile" ? "text-gray-900" : "text-gray-400"}`}

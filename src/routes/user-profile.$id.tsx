@@ -57,9 +57,21 @@ function RouteComponent() {
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
   const { data: userRequests } = useQuery(trpc.main.getMyRequests.queryOptions());
 
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
+  const unFriend = useMutation(trpc.friends.unFriend.mutationOptions());
+
   const isRequest = useMemo(() => {
     return userRequests?.some((f) => f.toUserId === user?.id);
   }, [userRequests, user?.id]);
+
+  const isFriend = useMemo(() => {
+    return friends?.some(
+      (f) =>
+        (f.fromUserId === user?.id && f.toUserId === me?.id) ||
+        (f.toUserId === user?.id && f.fromUserId === me?.id),
+    );
+  }, [friends, user?.id, me?.id]);
 
   const subscribe = useMutation(trpc.main.subscribe.mutationOptions());
   const unsubscribe = useMutation(trpc.main.unSubscribe.mutationOptions());
@@ -127,12 +139,25 @@ function RouteComponent() {
   const age = getAge(user?.birthday ?? undefined);
 
   const isOwner = useMemo(() => {
-    return user?.id === user?.id;
-  }, [user?.id, user?.id]);
+    return me?.id === user?.id;
+  }, [me?.id, user?.id]);
 
   console.log(isOwner, "isOwner");
 
   console.log(user?.photoUrl, "mainPhoto");
+
+  const handleRemoveFriend = () => {
+    unFriend.mutate({ userId: user?.id! });
+    // Optimistically update cache
+    queryClient.setQueryData(trpc.friends.getFriends.queryKey(), (old: any) => {
+      return (old || []).filter((f: any) => {
+        return !(
+          (f.fromUserId === user?.id && f.toUserId === me?.id) ||
+          (f.toUserId === user?.id && f.fromUserId === me?.id)
+        );
+      });
+    });
+  };
 
   return (
     <div className="overflow-y-auto pt-14 pb-10">
@@ -225,12 +250,21 @@ function RouteComponent() {
         >
           {isSubscribed ? "Отписаться" : "Подписаться"}
         </div>
-        <div
-          className="rounded-2xl bg-[#9924FF] px-4 py-2"
-          onClick={() => handleSendRequest()}
-        >
-          {isRequest ? "Отменить запрос" : "Добавить в друзья"}
-        </div>
+        {isFriend ? (
+          <div
+            className="rounded-2xl bg-red-600 px-4 py-2"
+            onClick={() => handleRemoveFriend()}
+          >
+            Удалить из друзей
+          </div>
+        ) : (
+          <div
+            className="rounded-2xl bg-[#9924FF] px-4 py-2"
+            onClick={() => handleSendRequest()}
+          >
+            {isRequest ? "Отменить запрос" : "Добавить в друзья"}
+          </div>
+        )}
       </div>
       <div className="mt-4 flex flex-col gap-2 px-4">
         <div className="text-2xl font-bold">Интересы</div>

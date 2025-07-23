@@ -60,6 +60,7 @@ function RouteComponent() {
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
+  const activeRequests = requests?.filter((request) => request.status === "pending");
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [search, setSearch] = useState("");
   console.log(requests, "requests");
@@ -427,53 +428,51 @@ function RouteComponent() {
                   ))}
               </div>
             )}
-            {requests && requests?.length > 0 && (
+            {activeRequests && activeRequests?.length > 0 && (
               <div className="flex flex-col gap-4">
-                <div className="text-lg font-medium">Запросы {}</div>
-                {requests
-                  ?.filter((request) => request.status === "pending")
-                  .map((request) => {
-                    const requestUser = users?.find((u) => u.id === request.fromUserId);
-                    return (
-                      <div
-                        key={request.id}
-                        onClick={() => {
-                          navigate({
-                            to: "/user-profile/$id",
-                            params: { id: requestUser?.id.toString() || "" },
-                          });
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center justify-start gap-2">
-                            <div
-                              className="mr-4 p-2"
-                              onClick={() => declineRequest(request.fromUserId!)}
-                            >
-                              <CloseRed />
-                            </div>
-                            <img
-                              src={getImageUrl(requestUser?.photo || "")}
-                              alt=""
-                              className="h-14 w-14 rounded-lg"
-                            />
-                            <div className="flex flex-col items-start justify-between gap-2">
-                              <div className="text-lg">
-                                {requestUser?.name} {requestUser?.surname}
-                              </div>
-                              <div>{requestUser?.birthday}</div>
-                            </div>
-                          </div>
+                <div className="text-lg font-medium">Запросы</div>
+                {activeRequests.map((request) => {
+                  const requestUser = users?.find((u) => u.id === request.fromUserId);
+                  return (
+                    <div
+                      key={request.id}
+                      onClick={() => {
+                        navigate({
+                          to: "/user-profile/$id",
+                          params: { id: requestUser?.id.toString() || "" },
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-start gap-2">
                           <div
-                            className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                            onClick={() => acceptRequest(request.fromUserId!)}
+                            className="mr-4 p-2"
+                            onClick={() => declineRequest(request.fromUserId!)}
                           >
-                            <Check className="h-5 w-5 text-white" />
+                            <CloseRed />
+                          </div>
+                          <img
+                            src={getImageUrl(requestUser?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between gap-2">
+                            <div className="text-lg">
+                              {requestUser?.name} {requestUser?.surname}
+                            </div>
+                            <div>{requestUser?.birthday}</div>
                           </div>
                         </div>
+                        <div
+                          className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                          onClick={() => acceptRequest(request.fromUserId!)}
+                        >
+                          <Check className="h-5 w-5 text-white" />
+                        </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
             )}
             {friends && friends?.length > 0 && (

@@ -80,7 +80,9 @@ function RouteComponent() {
 
   useScroll();
 
-  const filteredEvents = data?.filter((event) => event.type === "Квест");
+  const filteredEvents = data
+    ?.filter((event) => event.type === "Квест")
+    .filter((q) => !q.isCompleted);
   const userQuestsData = filteredEvents?.map((event) => {
     const quest = questsData.find((q) => q.id === event.eventId);
     return quest

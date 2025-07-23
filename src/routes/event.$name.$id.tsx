@@ -50,14 +50,19 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const activeEvent = userEvents?.find(
-      (activeEvent) => activeEvent.eventId === Number(id) && activeEvent.type === "Квест",
+    const relatedEvents = userEvents?.filter(
+      (e) => e.eventId === Number(id) && e.type === "Квест" && e.name === name,
     );
 
-    console.log(activeEvent, "event");
+    const hasUnfinished = relatedEvents?.some((e) => !e.isCompleted);
+    const hasFinished = relatedEvents?.some((e) => e.isCompleted);
 
-    if (activeEvent?.isCompleted) {
+    if (hasUnfinished) {
+      setIsCompleted(false);
+    } else if (hasFinished) {
       setIsCompleted(true);
+    } else {
+      setIsCompleted(false);
     }
   }, [name, id, userEvents]);
 
@@ -68,17 +73,19 @@ function RouteComponent() {
   const ticket = user?.inventory?.find(
     (ticket) => ticket.eventId === Number(id) && ticket.name === name,
   );
-  const isActive = queryClient
-    .getQueryData(trpc.main.getUser.queryKey())
-    ?.inventory?.find(
-      (ticket) => ticket.eventId === Number(id) && ticket.name === name,
-    )?.isActive;
-  const isTicketAvailable = !!ticket;
+  const ticketsForEvent =
+    queryClient
+      .getQueryData(trpc.main.getUser.queryKey())
+      ?.inventory?.filter(
+        (ticket) => ticket.eventId === Number(id) && ticket.name === name,
+      ) ?? [];
 
-  // Remove console logs for production
-  // console.log(questsData);
-  // console.log(Number(id));
-  // console.log(questData);
+  const hasActiveTicket = ticketsForEvent.some((t) => t.isActive);
+  const hasInactiveTicket = ticketsForEvent.some((t) => !t.isActive);
+
+  const isTicketAvailable = ticketsForEvent.length > 0;
+
+  const showActivatedLabel = hasActiveTicket && !hasInactiveTicket;
 
   const isDisabled =
     (user?.balance ?? 0) <
@@ -96,6 +103,8 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
+          // Обновляем данные пользователя, чтобы инвентарь отразил новый неактивный билет
+          queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
           setIsBought(true);
         },
       },
@@ -208,7 +217,7 @@ function RouteComponent() {
                   >
                     {event?.category === "Квест" ? (
                       <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                        {isActive ? "Билет активирован" : "Активировать билет"}
+                        {showActivatedLabel ? "Билет активирован" : "Активировать билет"}
                       </button>
                     ) : (
                       <div></div>
@@ -447,7 +456,7 @@ function RouteComponent() {
           )}
 
           {!isCustom &&
-            (!isTicketAvailable ? (
+            (!isTicketAvailable || (hasActiveTicket && isCompleted) ? (
               <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button
@@ -468,7 +477,7 @@ function RouteComponent() {
                   </div>
                 </div>
               </div>
-            ) : isActive === false ? (
+            ) : hasInactiveTicket ? (
               <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
                 {event?.category === "Квест" ? (
                   <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">

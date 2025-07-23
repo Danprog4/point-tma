@@ -23,7 +23,15 @@ export const usersTable = pgTable("users", {
   phone: varchar("phone", { length: 255 }),
   bio: varchar("bio", { length: 255 }),
   inventory: jsonb("inventory")
-    .$type<Array<{ type: string; eventId: number; isActive?: boolean; name: string }>>()
+    .$type<
+      Array<{
+        type: string;
+        eventId: number;
+        isActive?: boolean;
+        name: string;
+        id?: number;
+      }>
+    >()
     .default([]),
   balance: integer("balance").default(0),
   sex: varchar("sex", { length: 255 }),
@@ -45,6 +53,15 @@ export const meetTable = pgTable("meets", {
   idOfEvent: bigint("id_of_event", { mode: "number" }),
   typeOfEvent: varchar("type_of_event", { length: 255 }),
   isCustom: boolean("is_custom").default(false),
+});
+
+export const reviewsTable = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  eventId: bigint("event_id", { mode: "number" }),
+  userId: bigint("user_id", { mode: "number" }),
+  review: varchar("review", { length: 255 }),
+  rating: integer("rating"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const meetParticipantsTable = pgTable("meet_participants", {

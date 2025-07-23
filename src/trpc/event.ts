@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { activeEventsTable, usersTable } from "~/db/schema";
@@ -43,23 +43,34 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
+      // Ищем первый НЕ завершённый активный квест
       const quest = await db.query.activeEventsTable.findFirst({
-        where: eq(activeEventsTable.eventId, input.id),
+        where: and(
+          eq(activeEventsTable.userId, ctx.userId),
+          eq(activeEventsTable.eventId, input.id),
+          eq(activeEventsTable.name, input.name),
+          eq(activeEventsTable.isCompleted, false),
+        ),
       });
 
       if (!quest) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Quest not found",
+          message: "Активный незавершённый квест не найден",
         });
       }
 
+      // Помечаем квест завершённым
       await db
         .update(activeEventsTable)
         .set({
           isCompleted: true,
         })
         .where(eq(activeEventsTable.id, quest.id));
+
+      // Ранее билет переводился в не-активный, что приводило к его повторному
+      // отображению в инвентаре. Убираем эту логику – активный билет остаётся
+      // активным и больше не мешает следующей покупке/активации.
     }),
 
   buyEvent: procedure
@@ -98,20 +109,37 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      if (
-        user.inventory?.find(
-          (ticket) => ticket.eventId === input.id && ticket.name === input.name,
-        )
-      ) {
+      const relatedTickets = (user.inventory || []).filter(
+        (ticket) => ticket.eventId === input.id && ticket.name === input.name,
+      );
+      const hasAnyTicket = relatedTickets.length > 0;
+      const hasActiveTicket = relatedTickets.some((t) => t.isActive);
+
+      const completedEvent = await db.query.activeEventsTable.findFirst({
+        where: and(
+          eq(activeEventsTable.userId, ctx.userId),
+          eq(activeEventsTable.eventId, input.id),
+          eq(activeEventsTable.name, input.name),
+          eq(activeEventsTable.isCompleted, true),
+        ),
+      });
+
+      if (hasAnyTicket && !(hasActiveTicket && completedEvent)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Quest already bought",
+          message: "Quest not completed yet",
         });
       }
 
       const newInventory = [
         ...(user.inventory || []),
-        { type: "ticket", eventId: input.id, name: input.name, isActive: false },
+        {
+          type: "ticket",
+          eventId: input.id,
+          name: input.name,
+          isActive: false,
+          id: Date.now(),
+        },
       ];
 
       const newBalance = user.balance! - eventData.price;
@@ -146,29 +174,29 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      const ticket = user.inventory?.find(
+      // Ищем неактивированный билет пользователя для активации
+      const inactiveTicket = user.inventory?.find(
         (ticket) =>
           ticket.type === "ticket" &&
           ticket.eventId === input.id &&
-          ticket.name === input.name,
+          ticket.name === input.name &&
+          ticket.isActive === false,
       );
 
-      if (!ticket) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Билет не найден",
-        });
-      }
-
-      if (ticket.isActive) {
+      if (!inactiveTicket) {
+        // Если все билеты уже активны, выводим ошибку
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Билет уже активирован",
+          message: "Нет неактивных билетов для активации",
         });
       }
 
       const newInventory = user.inventory?.map((ticket) => {
-        if (ticket.eventId === input.id && ticket.name === input.name) {
+        if (
+          ticket.eventId === input.id &&
+          ticket.name === input.name &&
+          ticket.id === inactiveTicket.id
+        ) {
           return { ...ticket, isActive: true };
         }
         return ticket;

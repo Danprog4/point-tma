@@ -5,6 +5,7 @@ import { db } from "~/db";
 import {
   favoritesTable,
   friendRequestsTable,
+  reviewsTable,
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
@@ -333,6 +334,34 @@ export const router = {
       where: eq(subscriptionsTable.subscriberId, ctx.userId),
     });
   }),
+
+  sendReview: procedure
+    .input(
+      z.object({
+        eventId: z.number(),
+        review: z.string(),
+        rating: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db.insert(reviewsTable).values({
+        eventId: input.eventId,
+        review: input.review,
+        rating: input.rating,
+        userId: user.id,
+      });
+    }),
 } satisfies TRPCRouterRecord;
 
 export type Router = typeof router;

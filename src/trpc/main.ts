@@ -362,6 +362,10 @@ export const router = {
         userId: user.id,
       });
     }),
+
+  getReviews: procedure.query(async ({ ctx }) => {
+    return await db.query.reviewsTable.findMany();
+  }),
 } satisfies TRPCRouterRecord;
 
 export type Router = typeof router;

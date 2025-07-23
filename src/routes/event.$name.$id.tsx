@@ -26,13 +26,15 @@ export const Route = createFileRoute("/event/$name/$id")({
 
 function RouteComponent() {
   useScroll();
+
+  const trpc = useTRPC();
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const [isCompleted, setIsCompleted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
-  // const [isActivated, setIsActivated] = useState(false); // Not used, remove
-  const trpc = useTRPC();
+  const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
   const [page, setPage] = useState("info");
@@ -103,22 +105,12 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
-          // Обновляем данные пользователя, чтобы инвентарь отразил новый неактивный билет
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
           setIsBought(true);
         },
       },
     );
   };
-
-  // Not used, but if needed, can be uncommented and fixed
-  // const handleActivateQuest = () => {
-  //   if (!isActivated) {
-  //     useActivateQuest(Number(id));
-  //   } else {
-  //     navigate({ to: "/quests" });
-  //   }
-  // };
 
   console.log(event?.category === "Квест", "event cat2");
 
@@ -433,25 +425,30 @@ function RouteComponent() {
             </>
           ) : (
             <div className="flex flex-col">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex flex-col gap-2 px-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="h-10 w-10 rounded-full bg-gray-200"></div>
-                      <div className="flex flex-col">
-                        <div className="text-lg font-bold">Сергей</div>
-                        <div className="text-sm text-gray-500">участник</div>
+              {reviews?.map((review) => {
+                const user = users?.find((user) => user.id === review.userId);
+                return (
+                  <div key={review.id} className="flex flex-col gap-2 px-4 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-10 w-10 rounded-full bg-gray-200"></div>
+                        <div className="flex flex-col">
+                          <div className="text-lg font-bold">
+                            {user?.name} {user?.surname}
+                          </div>
+                          <div className="text-sm text-gray-500">участник</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-lg font-bold">{review.rating}</div>
+                        <Star />
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="text-lg font-bold">5</div>
-                      <Star />
-                    </div>
+                    <div>{review.review}</div>
+                    <div className="h-0.5 w-full bg-gray-200"></div>
                   </div>
-                  <div>Отличный квест, мне всё понравилось. Было интересно</div>
-                  <div className="h-0.5 w-full bg-gray-200"></div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

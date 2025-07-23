@@ -41,10 +41,6 @@ function RouteComponent() {
   console.log(Number(search.id), "Number(search.id)");
 
   const handleInvite = () => {
-    if (participants?.some((participant) => participant.toUserId === Number(search.id))) {
-      toast.error("Вы уже приглашены на эту встречу!");
-      return;
-    }
     inviteUsers.mutate({
       meetId: selectedItem.id,
       userIds: [Number(search.id)],
@@ -284,11 +280,7 @@ function RouteComponent() {
                               ?.find((r: any) => r.type === "point")
                               ?.value?.toLocaleString() || 0}
                           </span>
-                          <span>
-                            {(quest?.event as any)?.rewards
-                              ?.filter((r: any) => r.type === "text")
-                              .map((r: any) => <span key={r.value}>{r.value}</span>)}
-                          </span>
+
                           <span className="text-base font-medium text-black">points</span>
                           <Coin />
                         </div>

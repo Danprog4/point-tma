@@ -232,11 +232,7 @@ function RouteComponent() {
                         ?.find((r: any) => r.type === "point")
                         ?.value?.toLocaleString() || 0}
                     </span>
-                    <span>
-                      {(request.event as any)?.rewards
-                        ?.filter((r: any) => r.type === "text")
-                        .map((r: any) => <span key={r.value}>{r.value}</span>)}
-                    </span>
+
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />
                   </div>
@@ -266,7 +262,7 @@ function RouteComponent() {
         <div className="flex flex-col gap-4">
           {requestsWithInfo?.map((request) => (
             <div key={request?.id}>
-              <div className="flex items-center justify-start gap-2">
+              <div className="flex items-center justify-start gap-2 px-4">
                 <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
                 <div className="flex h-full w-full flex-col items-start justify-between gap-2">
                   <div className="text-lg">{request.event?.title}</div>

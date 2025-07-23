@@ -130,7 +130,7 @@ export const meetingRouter = createTRPCRouter({
         toUserId,
         meetId,
         status: "pending" as const,
-        isCreator: ctx.userId === meet!.userId,
+        isCreator: true,
       }));
 
       if (rows.length) {

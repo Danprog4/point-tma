@@ -377,7 +377,7 @@ function RouteComponent() {
                     {event?.stages.map((stage, idx) => (
                       <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
                         <div className="relative flex w-8 flex-none items-start justify-center">
-                          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
+                          <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
                             {idx + 1}
                           </span>
                         </div>
@@ -408,6 +408,7 @@ function RouteComponent() {
                               ?.find((reward: any) => reward.type === "point")
                               ?.value?.toLocaleString() || 0}
                           </span>
+
                           <span>
                             {(event as any)?.rewards
                               ?.filter((reward: any) => reward.type === "text")
@@ -428,17 +429,29 @@ function RouteComponent() {
                 <div>{event?.date || "Сегодня"}</div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
-                <div className="flex items-center justify-start text-2xl font-bold">
-                  <div className="text-2xl font-bold">Награда </div>
-                  <div className="text-l pl-2 font-bold">
-                    +
-                    {meeting?.isCustom
-                      ? (meeting?.reward || 0).toLocaleString()
-                      : (event as any)?.rewards
-                          ?.find((reward: any) => reward.type === "point")
-                          ?.value?.toLocaleString() || 0}
+                <div className="flex flex-col items-start justify-start text-2xl font-bold">
+                  <div className="flex items-center">
+                    <div className="text-2xl font-bold">Награда </div>
+                    <div className="text-l pl-2 font-bold">
+                      +
+                      {(event as any)?.rewards
+                        ?.find((reward: any) => reward.type === "point")
+                        ?.value?.toLocaleString() || 0}
+                    </div>
+                    <Coin />
                   </div>
-                  <Coin />
+
+                  <div className="text-sm">
+                    {(event as any)?.rewards
+                      ?.filter((reward: any) => reward.type === "text")
+                      .map((reward: any) => (
+                        <div key={reward.value}>
+                          {reward.value.split("\n").map((line: string, index: number) => (
+                            <div key={index}>+ {line}</div>
+                          ))}
+                        </div>
+                      ))}
+                  </div>
                 </div>
 
                 <div>За успешное выполнение квеста</div>
@@ -492,7 +505,7 @@ function RouteComponent() {
               })}
             </div>
           )}
-          <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
+          <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
             <div
               className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
               onClick={() => handleJoin()}
@@ -541,13 +554,7 @@ function RouteComponent() {
                       ?.find((reward: any) => reward.type === "point")
                       ?.value?.toLocaleString() || 0}
                   </span>
-                  <span>
-                    {(event as any)?.rewards
-                      ?.filter((reward: any) => reward.type === "text")
-                      .map((reward: any) => (
-                        <span key={reward.value}>{reward.value}</span>
-                      ))}
-                  </span>
+
                   <span className="text-base font-medium text-black">points</span>
                   <Coin />
                 </div>

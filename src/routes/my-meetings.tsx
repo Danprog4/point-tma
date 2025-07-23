@@ -186,11 +186,7 @@ function RouteComponent() {
                             ?.find((r: any) => r.type === "point")
                             ?.value?.toLocaleString() || 0}
                         </span>
-                        <span>
-                          {(quest?.event as any)?.rewards
-                            ?.filter((r: any) => r.type === "text")
-                            .map((r: any) => <span key={r.value}>{r.value}</span>)}
-                        </span>
+
                         <span className="text-base font-medium text-black">points</span>
                         <Coin />
                       </div>

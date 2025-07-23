@@ -209,6 +209,31 @@ function RouteComponent() {
     return organizer?.id === user?.id;
   }, [organizer?.id, user?.id]);
 
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
+  const unFriend = useMutation(trpc.friends.unFriend.mutationOptions());
+
+  const isFriend = useMemo(() => {
+    return friends?.some(
+      (f) =>
+        (f.fromUserId === organizer?.id && f.toUserId === user?.id) ||
+        (f.toUserId === organizer?.id && f.fromUserId === user?.id),
+    );
+  }, [friends, organizer?.id, user?.id]);
+
+  const handleRemoveFriend = () => {
+    unFriend.mutate({ userId: user?.id! });
+
+    queryClient.setQueryData(trpc.friends.getFriends.queryKey(), (old: any) => {
+      return (old || []).filter((f: any) => {
+        return !(
+          (f.fromUserId === user?.id && f.toUserId === user?.id) ||
+          (f.toUserId === user?.id && f.fromUserId === user?.id)
+        );
+      });
+    });
+  };
+
   console.log(isOwner, "isOwner");
 
   console.log(event);
@@ -477,7 +502,7 @@ function RouteComponent() {
                   <div>Управление</div>
                 </ManageDrawer>
               ) : isParticipant ? (
-                "Отменить"
+                "Выйти"
               ) : isRequestParticipant ? (
                 "Отменить запрос"
               ) : (
@@ -538,7 +563,7 @@ function RouteComponent() {
                 {isOwner
                   ? "Управление"
                   : isParticipant
-                    ? "Отменить"
+                    ? "Выйти"
                     : isRequestParticipant
                       ? "Отменить запрос"
                       : "Присоединиться"}
@@ -639,12 +664,21 @@ function RouteComponent() {
             >
               {isSubscribed ? "Отписаться" : "Подписаться"}
             </div>
-            <div
-              className="rounded-2xl bg-[#9924FF] px-4 py-2"
-              onClick={() => handleSendRequest()}
-            >
-              {isRequest ? "Отменить запрос" : "Добавить в друзья"}
-            </div>
+            {isFriend ? (
+              <div
+                className="rounded-2xl bg-red-600 px-4 py-2"
+                onClick={() => handleRemoveFriend()}
+              >
+                Удалить из друзей
+              </div>
+            ) : (
+              <div
+                className="rounded-2xl bg-[#9924FF] px-4 py-2"
+                onClick={() => handleSendRequest()}
+              >
+                {isRequest ? "Отменить запрос" : "Добавить в друзья"}
+              </div>
+            )}
           </div>
           <div className="mt-4 flex flex-col gap-2 px-4">
             <div className="text-2xl font-bold">Интересы</div>

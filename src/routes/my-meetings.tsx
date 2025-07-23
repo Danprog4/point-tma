@@ -41,6 +41,8 @@ function RouteComponent() {
       });
   }, [requests, meetings, user?.id]);
 
+  const { data: participants } = useQuery(trpc.meetings.getParticipants.queryOptions());
+
   const invitesWithInfo = useMemo(() => {
     return requests
       ?.filter(
@@ -57,13 +59,34 @@ function RouteComponent() {
       });
   }, [requests, meetings, user?.id]);
 
-  const meetingsWithEvents = meetings?.map((meeting) => {
-    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
-    return {
-      ...meeting,
-      event,
-    };
-  });
+  const createdMeetings = useMemo(() => {
+    return meetings?.filter((m) => m.userId === user?.id) || [];
+  }, [meetings, user?.id]);
+
+  const acceptedMeetings = useMemo(() => {
+    if (!participants || !meetings) return [];
+
+    const acceptedIds = participants
+      .filter(
+        (p: any) =>
+          p.status === "accepted" &&
+          (p.toUserId === user?.id || p.fromUserId === user?.id),
+      )
+      .map((p: any) => p.meetId);
+
+    return meetings.filter((m) => acceptedIds.includes(m.id));
+  }, [participants, meetings, user?.id]);
+
+  const meetingsWithEvents = useMemo(() => {
+    const combined = [...createdMeetings, ...acceptedMeetings];
+
+    const uniqueMap = new Map(combined.map((m) => [m.id, m]));
+
+    return Array.from(uniqueMap.values()).map((meeting) => {
+      const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+      return { ...meeting, event };
+    });
+  }, [createdMeetings, acceptedMeetings]);
 
   const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
   const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());

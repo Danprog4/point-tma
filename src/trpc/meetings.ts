@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { meetParticipantsTable, meetTable, usersTable } from "~/db/schema";
@@ -209,7 +209,10 @@ export const meetingRouter = createTRPCRouter({
 
   getParticipants: procedure.query(async ({ ctx }) => {
     const participants = await db.query.meetParticipantsTable.findMany({
-      where: eq(meetParticipantsTable.fromUserId, ctx.userId),
+      where: or(
+        eq(meetParticipantsTable.fromUserId, ctx.userId),
+        eq(meetParticipantsTable.toUserId, ctx.userId),
+      ),
     });
 
     return participants;

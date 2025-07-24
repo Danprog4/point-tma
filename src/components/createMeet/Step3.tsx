@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Step3 = ({
@@ -8,6 +10,8 @@ export const Step3 = ({
   setFriendName,
   setParticipants,
   participants,
+  selectedIds,
+  setSelectedIds,
 }: {
   name: string;
   isBasic: boolean;
@@ -15,17 +19,18 @@ export const Step3 = ({
   setFriendName: (friendName: string) => void;
   setParticipants: (participants: number) => void;
   participants: number;
+  selectedIds: number[];
+  setSelectedIds: (selectedIds: number[]) => void;
 }) => {
   const trpc = useTRPC();
-  const { data: friends } = useQuery(trpc.main.getUserFavorites.queryOptions());
-  const { data: getUsers } = useQuery(trpc.main.getUsers.queryOptions());
+  const navigate = useNavigate();
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+  const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
+  const activeRequests = requests?.filter((request) => request.status === "pending");
 
-  const filteredUsers = friends
-    ?.filter((user) => getUsers?.some((friend) => friend.id === user.id))
-    ?.map((user) => {
-      const matchingUser = getUsers?.find((friend) => friend.id === user.id);
-      return matchingUser?.name;
-    });
+  console.log(selectedIds, "selectedIds");
 
   return (
     <>
@@ -67,9 +72,67 @@ export const Step3 = ({
             />
             <div className="px-4 text-xs">Можете ввести фамилию или ник</div>
           </div>
-          {filteredUsers
-            ?.filter((user) => user?.includes(friendName))
-            ?.map((user) => <div key={user}>{user}</div>)}
+          {friends && friends?.length > 0 && (
+            <div className="flex flex-col gap-4">
+              <div className="text-lg font-medium">Друзья</div>
+              {friends
+                ?.filter((request) => request.status === "accepted")
+                .map((request) => {
+                  const requestUser = users?.find(
+                    (u) =>
+                      u.id ===
+                      (request.fromUserId === user?.id
+                        ? request.toUserId
+                        : request.fromUserId),
+                  );
+                  return (
+                    <div key={request.id}>
+                      <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <img
+                            src={getImageUrl(requestUser?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between gap-2">
+                            <div className="text-lg">
+                              {requestUser?.name} {requestUser?.surname}
+                            </div>
+                            <div>{requestUser?.birthday}</div>
+                          </div>
+                        </div>
+                        {selectedIds.includes(requestUser?.id || 0) ? (
+                          <div
+                            className="text-sm text-nowrap text-[#00A349]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedIds(
+                                selectedIds.filter((id) => id !== requestUser?.id || 0),
+                              );
+                            }}
+                          >
+                            Приглашен(-а)
+                          </div>
+                        ) : (
+                          <div
+                            className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              setSelectedIds([...selectedIds, requestUser?.id || 0]);
+                            }}
+                          >
+                            <div className="pb-1 text-2xl leading-none font-bold text-[#721DBD]">
+                              +
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </>
       )}
     </>

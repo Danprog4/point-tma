@@ -30,6 +30,8 @@ function RouteComponent() {
     id?: string;
   };
   console.log({ search }, "search");
+  const [important, setImportant] = useState("");
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
@@ -78,16 +80,26 @@ function RouteComponent() {
     }
   };
 
+  console.log(search.id, "search.id");
+
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
   const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
-  const handleCreateMeeting = () => {
+  const handleInvite = (meetId: number) => {
+    inviteUsers.mutate({
+      meetId: Number(meetId),
+      userIds: selectedIds,
+    });
+    navigate({
+      to: "/my-meetings",
+    });
+  };
+  const handleCreateMeeting = async () => {
     // предотвращаем повторный вызов
     if (createMeeting.isPending || createMeeting.isSuccess) return;
     const idOfEvent = selectedItem?.id ?? (search.item as any)?.id;
 
     const finalTypeOfEvent = typeOfEvent || (search.typeOfEvent as string) || "";
-
-    createMeeting.mutate(
+    await createMeeting.mutateAsync(
       {
         name: title || title2,
         description: description || description2,
@@ -99,7 +111,7 @@ function RouteComponent() {
         location,
         reward: reward || 0,
         image: base64,
-        invitedId: search.id,
+        invitedId: search.id !== undefined ? String(search.id) : undefined,
       },
       {
         onSuccess: (data: any) => {
@@ -109,6 +121,8 @@ function RouteComponent() {
               userIds: [Number(search.id)],
             });
           }
+
+          handleInvite(data.id);
 
           queryClient.invalidateQueries({
             queryKey: trpc.meetings.getMeetings.queryKey(),
@@ -179,6 +193,8 @@ function RouteComponent() {
       {step === 1 && (
         <Step2
           name={name}
+          important={important}
+          setImportant={setImportant}
           isBasic={isBasic}
           item={selectedItem || search.item}
           title={title}
@@ -192,6 +208,8 @@ function RouteComponent() {
       )}
       {step === 2 && (
         <Step3
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
           name={name}
           isBasic={isBasic}
           friendName={friendName}
@@ -226,7 +244,17 @@ function RouteComponent() {
         />
       )}
 
-      {step === 2 && !isBasic && (
+      {step === 2 && !isBasic && selectedIds.length > 0 ? (
+        <div className="absolute right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between">
+          <button
+            disabled={!(isDisabled || isDisabled2)}
+            onClick={handleNext}
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
+          >
+            Продолжить
+          </button>
+        </div>
+      ) : step === 2 && !isBasic && selectedIds.length === 0 ? (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
             onClick={handleNext}
@@ -235,7 +263,7 @@ function RouteComponent() {
             Сделать открытым для всех
           </button>
         </div>
-      )}
+      ) : null}
 
       {step === 3 && !isBasic && (
         <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">

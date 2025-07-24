@@ -1,12 +1,17 @@
+import { useNavigate } from "@tanstack/react-router";
+import { Calendar } from "./Icons/Calendar";
 import { Gift } from "./Icons/More/Gift";
 import { Plus } from "./Icons/More/Plus";
 import { Schedule } from "./Icons/More/Schedule";
 
 export const More = ({
   setIsMoreOpen,
+  event,
 }: {
   setIsMoreOpen: (isMoreOpen: boolean) => void;
+  event?: any;
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="fixed inset-0 z-10" onClick={() => setIsMoreOpen(false)}>
       <div
@@ -18,10 +23,30 @@ export const More = ({
           <Gift />
           <div>Подарить</div>
         </div>
+        <div
+          className="flex cursor-pointer items-center justify-center gap-4"
+          onClick={() => {
+            navigate({
+              to: "/createMeet/$name",
+              params: { name: event.category },
+              search: {
+                step: 0,
+                isExtra: true,
+                isBasic: false,
+                typeOfEvent: event.category,
+                item: event,
+              },
+            });
+          }}
+        >
+          <Calendar />
+          <div>Создать встречу</div>
+        </div>
         <div className="flex cursor-pointer items-center justify-center gap-4">
           <Plus />
           <div>Пригласить</div>
         </div>
+
         <div className="flex cursor-pointer items-center justify-center gap-4">
           <Schedule />
           <div>Добавить в календарь</div>

@@ -1,7 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
 import { Drag } from "~/components/Icons/Drag";
 import { Map } from "~/components/Icons/Map";
+
+// Предустановленные тэги, которые будут предлагаться при вводе
+const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
 
 export const Step2 = ({
   name,
@@ -14,6 +17,8 @@ export const Step2 = ({
   setDescription,
   isDisabled,
   location,
+  important,
+  setImportant,
 }: {
   name: string;
   isBasic: boolean;
@@ -25,9 +30,37 @@ export const Step2 = ({
   setDescription: (description: string) => void;
   isDisabled: boolean;
   location: string;
+  important: string;
+  setImportant: (important: string) => void;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
   const [length, setLength] = useState(2);
+
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+
+  const filteredSuggestions = predefinedTags.filter(
+    (tag) => tag.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(tag),
+  );
+
+  const addTag = (tag: string) => {
+    if (!tag) return;
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag(tagInput.trim());
+    }
+  };
   return (
     <>
       {isBasic ? (
@@ -158,7 +191,66 @@ export const Step2 = ({
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Опишите предстоящее свидание"
+                placeholder="Опишите предстоящую встречу"
+                className="h-20 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-2 text-sm text-black placeholder:text-black/50"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-2">
+            <div className="text-xl font-bold">Тэги</div>
+            <div className="mb-4 w-full">
+              {/* Выбранные тэги */}
+              <div className="mb-2 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <div
+                    key={tag}
+                    className="flex items-center gap-1 rounded-full bg-[#F1F1F1] px-3 py-1 text-sm text-black"
+                  >
+                    {tag}
+                    <span
+                      className="cursor-pointer text-xs text-gray-500"
+                      onClick={() => removeTag(tag)}
+                    >
+                      ×
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Поле ввода и подсказки */}
+              <div className="relative">
+                <input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  type="text"
+                  placeholder="Введите тэг"
+                  className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                />
+
+                {tagInput && filteredSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow">
+                    {filteredSuggestions.map((suggestion) => (
+                      <div
+                        key={suggestion}
+                        onClick={() => addTag(suggestion)}
+                        className="cursor-pointer px-4 py-2 text-sm hover:bg-[#F6F6F6]"
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex w-full flex-col items-start">
+            <div className="mb-2 flex w-full gap-2 text-xl font-bold">Важно</div>
+            <div className="mb-4 flex w-full flex-col items-start gap-2">
+              <textarea
+                value={important}
+                onChange={(e) => setImportant(e.target.value)}
+                placeholder="Опишите самые важные моменты"
                 className="h-20 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-2 text-sm text-black placeholder:text-black/50"
               />
             </div>

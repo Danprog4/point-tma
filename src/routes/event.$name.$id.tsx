@@ -537,7 +537,7 @@ function RouteComponent() {
                 </div>
               </div>
             ))}
-          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
+          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}
         </div>
       )}
       {isReviewOpen && (

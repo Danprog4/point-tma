@@ -33,6 +33,37 @@ export const friendsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const existing = await db.query.friendRequestsTable.findFirst({
+        where: or(
+          and(
+            eq(friendRequestsTable.fromUserId, ctx.userId),
+            eq(friendRequestsTable.toUserId, input.userId),
+          ),
+          and(
+            eq(friendRequestsTable.fromUserId, input.userId),
+            eq(friendRequestsTable.toUserId, ctx.userId),
+          ),
+        ),
+      });
+
+      if (existing) {
+        if (
+          existing.status === "pending" &&
+          existing.fromUserId === input.userId &&
+          existing.toUserId === ctx.userId
+        ) {
+          await db
+            .update(friendRequestsTable)
+            .set({ status: "accepted" })
+            .where(eq(friendRequestsTable.id, existing.id));
+
+          return { ...existing, status: "accepted" };
+        }
+
+        // В остальных случаях просто возвращаем существующую запись, ничего не создавая
+        return existing;
+      }
+
       const request = await db.insert(friendRequestsTable).values({
         fromUserId: ctx.userId,
         toUserId: input.userId,

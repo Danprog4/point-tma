@@ -172,9 +172,9 @@ function RouteComponent() {
       </div>
       <div className="relative">
         <div className="relative h-[30vh] rounded-t-2xl">
-          <div className="absolute top-5 right-12 left-6 z-10">
+          <div className="absolute top-4 right-4 z-10">
             <Maximize2
-              className="h-6 w-6 cursor-pointer text-white drop-shadow"
+              className="h-6 w-6 cursor-pointer text-black drop-shadow"
               onClick={() => {
                 setCurrentIndex(0);
                 setIsFullScreen(true);

@@ -162,7 +162,9 @@ function RouteComponent() {
       <div className="space-y-4">
         {userQuestsData && userQuestsData.length > 0 && (
           <div className="mb-6">
-            <h2 className="px-4 pb-4 text-lg font-semibold text-black">Мои квесты</h2>
+            <h2 className="px-4 pb-4 text-lg font-semibold text-black">
+              Активные квесты
+            </h2>
             {userQuestsData
               .filter(
                 (quest) =>
@@ -200,13 +202,7 @@ function RouteComponent() {
                             ?.find((reward) => reward.type === "point")
                             ?.value.toLocaleString() || 0}
                         </span>
-                        <span>
-                          {questData?.rewards
-                            ?.filter((reward) => reward.type === "text")
-                            .map((reward) => (
-                              <span key={reward.value}>{reward.value}</span>
-                            ))}
-                        </span>
+
                         <span className="text-base font-medium text-black">points</span>
                         <Coin />
                       </div>

@@ -106,6 +106,23 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
+          queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+            if (!old) return old;
+            return {
+              ...old,
+              inventory: [
+                ...(old.inventory ?? []),
+                {
+                  type: "ticket",
+                  eventId: Number(id),
+                  name,
+                  isActive: false,
+                  id: Date.now(),
+                },
+              ],
+            };
+          });
+
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
           setIsBought(true);
         },
@@ -454,7 +471,8 @@ function RouteComponent() {
           )}
 
           {!isCustom &&
-            (!isTicketAvailable || (hasActiveTicket && isCompleted) ? (
+            (!isTicketAvailable ||
+            (hasActiveTicket && !hasInactiveTicket && isCompleted) ? (
               <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button

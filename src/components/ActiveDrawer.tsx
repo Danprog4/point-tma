@@ -33,7 +33,10 @@ export default function ActiveDrawer({
         name: name,
       },
       {
-        onSuccess: () => {},
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: trpc.event.getMyEvents.queryKey() });
+          queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+        },
       },
     );
   };

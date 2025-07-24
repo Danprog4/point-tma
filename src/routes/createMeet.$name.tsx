@@ -245,7 +245,7 @@ function RouteComponent() {
       )}
 
       {step === 2 && !isBasic && selectedIds.length > 0 ? (
-        <div className="absolute right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between">
+        <div className="sticky bottom-4 z-[100] flex w-full items-center justify-between">
           <button
             disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
@@ -255,7 +255,7 @@ function RouteComponent() {
           </button>
         </div>
       ) : step === 2 && !isBasic && selectedIds.length === 0 ? (
-        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
+        <div className="sticky bottom-4 flex w-full items-center justify-between">
           <button
             onClick={handleNext}
             className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"

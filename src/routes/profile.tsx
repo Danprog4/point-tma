@@ -59,6 +59,21 @@ function RouteComponent() {
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
+  const uniqueFriends = useMemo(() => {
+    if (!friends || !user?.id) return [];
+    const seen = new Set<number>();
+    return friends
+      .filter((r) => r.status === "accepted")
+      .filter((r) => {
+        const counterpartId = r.fromUserId === user.id ? r.toUserId : r.fromUserId;
+        if (counterpartId == null) return false;
+        if (seen.has(counterpartId)) return false;
+        seen.add(counterpartId);
+        return true;
+      });
+  }, [friends, user?.id]);
+
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
   const activeRequests = requests?.filter((request) => request.status === "pending");
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
@@ -475,47 +490,45 @@ function RouteComponent() {
                 })}
               </div>
             )}
-            {friends && friends?.length > 0 && (
+            {uniqueFriends && uniqueFriends.length > 0 && (
               <div className="flex flex-col gap-4">
                 <div className="text-lg font-medium">Друзья</div>
-                {friends
-                  ?.filter((request) => request.status === "accepted")
-                  .map((request) => {
-                    const requestUser = users?.find(
-                      (u) =>
-                        u.id ===
-                        (request.fromUserId === user?.id
-                          ? request.toUserId
-                          : request.fromUserId),
-                    );
-                    return (
-                      <div
-                        key={request.id}
-                        onClick={() => {
-                          navigate({
-                            to: "/user-profile/$id",
-                            params: { id: requestUser?.id.toString() || "" },
-                          });
-                        }}
-                      >
-                        <div className="flex items-center justify-between pb-4">
-                          <div className="flex items-center justify-start gap-2">
-                            <img
-                              src={getImageUrl(requestUser?.photo || "")}
-                              alt=""
-                              className="h-14 w-14 rounded-lg"
-                            />
-                            <div className="flex flex-col items-start justify-between gap-2">
-                              <div className="text-lg">
-                                {requestUser?.name} {requestUser?.surname}
-                              </div>
-                              <div>{requestUser?.birthday}</div>
+                {uniqueFriends.map((request) => {
+                  const requestUser = users?.find(
+                    (u) =>
+                      u.id ===
+                      (request.fromUserId === user?.id
+                        ? request.toUserId
+                        : request.fromUserId),
+                  );
+                  return (
+                    <div
+                      key={request.id}
+                      onClick={() => {
+                        navigate({
+                          to: "/user-profile/$id",
+                          params: { id: requestUser?.id.toString() || "" },
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <img
+                            src={getImageUrl(requestUser?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between gap-2">
+                            <div className="text-lg">
+                              {requestUser?.name} {requestUser?.surname}
                             </div>
+                            <div>{requestUser?.birthday}</div>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

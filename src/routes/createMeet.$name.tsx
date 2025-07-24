@@ -6,7 +6,7 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Step1 } from "~/components/createMeet/Step1";
 import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
@@ -79,18 +79,6 @@ function RouteComponent() {
       handleCreateMeeting();
     }
   };
-
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const isOpen = window.innerHeight < window.screen.height - 150;
-      setIsKeyboardOpen(isOpen);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   console.log(search.id, "search.id");
 
@@ -257,28 +245,20 @@ function RouteComponent() {
       )}
 
       {step === 2 && !isBasic && selectedIds.length > 0 ? (
-        <div
-          className={`${
-            isKeyboardOpen ? "static" : "fixed right-0 bottom-4 left-0"
-          } z-50 flex w-full items-center justify-between px-4`}
-        >
+        <div className="fixed bottom-4 z-[100] flex w-full items-center justify-between">
           <button
             disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
-            className="z-[100] flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
           >
             Продолжить
           </button>
         </div>
       ) : step === 2 && !isBasic && selectedIds.length === 0 ? (
-        <div
-          className={`${
-            isKeyboardOpen ? "static" : "fixed right-0 bottom-4 left-0"
-          } z-50 flex w-full items-center justify-between px-4`}
-        >
+        <div className="fixed bottom-4 flex w-full items-center justify-between">
           <button
             onClick={handleNext}
-            className="z-[100] flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
           >
             Сделать открытым для всех
           </button>
@@ -286,14 +266,10 @@ function RouteComponent() {
       ) : null}
 
       {step === 3 && !isBasic && (
-        <div
-          className={`${
-            isKeyboardOpen ? "static" : "fixed right-0 bottom-4 left-0"
-          } z-50 flex w-full items-center justify-between px-4`}
-        >
+        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
           <button
             onClick={handleNext}
-            className="z-[100] flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
           >
             Пропустить и создать {type}
           </button>
@@ -302,11 +278,7 @@ function RouteComponent() {
 
       {(step < 4 && isBasic) ||
       (step > 0 && !isBasic && step !== 4 && step !== 2 && step !== 3) ? (
-        <div
-          className={`${
-            isKeyboardOpen ? "static" : "fixed right-0 bottom-0 left-0"
-          } z-50 bg-white px-4 py-3`}
-        >
+        <div className="sticky bottom-0 z-50 py-3">
           <div className="flex w-full items-center justify-between">
             <button
               disabled={!(isDisabled || isDisabled2)}
@@ -320,11 +292,7 @@ function RouteComponent() {
       ) : (
         !createMeeting.isPending &&
         isBasic && (
-          <div
-            className={`${
-              isKeyboardOpen ? "static" : "fixed right-0 bottom-0 left-0"
-            } z-50 bg-white px-4 py-3`}
-          >
+          <div className="sticky bottom-0 z-50 bg-white px-4 py-3">
             <div className="flex w-full flex-col items-center justify-center gap-2">
               <button className="w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
                 Пригласить знакомых

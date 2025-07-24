@@ -73,8 +73,67 @@ export const Step3 = ({
             <div className="px-4 text-xs">Можете ввести фамилию или ник</div>
           </div>
           {friends && friends?.length > 0 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-lg font-medium">Друзья</div>
+            <div className="flex flex-col gap-2">
+              {users
+                ?.filter((user) =>
+                  friendName
+                    ? user.name?.toLowerCase().includes(friendName.toLowerCase())
+                    : false,
+                )
+                .filter(
+                  (u) =>
+                    u !== undefined &&
+                    !friends?.some(
+                      (friend) => friend.fromUserId === u.id || friend.toUserId === u.id,
+                    ),
+                )
+                .map((user) => {
+                  return (
+                    <div key={user.id}>
+                      <div className="flex items-center justify-between pb-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <img
+                            src={getImageUrl(user?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between gap-2">
+                            <div className="text-lg">
+                              {user?.name} {user?.surname}
+                            </div>
+                            <div>{user?.birthday}</div>
+                          </div>
+                        </div>
+                        {selectedIds.includes(user?.id || 0) ? (
+                          <div
+                            className="text-sm text-nowrap text-[#00A349]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedIds(
+                                selectedIds.filter((id) => id !== user?.id || 0),
+                              );
+                            }}
+                          >
+                            Приглашен(-а)
+                          </div>
+                        ) : (
+                          <div
+                            className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]"
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              setSelectedIds([...selectedIds, user?.id || 0]);
+                            }}
+                          >
+                            <div className="pb-1 text-2xl leading-none font-bold text-[#721DBD]">
+                              +
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               {friends
                 ?.filter((request) => request.status === "accepted")
                 .map((request) => {

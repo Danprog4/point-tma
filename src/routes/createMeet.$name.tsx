@@ -245,7 +245,7 @@ function RouteComponent() {
       )}
 
       {step === 2 && !isBasic && selectedIds.length > 0 ? (
-        <div className="sticky bottom-4 z-[100] flex w-full items-center justify-between">
+        <div className="fixed bottom-4 z-[100] flex w-full items-center justify-between">
           <button
             disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
@@ -255,7 +255,7 @@ function RouteComponent() {
           </button>
         </div>
       ) : step === 2 && !isBasic && selectedIds.length === 0 ? (
-        <div className="sticky bottom-4 flex w-full items-center justify-between">
+        <div className="fixed bottom-4 flex w-full items-center justify-between">
           <button
             onClick={handleNext}
             className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
@@ -278,38 +278,43 @@ function RouteComponent() {
 
       {(step < 4 && isBasic) ||
       (step > 0 && !isBasic && step !== 4 && step !== 2 && step !== 3) ? (
-        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
-          <button
-            disabled={!(isDisabled || isDisabled2)}
-            onClick={handleNext}
-            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
-          >
-            {step === 3 ? "Создать свидание" : "Продолжить"}
-          </button>
+        <div className="sticky bottom-0 z-50 py-3">
+          <div className="flex w-full items-center justify-between">
+            <button
+              disabled={!(isDisabled || isDisabled2)}
+              onClick={handleNext}
+              className="flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
+            >
+              {step === 3 ? "Создать свидание" : "Продолжить"}
+            </button>
+          </div>
         </div>
       ) : (
         !createMeeting.isPending &&
         isBasic && (
-          <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
-            <button className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
-              Пригласить знакомых
-            </button>
-            <button
-              onClick={() => navigate({ to: "/my-meetings" })}
-              className="z-[100] mx-4 w-full flex-1 rounded-tl-lg rounded-br-lg bg-white px-4 py-3 text-center text-black"
-            >
-              Перейти в мои встречи
-            </button>
+          <div className="sticky bottom-0 z-50 bg-white px-4 py-3">
+            <div className="flex w-full flex-col items-center justify-center gap-2">
+              <button className="w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
+                Пригласить знакомых
+              </button>
+              <button
+                onClick={() => navigate({ to: "/my-meetings" })}
+                className="w-full flex-1 rounded-tl-lg rounded-br-lg bg-white px-4 py-3 text-center text-black"
+              >
+                Перейти в мои встречи
+              </button>
+            </div>
           </div>
         )
       )}
-      {step === 1 && (
+
+      {/* {step === 1 && (
         <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
           <button onClick={() => navigate({ to: "/meetings" })}>
             Вернуться во встречи
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

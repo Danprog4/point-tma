@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { openTelegramLink } from "@telegram-apps/sdk";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -23,10 +23,26 @@ export default function ActiveDrawer({
   const trpc = useTRPC();
   const activateQuest = useMutation(trpc.event.activateEvent.mutationOptions());
   const queryClient = useQueryClient();
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
   const handleActivateTicket = () => {
     console.log("activateQuest", id, name);
     setIsActive(true);
+    queryClient.setQueryData(trpc.event.getMyEvents.queryKey(), (old: any) => {
+      if (!old) return old;
+      return [
+        ...old,
+        {
+          id: Date.now(),
+          name: name,
+          userId: user?.id,
+          type: "Квест",
+          createdAt: new Date(),
+          eventId: id,
+          isCompleted: false,
+        },
+      ];
+    });
     activateQuest.mutate(
       {
         id: id,

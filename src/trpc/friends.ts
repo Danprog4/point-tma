@@ -60,7 +60,6 @@ export const friendsRouter = createTRPCRouter({
           return { ...existing, status: "accepted" };
         }
 
-        // В остальных случаях просто возвращаем существующую запись, ничего не создавая
         return existing;
       }
 

@@ -119,7 +119,7 @@ function RouteComponent() {
     <div className="min-h-screen overflow-y-auto bg-white pt-16 pb-10">
       <div className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white">
         <button
-          onClick={() => navigate({ to: "/meetings" })}
+          onClick={() => window.history.back()}
           className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />

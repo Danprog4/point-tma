@@ -60,17 +60,12 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      // Помечаем квест завершённым
       await db
         .update(activeEventsTable)
         .set({
           isCompleted: true,
         })
         .where(eq(activeEventsTable.id, quest.id));
-
-      // Ранее билет переводился в не-активный, что приводило к его повторному
-      // отображению в инвентаре. Убираем эту логику – активный билет остаётся
-      // активным и больше не мешает следующей покупке/активации.
     }),
 
   buyEvent: procedure

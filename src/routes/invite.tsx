@@ -165,8 +165,8 @@ function RouteComponent() {
                     setSelectedItem(item);
                     setTypeOfEvent(item.category);
                     navigate({
-                      to: "/createMeet/$name",
-                      params: { name: item.title },
+                      to: "/createMeet",
+
                       search: {
                         step: 0,
                         isExtra: true,
@@ -211,8 +211,15 @@ function RouteComponent() {
                   key={index}
                   onClick={() => {
                     navigate({
-                      to: "/createMeet/$name",
-                      params: { name: eventType.name },
+                      to: "/createMeet",
+                      search: {
+                        step: 0,
+                        isExtra: true,
+                        isBasic: false,
+                        typeOfEvent: eventType.name,
+                        item: eventType,
+                        id: search.id,
+                      },
                     });
                   }}
                   className={`w-full rounded-2xl p-4 ${eventType.bgColor} flex items-center justify-between transition-opacity hover:opacity-80`}

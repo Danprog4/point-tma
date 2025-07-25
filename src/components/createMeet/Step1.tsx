@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
@@ -7,10 +8,8 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
-import FilterDrawer from "../FilterDrawer";
-import { WhiteFilter } from "../Icons/WhiteFilter";
-import { ExtraStep1 } from "./ExtraStep1";
-
+import { CreateMeetDrawer } from "../CreateMeetDrawer";
+import { AddPhoto } from "../Icons/AddPhoto";
 export const Step1 = ({
   name,
   isBasic,
@@ -35,6 +34,8 @@ export const Step1 = ({
   setIsExtra,
   typeOfEvent,
   item,
+  date,
+  setDate,
 }: {
   name: string;
   isBasic: boolean;
@@ -59,11 +60,15 @@ export const Step1 = ({
   setIsExtra: (isExtra: boolean) => void;
   typeOfEvent: string;
   item: any;
+  date: string;
+  setDate: (date: string) => void;
 }) => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
@@ -120,121 +125,79 @@ export const Step1 = ({
   console.log(isExtra, "isExtra");
 
   return (
-    <>
-      {isBasic ? (
-        <>
-          <div className="flex flex-col items-center gap-4">
-            <label
-              htmlFor="photo-upload"
-              className="flex cursor-pointer flex-col items-center gap-2"
-            >
-              {base64 ? (
-                <img src={base64} alt="photo" className="h-40 w-40 rounded-2xl" />
-              ) : (
-                <div className="flex h-40 w-40 items-center justify-center rounded-2xl bg-[#F0F0F0]"></div>
-              )}
-              <div className="text-lg text-[#9924FF]">Загрузить фото/афишу</div>
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </label>
-          </div>
-          <div className="flex flex-col items-start gap-2 py-4 pb-4">
-            <div className="text-xl font-bold">Название</div>
-            <input
-              value={title2}
-              onChange={(e) => setTitle2(e.target.value)}
-              type="text"
-              placeholder={`Введите название`}
-              className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+    <div className="w-full">
+      <div className="flex w-full flex-col items-center gap-4">
+        <label
+          htmlFor="photo-upload"
+          className="flex w-full cursor-pointer flex-col items-center gap-2"
+        >
+          {base64 ? (
+            <img
+              src={base64}
+              alt="photo"
+              className="h-40 w-full rounded-2xl object-cover"
             />
-          </div>
-          <div className="flex flex-col items-start gap-2">
-            <div className="text-xl font-bold">Описание</div>
-            <textarea
-              value={description2}
-              onChange={(e) => setDescription2(e.target.value)}
-              placeholder={`Введите описание`}
-              className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
-            />
-          </div>
-        </>
-      ) : isExtra ? (
-        <ExtraStep1
-          item={selectedItem || item}
-          type={typeOfEvent || type}
-          setType={setType}
-          setStep={setStep}
-        />
-      ) : (
-        <div className="overflow-y-auto">
-          <div className="scrollbar-hidden mb-4 flex items-center justify-center gap-6">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              type="text"
-              placeholder="Поиск квестов"
-              className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-            />
-
-            <FilterDrawer open={isOpen} onOpenChange={setIsOpen}>
-              <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
-                <WhiteFilter />
-              </div>
-            </FilterDrawer>
-          </div>
-          <div className="mb-4 flex w-full items-center gap-6 overflow-x-auto">
-            {filters.map((filter, index) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeFilter === filter
-                    ? "bg-black text-white"
-                    : "border-gray-200 bg-white text-black"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {data.map((item, index) => (
-              <div
-                key={index}
-                onClick={() => {
-                  setSelectedItem(item);
-                  setIsExtra(true);
-                  setTypeOfEvent(item.category);
-                }}
-              >
-                <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute bottom-2 left-2 flex gap-1 text-black">
-                    <div className="rounded-full bg-white p-1 text-sm">{item.date}</div>
-                    <div className="rounded-full bg-white p-1 text-sm">{item.price}</div>
-                  </div>
-                </div>
-                <div className="flex flex-col p-2">
-                  <div className="flex text-start">{item.title}</div>
-                  <div className="text-sm text-gray-500">
-                    {item.description?.slice(0, 10) +
-                      (item.description?.length > 10 ? "..." : "")}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          ) : (
+            <div className="flex h-40 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
+              <AddPhoto />
+            </div>
+          )}
+          <div className="text-lg text-[#9924FF]">Загрузить фото/афишу</div>
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </label>
+      </div>
+      <div className="flex flex-col items-start gap-2 py-4 pb-4">
+        <div className="text-xl font-bold">Тип встречи</div>
+        <div
+          onClick={() => {
+            setIsDrawerOpen(true);
+          }}
+          className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
+        >
+          <div>{type || "Выберите тип"}</div>
+          <ChevronDown className="h-4 w-4" />
         </div>
-      )}
-    </>
+      </div>
+      <div className="flex flex-col items-start gap-2 py-4 pb-4">
+        <div className="text-xl font-bold">Название</div>
+        <input
+          value={title2}
+          onChange={(e) => setTitle2(e.target.value)}
+          type="text"
+          placeholder={`Введите название`}
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+      </div>
+      <div className="flex flex-col items-start gap-2">
+        <div className="text-xl font-bold">Описание</div>
+        <textarea
+          value={description2}
+          onChange={(e) => setDescription2(e.target.value)}
+          placeholder={`Введите описание`}
+          className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
+        />
+      </div>
+      <div className="flex flex-col items-start gap-2 py-4 pb-4">
+        <div className="text-xl font-bold">Дата</div>
+        <input
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          type="text"
+          placeholder={`Введите дату, например 25.05.2025`}
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+      </div>
+      <CreateMeetDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        setType={setType}
+      />
+    </div>
   );
 };

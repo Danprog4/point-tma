@@ -27,8 +27,7 @@ export const More = ({
           className="flex cursor-pointer items-center justify-center gap-4"
           onClick={() => {
             navigate({
-              to: "/createMeet/$name",
-              params: { name: event.category },
+              to: "/createMeet",
               search: {
                 step: 0,
                 isExtra: true,

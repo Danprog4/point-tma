@@ -1,11 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  useNavigate,
-  useParams,
-  useSearch,
-} from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { ArrowLeft, X } from "lucide-react";
 import { useState } from "react";
 import { Step1 } from "~/components/createMeet/Step1";
 import { Step2 } from "~/components/createMeet/Step2";
@@ -14,22 +9,22 @@ import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
 import { useTRPC } from "~/trpc/init/react";
 
-import { eventTypes } from "~/types/events";
-
-export const Route = createFileRoute("/createMeet/$name")({
+export const Route = createFileRoute("/createMeet")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const search = useSearch({ from: "/createMeet/$name" }) as {
+  const search = useSearch({ from: "/createMeet" }) as {
     step?: number;
     isExtra?: boolean;
     isBasic?: boolean;
     typeOfEvent?: string;
     item?: any;
     id?: string;
+    name?: string;
   };
   console.log({ search }, "search");
+  const [isInvite, setIsInvite] = useState(false);
   const [important, setImportant] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -44,11 +39,10 @@ function RouteComponent() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
-  const { name } = useParams({ from: "/createMeet/$name" });
+
   const [step, setStep] = useState((search as any).step || 0);
   const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
-  const emoji = eventTypes.find((e) => e.name === name)?.emoji;
-  const isBasic = search.isExtra ? false : name !== "Совместное посещение";
+  const [date, setDate] = useState<string>("");
   const [type, setType] = useState("");
   const isDisabled = !title && !description;
   const isDisabled2 = !title2 && !description2;
@@ -56,6 +50,9 @@ function RouteComponent() {
   const [participants, setParticipants] = useState(0);
   const [location, setLocation] = useState("");
   const [reward, setReward] = useState(0);
+  const isBasic = search.isBasic ?? false;
+  const name = search.name ?? "";
+  
   const isHeicFile = (file: File): boolean => {
     const ext = file.name.toLowerCase();
     const mime = file.type.toLowerCase();
@@ -89,9 +86,6 @@ function RouteComponent() {
       meetId: Number(meetId),
       userIds: selectedIds,
     });
-    navigate({
-      to: "/my-meetings",
-    });
   };
   const handleCreateMeeting = async () => {
     // предотвращаем повторный вызов
@@ -103,10 +97,10 @@ function RouteComponent() {
       {
         name: title || title2,
         description: description || description2,
-        type: type || name,
+        type: type,
         idOfEvent,
         typeOfEvent: finalTypeOfEvent,
-        isCustom: isBasic,
+
         participants: participants || 0,
         location,
         reward: reward || 0,
@@ -145,11 +139,17 @@ function RouteComponent() {
   return (
     <div className="relative flex h-screen w-screen flex-col p-4">
       <header className="fixed top-4 right-4 left-4 z-[100] flex items-center">
-        <button onClick={() => window.history.back()}>
-          <ArrowLeft />
-        </button>
+        {isInvite ? (
+          <div onClick={() => setIsInvite(false)} className="cursor-pointer">
+            <X />
+          </div>
+        ) : (
+          <button onClick={() => window.history.back()}>
+            <ArrowLeft />
+          </button>
+        )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-bold text-nowrap">
-          {emoji} {name}
+          {isInvite ? "Приглашение" : "Создание встречи"}
         </div>
       </header>
       {step < 4 && (
@@ -167,6 +167,8 @@ function RouteComponent() {
         <Step1
           name={name}
           isBasic={isBasic}
+          date={date}
+          setDate={setDate}
           type={type}
           setType={setType}
           setSelectedItem={setSelectedItem}
@@ -193,9 +195,10 @@ function RouteComponent() {
       {step === 1 && (
         <Step2
           name={name}
+          isBasic={isBasic}
+          setSelectedItem={setSelectedItem}
           important={important}
           setImportant={setImportant}
-          isBasic={isBasic}
           item={selectedItem || search.item}
           title={title}
           description={description}
@@ -208,10 +211,12 @@ function RouteComponent() {
       )}
       {step === 2 && (
         <Step3
-          selectedIds={selectedIds}
-          setSelectedIds={setSelectedIds}
           name={name}
           isBasic={isBasic}
+          isInvite={isInvite}
+          setIsInvite={setIsInvite}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
           friendName={friendName}
           setFriendName={setFriendName}
           setParticipants={setParticipants}
@@ -225,6 +230,7 @@ function RouteComponent() {
           item={selectedItem || search.item}
           reward={reward}
           setReward={setReward}
+          isInvite={isInvite}
         />
       )}
 
@@ -232,9 +238,9 @@ function RouteComponent() {
         <Step5
           isLoading={createMeeting.isPending}
           name={name}
-          type={type || name || search.typeOfEvent || ""}
           item={selectedItem || search.item}
-          eventType={name}
+          type={type}
+          eventType={search.typeOfEvent || ""}
           isBasic={isBasic}
           title2={title2}
           description2={description2}
@@ -243,78 +249,29 @@ function RouteComponent() {
           base64={base64 || search.item?.image || selectedItem?.image}
         />
       )}
-
-      {step === 2 && !isBasic && selectedIds.length > 0 ? (
-        <div className="fixed bottom-4 z-[100] flex w-full items-center justify-between">
+      {!isInvite && step < 4 ? (
+        <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
           <button
             disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
-            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
+            className="z-[100] mx-auto flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
           >
             Продолжить
           </button>
         </div>
-      ) : step === 2 && !isBasic && selectedIds.length === 0 ? (
-        <div className="fixed bottom-4 flex w-full items-center justify-between">
-          <button
-            onClick={handleNext}
-            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
-          >
-            Сделать открытым для всех
-          </button>
-        </div>
-      ) : null}
-
-      {step === 3 && !isBasic && (
-        <div className="absolute right-0 bottom-4 left-0 flex w-full items-center justify-between">
-          <button
-            onClick={handleNext}
-            className="z-[100] mx-4 flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
-          >
-            Пропустить и создать {type}
-          </button>
-        </div>
-      )}
-
-      {(step < 4 && isBasic) ||
-      (step > 0 && !isBasic && step !== 4 && step !== 2 && step !== 3) ? (
-        <div className="sticky bottom-0 z-50 py-3">
-          <div className="flex w-full items-center justify-between">
-            <button
-              disabled={!(isDisabled || isDisabled2)}
-              onClick={handleNext}
-              className="flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
-            >
-              {step === 3 ? "Создать свидание" : "Продолжить"}
-            </button>
-          </div>
-        </div>
       ) : (
-        !createMeeting.isPending &&
-        isBasic && (
-          <div className="sticky bottom-0 z-50 bg-white px-4 py-3">
-            <div className="flex w-full flex-col items-center justify-center gap-2">
-              <button className="w-full flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white">
-                Пригласить знакомых
-              </button>
-              <button
-                onClick={() => navigate({ to: "/my-meetings" })}
-                className="w-full flex-1 rounded-tl-lg rounded-br-lg bg-white px-4 py-3 text-center text-black"
-              >
-                Перейти в мои встречи
-              </button>
-            </div>
-          </div>
-        )
+        <div></div>
       )}
-
-      {/* {step === 1 && (
-        <div className="absolute right-0 bottom-4 mx-auto flex w-full flex-col items-center justify-center gap-2 px-4">
-          <button onClick={() => navigate({ to: "/meetings" })}>
-            Вернуться во встречи
+      {step === 4 && (
+        <div className="flx-1 fixed right-0 bottom-4 left-0 z-[100] flex w-full flex-col items-center justify-between gap-2 px-4">
+          <button className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50">
+            Вернуться в афишу
+          </button>
+          <button className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50">
+            Поделиться
           </button>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

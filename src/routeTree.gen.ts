@@ -24,13 +24,13 @@ import { Route as InviteImport } from './routes/invite'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
 import { Route as FillProfileImport } from './routes/fill-profile'
+import { Route as CreateMeetImport } from './routes/createMeet'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
 import { Route as UserQuestsPageImport } from './routes/user-quests.$page'
 import { Route as UserProfileIdImport } from './routes/user-profile.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
-import { Route as CreateMeetNameImport } from './routes/createMeet.$name'
 import { Route as AllNameImport } from './routes/all.$name'
 import { Route as EventNameIdImport } from './routes/event.$name.$id'
 
@@ -114,6 +114,12 @@ const FillProfileRoute = FillProfileImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CreateMeetRoute = CreateMeetImport.update({
+  id: '/createMeet',
+  path: '/createMeet',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const CalendarRoute = CalendarImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -147,12 +153,6 @@ const UserProfileIdRoute = UserProfileIdImport.update({
 const MeetIdRoute = MeetIdImport.update({
   id: '/meet/$id',
   path: '/meet/$id',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const CreateMeetNameRoute = CreateMeetNameImport.update({
-  id: '/createMeet/$name',
-  path: '/createMeet/$name',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -191,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarImport
+      parentRoute: typeof rootRoute
+    }
+    '/createMeet': {
+      id: '/createMeet'
+      path: '/createMeet'
+      fullPath: '/createMeet'
+      preLoaderRoute: typeof CreateMeetImport
       parentRoute: typeof rootRoute
     }
     '/fill-profile': {
@@ -291,13 +298,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AllNameImport
       parentRoute: typeof rootRoute
     }
-    '/createMeet/$name': {
-      id: '/createMeet/$name'
-      path: '/createMeet/$name'
-      fullPath: '/createMeet/$name'
-      preLoaderRoute: typeof CreateMeetNameImport
-      parentRoute: typeof rootRoute
-    }
     '/meet/$id': {
       id: '/meet/$id'
       path: '/meet/$id'
@@ -335,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/createMeet': typeof CreateMeetRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -349,7 +350,6 @@ export interface FileRoutesByFullPath {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
-  '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
@@ -360,6 +360,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/createMeet': typeof CreateMeetRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -374,7 +375,6 @@ export interface FileRoutesByTo {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
-  '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
@@ -386,6 +386,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/createMeet': typeof CreateMeetRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -400,7 +401,6 @@ export interface FileRoutesById {
   '/quests': typeof QuestsRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
-  '/createMeet/$name': typeof CreateMeetNameRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
@@ -413,6 +413,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/createMeet'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -427,7 +428,6 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/all/$name'
-    | '/createMeet/$name'
     | '/meet/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
@@ -437,6 +437,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/createMeet'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -451,7 +452,6 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/all/$name'
-    | '/createMeet/$name'
     | '/meet/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
@@ -461,6 +461,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/createMeet'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -475,7 +476,6 @@ export interface FileRouteTypes {
     | '/quests'
     | '/skills'
     | '/all/$name'
-    | '/createMeet/$name'
     | '/meet/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
@@ -487,6 +487,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievmentsRoute: typeof AchievmentsRoute
   CalendarRoute: typeof CalendarRoute
+  CreateMeetRoute: typeof CreateMeetRoute
   FillProfileRoute: typeof FillProfileRoute
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
@@ -501,7 +502,6 @@ export interface RootRouteChildren {
   QuestsRoute: typeof QuestsRoute
   SkillsRoute: typeof SkillsRoute
   AllNameRoute: typeof AllNameRoute
-  CreateMeetNameRoute: typeof CreateMeetNameRoute
   MeetIdRoute: typeof MeetIdRoute
   UserProfileIdRoute: typeof UserProfileIdRoute
   UserQuestsPageRoute: typeof UserQuestsPageRoute
@@ -512,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievmentsRoute: AchievmentsRoute,
   CalendarRoute: CalendarRoute,
+  CreateMeetRoute: CreateMeetRoute,
   FillProfileRoute: FillProfileRoute,
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
@@ -526,7 +527,6 @@ const rootRouteChildren: RootRouteChildren = {
   QuestsRoute: QuestsRoute,
   SkillsRoute: SkillsRoute,
   AllNameRoute: AllNameRoute,
-  CreateMeetNameRoute: CreateMeetNameRoute,
   MeetIdRoute: MeetIdRoute,
   UserProfileIdRoute: UserProfileIdRoute,
   UserQuestsPageRoute: UserQuestsPageRoute,
@@ -546,6 +546,7 @@ export const routeTree = rootRoute
         "/",
         "/achievments",
         "/calendar",
+        "/createMeet",
         "/fill-profile",
         "/history",
         "/inventory",
@@ -560,7 +561,6 @@ export const routeTree = rootRoute
         "/quests",
         "/skills",
         "/all/$name",
-        "/createMeet/$name",
         "/meet/$id",
         "/user-profile/$id",
         "/user-quests/$page",
@@ -575,6 +575,9 @@ export const routeTree = rootRoute
     },
     "/calendar": {
       "filePath": "calendar.tsx"
+    },
+    "/createMeet": {
+      "filePath": "createMeet.tsx"
     },
     "/fill-profile": {
       "filePath": "fill-profile.tsx"
@@ -617,9 +620,6 @@ export const routeTree = rootRoute
     },
     "/all/$name": {
       "filePath": "all.$name.tsx"
-    },
-    "/createMeet/$name": {
-      "filePath": "createMeet.$name.tsx"
     },
     "/meet/$id": {
       "filePath": "meet.$id.tsx"

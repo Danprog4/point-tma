@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
-import { CreateMeetDrawer } from "~/components/CreateMeetDrawer";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
@@ -227,13 +226,12 @@ function RouteComponent() {
       </div>
       <div className="fixed right-4 bottom-20 left-4">
         <button
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={() => navigate({ to: "/createMeet" })}
           className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
         >
           Создать встречу
         </button>
       </div>
-      <CreateMeetDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </div>
   );
 }

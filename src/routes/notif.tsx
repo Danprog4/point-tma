@@ -151,7 +151,10 @@ function RouteComponent() {
           notifications.map((notification) => (
             <div
               className="flex w-full cursor-pointer items-center justify-between"
-              onClick={() => handleNavigate(notification.type || "", notification)}
+              onClick={() => {
+                handleNavigate(notification.type || "", notification);
+                readNotification.mutate({ id: notification.id });
+              }}
             >
               <div className="flex flex-col items-start justify-between gap-2">
                 <div>{getNotificationMessage(notification.type || "")}</div>

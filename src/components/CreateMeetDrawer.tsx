@@ -6,9 +6,10 @@ import { eventTypes } from "~/types/events";
 interface CreateMeetDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  setType: (type: string) => void;
 }
 
-export function CreateMeetDrawer({ open, onOpenChange }: CreateMeetDrawerProps) {
+export function CreateMeetDrawer({ open, onOpenChange, setType }: CreateMeetDrawerProps) {
   const navigate = useNavigate();
 
   const handleEventTypeSelect = (eventType: string) => {
@@ -41,9 +42,9 @@ export function CreateMeetDrawer({ open, onOpenChange }: CreateMeetDrawerProps) 
                   key={index}
                   onClick={() => {
                     handleEventTypeSelect(eventType.name);
+                    setType(eventType.name);
                     navigate({
-                      to: "/createMeet/$name",
-                      params: { name: eventType.name },
+                      to: "/createMeet",
                     });
                   }}
                   className={`w-full rounded-2xl p-4 ${eventType.bgColor} flex items-center justify-between transition-opacity hover:opacity-80`}

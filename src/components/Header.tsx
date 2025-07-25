@@ -11,6 +11,10 @@ export const Header = () => {
   const { data: notifications } = useQuery(trpc.main.getNotifications.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
+  const activeNotifications = notifications?.filter(
+    (notification) => notification.isRead === false,
+  );
+
   const splitBalanceToK = () => {
     if (user?.balance && user?.balance > 1000) {
       return (user?.balance / 1000).toFixed(user?.balance % 1000 === 0 ? 0 : 1);
@@ -31,11 +35,11 @@ export const Header = () => {
         <span className="text-sm font-medium">{splitBalanceToK()}К</span>
       </div>
       <div className="flex w-[81px] items-center justify-end gap-4">
-        {notifications && notifications.length > 0 ? (
+        {activeNotifications && activeNotifications.length > 0 ? (
           <button className="relative flex" onClick={() => navigate({ to: "/notif" })}>
             <Bell className="h-5 w-5 text-gray-700" />
             <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-              {notifications.length}
+              {activeNotifications.length}
             </div>
           </button>
         ) : (

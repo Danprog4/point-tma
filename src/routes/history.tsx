@@ -85,7 +85,7 @@ function RouteComponent() {
       </div>
 
       {/* Filter Chips */}
-      <div className="overflow-x-auto px-4 pb-4">
+      <div className="scrollbar-hidden overflow-x-auto px-4 pb-4">
         <div className="flex gap-4">
           {filters.map((filter) => (
             <button

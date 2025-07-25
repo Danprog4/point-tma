@@ -20,6 +20,10 @@ function RouteComponent() {
   const trpc = useTRPC();
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
+  const activeMeetRequests = meetRequests?.filter(
+    (request) => request.status === "pending",
+  );
 
   const meetingsWithEvents = meetingsData?.map((meeting) => {
     const organizer = users?.find((u) => u.id === meeting.userId);
@@ -65,7 +69,14 @@ function RouteComponent() {
           style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
           onClick={() => navigate({ to: "/my-meetings" })}
         >
-          Мои встречи
+          {activeMeetRequests && activeMeetRequests?.length > 0 ? (
+            <div className="relative">
+              Мои встречи
+              <div className="absolute top-0 right-[-10px] h-2 w-2 rounded-full bg-red-500"></div>
+            </div>
+          ) : (
+            "Мои встречи"
+          )}
         </div>
       </div>
 

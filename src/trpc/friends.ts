@@ -1,7 +1,7 @@
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { friendRequestsTable } from "~/db/schema";
+import { friendRequestsTable, notificationsTable } from "~/db/schema";
 import { createTRPCRouter, procedure } from "./init";
 
 export const friendsRouter = createTRPCRouter({
@@ -68,6 +68,12 @@ export const friendsRouter = createTRPCRouter({
         toUserId: input.userId,
       });
 
+      await db.insert(notificationsTable).values({
+        fromUserId: ctx.userId,
+        toUserId: input.userId,
+        type: "friend request",
+      });
+
       return request;
     }),
 
@@ -84,6 +90,16 @@ export const friendsRouter = createTRPCRouter({
           and(
             eq(friendRequestsTable.fromUserId, ctx.userId),
             eq(friendRequestsTable.toUserId, input.userId),
+          ),
+        );
+
+      await db
+        .delete(notificationsTable)
+        .where(
+          and(
+            eq(notificationsTable.fromUserId, ctx.userId),
+            eq(notificationsTable.toUserId, input.userId),
+            eq(notificationsTable.type, "friend request"),
           ),
         );
 

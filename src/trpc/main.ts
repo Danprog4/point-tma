@@ -6,6 +6,7 @@ import {
   complaintsTable,
   favoritesTable,
   friendRequestsTable,
+  notificationsTable,
   reviewsTable,
   subscriptionsTable,
   usersTable,
@@ -25,6 +26,30 @@ export const router = {
 
     return user;
   }),
+
+  getNotifications: procedure.query(async ({ ctx }) => {
+    const notifications = await db.query.notificationsTable.findMany({
+      where: eq(notificationsTable.toUserId, ctx.userId),
+    });
+
+    return notifications;
+  }),
+
+  readNotification: procedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db
+        .update(notificationsTable)
+        .set({ isRead: true })
+        .where(
+          and(
+            eq(notificationsTable.id, input.id),
+            eq(notificationsTable.toUserId, ctx.userId),
+          ),
+        );
+
+      return true;
+    }),
 
   getUsers: procedure.query(async ({ ctx }) => {
     const users = await db.query.usersTable.findMany();
@@ -195,6 +220,12 @@ export const router = {
       await db.insert(favoritesTable).values({
         fromUserId: ctx.userId,
         toUserId: input.userId,
+      });
+
+      await db.insert(notificationsTable).values({
+        fromUserId: ctx.userId,
+        toUserId: input.userId,
+        type: "like",
       });
 
       return user;

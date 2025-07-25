@@ -2,7 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { meetParticipantsTable, meetTable, usersTable } from "~/db/schema";
+import {
+  meetParticipantsTable,
+  meetTable,
+  notificationsTable,
+  usersTable,
+} from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { getMeetings } from "~/lib/utils/getMeetings";
 import { createTRPCRouter, procedure } from "./init";
@@ -135,6 +140,16 @@ export const meetingRouter = createTRPCRouter({
 
       if (rows.length) {
         await db.insert(meetParticipantsTable).values(rows).onConflictDoNothing();
+
+        const notificationRows = userIds.map((toUserId) => ({
+          fromUserId: ctx.userId,
+          toUserId,
+          type: "meet invite" as const,
+          meetId,
+          isCreator: true,
+        }));
+
+        await db.insert(notificationsTable).values(notificationRows);
       }
     }),
 
@@ -196,6 +211,14 @@ export const meetingRouter = createTRPCRouter({
         meetId: meet.id,
       });
 
+      await db.insert(notificationsTable).values({
+        fromUserId: user.id,
+        toUserId: meet.userId,
+        type: "meet request",
+        meetId: meet.id,
+        isCreator: false,
+      });
+
       return meetParticipant;
     }),
 
@@ -232,6 +255,14 @@ export const meetingRouter = createTRPCRouter({
         meetId: input.meetId,
       });
 
+      await db.insert(notificationsTable).values({
+        fromUserId: ctx.userId,
+        toUserId: input.toUserId,
+        type: "meet request",
+        meetId: input.meetId,
+        isCreator: false,
+      });
+
       return request;
     }),
 
@@ -253,6 +284,16 @@ export const meetingRouter = createTRPCRouter({
           ),
         );
 
+      await db
+        .delete(notificationsTable)
+        .where(
+          and(
+            eq(notificationsTable.fromUserId, ctx.userId),
+            eq(notificationsTable.toUserId, input.toUserId),
+            eq(notificationsTable.type, "meet request"),
+            eq(notificationsTable.meetId, input.meetId),
+          ),
+        );
       return request;
     }),
 

@@ -64,6 +64,18 @@ export const reviewsTable = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const notificationsTable = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  toUserId: bigint("to_user_id", { mode: "number" }),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
+  type: varchar("type", { length: 255 }), // like, subscribe, friend request, meet request, meet invite
+  isRead: boolean("is_read").default(false),
+  meetId: bigint("meet_id", { mode: "number" }),
+  eventId: bigint("event_id", { mode: "number" }),
+  isCreator: boolean("is_creator").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const complaintsTable = pgTable("complaints", {
   id: serial("id").primaryKey(),
   eventId: bigint("event_id", { mode: "number" }),

@@ -64,6 +64,15 @@ export const reviewsTable = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const complaintsTable = pgTable("complaints", {
+  id: serial("id").primaryKey(),
+  eventId: bigint("event_id", { mode: "number" }),
+  userId: bigint("user_id", { mode: "number" }),
+  complaint: varchar("complaint", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  name: varchar("name", { length: 255 }),
+});
+
 export const meetParticipantsTable = pgTable("meet_participants", {
   id: serial("id").primaryKey(),
   fromUserId: bigint("from_user_id", { mode: "number" }),

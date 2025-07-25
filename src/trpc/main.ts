@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  complaintsTable,
   favoritesTable,
   friendRequestsTable,
   reviewsTable,
@@ -366,6 +367,17 @@ export const router = {
   getReviews: procedure.query(async ({ ctx }) => {
     return await db.query.reviewsTable.findMany();
   }),
+
+  sendComplaint: procedure
+    .input(z.object({ eventId: z.number(), complaint: z.string(), name: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return await db.insert(complaintsTable).values({
+        eventId: input.eventId,
+        name: input.name,
+        complaint: input.complaint,
+        userId: ctx.userId,
+      });
+    }),
 } satisfies TRPCRouterRecord;
 
 export type Router = typeof router;

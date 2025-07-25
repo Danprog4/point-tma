@@ -140,33 +140,43 @@ export function ReviewEventDrawer({
                   </div>
                 </>
               )}
+              {step === 3 && (
+                <>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xl font-bold">Спасибо за оценку!</div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center p-4 pt-10">
-              <div className="text-xl font-bold">Пожаловаться на ивент</div>
-              <div className="w-full">
-                <textarea
-                  onChange={(e) => setComplaint(e.target.value)}
-                  className="my-2 w-full rounded-lg border-2 border-gray-300 p-2 pt-4 pb-10"
-                  placeholder="Оставьте свой отзыв"
-                />
-              </div>
-              <div className="absolute right-0 bottom-2 left-0 mx-auto mt-4 flex w-full items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
-                <div
-                  onClick={handleSendComplaint}
-                  className="z-[1000] w-full rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white"
-                >
-                  Отправить
+            <div>
+              {step === 3 ? (
+                <>
+                  <div className="flex flex-col items-center">
+                    <div className="text-xl font-bold">Спасибо за оценку!</div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center p-4 pt-10">
+                  <div className="text-xl font-bold">Пожаловаться на ивент</div>
+                  <div className="w-full">
+                    <textarea
+                      onChange={(e) => setComplaint(e.target.value)}
+                      className="my-2 w-full rounded-lg border-2 border-gray-300 p-2 pt-4 pb-10"
+                      placeholder="Оставьте свой отзыв"
+                    />
+                  </div>
+                  <div className="absolute right-0 bottom-2 left-0 mx-auto mt-4 flex w-full items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
+                    <div
+                      onClick={handleSendComplaint}
+                      className="z-[1000] w-full rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white"
+                    >
+                      Отправить
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-          {step === 3 && (
-            <>
-              <div className="absolute inset-0 flex h-full flex-col items-center justify-start pt-10">
-                <div className="text-xl font-bold">Спасибо за оценку!</div>
-              </div>
-            </>
           )}
         </Drawer.Content>
       </Drawer.Portal>

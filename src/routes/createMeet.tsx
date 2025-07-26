@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, X } from "lucide-react";
 import { useState } from "react";
@@ -24,6 +24,8 @@ function RouteComponent() {
     name?: string;
   };
   console.log({ search }, "search");
+  const [selectedInventory, setSelectedInventory] = useState<string[]>([]);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isInvite, setIsInvite] = useState(false);
   const [important, setImportant] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -39,7 +41,6 @@ function RouteComponent() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
-
   const [step, setStep] = useState((search as any).step || 0);
   const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
   const [date, setDate] = useState<string>("");
@@ -52,7 +53,7 @@ function RouteComponent() {
   const [reward, setReward] = useState(0);
   const isBasic = search.isBasic ?? false;
   const name = search.name ?? "";
-  
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const isHeicFile = (file: File): boolean => {
     const ext = file.name.toLowerCase();
     const mime = file.type.toLowerCase();
@@ -138,18 +139,26 @@ function RouteComponent() {
 
   return (
     <div className="relative flex h-screen w-screen flex-col p-4">
-      <header className="fixed top-4 right-4 left-4 z-[100] flex items-center">
+      <header className="fixed top-4 right-4 left-4 z-[100] flex items-center bg-white">
         {isInvite ? (
           <div onClick={() => setIsInvite(false)} className="cursor-pointer">
             <X />
           </div>
+        ) : isInventoryOpen ? (
+          <button onClick={() => setIsInventoryOpen(false)}>
+            <X />
+          </button>
         ) : (
           <button onClick={() => window.history.back()}>
             <ArrowLeft />
           </button>
         )}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-bold text-nowrap">
-          {isInvite ? "Приглашение" : "Создание встречи"}
+          {isInvite
+            ? "Приглашение"
+            : isInventoryOpen
+              ? "Выберите награду"
+              : "Создание встречи"}
         </div>
       </header>
       {step < 4 && (
@@ -231,6 +240,11 @@ function RouteComponent() {
           reward={reward}
           setReward={setReward}
           isInvite={isInvite}
+          isInventoryOpen={isInventoryOpen}
+          setIsInventoryOpen={setIsInventoryOpen}
+          setSelectedInventory={setSelectedInventory}
+          selectedInventory={selectedInventory}
+          user={user}
         />
       )}
 

@@ -3,7 +3,6 @@ import { Right } from "./images/Right";
 
 export const Step5 = ({
   isLoading,
-
   name,
   item,
   type,

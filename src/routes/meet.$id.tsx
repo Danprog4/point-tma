@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
@@ -152,7 +153,15 @@ function RouteComponent() {
           <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
             Встреча
           </h1>
-          <button onClick={() => setIsComplaintOpen(true)}>
+          <button
+            onClick={() => {
+              if (isComplaint) {
+                toast.error("Вы уже пожаловались на эту встречу");
+                return;
+              }
+              setIsComplaintOpen(true);
+            }}
+          >
             <ComplaintIcon />
           </button>
         </div>

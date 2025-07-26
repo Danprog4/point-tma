@@ -10,6 +10,7 @@ interface ReviewEventDrawerProps {
   onOpenChange: (open: boolean) => void;
   id: number;
   name: string;
+  meetId?: number;
 }
 
 export function ReviewEventDrawer({
@@ -17,6 +18,7 @@ export function ReviewEventDrawer({
   onOpenChange,
   id,
   name,
+  meetId,
 }: ReviewEventDrawerProps) {
   const trpc = useTRPC();
   const [isComplaint, setIsComplaint] = useState(false);
@@ -53,6 +55,7 @@ export function ReviewEventDrawer({
       eventId: id,
       complaint,
       name,
+      meetId: meetId ? Number(meetId) : undefined,
     });
   };
 

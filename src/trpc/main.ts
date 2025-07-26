@@ -1,4 +1,4 @@
-import { TRPCError, TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
@@ -400,15 +400,33 @@ export const router = {
   }),
 
   sendComplaint: procedure
-    .input(z.object({ eventId: z.number(), complaint: z.string(), name: z.string() }))
+    .input(
+      z.object({
+        eventId: z.number().optional(),
+        complaint: z.string(),
+        name: z.string().optional(),
+        meetId: z.number().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       return await db.insert(complaintsTable).values({
         eventId: input.eventId,
         name: input.name,
         complaint: input.complaint,
         userId: ctx.userId,
+        meetId: input.meetId,
       });
     }),
-} satisfies TRPCRouterRecord;
+
+  getComplaints: procedure.query(async ({ ctx }) => {
+    return await db.query.complaintsTable.findMany();
+  }),
+
+  unsendComplaint: procedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db.delete(complaintsTable).where(eq(complaintsTable.id, input.id));
+    }),
+};
 
 export type Router = typeof router;

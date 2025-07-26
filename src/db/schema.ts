@@ -83,6 +83,7 @@ export const complaintsTable = pgTable("complaints", {
   complaint: varchar("complaint", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   name: varchar("name", { length: 255 }),
+  meetId: bigint("meet_id", { mode: "number" }),
 });
 
 export const meetParticipantsTable = pgTable("meet_participants", {

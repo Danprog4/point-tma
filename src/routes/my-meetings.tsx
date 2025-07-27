@@ -146,7 +146,7 @@ function RouteComponent() {
       </div>
       {activeFilter === "Мои встречи" && (
         <div className="flex flex-col gap-4">
-          {meetingsWithEvents
+          {meetings
             ?.sort(
               (a, b) =>
                 new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
@@ -154,10 +154,7 @@ function RouteComponent() {
             .map((quest: any) => (
               <div key={quest?.id}>
                 <div className="px-4">
-                  <QuestCard
-                    quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
-                    isNavigable={true}
-                  />
+                  <QuestCard quest={quest || ({} as Quest)} isNavigable={true} />
                   <p className="mb-4 text-xs leading-4 text-black">
                     {(() => {
                       const description = quest?.isCustom

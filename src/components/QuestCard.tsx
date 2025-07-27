@@ -23,7 +23,7 @@ export function QuestCard({
     return null;
   }
 
-  const pathUrl = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
+  const pathUrl = "/meet/$id";
   console.log(quest, "quest");
 
   return (
@@ -37,7 +37,6 @@ export function QuestCard({
           navigate({
             to: pathUrl,
             params: {
-              name: quest.isCustom ? quest.type : quest.category,
               id: quest.id.toString(),
             },
           });
@@ -45,14 +44,12 @@ export function QuestCard({
       }}
     >
       <img
-        src={!quest.isCustom ? quest.image : getImageUrl(quest.image)}
+        src={getImageUrl(quest.image)}
         alt={quest.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />
       <div className="flex-1 flex-col space-y-2">
-        <h3 className="w-full text-base leading-6 font-bold text-black">
-          {quest.title || quest.name}
-        </h3>
+        <h3 className="w-full text-base leading-6 font-bold text-black">{quest.name}</h3>
 
         <div className="flex items-center gap-2">
           <span
@@ -60,11 +57,6 @@ export function QuestCard({
           >
             {quest.type || ""}
           </span>
-          {!quest.isCustom && (
-            <div className="rounded-full bg-gray-300 px-2.5 py-0.5 text-xs font-medium text-black">
-              {quest.category}
-            </div>
-          )}
         </div>
 
         <div className="flex items-center justify-between">

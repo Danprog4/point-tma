@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { getEventData } from "~/lib/utils/getEventData";
 import { Inventory } from "../Inventory";
 export const Step4 = ({
@@ -12,6 +13,8 @@ export const Step4 = ({
   setSelectedInventory,
   selectedInventory,
   user,
+  setIsDisabled,
+  isDisabled,
 }: {
   name: string;
   isBasic: boolean;
@@ -24,6 +27,8 @@ export const Step4 = ({
   setSelectedInventory: (selectedInventory: string[]) => void;
   selectedInventory: string[];
   user: any;
+  setIsDisabled: (isDisabled: boolean) => void;
+  isDisabled: boolean;
 }) => {
   const getItem = (id: string) => {
     if (!user?.inventory) {
@@ -40,6 +45,18 @@ export const Step4 = ({
   const getEvent = (eventId: number, name: string) => {
     return getEventData(name, eventId);
   };
+
+  useEffect(() => {
+    setIsDisabled(true);
+  }, []);
+
+  useEffect(() => {
+    if (reward > 0) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [reward]);
 
   return (
     <>

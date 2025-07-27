@@ -66,7 +66,7 @@ export const meetingRouter = createTRPCRouter({
         .values({
           description,
           type,
-
+          name,
           participantsIds: invitedId ? [invitedId] : [],
           idOfEvent,
           typeOfEvent,

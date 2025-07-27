@@ -35,6 +35,7 @@ function RouteComponent() {
   const [title2, setTitle2] = useState("");
   const [description2, setDescription2] = useState("");
   const trpc = useTRPC();
+  const [isDisabled, setIsDisabled] = useState(true);
   const [friendName, setFriendName] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -45,8 +46,6 @@ function RouteComponent() {
   const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
   const [date, setDate] = useState<string>("");
   const [type, setType] = useState("");
-  const isDisabled = !title && !description;
-  const isDisabled2 = !title2 && !description2;
   const [base64, setBase64] = useState("");
   const [participants, setParticipants] = useState(0);
   const [location, setLocation] = useState("");
@@ -96,11 +95,11 @@ function RouteComponent() {
     const finalTypeOfEvent = typeOfEvent || (search.typeOfEvent as string) || "";
     await createMeeting.mutateAsync(
       {
-        name: title || title2,
-        description: description || description2,
+        name: title2,
+        description: description2,
         type: type,
         idOfEvent,
-        typeOfEvent: finalTypeOfEvent,
+        typeOfEvent: type,
 
         participants: participants || 0,
         location,
@@ -131,15 +130,14 @@ function RouteComponent() {
   };
 
   console.log(base64, "base64");
+  console.log(title2, "title2");
   console.log(createMeeting.data);
 
   console.log(step);
 
-  console.log(isDisabled, isDisabled2);
-
   return (
-    <div className="relative flex h-screen w-screen flex-col p-4">
-      <header className="fixed top-4 right-4 left-4 z-[100] flex items-center bg-white">
+    <div className="relative flex h-screen w-screen flex-col p-4 pb-20">
+      <header className="fixed top-4 right-4 left-4 z-[10] flex items-center bg-white">
         {isInvite ? (
           <div onClick={() => setIsInvite(false)} className="cursor-pointer">
             <X />
@@ -174,6 +172,8 @@ function RouteComponent() {
 
       {step === 0 && (
         <Step1
+          isDisabled={isDisabled}
+          setIsDisabled={setIsDisabled}
           name={name}
           isBasic={isBasic}
           date={date}
@@ -203,6 +203,8 @@ function RouteComponent() {
       )}
       {step === 1 && (
         <Step2
+          isDisabled={isDisabled}
+          setIsDisabled={setIsDisabled}
           name={name}
           isBasic={isBasic}
           setSelectedItem={setSelectedItem}
@@ -213,13 +215,14 @@ function RouteComponent() {
           description={description}
           setTitle={setTitle}
           setDescription={setDescription}
-          isDisabled={isDisabled}
           location={location}
           setLocation={setLocation}
         />
       )}
       {step === 2 && (
         <Step3
+          isDisabled={isDisabled}
+          setIsDisabled={setIsDisabled}
           name={name}
           isBasic={isBasic}
           isInvite={isInvite}
@@ -234,6 +237,8 @@ function RouteComponent() {
       )}
       {step === 3 && (
         <Step4
+          isDisabled={isDisabled}
+          setIsDisabled={setIsDisabled}
           name={name}
           isBasic={isBasic}
           item={selectedItem || search.item}
@@ -266,8 +271,8 @@ function RouteComponent() {
       {!isInvite && step < 4 ? (
         <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
           <button
-            disabled={!(isDisabled || isDisabled2)}
             onClick={handleNext}
+            disabled={isDisabled}
             className="z-[100] mx-auto flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
           >
             Продолжить
@@ -278,7 +283,10 @@ function RouteComponent() {
       )}
       {step === 4 && (
         <div className="flx-1 fixed right-0 bottom-4 left-0 z-[100] flex w-full flex-col items-center justify-between gap-2 px-4">
-          <button className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50">
+          <button
+            className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            onClick={() => navigate({ to: "/" })}
+          >
             Вернуться в афишу
           </button>
           <button className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50">

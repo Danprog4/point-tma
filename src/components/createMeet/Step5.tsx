@@ -46,9 +46,9 @@ export const Step5 = ({
               <img
                 src={base64}
                 alt="quest"
-                className="h-[20vh] w-[50vw] rounded-2xl object-cover"
+                className="h-[20vh] w-[60vw] rounded-2xl object-cover"
               />
-              <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
+              <div className="absolute bottom-10 left-2 flex items-center justify-center gap-2 text-sm font-bold">
                 <div className="rounded-2xl bg-white px-2">{type}</div>
               </div>
               <div className="flex flex-col items-center">
@@ -69,9 +69,9 @@ export const Step5 = ({
               <img
                 src={base64}
                 alt="quest"
-                className="h-[20vh] w-[50vw] rounded-2xl object-cover"
+                className="h-[20vh] w-[60vw] rounded-2xl object-cover"
               />
-              <div className="absolute bottom-16 left-2 flex items-center justify-center gap-2 text-sm font-bold">
+              <div className="absolute bottom-10 left-2 flex items-center justify-center gap-2 text-sm font-bold">
                 <div className="rounded-2xl bg-white px-2">{type}</div>
               </div>
               <div className="flex flex-col items-center">
@@ -79,13 +79,6 @@ export const Step5 = ({
               </div>
             </div>
             <Right />
-          </div>{" "}
-          <div className="flex flex-col gap-4 px-4">
-            <div>
-              Ваше событие добавлено в ленту событий и будет отображаться первым в списке
-              афиши, чтобы не потерять
-            </div>
-            <div>Начните приглашать людей</div>
           </div>
         </div>
       )}

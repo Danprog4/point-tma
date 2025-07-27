@@ -9,8 +9,8 @@ import { Coin } from "~/components/Icons/Coin";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
+import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
-import { QuestCard } from "~/components/QuestCard";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/meet/$id")({
 
 function RouteComponent() {
   useScroll();
-
   const [page, setPage] = useState("info");
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
@@ -30,6 +29,8 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const navigate = useNavigate();
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+  const [selectedFriends, setSelectedFriends] = useState<any[]>([]);
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
@@ -140,6 +141,10 @@ function RouteComponent() {
     return complaints?.some((c) => c.meetId === meeting?.id && c.userId === user?.id);
   }, [complaints, meeting?.id, user?.id]);
 
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+
+  console.log(meeting, "meeting");
+
   return (
     <>
       <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
@@ -172,21 +177,15 @@ function RouteComponent() {
       <div className="scrollbar-hidden overflow-y-auto pt-18 pb-24">
         <div className="relative">
           <img
-            src={!meeting?.isCustom ? event?.image : getImageUrl(meeting?.image!)}
-            alt={event?.title}
+            src={getImageUrl(meeting?.image!)}
             className="h-[30vh] w-full rounded-t-xl object-cover"
           />
           <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
-            <div className="text-2xl font-bold">{event?.title}</div>
+            <div className="text-2xl font-bold">{meeting?.name}</div>
             <div className="flex items-center justify-start gap-2">
               <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
-                {event?.type}
+                {meeting?.type}
               </div>
-              {!meeting?.isCustom && (
-                <div className="flex items-center justify-center rounded-full bg-[#2462FF] px-2">
-                  {event?.category}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -213,9 +212,10 @@ function RouteComponent() {
             <div className="flex flex-col gap-2 px-4 py-4">
               <div className="text-2xl font-bold">Описание</div>
               <div>
-                {meeting?.isCustom
-                  ? meeting?.description
-                  : event?.description.split(/\n{2,}/).map((paragraph, idx) => (
+                {meeting?.description &&
+                  meeting.description
+                    .split(/\n{2,}/)
+                    .map((paragraph: string, idx: number) => (
                       <p key={idx} className="mb-3 last:mb-0">
                         {paragraph}
                       </p>
@@ -224,9 +224,7 @@ function RouteComponent() {
             </div>
             <div className="flex flex-col gap-2 px-4 py-4">
               <div className="text-2xl font-bold">Локация</div>
-              <div>
-                {meeting?.isCustom ? meeting?.location : event?.location || "Москва"}
-              </div>
+              <div>{meeting?.location || "Москва"}</div>
             </div>
             <div className="flex flex-col gap-2 px-4 py-4">
               <div className="text-2xl font-bold">Организатор</div>
@@ -255,7 +253,7 @@ function RouteComponent() {
                 </div>
               </div>
             </div>
-            {event?.stages && event?.stages.length > 0 ? (
+            {/* {event?.stages && event?.stages.length > 0 ? (
               <div className="flex flex-col gap-4 px-4 py-4">
                 <div className="text-2xl font-bold">Этапы встречи</div>
                 <div className="relative">
@@ -308,7 +306,7 @@ function RouteComponent() {
                   </>
                 ))}
               </div>
-            )}
+            )} */}
 
             <div className="flex flex-col justify-center gap-2 px-4 py-4">
               <div className="flex flex-col items-start justify-start text-2xl font-bold">
@@ -389,7 +387,12 @@ function RouteComponent() {
 
       {isOwner ? (
         <div className="fixed right-4 bottom-0 left-4 mx-auto mt-4 flex w-auto items-center justify-center bg-white py-4 text-center font-semibold text-white">
-          <div className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white">
+          <div
+            className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white"
+            onClick={() => {
+              setIsInviteOpen(true);
+            }}
+          >
             Пригласить
           </div>
           <div className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]">Завершить</div>
@@ -446,6 +449,18 @@ function RouteComponent() {
           onOpenChange={setIsComplaintOpen}
           meetId={Number(id)}
         />
+      )}
+      {isInviteOpen && (
+        <InviteDrawer
+          open={isInviteOpen}
+          onOpenChange={setIsInviteOpen}
+          friends={friends || []}
+          selectedIds={selectedFriends}
+          setSelectedIds={setSelectedFriends}
+          getImageUrl={getImageUrl}
+          user={user}
+          users={users || []}
+        ></InviteDrawer>
       )}
     </>
   );

@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
@@ -36,7 +36,11 @@ export const Step1 = ({
   item,
   date,
   setDate,
+  isDisabled,
+  setIsDisabled,
 }: {
+  isDisabled: boolean;
+  setIsDisabled: (isDisabled: boolean) => void;
   name: string;
   isBasic: boolean;
   type: string;
@@ -122,6 +126,15 @@ export const Step1 = ({
 
     setBase64(base64);
   };
+
+  useEffect(() => {
+    if (title2 && description2 && type && base64 && date) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [title2, description2, type, base64, date]);
+
   console.log(isExtra, "isExtra");
 
   return (

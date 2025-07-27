@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { Thrash } from "../Icons/Thrash";
@@ -17,6 +17,8 @@ export const Step3 = ({
   setSelectedIds,
   isInvite,
   setIsInvite,
+  isDisabled,
+  setIsDisabled,
 }: {
   name: string;
   isBasic: boolean;
@@ -28,6 +30,8 @@ export const Step3 = ({
   setSelectedIds: (selectedIds: number[]) => void;
   isInvite: boolean;
   setIsInvite: (isInvite: boolean) => void;
+  isDisabled: boolean;
+  setIsDisabled: (isDisabled: boolean) => void;
 }) => {
   const trpc = useTRPC();
   const [important, setImportant] = useState("");
@@ -66,7 +70,21 @@ export const Step3 = ({
     }
   };
 
+  useEffect(() => {
+    setIsDisabled(true);
+  }, []);
+
+  useEffect(() => {
+    if (participants > 0 && tags.length > 0 && important) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [participants, tags, important]);
+
   console.log(selectedIds, "selectedIds");
+
+  console.log(tags, "tags");
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
 import { Drag } from "~/components/Icons/Drag";
 import { EventsDrawer } from "~/EventsDrawer";
@@ -20,6 +20,7 @@ export const Step2 = ({
   important,
   setImportant,
   setSelectedItem,
+  setIsDisabled,
 }: {
   name: string;
   isBasic: boolean;
@@ -34,6 +35,7 @@ export const Step2 = ({
   important: string;
   setImportant: (important: string) => void;
   setSelectedItem: (item: any) => void;
+  setIsDisabled: (isDisabled: boolean) => void;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
   const [length, setLength] = useState(1);
@@ -63,6 +65,18 @@ export const Step2 = ({
       addTag(tagInput.trim());
     }
   };
+
+  useEffect(() => {
+    setIsDisabled(true);
+  }, []);
+
+  useEffect(() => {
+    if (location) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [location]);
   return (
     <>
       <div className="scrollbar-hidden flex flex-col overflow-y-auto pb-20">

@@ -23,6 +23,7 @@ export const Route = createFileRoute("/meet/$id")({
 function RouteComponent() {
   useScroll();
   const [page, setPage] = useState("info");
+  const [complaint, setComplaint] = useState("");
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -37,6 +38,7 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
 
   const handleUnsendComplaint = () => {
@@ -135,6 +137,17 @@ function RouteComponent() {
     }
 
     window.history.back();
+  };
+
+  const handleSendComplaint = () => {
+    sendComplaint.mutate({ meetId: meeting?.id!, complaint: complaint });
+
+    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
+      return [
+        ...(old || []),
+        { meetId: meeting?.id!, userId: user?.id!, complaint: complaint },
+      ];
+    });
   };
 
   const isComplaint = useMemo(() => {
@@ -445,6 +458,9 @@ function RouteComponent() {
       {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}
       {isComplaintOpen && (
         <ComplaintDrawer
+          handleSendComplaint={handleSendComplaint}
+          complaint={complaint}
+          setComplaint={setComplaint}
           open={isComplaintOpen}
           onOpenChange={setIsComplaintOpen}
           meetId={Number(id)}

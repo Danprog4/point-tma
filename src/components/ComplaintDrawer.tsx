@@ -1,13 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
-import { useTRPC } from "~/trpc/init/react";
 interface ComplaintDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 
   meetId?: number;
+  complaint: string;
+  setComplaint: (complaint: string) => void;
+  handleSendComplaint: () => void;
 }
 
 export function ComplaintDrawer({
@@ -15,19 +16,11 @@ export function ComplaintDrawer({
   onOpenChange,
 
   meetId,
+  complaint,
+  setComplaint,
+  handleSendComplaint,
 }: ComplaintDrawerProps) {
-  const trpc = useTRPC();
-  const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
-  const [complaint, setComplaint] = useState<string>("");
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-
-  const handleSendComplaint = () => {
-    sendComplaint.mutate({
-      complaint,
-      meetId: meetId ? Number(meetId) : undefined,
-    });
-    setIsSubmitted(true);
-  };
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
@@ -72,7 +65,10 @@ export function ComplaintDrawer({
                 </div>
                 <div className="absolute right-0 bottom-2 left-0 mx-auto mt-4 flex w-full items-center justify-center rounded-lg px-4 py-3 text-center font-semibold text-white">
                   <button
-                    onClick={handleSendComplaint}
+                    onClick={() => {
+                      handleSendComplaint();
+                      onOpenChange(false);
+                    }}
                     disabled={complaint.length === 0}
                     className="z-[1000] w-full rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-4 py-3 text-white disabled:opacity-50"
                   >

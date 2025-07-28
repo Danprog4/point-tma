@@ -2,16 +2,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { Clock, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getTypeColor } from "~/routes/quests";
-import { Quest } from "~/types/quest";
 
-export function QuestCard({
-  quest,
+export function MeetCard({
+  meet,
   isNavigable = true,
   id,
 
   onClick,
 }: {
-  quest?: Quest | any;
+  meet?: any;
   isNavigable?: boolean;
   id?: number;
 
@@ -19,12 +18,12 @@ export function QuestCard({
 }) {
   const navigate = useNavigate();
 
-  if (!quest) {
+  if (!meet) {
     return null;
   }
 
-  const pathUrl = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
-  console.log(quest, "quest");
+  const pathUrl = "/meet/$id";
+  console.log(meet, "meet");
 
   return (
     <div
@@ -33,38 +32,30 @@ export function QuestCard({
         if (onClick) {
           onClick();
         }
-        if (isNavigable && quest && quest.id !== undefined && quest.id !== null) {
+        if (isNavigable && meet && meet.id !== undefined && meet.id !== null) {
           navigate({
             to: pathUrl,
             params: {
-              name: quest.isCustom ? quest.type : quest.category,
-              id: quest.id.toString(),
+              id: meet.id.toString(),
             },
           });
         }
       }}
     >
       <img
-        src={!quest.isCustom ? quest.image : getImageUrl(quest.image)}
-        alt={quest.title}
+        src={getImageUrl(meet.image)}
+        alt={meet.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />
       <div className="flex-1 flex-col space-y-2">
-        <h3 className="w-full text-base leading-6 font-bold text-black">
-          {quest.title || quest.name}
-        </h3>
+        <h3 className="w-full text-base leading-6 font-bold text-black">{meet.name}</h3>
 
         <div className="flex items-center gap-2">
           <span
-            className={`${getTypeColor(quest.type)} rounded-full px-2.5 py-0.5 text-xs font-medium text-black`}
+            className={`${getTypeColor(meet.type)} rounded-full px-2.5 py-0.5 text-xs font-medium text-black`}
           >
-            {quest.type || ""}
+            {meet.type || ""}
           </span>
-          {!quest.isCustom && (
-            <div className="rounded-full bg-gray-300 px-2.5 py-0.5 text-xs font-medium text-black">
-              {quest.category}
-            </div>
-          )}
         </div>
 
         <div className="flex items-center justify-between">
@@ -73,13 +64,13 @@ export function QuestCard({
               <div className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-300">
                 <Clock className="h-2 w-2 text-white" />
               </div>
-              <span className="text-xs text-black">{quest.date || "Сейчас"}</span>
+              <span className="text-xs text-black">{meet.date || "Сейчас"}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="flex h-4 w-4 items-center justify-center">
                 <MapPin className="h-3 w-3 text-gray-400" />
               </div>
-              <span className="text-xs text-black">{quest.location || "Москва"}</span>
+              <span className="text-xs text-black">{meet.location || "Москва"}</span>
             </div>
           </div>
         </div>

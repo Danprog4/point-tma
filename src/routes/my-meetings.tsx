@@ -5,7 +5,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
-import { QuestCard } from "~/components/QuestCard";
+import { MeetCard } from "~/components/MeetCard";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 
@@ -154,7 +154,7 @@ function RouteComponent() {
             .map((quest: any) => (
               <div key={quest?.id}>
                 <div className="px-4">
-                  <QuestCard quest={quest || ({} as Quest)} isNavigable={true} />
+                  <MeetCard meet={quest || ({} as Quest)} isNavigable={true} />
                   <p className="mb-4 text-xs leading-4 text-black">
                     {(() => {
                       const description = quest?.isCustom
@@ -210,7 +210,7 @@ function RouteComponent() {
                   />
                   {request.user?.name} {request.user?.surname} приглашает
                 </div>
-                <QuestCard quest={request.event || ({} as Quest)} isNavigable={true} />
+                <MeetCard meet={request.event || ({} as Quest)} isNavigable={true} />
                 <p className="my-2 text-xs leading-4 text-black">
                   {request.event?.description && request.event.description.length > 100
                     ? request.event.description.slice(0, 100) + "..."

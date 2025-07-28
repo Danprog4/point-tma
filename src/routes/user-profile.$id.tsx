@@ -5,7 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
-  Maximize2,
+  Star,
   X as XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -64,6 +64,14 @@ function RouteComponent() {
   const isRequest = useMemo(() => {
     return userRequests?.some((f) => f.toUserId === user?.id);
   }, [userRequests, user?.id]);
+
+  const { data: events } = useQuery(
+    trpc.event.getUserEvents.queryOptions({ userId: user?.id! }),
+  );
+
+  const activeQuests = useMemo(() => {
+    return events?.filter((event) => event.type === "Квест") || [];
+  }, [events]);
 
   const isFriend = useMemo(() => {
     return friends?.some(
@@ -160,7 +168,7 @@ function RouteComponent() {
   };
 
   return (
-    <div className="overflow-y-auto pt-14 pb-10">
+    <div className="scrollbar-hidden overflow-y-auto pt-14 pb-20">
       <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4">
         <button
           onClick={() => window.history.back()}
@@ -172,16 +180,7 @@ function RouteComponent() {
       </div>
       <div className="relative">
         <div className="relative h-[30vh] rounded-t-2xl">
-          <div className="absolute top-4 right-4 z-10">
-            <Maximize2
-              className="h-6 w-6 cursor-pointer text-black drop-shadow"
-              onClick={() => {
-                setCurrentIndex(0);
-                setIsFullScreen(true);
-              }}
-            />
-          </div>
-
+          <div className="absolute top-4 right-4 z-10"></div>
           <img
             src={
               mainPhoto
@@ -191,61 +190,83 @@ function RouteComponent() {
                   : user?.photoUrl || ""
             }
             alt={user?.name || ""}
-            className="h-full w-full rounded-t-2xl object-cover"
-            onClick={() => setIsClicked(!isClicked)}
+            className="h-full w-full rounded-2xl object-cover"
+            onClick={() => {
+              setIsClicked(!isClicked);
+              setCurrentIndex(0);
+              setIsFullScreen(true);
+            }}
           />
-          {isClicked && (
-            <div className="absolute bottom-2 left-4 flex gap-2 overflow-x-auto pt-8">
-              {galleryPhotos.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
-                  alt=""
-                  className="h-12 w-12 cursor-pointer rounded-lg object-cover"
-                  onClick={() => {
-                    setGalleryPhotos((prev) => {
-                      const newGallery = prev.filter((i) => i !== img);
-                      if (mainPhoto) newGallery.push(mainPhoto);
-                      return newGallery;
-                    });
-                    setMainPhoto(img);
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          <div className="absolute bottom-4 left-4"></div>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-4 px-4">
+      <div className="flex gap-2 overflow-x-auto px-4 pt-4">
+        {galleryPhotos.map((img, idx) => (
+          <img
+            key={idx}
+            src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
+            alt=""
+            className="h-20 w-20 cursor-pointer rounded-lg object-cover"
+            onClick={() => {
+              setGalleryPhotos((prev) => {
+                const newGallery = prev.filter((i) => i !== img);
+                if (mainPhoto) newGallery.push(mainPhoto);
+                return newGallery;
+              });
+              setMainPhoto(img);
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex items-center justify-center gap-4 px-4 py-4">
         <div className="relative flex items-center">
           <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
             <span className="text-xl font-bold text-white">1</span>
           </div>
         </div>
-        <div className="mt-2 flex flex-col items-center justify-center">
-          <div className="text-2xl font-bold">
-            {user?.name} {user?.surname}
-          </div>
-          <div className="text-sm text-gray-500">
-            {user?.city}, {age || "не указано"}
+        <div className="text-center">
+          <div className="mb-1 flex items-center justify-center gap-2">
+            <h2 className="text-xl font-bold text-black">
+              {user?.name} {user?.surname}
+            </h2>
           </div>
         </div>
-        <div className="">
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToFavorites();
-            }}
-          >
-            <Heart className={cn("h-6 w-6 text-black", isFavorite && "text-red-500")} />
-          </button>
+
+        <div className="flex items-center">
+          <Star className="h-7 w-7 fill-blue-500 text-blue-500" />
+        </div>
+
+        <button
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToFavorites();
+          }}
+        >
+          <Heart className={cn("h-6 w-6 text-black", isFavorite && "text-red-500")} />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between px-4 pb-4">
+        <div className="text-sm text-neutral-500">
+          г. {user?.city}, {age || "не указано"}
+        </div>
+        <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 px-4 pb-4">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4">
+          <div>0</div>
+          <div className="text-sm text-neutral-500">Подписчиков</div>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4">
+          <div>0</div>
+          <div className="text-sm text-neutral-500">Друзей</div>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-center gap-4 text-white">
+
+      <div className="flex items-center justify-center gap-4 px-4 pb-4 text-white">
         <div
-          className="rounded-2xl bg-[#2462FF] px-4 py-2"
+          className="flex flex-1 items-center justify-center rounded-2xl bg-[#2462FF] px-4 py-2"
           onClick={() => handleSubscribe()}
         >
           {isSubscribed ? "Отписаться" : "Подписаться"}
@@ -259,17 +280,49 @@ function RouteComponent() {
           </div>
         ) : (
           <div
-            className="rounded-2xl bg-[#9924FF] px-4 py-2"
+            className="flex flex-1 items-center justify-center rounded-2xl bg-[#9924FF] px-4 py-2"
             onClick={() => handleSendRequest()}
           >
             {isRequest ? "Отменить запрос" : "Добавить в друзья"}
           </div>
         )}
       </div>
-      <div className="mt-4 flex flex-col gap-2 px-4">
-        <div className="text-2xl font-bold">Интересы</div>
-        <div className="text-sm text-gray-500">{user?.bio}</div>
+
+      <div className="px-4 pb-4">
+        <div className="rounded-xl bg-yellow-400 p-2 shadow-sm">
+          <div className="mb-1 text-center text-xl font-bold text-black">
+            {activeQuests?.length || 0}
+          </div>
+          <div className="flex items-center justify-center gap-1">
+            <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
+              !
+            </div>
+            <span className="text-sm text-black">Квесты</span>
+          </div>
+        </div>
       </div>
+
+      <div className="w-full px-4">
+        <div className="flex w-full flex-col items-start justify-between pb-4">
+          <div className="flex w-full items-center justify-between">
+            <h3 className="text-xl font-bold text-black">Обо мне</h3>
+            <div className="text-sm text-blue-500">Подробнее</div>
+          </div>
+          {user?.bio ? (
+            <div className="text-sm text-black">{user.bio}</div>
+          ) : (
+            <div className="text-sm text-black">
+              Расскажите о себе, чтобы другие пользователи могли узнать вас
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* TODO: Interests add here */}
+      {/* <div className="flex flex-col gap-2 px-4">
+        <div className="text-sm text-gray-500">{user?.bio}</div>
+      </div> */}
+
       <div className="mt-4 flex flex-col gap-2 px-4">
         <div className="text-2xl font-bold">Достижения</div>
 

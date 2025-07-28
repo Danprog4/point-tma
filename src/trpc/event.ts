@@ -15,6 +15,15 @@ export const eventRouter = createTRPCRouter({
     return events;
   }),
 
+  getUserEvents: procedure
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const events = await db.query.activeEventsTable.findMany({
+        where: eq(activeEventsTable.userId, input.userId),
+      });
+      return events;
+    }),
+
   endQuest: procedure
     .input(
       z.object({

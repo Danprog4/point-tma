@@ -320,16 +320,14 @@ function RouteComponent() {
       </div>
 
       <div className="px-4 pb-4">
-        <div className="rounded-xl bg-yellow-400 p-2 shadow-sm">
-          <div className="mb-1 text-center text-xl font-bold text-black">
-            {activeQuests?.length || 0}
-          </div>
-          <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-start gap-2 rounded-xl bg-yellow-400 p-4 shadow-sm">
+          <div className="flex items-center justify-start gap-1">
             <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
               !
             </div>
-            <span className="text-sm text-black">Квесты</span>
+            <span className="text-black">Квесты</span>
           </div>
+          <div className="text-black">{activeQuests?.length || 0}</div>
         </div>
       </div>
 

@@ -126,14 +126,41 @@ function RouteComponent() {
 
   const handleToFavorites = () => {
     if (isFavorite) {
-      removeFromFavorites.mutate({ userId: user?.id! });
+      removeFromFavorites.mutate({ userId: user?.id!, type: "user" });
       queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
         return old.filter((f: any) => f.toUserId !== user?.id);
       });
     } else {
-      addToFavorites.mutate({ userId: user?.id! });
+      addToFavorites.mutate({ userId: user?.id!, type: "user" });
       queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
-        return [...(old || []), { fromUserId: user?.id!, toUserId: user?.id! }];
+        return [
+          ...(old || []),
+          { fromUserId: user?.id!, toUserId: user?.id!, type: "user" },
+        ];
+      });
+    }
+  };
+
+  const isPhotoFavorite = useMemo(
+    () => (photo: string | undefined) => {
+      return userFavorites?.some((f) => f.type === "photo" && f.photo === photo);
+    },
+    [userFavorites],
+  );
+
+  const handlePhotoToFavorites = ({ photo }: { photo: string }) => {
+    if (isPhotoFavorite(photo)) {
+      removeFromFavorites.mutate({ userId: user?.id!, type: "photo", photo });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return old.filter((f: any) => f.photo !== photo);
+      });
+    } else {
+      addToFavorites.mutate({ userId: user?.id!, type: "photo", photo });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return [
+          ...(old || []),
+          { fromUserId: user?.id!, toUserId: user?.id!, photo, type: "photo" },
+        ];
       });
     }
   };
@@ -166,6 +193,10 @@ function RouteComponent() {
       });
     });
   };
+
+  console.log(allPhotos[currentIndex], "current photo");
+  console.log(user?.gallery, "gallery");
+  console.log(currentIndex, "currentIndex");
 
   return (
     <div className="scrollbar-hidden overflow-y-auto pt-14 pb-20">
@@ -458,6 +489,16 @@ function RouteComponent() {
           <XIcon
             className="absolute top-4 right-4 h-8 w-8 cursor-pointer text-white"
             onClick={() => setIsFullScreen(false)}
+          />
+
+          <Heart
+            className={cn(
+              "absolute right-4 bottom-4 h-10 w-10 cursor-pointer rounded-lg bg-neutral-500 p-2 text-white",
+              isPhotoFavorite(allPhotos[currentIndex]) && "text-red-500",
+            )}
+            onClick={() => {
+              handlePhotoToFavorites({ photo: allPhotos[currentIndex] });
+            }}
           />
         </div>
       )}

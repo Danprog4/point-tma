@@ -126,6 +126,10 @@ export const favoritesTable = pgTable("favorites", {
   fromUserId: bigint("from_user_id", { mode: "number" }),
   toUserId: bigint("to_user_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
+  photo: varchar("photo", { length: 255 }),
+  eventId: bigint("event_id", { mode: "number" }),
+  meetId: bigint("meet_id", { mode: "number" }),
+  type: varchar("type", { length: 255 }), // event, user, photo
 });
 
 export const historyTable = pgTable("history", {

@@ -203,6 +203,10 @@ export const router = {
     .input(
       z.object({
         userId: z.number(),
+        type: z.enum(["user", "event", "photo"]),
+        photo: z.string().optional(),
+        eventId: z.number().optional(),
+        meetId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -220,6 +224,10 @@ export const router = {
       await db.insert(favoritesTable).values({
         fromUserId: ctx.userId,
         toUserId: input.userId,
+        type: input.type,
+        photo: input.photo,
+        eventId: input.eventId,
+        meetId: input.meetId,
       });
 
       await db.insert(notificationsTable).values({
@@ -269,6 +277,10 @@ export const router = {
     .input(
       z.object({
         userId: z.number(),
+        type: z.enum(["user", "event", "photo"]),
+        photo: z.string().optional(),
+        eventId: z.number().optional(),
+        meetId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -289,6 +301,7 @@ export const router = {
           and(
             eq(favoritesTable.fromUserId, ctx.userId),
             eq(favoritesTable.toUserId, input.userId),
+            eq(favoritesTable.type, input.type),
           ),
         );
 

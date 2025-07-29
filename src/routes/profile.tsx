@@ -193,7 +193,7 @@ function RouteComponent() {
                     : getImageUrl(mainPhoto ?? "")
                 }
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full rounded-2xl object-cover"
                 onClick={() => {
                   setIsClicked(!isClicked);
                   setCurrentIndex(0);

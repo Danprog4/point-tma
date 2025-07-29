@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
@@ -29,6 +30,7 @@ function RouteComponent() {
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mainPhotoRaw, setMainPhotoRaw] = useState<string>("");
   const [bio, setBio] = useState<string>("");
   const queryClient = useQueryClient();
 
@@ -49,6 +51,7 @@ function RouteComponent() {
       setBio(user.bio);
     }
     if (user?.photo) {
+      setMainPhotoRaw(user.photo);
       setBase64(getImageUrl(user.photo));
     }
     if (user?.gallery) {
@@ -93,7 +96,38 @@ function RouteComponent() {
     }),
   );
 
+  const deletePhoto = useMutation(
+    trpc.main.deletePhoto.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.main.getUser.queryKey(),
+        });
+      },
+    }),
+  );
+
   console.log(gallery);
+  // month dropdown data and placeholder control
+  const monthOptions = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
+  const monthValue = birthday.split(".")[1] || "";
+  const filteredMonths =
+    monthValue.length > 0
+      ? monthOptions.filter((m) => m.toLowerCase().includes(monthValue.toLowerCase()))
+      : [];
+  const isBirthdayEmpty = birthday.split(".").every((p) => !p);
 
   const handleUpdateProfile = () => {
     const filteredGallery = gallery.filter(
@@ -103,6 +137,19 @@ function RouteComponent() {
     const photoToSend =
       selectedFile && base64 && base64.startsWith("data:image/") ? base64 : "";
 
+    // Format birthday as dd.MM.yyyy
+    const parts = birthday.split(".");
+    const dayStr = parts[0].padStart(2, "0");
+    const monthInput = parts[1];
+    let monthNumber;
+    if (/^\d+$/.test(monthInput)) {
+      monthNumber = monthInput.padStart(2, "0");
+    } else {
+      const idx = monthOptions.indexOf(monthInput);
+      monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
+    }
+    const yearStr = parts[2] || "";
+    const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
     updateProfile.mutate({
       email: email || "",
       phone: phone || "",
@@ -111,7 +158,7 @@ function RouteComponent() {
       gallery: filteredGallery,
       name: name,
       surname: surname || "",
-      birthday: birthday || "",
+      birthday: formattedBirthday,
       city: city || "",
     });
   };
@@ -143,6 +190,29 @@ function RouteComponent() {
     }
     const base64str = await convertToBase64(fileToProcess);
     setBase64(base64str);
+    setMainPhotoRaw(base64str);
+  };
+
+  // Handler to delete gallery photo on click and set main photo to next or clear
+  const handleGalleryClick = (item: string) => {
+    setGallery((prev) => {
+      const newGallery = prev.filter((i) => i !== item);
+      if (mainPhotoRaw) newGallery.push(mainPhotoRaw);
+      return newGallery;
+    });
+    setMainPhotoRaw(item);
+    setBase64(item.startsWith("data:image/") ? item : getImageUrl(item));
+    setSelectedFile(null);
+  };
+
+  // Handler to delete main photo without triggering input
+  const handleDeletePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setBase64(null);
+    setMainPhotoRaw("");
+    setSelectedFile(null);
+    deletePhoto.mutate({ photo: mainPhotoRaw });
   };
 
   console.log(user?.email);
@@ -165,37 +235,34 @@ function RouteComponent() {
           </h1>
         </div>
       </div>
-      <div className="mt-8 mb-4 flex flex-col items-center gap-2">
+      <div className="mt-8 flex w-full flex-col items-center gap-4">
         <label
           htmlFor="profile-photo-upload"
-          className="flex cursor-pointer flex-col items-center"
+          className="flex w-full cursor-pointer flex-col items-center gap-2"
         >
-          <div className="flex h-[82px] w-[82px] items-center justify-center overflow-hidden rounded-full bg-gray-300">
-            {base64 ? (
+          {base64 ? (
+            <div className="relative">
               <img
                 src={base64}
                 alt="Аватар"
-                className="h-full w-full rounded-full object-cover"
+                className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
               />
-            ) : user?.photo ? (
-              <img
-                src={getImageUrl(user.photo || "")}
-                alt="Аватар"
-                className="h-full w-full rounded-full object-cover"
-              />
-            ) : (
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="20" r="20" fill="#ABABAB" />
-                <path
-                  d="M20 22c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
-                  fill="#fff"
-                />
-              </svg>
-            )}
-          </div>
-          <div className="mt-2 text-sm font-medium text-[#9924FF]">
-            {user?.photo ? "Изменить" : "Добавить"}
-          </div>
+              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
+                <div className="z-[10000]" onClick={handleDeletePhoto}>
+                  Удалить
+                </div>
+                <div>Изменить</div>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-2 flex h-40 w-[92vw] items-center justify-center rounded-2xl bg-[#F0F0F0]">
+              <div className="flex flex-col items-center gap-2">
+                <AddPhoto />
+                <div className="text-sm text-[#9924FF]">Загрузить фото профиля</div>
+              </div>
+            </div>
+          )}
+
           <input
             id="profile-photo-upload"
             type="file"
@@ -212,7 +279,8 @@ function RouteComponent() {
           return (
             <div
               key={item || idx}
-              className="flex aspect-square w-[21.5%] items-center justify-center rounded-lg bg-[#F3E5FF]"
+              onClick={() => handleGalleryClick(item)}
+              className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
             >
               <img
                 src={isBase64 ? item : getImageUrl(item)}
@@ -265,16 +333,73 @@ function RouteComponent() {
             />
           </div>
         </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">День рождения</div>
-            <input
-              placeholder="00.00.0000"
-              type="text"
-              value={birthday || ""}
-              onChange={(e) => setBirthday(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
+        <div className="relative flex w-full gap-2">
+          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+            <div className="flex w-full flex-col items-start text-sm">
+              <div className="text-[#ABABAB]">День</div>
+              <input
+                type="number"
+                value={birthday ? birthday.split(".")[0] || "" : ""}
+                onChange={(e) => {
+                  const day = e.target.value;
+                  const parts = birthday ? birthday.split(".") : ["", "", ""];
+                  setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
+                }}
+                className="w-full border-none bg-transparent text-black outline-none"
+              />
+            </div>
+          </div>
+          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+            <div className="relative w-full">
+              <div className="text-[#ABABAB]">Месяц</div>
+              <input
+                type="text"
+                value={monthValue}
+                onClick={() => {
+                  if (monthValue) {
+                    const [d, , y] = birthday.split(".");
+                    setBirthday(`${d || ""}.${""}.${y || ""}`);
+                  }
+                }}
+                onChange={(e) => {
+                  const m = e.target.value;
+                  const [d, , y] = birthday.split(".");
+                  setBirthday(`${d || ""}.${m}.${y || ""}`);
+                }}
+                className="w-full border-none bg-transparent text-black outline-none"
+              />
+              {filteredMonths.length > 0 && !monthOptions.includes(monthValue) && (
+                <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white shadow-lg">
+                  {filteredMonths.map((m) => (
+                    <li
+                      key={m}
+                      onClick={() => {
+                        const [d, , y] = birthday.split(".");
+                        setBirthday(`${d || ""}.${m}.${y || ""}`);
+                      }}
+                      className="cursor-pointer px-2 py-1 hover:bg-gray-100"
+                    >
+                      {m}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+            <div className="flex w-full flex-col items-start text-sm">
+              <div className="text-[#ABABAB]">Год</div>
+              <input
+                type="number"
+                value={birthday ? birthday.split(".")[2] || "" : ""}
+                onChange={(e) => {
+                  const year = e.target.value;
+                  const parts = birthday ? birthday.split(".") : ["", "", ""];
+                  setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
+                }}
+                className="w-full border-none bg-transparent text-black outline-none"
+              />
+            </div>
           </div>
         </div>
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">

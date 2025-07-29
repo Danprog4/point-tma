@@ -39,7 +39,7 @@ export const Header = () => {
           <button className="relative flex" onClick={() => navigate({ to: "/notif" })}>
             <Bell className="h-5 w-5 text-gray-700" />
             <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-              {activeNotifications.length}
+              {activeNotifications.length > 9 ? "9+" : activeNotifications.length}
             </div>
           </button>
         ) : (

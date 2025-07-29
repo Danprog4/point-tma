@@ -273,6 +273,25 @@ export const router = {
     });
   }),
 
+  deletePhoto: procedure
+    .input(z.object({ photo: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db.delete(usersTable).where(eq(usersTable.photo, input.photo));
+
+      return user;
+    }),
+
   setInterests: procedure
     .input(z.object({ interests: z.record(z.string(), z.string()) }))
 

@@ -287,7 +287,32 @@ export const router = {
         });
       }
 
-      await db.delete(usersTable).where(eq(usersTable.photo, input.photo));
+      const currentUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!currentUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (currentUser.photo === input.photo) {
+        await db
+          .update(usersTable)
+          .set({ photo: null })
+          .where(eq(usersTable.id, ctx.userId));
+      } else if (currentUser.gallery && currentUser.gallery.includes(input.photo)) {
+        const updatedGallery = currentUser.gallery.filter(
+          (galleryPhoto) => galleryPhoto !== input.photo,
+        );
+
+        await db
+          .update(usersTable)
+          .set({ gallery: updatedGallery })
+          .where(eq(usersTable.id, ctx.userId));
+      }
 
       return user;
     }),

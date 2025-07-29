@@ -58,7 +58,25 @@ function RouteComponent() {
       setGallery(user.gallery);
     }
     if (user?.birthday) {
-      setBirthday(user.birthday);
+      // при загрузке конвертируем числовой месяц в название
+      const [day, monthStr, year] = user.birthday.split(".");
+      const monthNames = [
+        "Январь",
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь",
+      ];
+      const monthIndex = parseInt(monthStr, 10) - 1;
+      const monthName = monthNames[monthIndex] || monthStr || "";
+      setBirthday(`${day}.${monthName}.${year}`);
     }
     if (user?.city) {
       setCity(user.city);
@@ -79,7 +97,31 @@ function RouteComponent() {
     email === (user?.email ?? "") &&
     phone === (user?.phone ?? "") &&
     bio === (user?.bio ?? "") &&
-    birthday === (user?.birthday ?? "") &&
+    (() => {
+      if (!user?.birthday) return birthday === "";
+
+      // Convert user's numeric birthday to month name format for comparison with current state
+      const [userDay, userMonthStr, userYear] = user.birthday.split(".");
+      const monthNames = [
+        "Январь",
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь",
+      ];
+      const userMonthIndex = parseInt(userMonthStr, 10) - 1;
+      const userMonthName = monthNames[userMonthIndex] || userMonthStr || "";
+      const userBirthdayWithMonthName = `${userDay}.${userMonthName}.${userYear}`;
+
+      return birthday === userBirthdayWithMonthName;
+    })() &&
     city === (user?.city ?? "") &&
     !selectedFile &&
     gallery.length === (user?.gallery?.length ?? 0) &&

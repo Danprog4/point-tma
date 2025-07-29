@@ -13,6 +13,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/user-profile/$id")({
   component: RouteComponent,
@@ -339,6 +340,31 @@ function RouteComponent() {
           </div>
           {user?.bio ? (
             <div className="text-sm text-black">{user.bio}</div>
+          ) : (
+            <div className="text-sm text-black">
+              Расскажите о себе, чтобы другие пользователи могли узнать вас
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mx-4">
+        <div className="flex flex-col items-start justify-between py-3">
+          <h3 className="text-xl font-bold text-black">Интересы</h3>
+          {user?.interests &&
+          Object.entries(user.interests).filter(([key, value]) => value).length > 0 ? (
+            <div className="mt-2 grid w-full grid-cols-2 gap-2">
+              {Object.entries(user.interests)
+                .filter(([key, value]) => value)
+                .map(([key, value]) => (
+                  <div key={key} className="flex flex-col">
+                    <div className="text-xs text-gray-500 capitalize">
+                      {getInterestLabel(key)}
+                    </div>
+                    <div className="text-sm font-medium text-black">{value}</div>
+                  </div>
+                ))}
+            </div>
           ) : (
             <div className="text-sm text-black">
               Расскажите о себе, чтобы другие пользователи могли узнать вас

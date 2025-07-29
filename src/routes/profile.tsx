@@ -24,8 +24,10 @@ import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MenuItem } from "~/components/MenuItem";
 import { questsData } from "~/config/quests";
+import { steps } from "~/config/steps";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -43,6 +45,15 @@ function RouteComponent() {
     user?.photo || undefined,
   );
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>(user?.gallery ?? []);
+
+  const userSteps = Object.entries(user?.interests || {}).filter(
+    ([key, value]) => value,
+  ).length;
+
+  const getPercent = () => {
+    const totalSteps = steps.length - 1;
+    return ((userSteps / totalSteps) * 100).toFixed(0);
+  };
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -265,7 +276,9 @@ function RouteComponent() {
           <div className="flex w-full items-center justify-start gap-1 px-4">
             <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
               <div className="flex flex-col gap-2">
-                <div className="text-sm text-nowrap">Заполенность профиля 0%</div>
+                <div className="text-sm text-nowrap">
+                  Заполенность профиля {getPercent()}%
+                </div>
                 <div className="h-2 w-full rounded-full bg-white"></div>
               </div>
             </div>
@@ -280,8 +293,21 @@ function RouteComponent() {
           <div className="mx-4">
             <div className="flex flex-col items-start justify-between py-3">
               <h3 className="text-xl font-bold text-black">Интересы</h3>
-              {user?.interests ? (
-                <div className="text-sm text-black">{user.interests}</div>
+              {user?.interests &&
+              Object.entries(user.interests).filter(([key, value]) => value).length >
+                0 ? (
+                <div className="mt-2 grid w-full grid-cols-2 gap-2">
+                  {Object.entries(user.interests)
+                    .filter(([key, value]) => value)
+                    .map(([key, value]) => (
+                      <div key={key} className="flex flex-col">
+                        <div className="text-xs text-gray-500 capitalize">
+                          {getInterestLabel(key)}
+                        </div>
+                        <div className="text-sm font-medium text-black">{value}</div>
+                      </div>
+                    ))}
+                </div>
               ) : (
                 <div className="text-sm text-black">
                   Расскажите о себе, чтобы другие пользователи могли узнать вас

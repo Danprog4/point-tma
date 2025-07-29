@@ -1,39 +1,64 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { SettingsIcon } from "~/components/Icons/Settings";
+import { steps } from "~/config/steps";
+import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/fill-profile")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const setInterestsMutation = useMutation(
+    trpc.main.setInterests.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
+
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [isSettings, setIsSettings] = useState(false);
   const [isClicked, setIsClicked] = useState<number | null>(null);
+  const [interests, setInterests] = useState<{
+    pets?: string;
+    alcohol?: string;
+    smoking?: string;
+    animals?: string;
+    sports?: string;
+    education?: string;
+    smokingHabits?: string;
+    children?: string;
+    interests?: string;
+    zodiacSign?: string;
+    music?: string;
+    movies?: string;
+    religion?: string;
+    relationshipGoal?: string;
+    hobbies?: string;
+    books?: string;
+    personalityType?: string;
+  }>({});
 
-  const steps = [
-    {
-      id: 0,
-      question: "У вас есть домашнее животное?",
-      options: ["Да", "Нет"],
-    },
-    {
-      id: 1,
-      question: "Отношение к алкоголю?",
-      options: ["Не употребляю", "Умеренно", "Часто", "Высшее"],
-    },
-    {
-      id: 2,
-      question: "Отношение к курению?",
-      options: ["Не курю", "Умеренно", "Часто", "Высшее"],
-    },
-    {
-      id: 3,
-      question: "Ура, тест пройден! ",
-    },
-  ];
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (user && !initialized) {
+      setInterests(user.interests ?? {});
+      const nextStep = steps.findIndex((s) => {
+        const key = getAnswerKeyByStepId(s.id);
+        return key && !user.interests?.[key];
+      });
+      setStep(nextStep >= 0 ? nextStep : steps.length - 1);
+      setInitialized(true);
+    }
+  }, [user, initialized]);
 
   useEffect(() => {
     if (isClicked !== null) {
@@ -48,16 +73,86 @@ function RouteComponent() {
   console.log(isClicked);
 
   const getPercent = () => {
-    return ((step / (steps.length - 1)) * 100).toFixed(0);
+    const answeredCount = Object.values(interests).filter(Boolean).length;
+    const totalSteps = steps.length - 1;
+    return ((answeredCount / totalSteps) * 100).toFixed(0);
+  };
+
+  const getAnswerKeyByStepId = (
+    id: number,
+  ):
+    | "pets"
+    | "alcohol"
+    | "smoking"
+    | "animals"
+    | "sports"
+    | "education"
+    | "smokingHabits"
+    | "children"
+    | "interests"
+    | "zodiacSign"
+    | "music"
+    | "movies"
+    | "religion"
+    | "relationshipGoal"
+    | "hobbies"
+    | "books"
+    | "personalityType"
+    | undefined => {
+    switch (id) {
+      case 0:
+        return "pets";
+      case 1:
+        return "alcohol";
+      case 2:
+        return "smoking";
+      case 3:
+        return "animals";
+      case 4:
+        return "sports";
+      case 5:
+        return "education";
+      case 6:
+        return "smokingHabits";
+      case 7:
+        return "children";
+      case 8:
+        return "interests";
+      case 9:
+        return "zodiacSign";
+      case 10:
+        return "music";
+      case 11:
+        return "movies";
+      case 12:
+        return "religion";
+      case 13:
+        return "relationshipGoal";
+      case 14:
+        return "hobbies";
+      case 15:
+        return "books";
+      case 16:
+        return "personalityType";
+      default:
+        return undefined;
+    }
+  };
+
+  const handleSetInterests = () => {
+    setInterestsMutation.mutate({ interests });
   };
 
   const handleback = () => {
+    handleSetInterests();
     if (isSettings) {
       setIsSettings(false);
     } else {
       navigate({ to: "/profile" });
     }
   };
+
+  console.log(interests);
 
   return (
     <div className="flex flex-col px-4">
@@ -119,7 +214,13 @@ function RouteComponent() {
                 <div className="mt-4 flex w-full flex-col gap-8">
                   {s.options?.map((op, index) => (
                     <div
-                      onClick={() => setIsClicked(index)}
+                      onClick={() => {
+                        setIsClicked(index);
+                        const key = getAnswerKeyByStepId(s.id);
+                        if (key) {
+                          setInterests((prev) => ({ ...prev, [key]: op }));
+                        }
+                      }}
                       className="flex cursor-pointer items-center justify-between px-4"
                     >
                       <div>{op}</div>

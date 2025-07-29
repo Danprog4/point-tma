@@ -273,6 +273,19 @@ export const router = {
     });
   }),
 
+  setInterests: procedure
+    .input(z.object({ interests: z.record(z.string(), z.string()) }))
+
+    .mutation(async ({ ctx, input }) => {
+      console.log("input.interests:", input.interests);
+      await db
+        .update(usersTable)
+        .set({ interests: input.interests })
+        .where(eq(usersTable.id, ctx.userId));
+
+      return input.interests;
+    }),
+
   removeFromFavorites: procedure
     .input(
       z.object({

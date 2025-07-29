@@ -18,7 +18,28 @@ export const usersTable = pgTable("users", {
   login: varchar("login", { length: 255 }),
   birthday: varchar("birthday", { length: 255 }),
   city: varchar("city", { length: 255 }),
-  interests: varchar("interests", { length: 255 }),
+  interests: jsonb("interests").$type<{
+    pets?: string;
+    alcohol?: string;
+    smoking?: string;
+    animals?: string;
+    sports?: string;
+    education?: string;
+    smokingHabits?: string;
+    children?: string;
+    interests?: string;
+    zodiacSign?: string;
+    music?: string;
+    movies?: string;
+    religion?: string;
+    relationshipGoal?: string;
+    hobbies?: string;
+    books?: string;
+    personalityType?: string;
+    diet?: string;
+    politicalViews?: string;
+    badHabits?: string;
+  }>(),
   email: varchar("email", { length: 255 }),
   phone: varchar("phone", { length: 255 }),
   bio: varchar("bio", { length: 255 }),

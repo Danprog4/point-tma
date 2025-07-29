@@ -63,16 +63,14 @@ function RouteComponent() {
 
   useEffect(() => {
     if (isClicked !== null) {
-      setTimeout(() => {
-        if (cameFromSettings) {
-          setIsSettings(true);
-          setCameFromSettings(false);
-          setIsClicked(null);
-        } else {
-          setStep(step + 1);
-          setIsClicked(null);
-        }
-      }, 1000);
+      if (cameFromSettings) {
+        setIsSettings(true);
+        setCameFromSettings(false);
+        setIsClicked(null);
+      } else {
+        setStep(step + 1);
+        setIsClicked(null);
+      }
     }
   }, [isClicked]);
 

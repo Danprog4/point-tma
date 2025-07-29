@@ -454,7 +454,7 @@ function RouteComponent() {
       </div>
 
       {isFullScreen && allPhotos.length > 0 && (
-        <div className="bg-opacity-90 fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">
           {allPhotos.length > 1 && (
             <ChevronLeft
               className="absolute left-4 h-10 w-10 cursor-pointer text-white"

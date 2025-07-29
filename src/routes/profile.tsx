@@ -279,7 +279,12 @@ function RouteComponent() {
                 <div className="text-sm text-nowrap">
                   Заполенность профиля {getPercent()}%
                 </div>
-                <div className="h-2 w-full rounded-full bg-white"></div>
+                <div className="h-2 w-full rounded-full bg-white">
+                  <div
+                    className="h-2 rounded-full bg-[#9924FF]"
+                    style={{ width: `${getPercent()}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
             <div

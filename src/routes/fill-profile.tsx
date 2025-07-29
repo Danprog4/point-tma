@@ -24,6 +24,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [isSettings, setIsSettings] = useState(false);
+  const [cameFromSettings, setCameFromSettings] = useState(false);
   const [isClicked, setIsClicked] = useState<number | null>(null);
   const [interests, setInterests] = useState<{
     pets?: string;
@@ -63,8 +64,14 @@ function RouteComponent() {
   useEffect(() => {
     if (isClicked !== null) {
       setTimeout(() => {
-        setStep(step + 1);
-        setIsClicked(null);
+        if (cameFromSettings) {
+          setIsSettings(true);
+          setCameFromSettings(false);
+          setIsClicked(null);
+        } else {
+          setStep(step + 1);
+          setIsClicked(null);
+        }
       }, 1000);
     }
   }, [isClicked]);
@@ -153,6 +160,7 @@ function RouteComponent() {
   };
 
   console.log(interests);
+  console.log(cameFromSettings);
 
   return (
     <div className="flex flex-col px-4">
@@ -178,13 +186,25 @@ function RouteComponent() {
           {steps
             .filter((s) => s.id !== steps.length - 1)
             .map((s) => {
+              const key = getAnswerKeyByStepId(s.id);
+              const answered = key ? Boolean(interests[key]) : false;
               return (
-                <div className="mt-8 flex flex-col items-start">
-                  <div className="flex w-full items-center justify-between">
-                    <div className="m-4 text-xl font-bold">{s.question}</div>
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]">
+                <div
+                  key={s.id}
+                  className="mt-8 flex w-full cursor-pointer items-center justify-between px-4"
+                  onClick={() => {
+                    setCameFromSettings(true);
+                    setStep(s.id);
+                    setIsSettings(false);
+                  }}
+                >
+                  <div className="text-xl font-bold">{s.question}</div>
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]">
+                    {answered ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
                       <PlusIcon />
-                    </div>
+                    )}
                   </div>
                 </div>
               );

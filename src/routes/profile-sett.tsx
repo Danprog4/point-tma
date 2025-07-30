@@ -179,22 +179,26 @@ function RouteComponent() {
         (item) => typeof item === "string" && item.length > 0,
       );
 
-      // Логируем gallery
-      console.log("Filtered gallery:", filteredGallery);
+      // Показать количество картинок галереи
+      toast(`Gallery: ${filteredGallery.length} images`);
 
       // Отправляемое фото: либо base64, либо ID
       const photoToSend = mainPhotoRaw;
 
-      // Логируем photoToSend (если base64 — только часть данных, чтобы не засорять консоль)
-      if (typeof photoToSend === "string" && photoToSend.length > 100) {
-        console.log("Photo to send (base64 head):", photoToSend.substring(0, 100));
-        console.log("Photo to send (base64 mime):", photoToSend.split(";")[0]);
+      // Показать что отправляем как фото
+      if (
+        typeof photoToSend === "string" &&
+        photoToSend.startsWith("data:image/") &&
+        photoToSend.length > 100
+      ) {
+        toast(`Base64 head: ${photoToSend.substring(0, 100)}`);
+        toast(`MIME: ${photoToSend.split(";")[0]}`);
       } else {
-        console.log("Photo to send (ID):", photoToSend);
+        toast(`Photo ID: ${photoToSend}`);
       }
 
-      // Логируем входные данные дня рождения
-      console.log("Birthday before formatting:", birthday);
+      // Показать исходную дату рождения
+      toast(`Birthday input: ${birthday}`);
 
       // Format birthday as dd.MM.yyyy
       const parts = birthday.split(".");
@@ -217,9 +221,10 @@ function RouteComponent() {
       }
 
       const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
-      console.log("Formatted birthday:", formattedBirthday);
+      // Показать форматированную дату рождения
+      toast(`Formatted birthday: ${formattedBirthday}`);
 
-      // Логируем все поля перед отправкой
+      // Подготовить и показать payload для отправки
       const payload = {
         email: email || "",
         phone: phone || "",
@@ -231,7 +236,21 @@ function RouteComponent() {
         birthday: formattedBirthday,
         city: city || "",
       };
-      console.log("updateProfile payload:", payload);
+      toast(
+        `Payload: ${JSON.stringify({
+          email: payload.email,
+          phone: payload.phone,
+          name: payload.name,
+          surname: payload.surname,
+          birthday: payload.birthday,
+          city: payload.city,
+          bio: payload.bio,
+          galleryCount: payload.gallery.length,
+          photo: photoToSend.startsWith("data:image/")
+            ? photoToSend.substring(0, 50)
+            : payload.photo,
+        })}`,
+      );
 
       await updateProfile.mutateAsync(payload);
 
@@ -247,13 +266,23 @@ function RouteComponent() {
     if (!file) return;
 
     let fileToProcess = file;
-
+    // Convert HEIC to JPEG on mobile
     if (isHeicFile(fileToProcess)) {
-      fileToProcess = await convertHeicToPng(fileToProcess);
+      try {
+        fileToProcess = await convertHeicToPng(fileToProcess);
+      } catch (error: any) {
+        toast.error(error.message || "Не удалось конвертировать изображение");
+        return;
+      }
     }
-
-    const base64str = await convertToBase64(fileToProcess);
-
+    // Convert to Base64
+    let base64str: string;
+    try {
+      base64str = await convertToBase64(fileToProcess);
+    } catch (error: any) {
+      toast.error(error.message || "Не удалось прочитать изображение");
+      return;
+    }
     setGallery((prev) => [...prev, base64str]);
   };
 
@@ -263,11 +292,23 @@ function RouteComponent() {
     setSelectedFile(file);
 
     let fileToProcess: File = file;
-    // If file is HEIC, convert to PNG first
+    // Convert HEIC to JPEG on mobile
     if (isHeicFile(fileToProcess)) {
-      fileToProcess = await convertHeicToPng(fileToProcess);
+      try {
+        fileToProcess = await convertHeicToPng(fileToProcess);
+      } catch (error: any) {
+        toast.error(error.message || "Не удалось конвертировать изображение");
+        return;
+      }
     }
-    const base64str = await convertToBase64(fileToProcess);
+    // Convert to Base64
+    let base64str: string;
+    try {
+      base64str = await convertToBase64(fileToProcess);
+    } catch (error: any) {
+      toast.error(error.message || "Не удалось прочитать изображение");
+      return;
+    }
     setBase64(base64str);
     setMainPhotoRaw(base64str);
   };

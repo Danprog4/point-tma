@@ -252,24 +252,18 @@ function RouteComponent() {
   const handleDeletePhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const originalPhoto = mainPhotoRaw;
     if (gallery.length > 0) {
       const [first, ...rest] = gallery;
-
+      // Promote first gallery photo to main in UI
       setGallery(rest);
       setMainPhotoRaw(first);
       setBase64(first.startsWith("data:image/") ? first : getImageUrl(first));
       setSelectedFile(null);
-      // Delete the original main photo
-      deletePhoto.mutate({ photo: originalPhoto });
-      // Remove promoted photo from gallery on server
-      deletePhoto.mutate({ photo: first });
     } else {
-      // No gallery photos, just delete main
+      // No gallery photos, just clear main photo in UI
       setBase64(null);
       setMainPhotoRaw("");
       setSelectedFile(null);
-      deletePhoto.mutate({ photo: originalPhoto });
     }
   };
 
@@ -508,17 +502,26 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col">
-        <div className="flex items-center justify-between px-4 py-4">
-          <div className="text-2xl font-bold">Интересы</div>
+      <div className="flex flex-col px-4">
+        <div className="flex items-center justify-between py-4">
+          <div className="text-2xl font-bold">О себе</div>
           <div className="flex flex-col items-center">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]">
               <PlusIcon />
             </div>
           </div>
         </div>
-        <div className="px-4 text-start text-sm text-gray-500">
-          У вас пока нет интересов
+        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+          <div className="flex w-full flex-col items-start text-sm">
+            <div className="text-[#ABABAB]">О себе</div>
+            <input
+              placeholder="Введите описание"
+              type="text"
+              value={bio || ""}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full border-none bg-transparent text-black outline-none"
+            />
+          </div>
         </div>
       </div>
       <div className="flex flex-col">

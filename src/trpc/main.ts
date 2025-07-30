@@ -144,18 +144,24 @@ export const router = {
         });
       }
 
-      // If incoming photo is base64, upload; else if it's an existing ID, set it directly
-      if (input.photo && input.photo.startsWith("data:image/")) {
+      // Handle photo: upload new, set existing ID, or clear if empty
+      if (input.photo.startsWith("data:image/")) {
         const imageUUID = await uploadBase64Image(input.photo);
         await db
           .update(usersTable)
           .set({ photo: imageUUID })
           .where(eq(usersTable.id, ctx.userId));
-      } else if (input.photo) {
+      } else if (input.photo !== "") {
         // Set existing photo ID
         await db
           .update(usersTable)
           .set({ photo: input.photo })
+          .where(eq(usersTable.id, ctx.userId));
+      } else {
+        // Clear photo
+        await db
+          .update(usersTable)
+          .set({ photo: null })
           .where(eq(usersTable.id, ctx.userId));
       }
 

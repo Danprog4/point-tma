@@ -125,7 +125,8 @@ function RouteComponent() {
     city === (user?.city ?? "") &&
     !selectedFile &&
     gallery.length === (user?.gallery?.length ?? 0) &&
-    gallery.every((item, index) => item === user?.gallery?.[index]);
+    gallery.every((item, index) => item === user?.gallery?.[index]) &&
+    mainPhotoRaw === (user?.photo ?? "");
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
@@ -176,8 +177,8 @@ function RouteComponent() {
       (item) => typeof item === "string" && item.length > 0,
     );
 
-    const photoToSend =
-      selectedFile && base64 && base64.startsWith("data:image/") ? base64 : "";
+    // Send current mainPhotoRaw (either new base64 or existing ID)
+    const photoToSend = mainPhotoRaw;
 
     // Format birthday as dd.MM.yyyy
     const parts = birthday.split(".");
@@ -251,10 +252,25 @@ function RouteComponent() {
   const handleDeletePhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    setBase64(null);
-    setMainPhotoRaw("");
-    setSelectedFile(null);
-    deletePhoto.mutate({ photo: mainPhotoRaw });
+    const originalPhoto = mainPhotoRaw;
+    if (gallery.length > 0) {
+      const [first, ...rest] = gallery;
+
+      setGallery(rest);
+      setMainPhotoRaw(first);
+      setBase64(first.startsWith("data:image/") ? first : getImageUrl(first));
+      setSelectedFile(null);
+      // Delete the original main photo
+      deletePhoto.mutate({ photo: originalPhoto });
+      // Remove promoted photo from gallery on server
+      deletePhoto.mutate({ photo: first });
+    } else {
+      // No gallery photos, just delete main
+      setBase64(null);
+      setMainPhotoRaw("");
+      setSelectedFile(null);
+      deletePhoto.mutate({ photo: originalPhoto });
+    }
   };
 
   console.log(user?.email);

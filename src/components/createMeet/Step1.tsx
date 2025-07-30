@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
+import imageCompression from "browser-image-compression";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
@@ -110,21 +112,37 @@ export const Step1 = ({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) {
+    if (!file) return;
+    setSelectedFile(file);
+    let fileToProcess: File = file;
+    if (isHeicFile(fileToProcess)) {
+      try {
+        fileToProcess = await convertHeicToPng(fileToProcess);
+      } catch (error: any) {
+        toast.error(`❌ Преобразование HEIC в PNG не удалось: ${error.message}`);
+        return;
+      }
+    }
+    // Compress image to 1MB max
+    try {
+      const compressedFile = await imageCompression(fileToProcess, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      fileToProcess = compressedFile;
+    } catch (error: any) {
+      toast.error(`❌ Сжатие изображения не удалось: ${error.message}`);
       return;
     }
-    setSelectedFile(file);
-
-    let fileToProcess: File = file;
-
-    // If file is HEIC, convert to PNG first
-    if (isHeicFile(fileToProcess)) {
-      fileToProcess = await convertHeicToPng(fileToProcess);
+    let base64str: string;
+    try {
+      base64str = await convertToBase64(fileToProcess);
+    } catch (error: any) {
+      toast.error(`❌ Преобразование в Base64 не удалось: ${error.message}`);
+      return;
     }
-
-    const base64 = await convertToBase64(fileToProcess);
-
-    setBase64(base64);
+    setBase64(base64str);
   };
 
   useEffect(() => {

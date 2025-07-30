@@ -90,13 +90,17 @@ export const meetingRouter = createTRPCRouter({
       return meet;
     }),
 
-  getMeetings: procedure.query(async ({ ctx }) => {
-    const { userId } = ctx;
+  getMeetings: procedure
+    .input(z.object({ userId: z.number().optional() }))
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
 
-    const meetings = await db.query.meetTable.findMany({});
+      const meetings = await db.query.meetTable.findMany({
+        where: eq(meetTable.userId, userId || ctx.userId),
+      });
 
-    return meetings;
-  }),
+      return meetings;
+    }),
 
   inviteUsers: procedure
     .input(

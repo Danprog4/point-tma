@@ -53,6 +53,7 @@ export const meetTable = pgTable("meets", {
   idOfEvent: bigint("id_of_event", { mode: "number" }),
   typeOfEvent: varchar("type_of_event", { length: 255 }),
   isCustom: boolean("is_custom").default(false),
+  isCompleted: boolean("is_completed").default(false),
 });
 
 export const reviewsTable = pgTable("reviews", {

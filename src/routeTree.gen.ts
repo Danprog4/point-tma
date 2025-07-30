@@ -30,6 +30,7 @@ import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
 import { Route as UserQuestsPageImport } from './routes/user-quests.$page'
 import { Route as UserProfileIdImport } from './routes/user-profile.$id'
+import { Route as UserMeetingsIdImport } from './routes/user-meetings.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
 import { Route as AllNameImport } from './routes/all.$name'
 import { Route as EventNameIdImport } from './routes/event.$name.$id'
@@ -147,6 +148,12 @@ const UserQuestsPageRoute = UserQuestsPageImport.update({
 const UserProfileIdRoute = UserProfileIdImport.update({
   id: '/user-profile/$id',
   path: '/user-profile/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UserMeetingsIdRoute = UserMeetingsIdImport.update({
+  id: '/user-meetings/$id',
+  path: '/user-meetings/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -305,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeetIdImport
       parentRoute: typeof rootRoute
     }
+    '/user-meetings/$id': {
+      id: '/user-meetings/$id'
+      path: '/user-meetings/$id'
+      fullPath: '/user-meetings/$id'
+      preLoaderRoute: typeof UserMeetingsIdImport
+      parentRoute: typeof rootRoute
+    }
     '/user-profile/$id': {
       id: '/user-profile/$id'
       path: '/user-profile/$id'
@@ -351,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
   '/meet/$id': typeof MeetIdRoute
+  '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
@@ -376,6 +391,7 @@ export interface FileRoutesByTo {
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
   '/meet/$id': typeof MeetIdRoute
+  '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
@@ -402,6 +418,7 @@ export interface FileRoutesById {
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
   '/meet/$id': typeof MeetIdRoute
+  '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
@@ -429,6 +446,7 @@ export interface FileRouteTypes {
     | '/skills'
     | '/all/$name'
     | '/meet/$id'
+    | '/user-meetings/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
@@ -453,6 +471,7 @@ export interface FileRouteTypes {
     | '/skills'
     | '/all/$name'
     | '/meet/$id'
+    | '/user-meetings/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
@@ -477,6 +496,7 @@ export interface FileRouteTypes {
     | '/skills'
     | '/all/$name'
     | '/meet/$id'
+    | '/user-meetings/$id'
     | '/user-profile/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
@@ -503,6 +523,7 @@ export interface RootRouteChildren {
   SkillsRoute: typeof SkillsRoute
   AllNameRoute: typeof AllNameRoute
   MeetIdRoute: typeof MeetIdRoute
+  UserMeetingsIdRoute: typeof UserMeetingsIdRoute
   UserProfileIdRoute: typeof UserProfileIdRoute
   UserQuestsPageRoute: typeof UserQuestsPageRoute
   EventNameIdRoute: typeof EventNameIdRoute
@@ -528,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   SkillsRoute: SkillsRoute,
   AllNameRoute: AllNameRoute,
   MeetIdRoute: MeetIdRoute,
+  UserMeetingsIdRoute: UserMeetingsIdRoute,
   UserProfileIdRoute: UserProfileIdRoute,
   UserQuestsPageRoute: UserQuestsPageRoute,
   EventNameIdRoute: EventNameIdRoute,
@@ -562,6 +584,7 @@ export const routeTree = rootRoute
         "/skills",
         "/all/$name",
         "/meet/$id",
+        "/user-meetings/$id",
         "/user-profile/$id",
         "/user-quests/$page",
         "/event/$name/$id"
@@ -623,6 +646,9 @@ export const routeTree = rootRoute
     },
     "/meet/$id": {
       "filePath": "meet.$id.tsx"
+    },
+    "/user-meetings/$id": {
+      "filePath": "user-meetings.$id.tsx"
     },
     "/user-profile/$id": {
       "filePath": "user-profile.$id.tsx"

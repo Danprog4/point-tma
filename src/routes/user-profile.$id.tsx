@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
+import { Calendar } from "~/components/Icons/Calendar";
 import { ProfileMore } from "~/components/ProfileMore";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
@@ -41,7 +42,10 @@ function RouteComponent() {
   const [isClicked, setIsClicked] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const { data: userMeetings } = useQuery(
+    trpc.meetings.getMeetings.queryOptions({ userId: Number(id) }),
+  );
+  console.log(userMeetings, "userMeetings");
   const allPhotos = useMemo(() => {
     return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
   }, [mainPhoto, galleryPhotos]);
@@ -169,6 +173,8 @@ function RouteComponent() {
     },
     [userFavorites],
   );
+
+  console.log(userMeetings, "userMeetings");
 
   const handlePhotoToFavorites = ({ photo }: { photo: string }) => {
     if (isPhotoFavorite(photo)) {
@@ -357,15 +363,36 @@ function RouteComponent() {
             )}
           </div>
 
-          <div className="px-4 pb-4">
-            <div className="flex items-center justify-start gap-2 rounded-xl bg-yellow-400 p-4 shadow-sm">
-              <div className="flex items-center justify-start gap-1">
-                <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
-                  !
+          <div className="mt-4 mb-6 px-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
+                <div className="mb-1 text-center text-xl font-bold text-black">
+                  {activeQuests?.length || 0}
                 </div>
-                <span className="text-black">Квесты</span>
+                <div className="flex items-center justify-center gap-1">
+                  <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
+                    !
+                  </div>
+                  <span className="text-sm text-black">Квесты</span>
+                </div>
               </div>
-              <div className="text-black">{activeQuests?.length || 0}</div>
+              <div
+                className="rounded-xl bg-purple-600 p-3 shadow-sm"
+                onClick={() => {
+                  navigate({
+                    to: "/user-meetings/$id",
+                    params: { id: user?.id!.toString()! },
+                  });
+                }}
+              >
+                <div className="mb-1 text-center text-xl font-bold text-white">
+                  {userMeetings?.length || 0}
+                </div>
+                <div className="flex items-center justify-center gap-1">
+                  <Calendar height={16} width={16} />
+                  <span className="text-sm text-white">Встречи</span>
+                </div>
+              </div>
             </div>
           </div>
 

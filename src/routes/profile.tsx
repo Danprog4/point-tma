@@ -289,9 +289,16 @@ function RouteComponent() {
             </div>
             <div
               className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
-              onClick={() => navigate({ to: "/fill-profile" })}
+              onClick={() =>
+                navigate({
+                  to: "/fill-profile",
+                  search: { isSettingsSearch: getPercent() === "100" ? "true" : "false" },
+                })
+              }
             >
-              <div className="text-white">Заполнить</div>
+              <div className="text-white">
+                {getPercent() === "100" ? "Изменить" : "Заполнить"}
+              </div>
             </div>
           </div>
 

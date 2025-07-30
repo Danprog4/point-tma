@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "~/components/Icons/Plus";
@@ -22,8 +22,12 @@ function RouteComponent() {
   );
 
   const navigate = useNavigate();
+  const { isSettingsSearch } = useSearch({ from: "/fill-profile" }) as {
+    isSettingsSearch: boolean;
+  };
+  console.log(isSettingsSearch, "isSettingsSearch");
   const [step, setStep] = useState(0);
-  const [isSettings, setIsSettings] = useState(false);
+  const [isSettings, setIsSettings] = useState(isSettingsSearch || false);
   const [cameFromSettings, setCameFromSettings] = useState(false);
   const [isClicked, setIsClicked] = useState<number | null>(null);
   const [interests, setInterests] = useState<{

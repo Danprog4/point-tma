@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import imageCompression from "browser-image-compression";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -236,6 +237,20 @@ function RouteComponent() {
         return;
       }
     }
+    // Compress image to 1MB max
+    toast(`🗜️ Compressing image...`);
+    try {
+      const compressedFile = await imageCompression(fileToProcess, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      toast(`✅ Compressed: ${fileToProcess.size} → ${compressedFile.size} bytes`);
+      fileToProcess = compressedFile;
+    } catch (error: any) {
+      toast.error(`❌ Compression failed: ${error.message}`);
+      return;
+    }
     let base64str: string;
     try {
       base64str = await convertToBase64(fileToProcess);
@@ -262,6 +277,20 @@ function RouteComponent() {
         toast.error(`❌ HEIC conversion failed: ${error.message}`);
         return;
       }
+    }
+    // Compress image to 1MB max
+    toast(`🗜️ Compressing image...`);
+    try {
+      const compressedFile = await imageCompression(fileToProcess, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      toast(`✅ Compressed: ${fileToProcess.size} → ${compressedFile.size} bytes`);
+      fileToProcess = compressedFile;
+    } catch (error: any) {
+      toast.error(`❌ Compression failed: ${error.message}`);
+      return;
     }
     let base64str: string;
     try {

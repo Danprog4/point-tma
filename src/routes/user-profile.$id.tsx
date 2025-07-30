@@ -396,6 +396,7 @@ function RouteComponent() {
                 <div className="mt-2 grid w-full grid-cols-2 gap-2">
                   {Object.entries(user.interests)
                     .filter(([key, value]) => value)
+                    .slice(0, 4)
                     .map(([key, value]) => (
                       <div key={key} className="flex flex-col">
                         <div className="text-xs text-gray-500 capitalize">

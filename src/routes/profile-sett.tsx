@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { PlusIcon } from "~/components/Icons/Plus";
+import { steps } from "~/config/steps";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -319,6 +320,15 @@ function RouteComponent() {
     }
   };
 
+  const userSteps = Object.entries(user?.interests || {}).filter(
+    ([key, value]) => value,
+  ).length;
+
+  const getPercent = () => {
+    const totalSteps = steps.length - 1;
+    return ((userSteps / totalSteps) * 100).toFixed(0);
+  };
+
   return (
     <div className="h-full overflow-y-auto pb-24">
       <div className="flex items-center justify-between p-4 pb-2">
@@ -539,20 +549,45 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col px-4">
-        <div className="flex items-center justify-between py-4">
-          <div className="text-2xl font-bold">О себе</div>
-        </div>
+      <div className="flex flex-col px-4 py-4">
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">О себе</div>
-            <input
+            <div className="text-[#ABABAB]">Обо мне</div>
+            <textarea
               placeholder="Введите описание"
-              type="text"
               value={bio || ""}
               onChange={(e) => setBio(e.target.value)}
               className="w-full border-none bg-transparent text-black outline-none"
             />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex w-full items-center justify-start gap-1 px-4">
+        <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
+          <div className="flex flex-col gap-2">
+            <div className="text-sm text-nowrap">
+              Заполенность профиля {getPercent()}%
+            </div>
+            <div className="h-2 w-full rounded-full bg-white">
+              <div
+                className="h-2 rounded-full bg-[#9924FF]"
+                style={{ width: `${getPercent()}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
+          onClick={() =>
+            navigate({
+              to: "/fill-profile",
+              search: { isSettingsSearch: getPercent() === "100" ? "true" : "false" },
+            })
+          }
+        >
+          <div className="text-white">
+            {getPercent() === "100" ? "Изменить" : "Заполнить"}
           </div>
         </div>
       </div>

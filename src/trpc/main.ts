@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -319,13 +319,24 @@ export const router = {
 
   setInterests: procedure
     .input(z.object({ interests: z.record(z.string(), z.string()) }))
-
     .mutation(async ({ ctx, input }) => {
       console.log("input.interests:", input.interests);
-      await db
-        .update(usersTable)
-        .set({ interests: input.interests })
-        .where(eq(usersTable.id, ctx.userId));
+
+      try {
+        await db
+          .update(usersTable)
+          .set({ interests: sql`${sql.param(JSON.stringify(input.interests))}::jsonb` })
+          .where(eq(usersTable.id, ctx.userId));
+      } catch (error) {
+        const causeMessage =
+          (error as any).cause?.message ||
+          (error instanceof Error ? error.message : "Failed to update interests");
+        console.error("Database error cause:", (error as any).cause || error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: causeMessage,
+        });
+      }
 
       return input.interests;
     }),

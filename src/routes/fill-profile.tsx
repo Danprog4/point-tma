@@ -44,6 +44,9 @@ function RouteComponent() {
     hobbies?: string;
     books?: string;
     personalityType?: string;
+    diet?: string;
+    politicalViews?: string;
+    badHabits?: string;
   }>({});
 
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -79,8 +82,8 @@ function RouteComponent() {
 
   const getPercent = () => {
     const answeredCount = Object.values(interests).filter(Boolean).length;
-    const totalSteps = steps.length - 1;
-    return ((answeredCount / totalSteps) * 100).toFixed(0);
+    const totalQuestions = steps.filter((s) => s.options && s.options.length > 0).length;
+    return ((answeredCount / totalQuestions) * 100).toFixed(0);
   };
 
   const getAnswerKeyByStepId = (
@@ -103,6 +106,9 @@ function RouteComponent() {
     | "hobbies"
     | "books"
     | "personalityType"
+    | "diet"
+    | "politicalViews"
+    | "badHabits"
     | undefined => {
     switch (id) {
       case 0:
@@ -139,6 +145,12 @@ function RouteComponent() {
         return "books";
       case 16:
         return "personalityType";
+      case 17:
+        return "diet";
+      case 18:
+        return "politicalViews";
+      case 19:
+        return "badHabits";
       default:
         return undefined;
     }
@@ -156,6 +168,15 @@ function RouteComponent() {
       navigate({ to: "/profile" });
     }
   };
+
+  useEffect(() => {
+    if (step === steps.length - 1) {
+      handleSetInterests();
+      setTimeout(() => {
+        navigate({ to: "/profile" });
+      }, 1000);
+    }
+  }, [step]);
 
   console.log(interests);
   console.log(cameFromSettings);

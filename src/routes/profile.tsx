@@ -203,7 +203,7 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4 pt-4">
+          <div className="scrollbar-hidden scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4 pt-4">
             {galleryPhotos.map((img, idx) => (
               <img
                 key={idx}
@@ -251,12 +251,12 @@ function RouteComponent() {
           {/* TODO: add real followers and real friends count*/}
           <div className="flex items-center justify-center gap-4 px-4 pb-4">
             <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4">
-              <div>0</div>
-              <div className="text-sm text-neutral-500">Подписчиков</div>
+              <div>{uniqueFriends.length || 0}</div>
+              <div className="text-sm text-neutral-500">Подписчики</div>
             </div>
             <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4">
-              <div>0</div>
-              <div className="text-sm text-neutral-500">Друзей</div>
+              <div>{uniqueFriends.length || 0}</div>
+              <div className="text-sm text-neutral-500">Друзья</div>
             </div>
           </div>
 

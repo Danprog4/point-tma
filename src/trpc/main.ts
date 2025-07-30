@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -198,6 +198,22 @@ export const router = {
 
       return user;
     }),
+
+  getSubscribers: procedure.query(async ({ ctx }) => {
+    const subscribers = await db.query.subscriptionsTable.findMany({
+      where: eq(subscriptionsTable.targetUserId, ctx.userId),
+    });
+
+    const subscribersIds = subscribers
+      .map((subscriber) => subscriber.subscriberId)
+      .filter((id): id is number => id !== null);
+
+    const subscribersUsers = await db.query.usersTable.findMany({
+      where: inArray(usersTable.id, subscribersIds),
+    });
+
+    return subscribersUsers;
+  }),
 
   addToFavorites: procedure
     .input(

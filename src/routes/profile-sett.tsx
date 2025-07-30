@@ -174,124 +174,74 @@ function RouteComponent() {
   const isBirthdayEmpty = birthday.split(".").every((p) => !p);
 
   const handleUpdateProfile = async () => {
-    toast(
-      `Запуск Save. mainPhotoRaw.startsWith('data:image/')? ${mainPhotoRaw.startsWith("data:image/")}`,
-    );
-    toast(`mainPhotoRaw head: ${mainPhotoRaw.substring(0, 30)}`);
-    const filteredGallery = gallery.filter(
-      (item) => typeof item === "string" && item.length > 0,
-    );
-    toast(
-      `Готовлю запрос: photo длина=${mainPhotoRaw.length}, galleryCount=${filteredGallery.length}`,
-    );
-    // Показать количество картинок галереи
-    toast(`Gallery: ${filteredGallery.length} images`);
+    try {
+      toast(`🚀 Save: photo=${mainPhotoRaw.substring(0, 50)}, gallery=${gallery.length}`);
+      const filteredGallery = gallery.filter(
+        (item) => typeof item === "string" && item.length > 0,
+      );
+      const photoToSend = mainPhotoRaw;
 
-    // Отправляемое фото: либо base64, либо ID
-    const photoToSend = mainPhotoRaw;
+      // Format birthday as dd.MM.yyyy
+      const parts = birthday.split(".");
+      const dayStr = parts[0]?.padStart(2, "0") || "";
+      const monthInput = parts[1] || "";
+      let monthNumber;
+      if (/^\d+$/.test(monthInput)) {
+        monthNumber = monthInput.padStart(2, "0");
+      } else {
+        const idx = monthOptions.indexOf(monthInput);
+        monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
+      }
+      const yearStr = parts[2] || "";
 
-    // Показать что отправляем как фото
-    if (
-      typeof photoToSend === "string" &&
-      photoToSend.startsWith("data:image/") &&
-      photoToSend.length > 100
-    ) {
-      toast(`Base64 head: ${photoToSend.substring(0, 100)}`);
-      toast(`MIME: ${photoToSend.split(";")[0]}`);
-    } else {
-      toast(`Photo ID: ${photoToSend}`);
+      // Проверка правильности формата даты
+      if (!dayStr || !monthNumber || !yearStr) {
+        console.error("Некорректная дата рождения!", { dayStr, monthNumber, yearStr });
+        toast.error("Некорректная дата рождения");
+        return;
+      }
+
+      const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
+      const payload = {
+        email: email || "",
+        phone: phone || "",
+        bio: bio || "",
+        photo: photoToSend,
+        gallery: filteredGallery,
+        name: name,
+        surname: surname || "",
+        birthday: formattedBirthday,
+        city: city || "",
+      };
+      toast(`📤 Sending payload with ${payload.gallery.length} gallery items`);
+      await updateProfile.mutateAsync(payload);
+      toast.success("✅ Profile saved!");
+    } catch (error: any) {
+      toast.error(`❌ Save failed: ${error.message || "Unknown error"}`);
     }
-
-    // Показать исходную дату рождения
-    toast(`Birthday input: ${birthday}`);
-
-    // Format birthday as dd.MM.yyyy
-    const parts = birthday.split(".");
-    const dayStr = parts[0]?.padStart(2, "0") || "";
-    const monthInput = parts[1] || "";
-    let monthNumber;
-    if (/^\d+$/.test(monthInput)) {
-      monthNumber = monthInput.padStart(2, "0");
-    } else {
-      const idx = monthOptions.indexOf(monthInput);
-      monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
-    }
-    const yearStr = parts[2] || "";
-
-    // Проверка правильности формата даты
-    if (!dayStr || !monthNumber || !yearStr) {
-      console.error("Некорректная дата рождения!", { dayStr, monthNumber, yearStr });
-      toast.error("Некорректная дата рождения");
-      return;
-    }
-
-    const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
-    // Показать форматированную дату рождения
-    toast(`Formatted birthday: ${formattedBirthday}`);
-
-    // Подготовить и показать payload для отправки
-    const payload = {
-      email: email || "",
-      phone: phone || "",
-      bio: bio || "",
-      photo: photoToSend,
-      gallery: filteredGallery,
-      name: name,
-      surname: surname || "",
-      birthday: formattedBirthday,
-      city: city || "",
-    };
-    toast(
-      `Payload: ${JSON.stringify({
-        email: payload.email,
-        phone: payload.phone,
-        name: payload.name,
-        surname: payload.surname,
-        birthday: payload.birthday,
-        city: payload.city,
-        bio: payload.bio,
-        galleryCount: payload.gallery.length,
-        photo: photoToSend.startsWith("data:image/")
-          ? photoToSend.substring(0, 50)
-          : payload.photo,
-      })}`,
-    );
-
-    await updateProfile.mutateAsync(payload);
-
-    toast.success("Профиль успешно обновлен!");
   };
 
   const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    toast(`Файл выбран: ${file.name} (size=${file.size}, type=${file.type})`);
+    toast(`📁 Gallery file: ${file.name} (${file.type})`);
     let fileToProcess = file;
-    toast(
-      isHeicFile(fileToProcess)
-        ? "HEIC-файл → конвертирую в JPEG"
-        : "Не HEIC → пропускаю конвертацию",
-    );
-    // Convert HEIC to JPEG on mobile
     if (isHeicFile(fileToProcess)) {
+      toast(`🔄 Converting HEIC to PNG`);
       try {
         fileToProcess = await convertHeicToPng(fileToProcess);
-        toast(
-          `convertHeicToPng OK: ${fileToProcess.name}, type=${fileToProcess.type}, size=${fileToProcess.size}`,
-        );
+        toast(`✅ HEIC converted: ${fileToProcess.type}`);
       } catch (error: any) {
-        toast.error(error.message || "Не удалось конвертировать изображение");
+        toast.error(`❌ HEIC conversion failed: ${error.message}`);
         return;
       }
     }
-    toast(`Начинаю convertToBase64, input.type=${fileToProcess.type}`);
-    // Convert to Base64
     let base64str: string;
     try {
       base64str = await convertToBase64(fileToProcess);
-      toast(`convertToBase64 OK, длина строки=${base64str.length}`);
+      toast(`✅ Base64 created: ${base64str.length} chars`);
     } catch (error: any) {
-      toast.error(error.message || "Не удалось прочитать изображение");
+      toast.error(`❌ Base64 failed: ${error.message}`);
       return;
     }
     setGallery((prev) => [...prev, base64str]);
@@ -300,34 +250,25 @@ function RouteComponent() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    toast(`Файл выбран: ${file.name} (size=${file.size}, type=${file.type})`);
+    toast(`📸 Main photo: ${file.name} (${file.type})`);
     setSelectedFile(file);
-    toast(
-      isHeicFile(file)
-        ? "HEIC-файл → конвертирую в JPEG"
-        : "Не HEIC → пропускаю конвертацию",
-    );
     let fileToProcess: File = file;
-    // Convert HEIC to JPEG on mobile
     if (isHeicFile(fileToProcess)) {
+      toast(`🔄 Converting HEIC to PNG`);
       try {
         fileToProcess = await convertHeicToPng(fileToProcess);
-        toast(
-          `convertHeicToPng OK: ${fileToProcess.name}, type=${fileToProcess.type}, size=${fileToProcess.size}`,
-        );
+        toast(`✅ HEIC converted: ${fileToProcess.type}`);
       } catch (error: any) {
-        toast.error(error.message || "Не удалось конвертировать изображение");
+        toast.error(`❌ HEIC conversion failed: ${error.message}`);
         return;
       }
     }
-    toast(`Начинаю convertToBase64, input.type=${fileToProcess.type}`);
-    // Convert to Base64
     let base64str: string;
     try {
       base64str = await convertToBase64(fileToProcess);
-      toast(`convertToBase64 OK, длина строки=${base64str.length}`);
+      toast(`✅ Base64 created: ${base64str.length} chars`);
     } catch (error: any) {
-      toast.error(error.message || "Не удалось прочитать изображение");
+      toast.error(`❌ Base64 failed: ${error.message}`);
       return;
     }
     setBase64(base64str);

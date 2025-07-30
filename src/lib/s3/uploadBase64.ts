@@ -11,11 +11,23 @@ const s3 = new S3Client({
 });
 
 export async function uploadBase64Image(data: string): Promise<string> {
-  console.log("uploadBase64Image called with:", data?.slice(0, 100)); // логируем первые 100 символов
+  console.log("📸 uploadBase64Image called");
+  console.log("📸 data head:", data?.slice(0, 100));
+  console.log("📸 data length:", data?.length);
+  console.log("📸 data type:", typeof data);
+  console.log("📸 starts with data:image/?", data?.startsWith("data:image/"));
   const match = data.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
-  if (!match) throw new Error("Invalid Base64 image");
+  if (!match) {
+    console.log("❌ REGEX FAILED - no match found");
+    console.log("❌ Full data:", data);
+    throw new Error("Invalid Base64 image - regex pattern failed");
+  }
+  console.log("✅ Regex matched successfully");
   const [, mime, b64] = match;
+  console.log("📸 Extracted MIME:", mime);
+  console.log("📸 Base64 data length:", b64?.length);
   const id = uuidv4();
+  console.log("📸 Generated UUID:", id);
 
   await s3.send(
     new PutObjectCommand({

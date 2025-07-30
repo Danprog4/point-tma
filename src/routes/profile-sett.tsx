@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
@@ -172,7 +173,7 @@ function RouteComponent() {
       : [];
   const isBirthdayEmpty = birthday.split(".").every((p) => !p);
 
-  const handleUpdateProfile = () => {
+  const handleUpdateProfile = async () => {
     const filteredGallery = gallery.filter(
       (item) => typeof item === "string" && item.length > 0,
     );
@@ -193,17 +194,21 @@ function RouteComponent() {
     }
     const yearStr = parts[2] || "";
     const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
-    updateProfile.mutate({
-      email: email || "",
-      phone: phone || "",
-      bio: bio || "",
-      photo: photoToSend,
-      gallery: filteredGallery,
-      name: name,
-      surname: surname || "",
-      birthday: formattedBirthday,
-      city: city || "",
-    });
+    try {
+      await updateProfile.mutateAsync({
+        email: email || "",
+        phone: phone || "",
+        bio: bio || "",
+        photo: photoToSend,
+        gallery: filteredGallery,
+        name: name,
+        surname: surname || "",
+        birthday: formattedBirthday,
+        city: city || "",
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Не удалось сохранить профиль");
+    }
   };
 
   const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -490,26 +495,10 @@ function RouteComponent() {
             />
           </div>
         </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Описание</div>
-            <textarea
-              placeholder="Введите описание"
-              value={bio || ""}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
-          </div>
-        </div>
       </div>
       <div className="flex flex-col px-4">
         <div className="flex items-center justify-between py-4">
           <div className="text-2xl font-bold">О себе</div>
-          <div className="flex flex-col items-center">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]">
-              <PlusIcon />
-            </div>
-          </div>
         </div>
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex w-full flex-col items-start text-sm">
@@ -524,7 +513,7 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col">
+      {/* <div className="flex flex-col">
         <div className="flex items-center justify-between px-4 py-4">
           <div className="text-2xl font-bold">Социальные сети</div>
           <div className="flex flex-col items-center">
@@ -536,7 +525,7 @@ function RouteComponent() {
         <div className="px-4 text-start text-sm text-gray-500">
           У вас пока нет социальных сетей
         </div>
-      </div>
+      </div> */}
       <button
         disabled={isDisabled}
         onClick={handleUpdateProfile}

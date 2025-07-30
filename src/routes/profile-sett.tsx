@@ -151,7 +151,6 @@ function RouteComponent() {
     }),
   );
 
-  console.log(gallery);
   // month dropdown data and placeholder control
   const monthOptions = [
     "Январь",
@@ -176,7 +175,6 @@ function RouteComponent() {
 
   const handleUpdateProfile = async () => {
     try {
-      toast(`🚀 Save: photo=${mainPhotoRaw.substring(0, 50)}, gallery=${gallery.length}`);
       const filteredGallery = gallery.filter(
         (item) => typeof item === "string" && item.length > 0,
       );
@@ -197,7 +195,6 @@ function RouteComponent() {
 
       // Проверка правильности формата даты
       if (!dayStr || !monthNumber || !yearStr) {
-        console.error("Некорректная дата рождения!", { dayStr, monthNumber, yearStr });
         toast.error("Некорректная дата рождения");
         return;
       }
@@ -214,49 +211,42 @@ function RouteComponent() {
         birthday: formattedBirthday,
         city: city || "",
       };
-      toast(`📤 Sending payload with ${payload.gallery.length} gallery items`);
       await updateProfile.mutateAsync(payload);
-      toast.success("✅ Profile saved!");
+      toast.success("✅ Профиль сохранен!");
     } catch (error: any) {
-      toast.error(`❌ Save failed: ${error.message || "Unknown error"}`);
+      toast.error(`❌ Сохранение не удалось: ${error.message || "Неизвестная ошибка"}`);
     }
   };
 
   const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    toast(`📁 Gallery file: ${file.name} (${file.type})`);
     let fileToProcess = file;
     if (isHeicFile(fileToProcess)) {
-      toast(`🔄 Converting HEIC to PNG`);
       try {
         fileToProcess = await convertHeicToPng(fileToProcess);
-        toast(`✅ HEIC converted: ${fileToProcess.type}`);
       } catch (error: any) {
-        toast.error(`❌ HEIC conversion failed: ${error.message}`);
+        toast.error(`❌ Преобразование HEIC в PNG не удалось: ${error.message}`);
         return;
       }
     }
     // Compress image to 1MB max
-    toast(`🗜️ Compressing image...`);
     try {
       const compressedFile = await imageCompression(fileToProcess, {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
       });
-      toast(`✅ Compressed: ${fileToProcess.size} → ${compressedFile.size} bytes`);
       fileToProcess = compressedFile;
     } catch (error: any) {
-      toast.error(`❌ Compression failed: ${error.message}`);
+      toast.error(`❌ Сжатие изображения не удалось: ${error.message}`);
       return;
     }
     let base64str: string;
     try {
       base64str = await convertToBase64(fileToProcess);
-      toast(`✅ Base64 created: ${base64str.length} chars`);
     } catch (error: any) {
-      toast.error(`❌ Base64 failed: ${error.message}`);
+      toast.error(`❌ Преобразование в Base64 не удалось: ${error.message}`);
       return;
     }
     setGallery((prev) => [...prev, base64str]);
@@ -265,39 +255,33 @@ function RouteComponent() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    toast(`📸 Main photo: ${file.name} (${file.type})`);
     setSelectedFile(file);
     let fileToProcess: File = file;
     if (isHeicFile(fileToProcess)) {
-      toast(`🔄 Converting HEIC to PNG`);
       try {
         fileToProcess = await convertHeicToPng(fileToProcess);
-        toast(`✅ HEIC converted: ${fileToProcess.type}`);
       } catch (error: any) {
-        toast.error(`❌ HEIC conversion failed: ${error.message}`);
+        toast.error(`❌ Преобразование HEIC в PNG не удалось: ${error.message}`);
         return;
       }
     }
     // Compress image to 1MB max
-    toast(`🗜️ Compressing image...`);
     try {
       const compressedFile = await imageCompression(fileToProcess, {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
       });
-      toast(`✅ Compressed: ${fileToProcess.size} → ${compressedFile.size} bytes`);
       fileToProcess = compressedFile;
     } catch (error: any) {
-      toast.error(`❌ Compression failed: ${error.message}`);
+      toast.error(`❌ Сжатие изображения не удалось: ${error.message}`);
       return;
     }
     let base64str: string;
     try {
       base64str = await convertToBase64(fileToProcess);
-      toast(`✅ Base64 created: ${base64str.length} chars`);
     } catch (error: any) {
-      toast.error(`❌ Base64 failed: ${error.message}`);
+      toast.error(`❌ Преобразование в Base64 не удалось: ${error.message}`);
       return;
     }
     setBase64(base64str);
@@ -334,10 +318,6 @@ function RouteComponent() {
       setSelectedFile(null);
     }
   };
-
-  console.log(user?.email);
-
-  console.log(gallery);
 
   return (
     <div className="h-full overflow-y-auto pb-24">

@@ -126,17 +126,6 @@ export const router = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("updateProfile input.photo:", input.photo?.slice(0, 100));
-      console.log(
-        "updateProfile input.gallery:",
-        Array.isArray(input.gallery)
-          ? input.gallery.map((i) => (typeof i === "string" ? i.slice(0, 40) : i))
-          : input.gallery,
-      );
-      console.log("🔍 updateProfile mutation started");
-      console.log("🔍 input.photo type:", typeof input.photo);
-      console.log("🔍 input.photo length:", input.photo?.length);
-      console.log("🔍 input.gallery length:", input.gallery?.length);
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
       });
@@ -149,24 +138,19 @@ export const router = {
       }
 
       // Handle photo: upload new, set existing ID, or clear if empty
-      console.log("🔍 Processing main photo...");
       if (input.photo.startsWith("data:image/")) {
-        console.log("🔍 Main photo is base64, uploading...");
         const imageUUID = await uploadBase64Image(input.photo);
-        console.log("✅ Main photo uploaded:", imageUUID);
         await db
           .update(usersTable)
           .set({ photo: imageUUID })
           .where(eq(usersTable.id, ctx.userId));
       } else if (input.photo !== "") {
-        console.log("🔍 Main photo is existing ID:", input.photo);
         // Set existing photo ID
         await db
           .update(usersTable)
           .set({ photo: input.photo })
           .where(eq(usersTable.id, ctx.userId));
       } else {
-        console.log("🔍 Clearing main photo");
         // Clear photo
         await db
           .update(usersTable)
@@ -182,21 +166,15 @@ export const router = {
       }
 
       if (input.gallery) {
-        console.log("🔍 Processing gallery items...");
         const galleryUUIDs = await Promise.all(
           input.gallery.map(async (image) => {
             if (typeof image === "string" && image.startsWith("data:image/")) {
-              console.log("🔍 Gallery item is base64, uploading...");
-              console.log("🔍 Gallery base64 head:", image.slice(0, 100));
               const imageUUID = await uploadBase64Image(image);
-              console.log("✅ Gallery item uploaded:", imageUUID);
               return imageUUID;
             }
-            console.log("🔍 Gallery item is existing ID:", image);
             return image;
           }),
         );
-        console.log("✅ All gallery items processed:", galleryUUIDs);
         await db
           .update(usersTable)
           .set({
@@ -342,8 +320,6 @@ export const router = {
   setInterests: procedure
     .input(z.object({ interests: z.record(z.string(), z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      console.log("input.interests:", input.interests);
-
       try {
         await db
           .update(usersTable)

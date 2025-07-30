@@ -5,12 +5,12 @@ export const convertHeicToPng = async (file: File): Promise<File> => {
   const inputBuffer = new Uint8Array(arrayBuffer);
   const outputBuffer = await convert({
     buffer: inputBuffer as unknown as ArrayBufferLike,
-    format: "JPEG",
+    format: "PNG",
     quality: 0.2,
   });
 
-  const blob = new Blob([outputBuffer], { type: "image/jpeg" });
-  return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), {
-    type: "image/jpeg",
+  const blob = new Blob([outputBuffer], { type: "image/png" });
+  return new File([blob], file.name.replace(/\.heic$/i, ".png"), {
+    type: "image/png",
   });
 };

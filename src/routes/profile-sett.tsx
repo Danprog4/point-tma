@@ -174,28 +174,53 @@ function RouteComponent() {
   const isBirthdayEmpty = birthday.split(".").every((p) => !p);
 
   const handleUpdateProfile = async () => {
-    const filteredGallery = gallery.filter(
-      (item) => typeof item === "string" && item.length > 0,
-    );
-
-    // Send current mainPhotoRaw (either new base64 or existing ID)
-    const photoToSend = mainPhotoRaw;
-
-    // Format birthday as dd.MM.yyyy
-    const parts = birthday.split(".");
-    const dayStr = parts[0].padStart(2, "0");
-    const monthInput = parts[1];
-    let monthNumber;
-    if (/^\d+$/.test(monthInput)) {
-      monthNumber = monthInput.padStart(2, "0");
-    } else {
-      const idx = monthOptions.indexOf(monthInput);
-      monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
-    }
-    const yearStr = parts[2] || "";
-    const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
     try {
-      await updateProfile.mutateAsync({
+      const filteredGallery = gallery.filter(
+        (item) => typeof item === "string" && item.length > 0,
+      );
+
+      // Логируем gallery
+      console.log("Filtered gallery:", filteredGallery);
+
+      // Отправляемое фото: либо base64, либо ID
+      const photoToSend = mainPhotoRaw;
+
+      // Логируем photoToSend (если base64 — только часть данных, чтобы не засорять консоль)
+      if (typeof photoToSend === "string" && photoToSend.length > 100) {
+        console.log("Photo to send (base64 head):", photoToSend.substring(0, 100));
+        console.log("Photo to send (base64 mime):", photoToSend.split(";")[0]);
+      } else {
+        console.log("Photo to send (ID):", photoToSend);
+      }
+
+      // Логируем входные данные дня рождения
+      console.log("Birthday before formatting:", birthday);
+
+      // Format birthday as dd.MM.yyyy
+      const parts = birthday.split(".");
+      const dayStr = parts[0]?.padStart(2, "0") || "";
+      const monthInput = parts[1] || "";
+      let monthNumber;
+      if (/^\d+$/.test(monthInput)) {
+        monthNumber = monthInput.padStart(2, "0");
+      } else {
+        const idx = monthOptions.indexOf(monthInput);
+        monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
+      }
+      const yearStr = parts[2] || "";
+
+      // Проверка правильности формата даты
+      if (!dayStr || !monthNumber || !yearStr) {
+        console.error("Некорректная дата рождения!", { dayStr, monthNumber, yearStr });
+        toast.error("Некорректная дата рождения");
+        return;
+      }
+
+      const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
+      console.log("Formatted birthday:", formattedBirthday);
+
+      // Логируем все поля перед отправкой
+      const payload = {
         email: email || "",
         phone: phone || "",
         bio: bio || "",
@@ -205,8 +230,14 @@ function RouteComponent() {
         surname: surname || "",
         birthday: formattedBirthday,
         city: city || "",
-      });
+      };
+      console.log("updateProfile payload:", payload);
+
+      await updateProfile.mutateAsync(payload);
+
+      toast.success("Профиль успешно обновлен!");
     } catch (error: any) {
+      console.error("Ошибка при обновлении профиля:", error);
       toast.error(error.message || "Не удалось сохранить профиль");
     }
   };

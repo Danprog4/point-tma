@@ -91,9 +91,9 @@ export const meetingRouter = createTRPCRouter({
     }),
 
   getMeetings: procedure
-    .input(z.object({ userId: z.number().optional() }))
+    .input(z.object({ userId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const { userId } = input;
+      const { userId } = input || { userId: ctx.userId };
 
       const meetings = await db.query.meetTable.findMany({
         where: eq(meetTable.userId, userId || ctx.userId),

@@ -224,6 +224,15 @@ function RouteComponent() {
         );
       });
     });
+
+    queryClient.setQueryData(trpc.main.getMyRequests.queryKey(), (old: any) => {
+      return old.filter((f: any) => {
+        return !(
+          (f.fromUserId === user?.id && f.toUserId === me?.id) ||
+          (f.toUserId === user?.id && f.fromUserId === me?.id)
+        );
+      });
+    });
   };
 
   console.log(allPhotos[currentIndex], "current photo");

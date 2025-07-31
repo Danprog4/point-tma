@@ -199,21 +199,23 @@ export const router = {
       return user;
     }),
 
-  getSubscribers: procedure.query(async ({ ctx }) => {
-    const subscribers = await db.query.subscriptionsTable.findMany({
-      where: eq(subscriptionsTable.targetUserId, ctx.userId),
-    });
+  getSubscribers: procedure
+    .input(z.object({ userId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const subscribers = await db.query.subscriptionsTable.findMany({
+        where: eq(subscriptionsTable.targetUserId, input?.userId || ctx.userId),
+      });
 
-    const subscribersIds = subscribers
-      .map((subscriber) => subscriber.subscriberId)
-      .filter((id): id is number => id !== null);
+      const subscribersIds = subscribers
+        .map((subscriber) => subscriber.subscriberId)
+        .filter((id): id is number => id !== null);
 
-    const subscribersUsers = await db.query.usersTable.findMany({
-      where: inArray(usersTable.id, subscribersIds),
-    });
+      const subscribersUsers = await db.query.usersTable.findMany({
+        where: inArray(usersTable.id, subscribersIds),
+      });
 
-    return subscribersUsers;
-  }),
+      return subscribersUsers;
+    }),
 
   addToFavorites: procedure
     .input(

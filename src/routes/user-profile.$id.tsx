@@ -13,6 +13,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { Calendar } from "~/components/Icons/Calendar";
 import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
+import { UserSubscribers } from "~/components/UserSubscribers";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -26,6 +27,7 @@ function RouteComponent() {
   useScroll();
   const queryClient = useQueryClient();
   const [isFriendsPage, setIsFriendsPage] = useState(false);
+  const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isMore, setIsMore] = useState(false);
   const { state } = useRouterState({ select: (s) => s.location });
   console.log(state, "state");
@@ -236,6 +238,8 @@ function RouteComponent() {
           users={users}
           setIsFriendsPage={setIsFriendsPage}
         />
+      ) : isSubscribersPage ? (
+        <UserSubscribers viewedUser={user} setIsSubscribersPage={setIsSubscribersPage} />
       ) : (
         <div className="scrollbar-hidden overflow-y-auto pt-14 pb-20">
           {isMore ? (
@@ -342,7 +346,10 @@ function RouteComponent() {
               </div>
 
               <div className="flex items-center justify-center gap-4 px-4 pb-4">
-                <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4">
+                <div
+                  className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
+                  onClick={() => setIsSubscribersPage(true)}
+                >
                   <div>{userSubscribersCount?.length || 0}</div>
                   <div className="text-sm text-neutral-500">Подписчиков</div>
                 </div>

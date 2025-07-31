@@ -400,4 +400,19 @@ export const meetingRouter = createTRPCRouter({
 
       return request;
     }),
+
+  endMeeting: procedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+
+      const request = await db
+        .update(meetTable)
+        .set({ isCompleted: true })
+        .where(eq(meetTable.id, id));
+
+      // TODO: Send notification to participants that the meet was ended
+
+      return request;
+    }),
 });

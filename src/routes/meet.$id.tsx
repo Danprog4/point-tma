@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
+import EndMeetDrawer from "~/components/EndMeetDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
@@ -22,6 +23,8 @@ export const Route = createFileRoute("/meet/$id")({
 
 function RouteComponent() {
   useScroll();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isEndOpen, setIsEndOpen] = useState(false);
   const [page, setPage] = useState("info");
   const [complaint, setComplaint] = useState("");
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -38,6 +41,7 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const endMeeting = useMutation(trpc.meetings.endMeeting.mutationOptions());
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
 
@@ -154,7 +158,15 @@ function RouteComponent() {
     return complaints?.some((c) => c.meetId === meeting?.id && c.userId === user?.id);
   }, [complaints, meeting?.id, user?.id]);
 
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const handleEndMeeting = () => {
+    endMeeting.mutate({ id: meeting?.id! });
+
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) => {
+      return old.map((m: any) =>
+        m.id === meeting?.id ? { ...m, isCompleted: true } : m,
+      );
+    });
+  };
 
   console.log(meeting, "meeting");
 
@@ -408,7 +420,14 @@ function RouteComponent() {
           >
             Пригласить
           </div>
-          <div className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]">Завершить</div>
+          <div
+            className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
+            onClick={() => {
+              setIsEndOpen(true);
+            }}
+          >
+            Завершить
+          </div>
         </div>
       ) : isComplaint ? (
         <div>
@@ -477,6 +496,14 @@ function RouteComponent() {
           user={user}
           users={users || []}
         ></InviteDrawer>
+      )}
+      {isEndOpen && (
+        <EndMeetDrawer
+          open={isEndOpen}
+          onOpenChange={setIsEndOpen}
+          meetId={Number(id)}
+          handleEndMeeting={handleEndMeeting}
+        />
       )}
     </>
   );

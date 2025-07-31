@@ -174,7 +174,7 @@ function RouteComponent() {
   };
 
   useEffect(() => {
-    if (step === steps.length - 1) {
+    if (step === steps.length - 1 && !isSettings) {
       handleSetInterests();
       setTimeout(() => {
         navigate({ to: "/profile" });

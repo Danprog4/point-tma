@@ -13,18 +13,20 @@ export const friendsRouter = createTRPCRouter({
     return requests;
   }),
 
-  getFriends: procedure.query(async ({ ctx }) => {
-    const friends = await db.query.friendRequestsTable.findMany({
-      where: or(
-        eq(friendRequestsTable.toUserId, ctx.userId),
-        eq(friendRequestsTable.fromUserId, ctx.userId),
-      ),
-    });
+  getFriends: procedure
+    .input(z.object({ userId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const friends = await db.query.friendRequestsTable.findMany({
+        where: or(
+          eq(friendRequestsTable.toUserId, input?.userId || ctx.userId),
+          eq(friendRequestsTable.fromUserId, ctx.userId),
+        ),
+      });
 
-    const acceptedFriends = friends.filter((friend) => friend.status === "accepted");
+      const acceptedFriends = friends.filter((friend) => friend.status === "accepted");
 
-    return acceptedFriends;
-  }),
+      return acceptedFriends;
+    }),
 
   sendRequest: procedure
     .input(

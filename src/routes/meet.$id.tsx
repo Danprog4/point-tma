@@ -410,68 +410,79 @@ function RouteComponent() {
         )}
       </div>
 
-      {isOwner ? (
-        <div className="fixed right-4 bottom-0 left-4 mx-auto mt-4 flex w-auto items-center justify-center bg-white py-4 text-center font-semibold text-white">
-          <div
-            className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white"
-            onClick={() => {
-              setIsInviteOpen(true);
-            }}
-          >
-            Пригласить
-          </div>
-          <div
-            className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
-            onClick={() => {
-              setIsEndOpen(true);
-            }}
-          >
-            Завершить
-          </div>
-        </div>
-      ) : isComplaint ? (
-        <div>
-          <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
-            <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
-              <Info />
-              Вы пожаловались на эту встречу
-            </div>
-            <button
-              className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
-              onClick={() => handleUnsendComplaint()}
-            >
-              Отозвать жалобу
-            </button>
+      {meeting?.isCompleted ? (
+        <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
+          <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
+            <Info />
+            Встреча уже завершена
           </div>
         </div>
       ) : (
-        <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
-          <div
-            className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
-            onClick={() => handleJoin()}
-          >
-            {isOwner ? (
-              <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
-                <div>Управление</div>
-              </ManageDrawer>
-            ) : isParticipant ? (
-              "Выйти"
-            ) : isRequestParticipant ? (
-              "Отменить запрос"
-            ) : (
-              "Откликнуться"
-            )}
-          </div>
-          <div className="flex flex-col items-center">
-            <div
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-              onClick={() => setIsMoreOpen(!isMoreOpen)}
-            >
-              <WhitePlusIcon />
+        <>
+          {isOwner ? (
+            <div className="fixed right-4 bottom-0 left-4 mx-auto mt-4 flex w-auto items-center justify-center bg-white py-4 text-center font-semibold text-white">
+              <div
+                className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white"
+                onClick={() => {
+                  setIsInviteOpen(true);
+                }}
+              >
+                Пригласить
+              </div>
+              <div
+                className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
+                onClick={() => {
+                  setIsEndOpen(true);
+                }}
+              >
+                Завершить
+              </div>
             </div>
-            <span className="text-xs text-black">Ещё</span>
-          </div>
-        </div>
+          ) : isComplaint ? (
+            <div>
+              <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
+                <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
+                  <Info />
+                  Вы пожаловались на эту встречу
+                </div>
+                <button
+                  className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
+                  onClick={() => handleUnsendComplaint()}
+                >
+                  Отозвать жалобу
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
+              <div
+                className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
+                onClick={() => handleJoin()}
+              >
+                {isOwner ? (
+                  <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
+                    <div>Управление</div>
+                  </ManageDrawer>
+                ) : isParticipant ? (
+                  "Выйти"
+                ) : isRequestParticipant ? (
+                  "Отменить запрос"
+                ) : (
+                  "Откликнуться"
+                )}
+              </div>
+              <div className="flex flex-col items-center">
+                <div
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
+                  onClick={() => setIsMoreOpen(!isMoreOpen)}
+                >
+                  <WhitePlusIcon />
+                </div>
+                <span className="text-xs text-black">Ещё</span>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}

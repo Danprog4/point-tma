@@ -21,7 +21,6 @@ import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 
 import { CloseRed } from "~/components/Icons/CloseRed";
-import { Coin } from "~/components/Icons/Coin";
 import { MenuItem } from "~/components/MenuItem";
 import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
@@ -70,6 +69,8 @@ function RouteComponent() {
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
+  const { data: userMeetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
 
   const uniqueFriends = useMemo(() => {
     if (!friends || !user?.id) return [];
@@ -340,15 +341,7 @@ function RouteComponent() {
 
           <div className="mt-4 mb-6 px-4">
             <div className="grid grid-cols-2 gap-4">
-              <div
-                className="rounded-xl bg-yellow-400 p-3 shadow-sm"
-                onClick={() => {
-                  navigate({
-                    to: "/user-quests/$page",
-                    params: { page: pageState },
-                  });
-                }}
-              >
+              <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
                 <div className="mb-1 text-center text-xl font-bold text-black">
                   {activeQuests?.length || 0}
                 </div>
@@ -362,15 +355,18 @@ function RouteComponent() {
               <div
                 className="rounded-xl bg-purple-600 p-3 shadow-sm"
                 onClick={() => {
-                  navigate({ to: "/points" });
+                  navigate({
+                    to: "/user-meetings/$id",
+                    params: { id: user?.id!.toString()! },
+                  });
                 }}
               >
                 <div className="mb-1 text-center text-xl font-bold text-white">
-                  {user?.balance || 0}
+                  {userMeetings?.length || 0}
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                  <Coin />
-                  <span className="text-sm text-white">Points</span>
+                  <Calendar height={16} width={16} />
+                  <span className="text-sm text-white">Встречи</span>
                 </div>
               </div>
             </div>

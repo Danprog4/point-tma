@@ -315,7 +315,9 @@ function RouteComponent() {
                 </div>
                 <div className="text-center">
                   <div className="mb-1 flex items-center justify-center gap-2">
-                    <h2 className="text-xl font-bold text-black">
+                    <h2
+                      className={`font-bold text-nowrap text-black ${(user?.name + " " + user?.surname)?.length > 15 ? "text-lg" : "text-xl"}`}
+                    >
                       {user?.name} {user?.surname}
                     </h2>
                   </div>
@@ -378,7 +380,7 @@ function RouteComponent() {
                   </div>
                 ) : (
                   <div
-                    className="flex flex-1 items-center justify-center rounded-2xl bg-[#9924FF] px-4 py-2"
+                    className="flex flex-1 items-center justify-center rounded-2xl bg-[#9924FF] px-4 py-2 text-nowrap"
                     onClick={() => handleSendRequest()}
                   >
                     {isRequest ? "Отменить запрос" : "Добавить в друзья"}

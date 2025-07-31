@@ -412,6 +412,7 @@ function RouteComponent() {
 
       {meeting?.isCompleted ? (
         <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
+          <div className="px-4 py-5 text-[#9924FF]">Оценить участников</div>
           <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
             <Info />
             Встреча уже завершена

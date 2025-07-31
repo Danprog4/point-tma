@@ -35,9 +35,8 @@ function RouteComponent() {
       )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
-        const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
-        const toUser = users?.find((user) => user.id === request.toUserId);
-        return { ...request, event, user: toUser };
+        const fromUser = users?.find((user) => user.id === request.fromUserId);
+        return { ...request, meeting, user: fromUser };
       });
   }, [requests, meetings, user?.id]);
 
@@ -260,11 +259,15 @@ function RouteComponent() {
           {requestsWithInfo?.map((request) => (
             <div key={request?.id}>
               <div className="flex items-center justify-start gap-2 px-4">
-                <img src={request.event?.image} alt="" className="h-15 w-15 rounded-lg" />
+                <img
+                  src={getImageUrl(request.meeting?.image || "")}
+                  alt=""
+                  className="h-15 w-15 rounded-lg"
+                />
                 <div className="flex h-full w-full flex-col items-start justify-between gap-2">
-                  <div className="text-lg">{request.event?.title}</div>
+                  <div className="text-lg">{request.meeting?.name}</div>
                   <div className="rounded-2xl bg-blue-500 px-1 text-white">
-                    {request.event?.type}
+                    {request.meeting?.type}
                   </div>
                 </div>
               </div>

@@ -176,8 +176,9 @@ function RouteComponent() {
     <>
       {isParticipantPage ? (
         <Participations
-          participants={userParticipants || []}
+          participants={meeting?.participantsIds || []}
           setIsOpen={setIsParticipantPage}
+          users={users || []}
         />
       ) : (
         <>

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  Calendar1,
   ChevronLeft,
   ChevronRight,
   Heart,
@@ -10,7 +11,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
-import { Calendar } from "~/components/Icons/Calendar";
 import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
@@ -423,7 +423,7 @@ function RouteComponent() {
                       {userMeetings?.length || 0}
                     </div>
                     <div className="flex items-center justify-center gap-1">
-                      <Calendar height={16} width={16} />
+                      <Calendar1 className="h-4 w-4 text-white" />
                       <span className="text-sm text-white">Встречи</span>
                     </div>
                   </div>

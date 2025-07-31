@@ -4,6 +4,7 @@ import {
   Award,
   BarChart3,
   Calendar,
+  Calendar1,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -365,7 +366,7 @@ function RouteComponent() {
                   {userMeetings?.length || 0}
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar height={16} width={16} />
+                  <Calendar1 className="h-4 w-4 text-white" />
                   <span className="text-sm text-white">Встречи</span>
                 </div>
               </div>

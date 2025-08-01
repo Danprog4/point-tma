@@ -271,9 +271,22 @@ export const OnboardingPage = () => {
           </div>
         </>
       ) : step <= TOTAL_CARDS ? (
-        <div className="absolute top-30 right-0 left-0 z-10 px-4 text-center text-xl font-bold text-white">
-          Здесь вы можете найти!
-        </div>
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={`title-${activeCardIndex}`}
+            initial={
+              direction === "forward" ? { x: 100, opacity: 0 } : { x: -100, opacity: 0 }
+            }
+            animate={{ x: 0, opacity: 1 }}
+            exit={
+              direction === "forward" ? { x: -100, opacity: 0 } : { x: 100, opacity: 0 }
+            }
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            className="absolute top-30 right-0 left-0 z-10 px-4 text-center text-xl font-bold text-white"
+          >
+            {activeCard.title}
+          </motion.div>
+        </AnimatePresence>
       ) : null}
 
       {/* Новая карусель с 3D эффектом */}

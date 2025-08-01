@@ -676,7 +676,7 @@ export const OnboardingPage = () => {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Опишите ваши интересы"
+                  placeholder="Расскажите о себе"
                   className="h-32 w-full resize-none rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-base text-black placeholder:text-black/50"
                 />
               </div>

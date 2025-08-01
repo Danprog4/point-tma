@@ -156,6 +156,10 @@ function RouteComponent() {
     </div>
   );
 
+  // Получаем активную карточку для показа в карусели
+  const activeCardIndex = Math.max(0, step - 1);
+  const activeCard = eventTypes[activeCardIndex];
+
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
       <header className="z-[100] flex items-center justify-end"></header>
@@ -184,113 +188,105 @@ function RouteComponent() {
         </div>
       ) : null}
 
+      {/* Новая карусель с 3D эффектом */}
       {step > 0 && step <= TOTAL_CARDS && (
-        <AnimatePresence>
-          {step > 0 && (
-            <motion.div
-              key="card1"
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ perspective: "1200px" }}
+        >
+          {/* Задняя заблюренная карточка (предыдущая) */}
+          {activeCardIndex > 0 && (
+            <div
               className="absolute"
-              style={{ height: 92, top: "35%", left: "40%" }}
-              initial={{ x: "100vw" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100vw" }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              style={{
+                transform:
+                  "translateZ(-250px) translateX(-120px) translateY(-80px) rotateY(25deg) rotateX(15deg) scale(0.65)",
+                filter: "blur(6px)",
+                opacity: 0.25,
+              }}
             >
               <Card
-                category={eventTypes[0].name}
-                text={eventTypes[0].description}
-                emoji={eventTypes[0].emoji}
-                color="#F3E5FF"
-                height={92}
-                transform="rotate(-5.68deg)"
+                category={eventTypes[activeCardIndex - 1].name}
+                text={eventTypes[activeCardIndex - 1].description}
+                emoji={eventTypes[activeCardIndex - 1].emoji}
+                color={
+                  activeCardIndex - 1 === 0
+                    ? "#F3E5FF"
+                    : activeCardIndex - 1 === 1
+                      ? "#D6E2FF"
+                      : activeCardIndex - 1 === 2
+                        ? "#EBFFF4"
+                        : activeCardIndex - 1 === 3
+                          ? "#FFE5E5"
+                          : "#FFFBEB"
+                }
+                height={100}
               />
-            </motion.div>
+            </div>
           )}
 
-          {step > 1 && (
+          <AnimatePresence mode="wait">
             <motion.div
-              key="card2"
-              className="absolute"
-              style={{ height: 92, top: "45%", left: "-6%" }}
-              initial={{ x: "-100vw" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100vw" }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              key={`card-${activeCardIndex}`}
+              initial={{
+                x: -200,
+                y: -150,
+                z: -200,
+                rotateY: -35,
+                rotateX: -25,
+                scale: 0.5,
+                opacity: 0,
+                filter: "blur(10px)",
+              }}
+              animate={{
+                x: 0,
+                y: 0,
+                z: 0,
+                rotateY: 0,
+                rotateX: 0,
+                scale: 1,
+                opacity: 1,
+                filter: "blur(0px)",
+              }}
+              exit={{
+                x: -120,
+                y: -80,
+                z: -250,
+                rotateY: 25,
+                rotateX: 15,
+                scale: 0.65,
+                opacity: 0.25,
+                filter: "blur(6px)",
+              }}
+              transition={{
+                duration: 0.8,
+                ease: [0.25, 0.46, 0.45, 0.94],
+                filter: { duration: 0.6 },
+              }}
+              style={{
+                transformStyle: "preserve-3d",
+              }}
             >
               <Card
-                category={eventTypes[1].name}
-                text={eventTypes[1].description}
-                emoji={eventTypes[1].emoji}
-                color="#D6E2FF"
-                height={92}
-                transform="rotate(8.15deg)"
+                category={activeCard.name}
+                text={activeCard.description}
+                emoji={activeCard.emoji}
+                color={
+                  activeCardIndex === 0
+                    ? "#F3E5FF"
+                    : activeCardIndex === 1
+                      ? "#D6E2FF"
+                      : activeCardIndex === 2
+                        ? "#EBFFF4"
+                        : activeCardIndex === 3
+                          ? "#FFE5E5"
+                          : "#FFFBEB"
+                }
+                height={100}
               />
             </motion.div>
-          )}
-
-          {step > 2 && (
-            <motion.div
-              key="card3"
-              className="absolute"
-              style={{ height: 92, top: "51%", left: "34%" }}
-              initial={{ x: "100vw" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100vw" }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-            >
-              <Card
-                category={eventTypes[2].name}
-                text={eventTypes[2].description}
-                emoji={eventTypes[2].emoji}
-                color="#EBFFF4"
-                height={92}
-                transform="rotate(-8.97deg)"
-              />
-            </motion.div>
-          )}
-
-          {step > 3 && (
-            <motion.div
-              key="card4"
-              className="absolute"
-              style={{ height: 86, top: "63%", left: "-3%" }}
-              initial={{ x: "-100vw" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100vw" }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-            >
-              <Card
-                category={eventTypes[3].name}
-                text={eventTypes[3].description}
-                emoji={eventTypes[3].emoji}
-                color="#FFE5E5"
-                height={86}
-                transform="rotate(5.62deg)"
-              />
-            </motion.div>
-          )}
-
-          {step > 4 && (
-            <motion.div
-              key="card5"
-              className="absolute"
-              style={{ height: 86, top: "72%", left: "34%" }}
-              initial={{ x: "100vw" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100vw" }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
-            >
-              <Card
-                category={eventTypes[4].name}
-                text={eventTypes[4].description}
-                emoji={eventTypes[4].emoji}
-                color="#FFFBEB"
-                height={86}
-                transform="rotate(-9.87deg)"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
       )}
 
       <AnimatePresence>

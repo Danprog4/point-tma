@@ -6,8 +6,8 @@ import { useLocalStorage } from "usehooks-ts";
 import { Selecter } from "~/components/Selecter";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
+import { onboardingConfig } from "~/onboardingConfig";
 import { useTRPC } from "~/trpc/init/react";
-import { eventTypes } from "~/types/events";
 
 export const Route = createFileRoute("/onboarding")({
   component: RouteComponent,
@@ -99,6 +99,24 @@ function RouteComponent() {
 
   const handleNext = () =>
     setStep((prev) => {
+      // Сохраняем данные текущей карточки ПЕРЕД переходом к следующей
+      if (prev > 0 && prev <= TOTAL_CARDS) {
+        const currentIndex = prev - 1;
+        setPrevCardData(onboardingConfig[currentIndex]);
+        const currentColor =
+          currentIndex === 0
+            ? "#F3E5FF"
+            : currentIndex === 1
+              ? "#D6E2FF"
+              : currentIndex === 2
+                ? "#EBFFF4"
+                : currentIndex === 3
+                  ? "#FFE5E5"
+                  : "#FFFBEB";
+        setPrevCardColor(currentColor);
+      }
+      setShowPrevCard(false);
+
       if (prev === LAST_STEP) {
         handleSubmit();
         navigate({ to: "/" });
@@ -134,39 +152,36 @@ function RouteComponent() {
     text,
     emoji,
     color,
-    height,
     transform,
   }: {
     category: string;
     text: string;
     emoji: string;
     color: string;
-    height: number;
     transform?: string;
   }) => (
     <div
-      className="flex w-[328px] flex-col items-start justify-center gap-2 rounded-xl bg-white p-4"
-      style={{ backgroundColor: color, height, transform }}
+      className="flex h-fit w-[360px] flex-col items-start justify-center gap-3 rounded-xl bg-white p-4"
+      style={{ backgroundColor: color, transform }}
     >
       <div className="flex items-center gap-2">
-        <span>{emoji}</span>
-        <span>{category}</span>
+        <span className="text-lg">{emoji}</span>
+        <span className="text-base font-semibold">{category}</span>
       </div>
-      <div className="text-xs">{text}</div>
+      <div className="text-sm leading-relaxed whitespace-pre-line">{text}</div>
     </div>
   );
 
   // Получаем активную карточку для показа в карусели
   const activeCardIndex = Math.max(0, step - 1);
-  const activeCard = eventTypes[activeCardIndex];
+  const activeCard = onboardingConfig[activeCardIndex];
 
   // Состояние, управляющее отображением статичной задней карточки
   const [showPrevCard, setShowPrevCard] = useState(false);
-
-  // Скрываем заднюю карточку каждый раз при изменении шага
-  useEffect(() => {
-    setShowPrevCard(false);
-  }, [activeCardIndex]);
+  const [prevCardData, setPrevCardData] = useState<(typeof onboardingConfig)[0] | null>(
+    null,
+  );
+  const [prevCardColor, setPrevCardColor] = useState<string>("");
 
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
@@ -191,8 +206,8 @@ function RouteComponent() {
           </div>
         </>
       ) : step <= TOTAL_CARDS ? (
-        <div className="absolute top-50 right-0 left-0 z-10 px-4 text-center text-xl font-bold text-white">
-          Здесь вы можете создавать
+        <div className="absolute top-30 right-0 left-0 z-10 px-4 text-center text-xl font-bold text-white">
+          Здесь вы можете найти!
         </div>
       ) : null}
 
@@ -203,7 +218,7 @@ function RouteComponent() {
           style={{ perspective: "1200px" }}
         >
           {/* Задняя заблюренная карточка (previous) появляется только после завершения exit */}
-          {showPrevCard && activeCardIndex > 0 && (
+          {showPrevCard && prevCardData && (
             <div
               className="absolute"
               style={{
@@ -213,21 +228,10 @@ function RouteComponent() {
               }}
             >
               <Card
-                category={eventTypes[activeCardIndex - 1].name}
-                text={eventTypes[activeCardIndex - 1].description}
-                emoji={eventTypes[activeCardIndex - 1].emoji}
-                color={
-                  activeCardIndex - 1 === 0
-                    ? "#F3E5FF"
-                    : activeCardIndex - 1 === 1
-                      ? "#D6E2FF"
-                      : activeCardIndex - 1 === 2
-                        ? "#EBFFF4"
-                        : activeCardIndex - 1 === 3
-                          ? "#FFE5E5"
-                          : "#FFFBEB"
-                }
-                height={100}
+                category={prevCardData.name}
+                text={prevCardData.description}
+                emoji={prevCardData.emoji}
+                color={prevCardColor}
               />
             </div>
           )}
@@ -236,11 +240,11 @@ function RouteComponent() {
             <motion.div
               key={`card-${activeCardIndex}`}
               initial={{
-                x: -200,
-                y: -150,
+                x: 200,
+                y: 150,
                 z: -200,
-                rotateY: -35,
-                rotateX: -25,
+                rotateY: 35,
+                rotateX: 15,
                 scale: 0.5,
                 opacity: 0,
                 filter: "blur(10px)",
@@ -286,7 +290,6 @@ function RouteComponent() {
                           ? "#FFE5E5"
                           : "#FFFBEB"
                 }
-                height={100}
               />
             </motion.div>
           </AnimatePresence>

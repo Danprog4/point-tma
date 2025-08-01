@@ -99,6 +99,7 @@ function RouteComponent() {
 
   const handleNext = () =>
     setStep((prev) => {
+      setDirection("forward");
       // Сохраняем данные ТЕКУЩЕЙ карточки перед переходом
       if (prev > 0 && prev <= TOTAL_CARDS) {
         const currentIndex = prev - 1;
@@ -127,6 +128,7 @@ function RouteComponent() {
 
   const handleBack = () =>
     setStep((prev) => {
+      setDirection("backward");
       // При переходе назад сохраняем данные текущей карточки
       if (prev > 1 && prev <= TOTAL_CARDS) {
         const currentIndex = prev - 1;
@@ -142,6 +144,10 @@ function RouteComponent() {
                   ? "#FFE5E5"
                   : "#FFFBEB";
         setPrevCardColor(currentColor);
+      } else if (prev === 1) {
+        // При переходе с первой карточки на стартовый экран
+        // не сохраняем данные, карточка просто исчезает
+        setPrevCardData(null);
       }
       setShowPrevCard(false);
       return Math.max(prev - 1, 0);
@@ -202,6 +208,7 @@ function RouteComponent() {
     null,
   );
   const [prevCardColor, setPrevCardColor] = useState<string>("");
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
@@ -259,16 +266,30 @@ function RouteComponent() {
           <AnimatePresence mode="popLayout" onExitComplete={() => setShowPrevCard(true)}>
             <motion.div
               key={`card-${activeCardIndex}`}
-              initial={{
-                x: 200,
-                y: 150,
-                z: -200,
-                rotateY: 35,
-                rotateX: 15,
-                scale: 0.5,
-                opacity: 0,
-                filter: "blur(10px)",
-              }}
+              initial={
+                direction === "forward"
+                  ? {
+                      x: 200,
+                      y: 150,
+                      z: -200,
+                      rotateY: 35,
+                      rotateX: 15,
+                      scale: 0.5,
+                      opacity: 0,
+                      filter: "blur(10px)",
+                    }
+                  : {
+                      // При движении назад карточка появляется быстро и незаметно
+                      x: 0,
+                      y: 0,
+                      z: 0,
+                      rotateY: 0,
+                      rotateX: 0,
+                      scale: 0.8,
+                      opacity: 0.3,
+                      filter: "blur(3px)",
+                    }
+              }
               animate={{
                 x: 0,
                 y: 0,
@@ -279,18 +300,47 @@ function RouteComponent() {
                 opacity: 1,
                 filter: "blur(0px)",
               }}
-              exit={{
-                x: -120,
-                y: -80,
-                z: -250,
-                opacity: 0.25,
-                filter: "blur(6px)",
-              }}
-              transition={{
-                duration: 0.8,
-                ease: [0.25, 0.1, 0.25, 1],
-                filter: { duration: 0.6 },
-              }}
+              exit={
+                direction === "forward"
+                  ? {
+                      x: -120,
+                      y: -80,
+                      z: -250,
+                      opacity: 0.25,
+                      filter: "blur(6px)",
+                    }
+                  : step === 0
+                    ? {
+                        x: 300,
+                        y: 200,
+                        z: -400,
+                        scale: 0.3,
+                        opacity: 0,
+                        filter: "blur(15px)",
+                      }
+                    : {
+                        // При движении назад карточка уходит в ту же сторону что и при forward
+                        x: -120,
+                        y: -80,
+                        z: -250,
+                        opacity: 0.25,
+                        filter: "blur(6px)",
+                      }
+              }
+              transition={
+                direction === "forward"
+                  ? {
+                      duration: 0.8,
+                      ease: [0.25, 0.1, 0.25, 1],
+                      filter: { duration: 0.6 },
+                    }
+                  : {
+                      // При движении назад анимация такая же по скорости
+                      duration: 0.8,
+                      ease: [0.25, 0.1, 0.25, 1],
+                      filter: { duration: 0.6 },
+                    }
+              }
               style={{
                 transformStyle: "preserve-3d",
               }}

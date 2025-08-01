@@ -26,6 +26,67 @@ export const OnboardingPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const onBoarding = useMutation(trpc.main.getOnBoarding.mutationOptions({}));
 
+  const monthOptions = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
+
+  // Валидация даты
+  const validateDate = (day: string, month: string, year: string) => {
+    const dayNum = parseInt(day);
+    const yearNum = parseInt(year);
+
+    // Проверяем год (от 1900 до текущего года)
+    const currentYear = new Date().getFullYear();
+    if (yearNum < 1900 || yearNum > currentYear) return false;
+
+    // Проверяем месяц
+    const monthIndex = monthOptions.indexOf(month);
+    if (monthIndex === -1 && month !== "") return false;
+
+    // Проверяем день
+    if (dayNum < 1 || dayNum > 31) return false;
+
+    // Проверяем корректность даты для конкретного месяца
+    if (monthIndex !== -1 && day && year) {
+      const daysInMonth = new Date(yearNum, monthIndex + 1, 0).getDate();
+      if (dayNum > daysInMonth) return false;
+    }
+
+    return true;
+  };
+
+  const formatDay = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return "";
+    if (num < 1) return "1";
+    if (num > 31) return "31";
+    return num.toString();
+  };
+
+  const formatYear = (value: string) => {
+    const num = parseInt(value);
+    if (isNaN(num)) return "";
+    const currentYear = new Date().getFullYear();
+    if (num < 1900) return "1900";
+    if (num > currentYear) return currentYear.toString();
+    return num.toString();
+  };
+
+  // Проверяем валидность текущей даты
+  const [dayPart, monthPart, yearPart] = birthday.split(".");
+  const isDateValid = validateDate(dayPart || "", monthPart || "", yearPart || "");
+
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -140,6 +201,19 @@ export const OnboardingPage = () => {
       return Math.max(prev - 1, 0);
     });
 
+  // Получаем активную карточку для показа в карусели
+  const activeCardIndex = Math.max(0, step - 1);
+  const activeCard = onboardingConfig[activeCardIndex];
+
+  // Состояние, управляющее отображением статичной задней карточки
+  const [showPrevCard, setShowPrevCard] = useState(false);
+  const [prevCardData, setPrevCardData] = useState<(typeof onboardingConfig)[0] | null>(
+    null,
+  );
+  const [prevCardColor, setPrevCardColor] = useState<string>("");
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const [isOpenCalendar, setIsOpenCalendar] = useState(false);
+
   const isDisabled =
     step === LAST_STEP &&
     (!name ||
@@ -150,7 +224,8 @@ export const OnboardingPage = () => {
       !bio ||
       !sex ||
       !base64 ||
-      !selectedFile);
+      !selectedFile ||
+      !isDateValid);
 
   console.log(base64);
   console.log(selectedFile);
@@ -210,38 +285,11 @@ export const OnboardingPage = () => {
     }
   };
 
-  const monthOptions = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
   const monthValue = birthday.split(".")[1] || "";
   const filteredMonths =
     monthValue.length > 0
       ? monthOptions.filter((m) => m.toLowerCase().includes(monthValue.toLowerCase()))
       : [];
-
-  // Получаем активную карточку для показа в карусели
-  const activeCardIndex = Math.max(0, step - 1);
-  const activeCard = onboardingConfig[activeCardIndex];
-
-  // Состояние, управляющее отображением статичной задней карточки
-  const [showPrevCard, setShowPrevCard] = useState(false);
-  const [prevCardData, setPrevCardData] = useState<(typeof onboardingConfig)[0] | null>(
-    null,
-  );
-  const [prevCardColor, setPrevCardColor] = useState<string>("");
-  const [direction, setDirection] = useState<"forward" | "backward">("forward");
-  const [isOpenCalendar, setIsOpenCalendar] = useState(false);
 
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
@@ -521,22 +569,39 @@ export const OnboardingPage = () => {
                 </div>
 
                 <div className="relative mb-4 flex w-full gap-2">
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
+                  <div
+                    className={`flex min-w-0 flex-1 items-center justify-between rounded-[14px] border ${!isDateValid && dayPart ? "border-red-400" : "border-[#DBDBDB]"} bg-white px-3 py-3`}
+                  >
                     <div className="flex w-full flex-col items-start text-xs">
                       <div className="mb-1 text-[#ABABAB]">День</div>
                       <input
                         type="number"
+                        min="1"
+                        max="31"
                         value={birthday ? birthday.split(".")[0] || "" : ""}
                         onChange={(e) => {
-                          const day = e.target.value;
+                          const value = e.target.value;
+                          const num = parseInt(value);
+
+                          // Не позволяем вводить число больше 31
+                          if (num > 31) return;
+
+                          const parts = birthday ? birthday.split(".") : ["", "", ""];
+                          setBirthday(`${value}.${parts[1] || ""}.${parts[2] || ""}`);
+                        }}
+                        onBlur={(e) => {
+                          const day = formatDay(e.target.value);
                           const parts = birthday ? birthday.split(".") : ["", "", ""];
                           setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
                         }}
                         className="w-full border-none bg-transparent text-base text-black outline-none"
+                        placeholder="01"
                       />
                     </div>
                   </div>
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
+                  <div
+                    className={`flex min-w-0 flex-1 items-center justify-between rounded-[14px] border ${!isDateValid && monthPart ? "border-red-400" : "border-[#DBDBDB]"} bg-white px-3 py-3`}
+                  >
                     <div className="relative w-full">
                       <div className="mb-1 text-xs text-[#ABABAB]">Месяц</div>
                       <input
@@ -554,6 +619,7 @@ export const OnboardingPage = () => {
                           setBirthday(`${d || ""}.${m}.${y || ""}`);
                         }}
                         className="w-full border-none bg-transparent text-base text-black outline-none"
+                        placeholder="Январь"
                       />
                       {filteredMonths.length > 0 &&
                         !monthOptions.includes(monthValue) && (
@@ -574,22 +640,38 @@ export const OnboardingPage = () => {
                         )}
                     </div>
                   </div>
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
+                  <div
+                    className={`flex min-w-0 flex-1 items-center justify-between rounded-[14px] border ${!isDateValid && yearPart ? "border-red-400" : "border-[#DBDBDB]"} bg-white px-3 py-3`}
+                  >
                     <div className="flex w-full flex-col items-start text-xs">
                       <div className="mb-1 text-[#ABABAB]">Год</div>
                       <input
                         type="number"
+                        min="1900"
+                        max={new Date().getFullYear()}
                         value={birthday ? birthday.split(".")[2] || "" : ""}
                         onChange={(e) => {
                           const year = e.target.value;
                           const parts = birthday ? birthday.split(".") : ["", "", ""];
                           setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
                         }}
+                        onBlur={(e) => {
+                          const year = formatYear(e.target.value);
+                          const parts = birthday ? birthday.split(".") : ["", "", ""];
+                          setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
+                        }}
                         className="w-full border-none bg-transparent text-base text-black outline-none"
+                        placeholder="1990"
                       />
                     </div>
                   </div>
                 </div>
+
+                {!isDateValid && birthday && dayPart && monthPart && yearPart && (
+                  <div className="mb-4 text-sm text-red-400">
+                    Пожалуйста, введите корректную дату рождения
+                  </div>
+                )}
 
                 <textarea
                   value={bio}

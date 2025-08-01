@@ -24,7 +24,7 @@ export const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4">
+    <header className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 pt-15">
       <div className="flex w-20 items-center gap-4">
         <div className="flex items-center">
           <Logo />

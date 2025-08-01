@@ -192,7 +192,7 @@ function RouteComponent() {
                       <img
                         src={
                           meeting.organizer?.photo
-                            ? getImageUrl(meeting.image!)
+                            ? getImageUrl(meeting.organizer.photo!)
                             : meeting.organizer?.photoUrl || ""
                         }
                         alt={meeting.organizer?.name!}

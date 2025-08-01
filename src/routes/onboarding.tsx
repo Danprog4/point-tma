@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { Selecter } from "~/components/Selecter";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
@@ -28,6 +29,7 @@ function RouteComponent() {
   const [city, setCity] = useState<string>("");
   const [bio, setBio] = useState("");
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const onBoarding = useMutation(
     trpc.main.getOnBoarding.mutationOptions({
       onSuccess: () => {
@@ -198,6 +200,55 @@ function RouteComponent() {
     </div>
   );
 
+  // Handler to delete main photo without triggering input
+  const handleDeletePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    setBase64(null);
+    setSelectedFile(null);
+
+    // Reset the input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handlePhotoAreaClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleEditPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const monthOptions = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
+  const monthValue = birthday.split(".")[1] || "";
+  const filteredMonths =
+    monthValue.length > 0
+      ? monthOptions.filter((m) => m.toLowerCase().includes(monthValue.toLowerCase()))
+      : [];
+
   // Получаем активную карточку для показа в карусели
   const activeCardIndex = Math.max(0, step - 1);
   const activeCard = onboardingConfig[activeCardIndex];
@@ -209,6 +260,7 @@ function RouteComponent() {
   );
   const [prevCardColor, setPrevCardColor] = useState<string>("");
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  const [isOpenCalendar, setIsOpenCalendar] = useState(false);
 
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
@@ -385,38 +437,50 @@ function RouteComponent() {
               className="flex h-full w-full flex-col items-center justify-start text-white"
             >
               <div className="flex h-full w-screen flex-col px-8 pb-20">
-                <label htmlFor="photo-upload" className="block cursor-pointer">
-                  <div className="mx-auto mt-4 mb-2 flex h-[144px] w-[144px] flex-col items-center justify-center overflow-hidden rounded-full bg-white">
-                    <div className="flex h-[45px] w-[45px] items-center justify-center rounded-full bg-[#F3E5FF] pt-[10px]">
-                      <svg
-                        width="30"
-                        height="35"
-                        viewBox="0 0 30 35"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M20.3134 21.9187C23.8472 20.0218 26.25 16.2915 26.25 12.0001C26.25 5.7869 21.2132 0.750053 15 0.750053C8.7869 0.750053 3.75005 5.7869 3.75005 12.0001C3.75005 16.2916 6.15305 20.0219 9.6869 21.9188C5.89824 23.2763 2.7812 26.0441 0.968262 29.5895C4.81565 32.6628 9.69343 34.5001 15.0003 34.5001C20.3071 34.5001 25.1849 32.6628 29.0322 29.5897C27.2193 26.0441 24.1021 23.2762 20.3134 21.9187Z"
-                          fill="#721DBD"
+                <div className="mt-8 flex w-full flex-col items-center gap-4">
+                  <div
+                    onClick={handlePhotoAreaClick}
+                    className="flex w-full cursor-pointer flex-col items-center gap-2"
+                  >
+                    {base64 ? (
+                      <div className="relative">
+                        <img
+                          src={base64}
+                          alt="Аватар"
+                          className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
                         />
-                      </svg>
-                    </div>
-                    <div className="text-sm text-[#787878]">
-                      {selectedFile
-                        ? selectedFile.name.length > 14
-                          ? selectedFile.name.substring(0, 14) + "..."
-                          : selectedFile.name
-                        : "Загрузить фото"}
-                    </div>
+                        <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
+                          <div
+                            className="z-[10000] cursor-pointer"
+                            onClick={handleDeletePhoto}
+                          >
+                            Удалить
+                          </div>
+                          <div className="cursor-pointer" onClick={handleEditPhoto}>
+                            Изменить
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-2 flex h-60 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
+                        <div className="flex flex-col items-center gap-2">
+                          <AddPhoto />
+                          <div className="text-sm text-[#9924FF]">
+                            Загрузить фото профиля
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
                   </div>
-                  <input
-                    id="photo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                </label>
+                </div>
                 <h2 className="mb-4 text-start text-xl font-bold text-white">
                   Расскажите коротко о себе
                 </h2>
@@ -465,19 +529,82 @@ function RouteComponent() {
                   className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
                 />
 
-                <input
-                  type="text"
-                  value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
-                  placeholder="Дата рождения"
-                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
-
                 <div className="relative mb-4">
                   <Selecter
                     cities={["Москва", "Санкт-Петербург", "Новосибирск"]}
                     setValue={(value) => setCity(value)}
                   />
+                </div>
+
+                <div className="relative mb-4 flex w-full gap-2">
+                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                    <div className="flex w-full flex-col items-start text-xs">
+                      <div className="text-[#ABABAB]">День</div>
+                      <input
+                        type="number"
+                        value={birthday ? birthday.split(".")[0] || "" : ""}
+                        onChange={(e) => {
+                          const day = e.target.value;
+                          const parts = birthday ? birthday.split(".") : ["", "", ""];
+                          setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
+                        }}
+                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                    <div className="relative w-full">
+                      <div className="text-xs text-[#ABABAB]">Месяц</div>
+                      <input
+                        type="text"
+                        value={monthValue}
+                        onClick={() => {
+                          if (monthValue) {
+                            const [d, , y] = birthday.split(".");
+                            setBirthday(`${d || ""}.${""}.${y || ""}`);
+                          }
+                        }}
+                        onChange={(e) => {
+                          const m = e.target.value;
+                          const [d, , y] = birthday.split(".");
+                          setBirthday(`${d || ""}.${m}.${y || ""}`);
+                        }}
+                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                      />
+                      {filteredMonths.length > 0 &&
+                        !monthOptions.includes(monthValue) && (
+                          <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white text-black shadow-lg">
+                            {filteredMonths.map((m) => (
+                              <li
+                                key={m}
+                                onClick={() => {
+                                  const [d, , y] = birthday.split(".");
+                                  setBirthday(`${d || ""}.${m}.${y || ""}`);
+                                }}
+                                className="cursor-pointer px-2 py-1 hover:bg-gray-100"
+                              >
+                                {m}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                    </div>
+                  </div>
+                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                    <div className="flex w-full flex-col items-start text-xs">
+                      <div className="text-[#ABABAB]">Год</div>
+                      <input
+                        type="number"
+                        value={birthday ? birthday.split(".")[2] || "" : ""}
+                        onChange={(e) => {
+                          const year = e.target.value;
+                          const parts = birthday ? birthday.split(".") : ["", "", ""];
+                          setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
+                        }}
+                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <textarea

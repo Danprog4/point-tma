@@ -8,7 +8,6 @@ import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
-import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/meetings")({
@@ -26,11 +25,9 @@ function RouteComponent() {
 
   const meetingsWithEvents = meetingsData?.map((meeting) => {
     const organizer = users?.find((u) => u.id === meeting.userId);
-    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
     return {
       ...meeting,
       organizer,
-      event,
     };
   });
   const navigate = useNavigate();
@@ -145,19 +142,14 @@ function RouteComponent() {
                 >
                   <div className={`relative h-full w-full`}>
                     <img
-                      src={
-                        !event.isCustom ? event.event?.image : getImageUrl(event.image!)
-                      }
+                      src={getImageUrl(event.image!)}
                       alt=""
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute bottom-2 left-2">
                       <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
-                        {event.isCustom
-                          ? event.name?.slice(0, 10) +
-                            (event.name?.length! > 10 ? "..." : "")
-                          : event.event?.title?.slice(0, 10) +
-                            (event.event?.title?.length! > 10 ? "..." : "")}
+                        {event.name?.slice(0, 10) +
+                          (event.name?.length! > 10 ? "..." : "")}
                       </span>
                     </div>
                   </div>
@@ -176,7 +168,7 @@ function RouteComponent() {
                 );
               })
               .filter((meeting) => {
-                const eventTitle = meeting.event?.title || "Без названия";
+                const eventTitle = meeting.name || "Без названия";
                 const organizerName = meeting.organizer?.name || "Неизвестно";
                 return (
                   eventTitle.toLowerCase().includes(search.toLowerCase()) ||
@@ -200,7 +192,7 @@ function RouteComponent() {
                       <img
                         src={
                           meeting.organizer?.photo
-                            ? getImageUrl(meeting.organizer.photo)
+                            ? getImageUrl(meeting.image!)
                             : meeting.organizer?.photoUrl || ""
                         }
                         alt={meeting.organizer?.name!}
@@ -214,7 +206,7 @@ function RouteComponent() {
                           {meeting.organizer?.name}
                         </h3>
                         <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                          {meeting.event?.title || meeting.name || "Без названия"}
+                          {meeting.name || "Без названия"}
                         </p>
                       </div>
                     </div>

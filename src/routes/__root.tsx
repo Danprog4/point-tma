@@ -11,6 +11,7 @@ import {
   init,
   mockTelegramEnv,
   swipeBehavior,
+  viewport,
 } from "@telegram-apps/sdk";
 import { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
@@ -99,6 +100,10 @@ function RootComponent() {
       swipeBehavior.isMounted();
       swipeBehavior.disableVertical();
       swipeBehavior.isVerticalEnabled();
+    }
+
+    if (viewport.expand.isAvailable()) {
+      viewport.expand();
     }
 
     // if (viewport.expand.isAvailable()) {

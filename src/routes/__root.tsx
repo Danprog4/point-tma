@@ -10,6 +10,7 @@ import {
   hapticFeedback,
   init,
   mockTelegramEnv,
+  requestFullscreen,
   swipeBehavior,
   viewport,
 } from "@telegram-apps/sdk";
@@ -114,7 +115,7 @@ function RootComponent() {
       requestFullscreen();
     }
 
-    // viewport.mount().then(() => viewport.requestFullscreen());
+    viewport.mount().then(() => viewport.requestFullscreen());
 
     console.log(hapticFeedback.isSupported(), "hapticFeedback");
   }, []);

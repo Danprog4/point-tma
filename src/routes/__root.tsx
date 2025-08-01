@@ -104,6 +104,8 @@ function RootComponent() {
 
     if (viewport.expand.isAvailable()) {
       viewport.expand();
+      viewport.requestFullscreen();
+      window.Telegram?.WebApp?.lockOrientation();
     }
 
     // if (viewport.expand.isAvailable()) {

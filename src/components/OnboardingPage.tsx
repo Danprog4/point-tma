@@ -403,7 +403,7 @@ export const OnboardingPage = () => {
         {step === LAST_STEP && (
           <motion.div
             key="final-block-wrapper"
-            className="absolute inset-0 z-20 flex w-screen items-center justify-center overflow-hidden px-8"
+            className="absolute inset-0 z-20 flex w-screen items-start justify-center overflow-hidden px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -415,20 +415,20 @@ export const OnboardingPage = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex h-full w-full flex-col items-center justify-start text-white"
+              className="scrollbar-hidden flex h-full w-full max-w-md flex-col items-center justify-start overflow-y-auto text-white"
             >
-              <div className="flex h-full w-screen flex-col px-8 pb-20">
-                <div className="mt-8 flex w-full flex-col items-center gap-4">
+              <div className="flex w-full flex-col px-4 pt-8 pb-24">
+                <div className="mb-6 flex w-full flex-col items-center gap-4">
                   <div
                     onClick={handlePhotoAreaClick}
                     className="flex w-full cursor-pointer flex-col items-center gap-2"
                   >
                     {base64 ? (
-                      <div className="relative">
+                      <div className="relative w-full">
                         <img
                           src={base64}
                           alt="Аватар"
-                          className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
+                          className="mb-2 h-48 w-full rounded-2xl object-cover"
                         />
                         <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
                           <div
@@ -443,7 +443,7 @@ export const OnboardingPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="mb-2 flex h-60 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
+                      <div className="mb-2 flex h-48 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
                         <div className="flex flex-col items-center gap-2">
                           <AddPhoto />
                           <div className="text-sm text-[#9924FF]">
@@ -462,11 +462,13 @@ export const OnboardingPage = () => {
                     />
                   </div>
                 </div>
+
                 <h2 className="mb-4 text-start text-xl font-bold text-white">
                   Расскажите коротко о себе
                 </h2>
+
                 <div className="mb-4 text-start text-sm font-bold text-white">Пол</div>
-                <div className="mb-4 flex items-center justify-start gap-6">
+                <div className="mb-6 flex items-center justify-start gap-6">
                   <div className="flex items-center gap-2">
                     <div
                       className={`h-4 w-4 rounded-full border-2 border-white ${
@@ -486,12 +488,13 @@ export const OnboardingPage = () => {
                     <span className="text-white">Мужской</span>
                   </div>
                 </div>
+
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Имя"
-                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
                 <input
@@ -499,7 +502,7 @@ export const OnboardingPage = () => {
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
                   placeholder="Фамилия"
-                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
                 <input
@@ -507,10 +510,10 @@ export const OnboardingPage = () => {
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   placeholder="@логин"
-                  className="mb-4 h-11 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
-                <div className="relative mb-4">
+                <div className="relative mb-4 w-full">
                   <Selecter
                     cities={["Москва", "Санкт-Петербург", "Новосибирск"]}
                     setValue={(value) => setCity(value)}
@@ -518,9 +521,9 @@ export const OnboardingPage = () => {
                 </div>
 
                 <div className="relative mb-4 flex w-full gap-2">
-                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
                     <div className="flex w-full flex-col items-start text-xs">
-                      <div className="text-[#ABABAB]">День</div>
+                      <div className="mb-1 text-[#ABABAB]">День</div>
                       <input
                         type="number"
                         value={birthday ? birthday.split(".")[0] || "" : ""}
@@ -529,13 +532,13 @@ export const OnboardingPage = () => {
                           const parts = birthday ? birthday.split(".") : ["", "", ""];
                           setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
                         }}
-                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                        className="w-full border-none bg-transparent text-base text-black outline-none"
                       />
                     </div>
                   </div>
-                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
                     <div className="relative w-full">
-                      <div className="text-xs text-[#ABABAB]">Месяц</div>
+                      <div className="mb-1 text-xs text-[#ABABAB]">Месяц</div>
                       <input
                         type="text"
                         value={monthValue}
@@ -550,7 +553,7 @@ export const OnboardingPage = () => {
                           const [d, , y] = birthday.split(".");
                           setBirthday(`${d || ""}.${m}.${y || ""}`);
                         }}
-                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                        className="w-full border-none bg-transparent text-base text-black outline-none"
                       />
                       {filteredMonths.length > 0 &&
                         !monthOptions.includes(monthValue) && (
@@ -571,9 +574,9 @@ export const OnboardingPage = () => {
                         )}
                     </div>
                   </div>
-                  <div className="flex flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-2">
+                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
                     <div className="flex w-full flex-col items-start text-xs">
-                      <div className="text-[#ABABAB]">Год</div>
+                      <div className="mb-1 text-[#ABABAB]">Год</div>
                       <input
                         type="number"
                         value={birthday ? birthday.split(".")[2] || "" : ""}
@@ -582,7 +585,7 @@ export const OnboardingPage = () => {
                           const parts = birthday ? birthday.split(".") : ["", "", ""];
                           setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
                         }}
-                        className="w-full border-none bg-transparent text-sm text-black outline-none"
+                        className="w-full border-none bg-transparent text-base text-black outline-none"
                       />
                     </div>
                   </div>
@@ -592,7 +595,7 @@ export const OnboardingPage = () => {
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Опишите ваши интересы"
-                  className="h-28 rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
+                  className="h-32 w-full resize-none rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-base text-black placeholder:text-black/50"
                 />
               </div>
             </motion.div>
@@ -604,12 +607,12 @@ export const OnboardingPage = () => {
       {step === 0 ? (
         <button
           onClick={handleNext}
-          className="absolute right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
+          className="absolute right-0 bottom-0 left-0 mx-4 my-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white"
         >
           Далее
         </button>
       ) : (
-        <div className="absolute bottom-4 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-2">
+        <div className="absolute bottom-0 left-0 z-[100] flex w-full items-center justify-between bg-[#71339b] py-4">
           <button
             onClick={handleBack}
             className="z-[100] ml-4 bg-transparent px-4 text-white"

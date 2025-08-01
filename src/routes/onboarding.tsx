@@ -160,6 +160,14 @@ function RouteComponent() {
   const activeCardIndex = Math.max(0, step - 1);
   const activeCard = eventTypes[activeCardIndex];
 
+  // Состояние, управляющее отображением статичной задней карточки
+  const [showPrevCard, setShowPrevCard] = useState(false);
+
+  // Скрываем заднюю карточку каждый раз при изменении шага
+  useEffect(() => {
+    setShowPrevCard(false);
+  }, [activeCardIndex]);
+
   return (
     <div className="flex h-screen w-screen flex-col items-center overflow-hidden bg-[#71339b] px-4">
       <header className="z-[100] flex items-center justify-end"></header>
@@ -194,13 +202,12 @@ function RouteComponent() {
           className="absolute inset-0 flex items-center justify-center"
           style={{ perspective: "1200px" }}
         >
-          {/* Задняя заблюренная карточка (предыдущая) */}
-          {activeCardIndex > 0 && (
+          {/* Задняя заблюренная карточка (previous) появляется только после завершения exit */}
+          {showPrevCard && activeCardIndex > 0 && (
             <div
               className="absolute"
               style={{
-                transform:
-                  "translateZ(-250px) translateX(-120px) translateY(-80px) rotateY(25deg) rotateX(15deg) scale(0.65)",
+                transform: "translateZ(-250px) translateX(-120px) translateY(-80px)",
                 filter: "blur(6px)",
                 opacity: 0.25,
               }}
@@ -225,7 +232,7 @@ function RouteComponent() {
             </div>
           )}
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout" onExitComplete={() => setShowPrevCard(true)}>
             <motion.div
               key={`card-${activeCardIndex}`}
               initial={{
@@ -252,16 +259,13 @@ function RouteComponent() {
                 x: -120,
                 y: -80,
                 z: -250,
-                rotateY: 25,
-                rotateX: 15,
-                scale: 0.65,
                 opacity: 0.25,
                 filter: "blur(6px)",
               }}
               transition={{
-                duration: 0.8,
-                ease: [0.25, 0.46, 0.45, 0.94],
-                filter: { duration: 0.6 },
+                duration: 0.4,
+                ease: [0.4, 0, 0.2, 1],
+                filter: { duration: 0.2 },
               }}
               style={{
                 transformStyle: "preserve-3d",

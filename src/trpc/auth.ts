@@ -90,6 +90,7 @@ export const authRouter = {
             sex: null,
             photo: null,
             gallery: [],
+            isOnboarded: false,
           })
           .returning();
 

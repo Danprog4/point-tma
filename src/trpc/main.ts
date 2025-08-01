@@ -78,6 +78,7 @@ export const router = {
         bio: z.string(),
         sex: z.string(),
         photo: z.string(),
+        isOnboarded: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -105,6 +106,7 @@ export const router = {
           bio: input.bio,
           sex: input.sex,
           photo: imageUUID,
+          isOnboarded: input.isOnboarded,
         })
         .where(eq(usersTable.id, ctx.userId));
 

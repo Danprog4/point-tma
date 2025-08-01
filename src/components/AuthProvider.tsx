@@ -1,9 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 
 import { useNavigate } from "@tanstack/react-router";
-import { useLocalStorage } from "usehooks-ts";
+import { OnboardingPage } from "./OnboardingPage";
 import { FullPageSpinner } from "./Spinner";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -11,17 +11,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const trpc = useTRPC();
   const [initData, setInitData] = useState<string | null>(null);
   const [startParam, setStartParam] = useState<string | undefined>(undefined);
-  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
 
   const queryClient = useQueryClient();
 
+  // Получаем данные пользователя для проверки статуса онбординга
+  const userQuery = useQuery({
+    ...trpc.main.getUser.queryOptions(),
+    enabled: loggedIn,
+  });
+
   const loginMutation = useMutation(
     trpc.auth.login.mutationOptions({
-      onSuccess: () => {
-        if (!isOnboarded) {
-          navigate({ to: "/onboarding" });
-        }
+      onSuccess: (data) => {
         setLoggedIn(true);
+        // Сразу устанавливаем данные пользователя в кэш
+        queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),
   );
@@ -61,8 +65,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   //   useEffect(() => {
   //     prefetch();
   //   }, []);
+  // Показываем онбординг если пользователь залогинен но не прошел онбординг
+  if (loggedIn && userQuery.data && !userQuery.data.isOnboarded) {
+    return <OnboardingPage />;
+  }
 
-  if (!loggedIn) {
+  if (!loggedIn || userQuery.isLoading) {
     return <FullPageSpinner />;
   }
 

@@ -37,6 +37,7 @@ export const usersTable = pgTable("users", {
   sex: varchar("sex", { length: 255 }),
   photo: varchar("photo", { length: 255 }),
   gallery: jsonb("gallery").$type<string[]>(),
+  isOnboarded: boolean("is_onboarded").default(false),
 });
 
 export const meetTable = pgTable("meets", {

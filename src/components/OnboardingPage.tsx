@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { Selecter } from "~/components/Selecter";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
@@ -10,15 +9,10 @@ import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { onboardingConfig } from "~/onboardingConfig";
 import { useTRPC } from "~/trpc/init/react";
 
-export const Route = createFileRoute("/onboarding")({
-  component: RouteComponent,
-});
-
-function RouteComponent() {
+export const OnboardingPage = () => {
   const trpc = useTRPC();
   const [step, setStep] = useState(0);
   const queryClient = useQueryClient();
-  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [login, setLogin] = useState("");
@@ -30,19 +24,7 @@ function RouteComponent() {
   const [bio, setBio] = useState("");
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const onBoarding = useMutation(
-    trpc.main.getOnBoarding.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
-      },
-    }),
-  );
-
-  useEffect(() => {
-    if (isOnboarded) {
-      navigate({ to: "/" });
-    }
-  }, [isOnboarded, navigate]);
+  const onBoarding = useMutation(trpc.main.getOnBoarding.mutationOptions({}));
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -96,7 +78,12 @@ function RouteComponent() {
       bio,
       sex: sex || "",
       photo: base64 || "",
+      isOnboarded: true,
     });
+
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (oldData: any) =>
+      oldData ? { ...oldData, isOnboarded: true } : oldData,
+    );
   };
 
   const handleNext = () =>
@@ -122,8 +109,6 @@ function RouteComponent() {
 
       if (prev === LAST_STEP) {
         handleSubmit();
-        navigate({ to: "/" });
-        setIsOnboarded(true);
       }
       return prev + 1;
     });
@@ -154,10 +139,6 @@ function RouteComponent() {
       setShowPrevCard(false);
       return Math.max(prev - 1, 0);
     });
-  const handleClose = () => {
-    navigate({ to: "/" });
-    setIsOnboarded(true);
-  };
 
   const isDisabled =
     step === LAST_STEP &&
@@ -646,4 +627,4 @@ function RouteComponent() {
       )}
     </div>
   );
-}
+};

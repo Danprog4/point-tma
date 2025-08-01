@@ -16,7 +16,6 @@ import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileSettImport } from './routes/profile-sett'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as PointsImport } from './routes/points'
-import { Route as OnboardingImport } from './routes/onboarding'
 import { Route as NotifImport } from './routes/notif'
 import { Route as MyMeetingsImport } from './routes/my-meetings'
 import { Route as MeetingsImport } from './routes/meetings'
@@ -64,12 +63,6 @@ const ProfileRoute = ProfileImport.update({
 const PointsRoute = PointsImport.update({
   id: '/points',
   path: '/points',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const OnboardingRoute = OnboardingImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -256,13 +249,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotifImport
       parentRoute: typeof rootRoute
     }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingImport
-      parentRoute: typeof rootRoute
-    }
     '/points': {
       id: '/points'
       path: '/points'
@@ -357,7 +343,6 @@ export interface FileRoutesByFullPath {
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
-  '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
@@ -383,7 +368,6 @@ export interface FileRoutesByTo {
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
-  '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
@@ -410,7 +394,6 @@ export interface FileRoutesById {
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
   '/notif': typeof NotifRoute
-  '/onboarding': typeof OnboardingRoute
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
@@ -438,7 +421,6 @@ export interface FileRouteTypes {
     | '/meetings'
     | '/my-meetings'
     | '/notif'
-    | '/onboarding'
     | '/points'
     | '/profile'
     | '/profile-sett'
@@ -463,7 +445,6 @@ export interface FileRouteTypes {
     | '/meetings'
     | '/my-meetings'
     | '/notif'
-    | '/onboarding'
     | '/points'
     | '/profile'
     | '/profile-sett'
@@ -488,7 +469,6 @@ export interface FileRouteTypes {
     | '/meetings'
     | '/my-meetings'
     | '/notif'
-    | '/onboarding'
     | '/points'
     | '/profile'
     | '/profile-sett'
@@ -515,7 +495,6 @@ export interface RootRouteChildren {
   MeetingsRoute: typeof MeetingsRoute
   MyMeetingsRoute: typeof MyMeetingsRoute
   NotifRoute: typeof NotifRoute
-  OnboardingRoute: typeof OnboardingRoute
   PointsRoute: typeof PointsRoute
   ProfileRoute: typeof ProfileRoute
   ProfileSettRoute: typeof ProfileSettRoute
@@ -541,7 +520,6 @@ const rootRouteChildren: RootRouteChildren = {
   MeetingsRoute: MeetingsRoute,
   MyMeetingsRoute: MyMeetingsRoute,
   NotifRoute: NotifRoute,
-  OnboardingRoute: OnboardingRoute,
   PointsRoute: PointsRoute,
   ProfileRoute: ProfileRoute,
   ProfileSettRoute: ProfileSettRoute,
@@ -576,7 +554,6 @@ export const routeTree = rootRoute
         "/meetings",
         "/my-meetings",
         "/notif",
-        "/onboarding",
         "/points",
         "/profile",
         "/profile-sett",
@@ -622,9 +599,6 @@ export const routeTree = rootRoute
     },
     "/notif": {
       "filePath": "notif.tsx"
-    },
-    "/onboarding": {
-      "filePath": "onboarding.tsx"
     },
     "/points": {
       "filePath": "points.tsx"

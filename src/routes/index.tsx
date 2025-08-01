@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { Header } from "~/components/Header";
 import { Selecter } from "~/components/Selecter";
@@ -18,14 +17,6 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    const isOnboarded = localStorage.getItem("isOnboarded");
-    if (!isOnboarded || isOnboarded === "false") {
-      throw redirect({
-        to: "/onboarding",
-      });
-    }
-  },
   component: Home,
 });
 
@@ -36,20 +27,8 @@ function Home() {
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isOnboarded, setIsOnboarded] = useLocalStorage("isOnboarded", false);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isOnboarded) {
-      navigate({ to: "/onboarding" });
-      return;
-    }
-  }, [isOnboarded, navigate]);
-
-  if (!isOnboarded) {
-    return null;
-  }
 
   useScroll();
 

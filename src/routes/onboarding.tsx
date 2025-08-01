@@ -99,7 +99,7 @@ function RouteComponent() {
 
   const handleNext = () =>
     setStep((prev) => {
-      // Сохраняем данные текущей карточки ПЕРЕД переходом к следующей
+      // Сохраняем данные ТЕКУЩЕЙ карточки перед переходом
       if (prev > 0 && prev <= TOTAL_CARDS) {
         const currentIndex = prev - 1;
         setPrevCardData(onboardingConfig[currentIndex]);
@@ -125,7 +125,27 @@ function RouteComponent() {
       return prev + 1;
     });
 
-  const handleBack = () => setStep((prev) => Math.max(prev - 1, 0));
+  const handleBack = () =>
+    setStep((prev) => {
+      // При переходе назад сохраняем данные текущей карточки
+      if (prev > 1 && prev <= TOTAL_CARDS) {
+        const currentIndex = prev - 1;
+        setPrevCardData(onboardingConfig[currentIndex]);
+        const currentColor =
+          currentIndex === 0
+            ? "#F3E5FF"
+            : currentIndex === 1
+              ? "#D6E2FF"
+              : currentIndex === 2
+                ? "#EBFFF4"
+                : currentIndex === 3
+                  ? "#FFE5E5"
+                  : "#FFFBEB";
+        setPrevCardColor(currentColor);
+      }
+      setShowPrevCard(false);
+      return Math.max(prev - 1, 0);
+    });
   const handleClose = () => {
     navigate({ to: "/" });
     setIsOnboarded(true);

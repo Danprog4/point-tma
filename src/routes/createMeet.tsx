@@ -7,6 +7,7 @@ import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
 import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
+import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/createMeet")({
@@ -135,9 +136,17 @@ function RouteComponent() {
 
   console.log(step);
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="relative flex h-screen w-screen flex-col p-4 pb-20">
-      <header className="fixed top-4 right-4 left-4 z-[10] flex items-center bg-white">
+    <div
+      data-mobile={isMobile}
+      className="relative flex h-screen w-screen flex-col p-4 pb-20 data-[mobile=true]:pt-24"
+    >
+      <header
+        data-mobile={isMobile}
+        className="fixed top-0 right-4 left-4 z-[10] flex items-center justify-between bg-white py-4 data-[mobile=true]:py-0 data-[mobile=true]:pt-22"
+      >
         {isInvite ? (
           <div onClick={() => setIsInvite(false)} className="cursor-pointer">
             <X />
@@ -151,13 +160,14 @@ function RouteComponent() {
             <ArrowLeft />
           </button>
         )}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-bold text-nowrap">
+        <div className="text-xl font-bold text-nowrap">
           {isInvite
             ? "Приглашение"
             : isInventoryOpen
               ? "Выберите награду"
               : "Создание встречи"}
         </div>
+        <div className="h-5 w-5"></div>
       </header>
       {step < 4 && (
         <div className="flex items-center justify-center gap-2 pt-12 pb-6">

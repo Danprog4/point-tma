@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { usePlatform } from "~/hooks/usePlatform";
 
 export const Route = createFileRoute("/skills")({
   component: RouteComponent,
@@ -104,22 +105,33 @@ function SkillCategory({ category }: { category: SkillCategory }) {
   );
 }
 
+const isMobile = usePlatform();
+
 function RouteComponent() {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24">
+    <div
+      data-mobile={isMobile}
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-35"
+    >
       {/* Header */}
-      <button
-        onClick={() => navigate({ to: "/profile" })}
-        className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
       >
-        <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-      </button>
-      <div className="flex items-center justify-center p-4 pb-2">
-        <div className="flex-1">
-          <h1 className="text-center text-base font-bold text-gray-800">Ваши навыки</h1>
+        <button
+          onClick={() => navigate({ to: "/profile" })}
+          className="flex h-6 w-6 items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+        </button>
+        <div className="flex items-center justify-center p-4">
+          <div className="flex-1">
+            <h1 className="text-center text-base font-bold text-gray-800">Ваши навыки</h1>
+          </div>
         </div>
+        <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
 
       {/* Content */}

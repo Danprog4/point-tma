@@ -13,6 +13,7 @@ import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
 import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { questsData } from "~/config/quests";
+import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -103,8 +104,13 @@ function RouteComponent() {
       : event;
   });
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-30">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-30 data-[mobile=true]:pt-35"
+    >
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">

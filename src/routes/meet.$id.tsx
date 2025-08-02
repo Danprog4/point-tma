@@ -13,6 +13,7 @@ import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
@@ -172,6 +173,8 @@ function RouteComponent() {
 
   console.log(meeting, "meeting");
 
+  const isMobile = usePlatform();
+
   return (
     <>
       {isParticipantPage ? (
@@ -182,7 +185,10 @@ function RouteComponent() {
         />
       ) : (
         <>
-          <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
+          <div
+            data-mobile={isMobile}
+            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+          >
             <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
               <button
                 onClick={() => handleBack()}
@@ -209,7 +215,10 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="scrollbar-hidden overflow-y-auto pt-18 pb-24">
+          <div
+            data-mobile={isMobile}
+            className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-35"
+          >
             <div className="relative">
               <img
                 src={getImageUrl(meeting?.image!)}

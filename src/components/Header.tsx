@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
+import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 import { Logo } from "./Icons/Logo";
@@ -23,8 +24,13 @@ export const Header = () => {
     }
   };
 
+  const isMobile = usePlatform();
+
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4">
+    <header
+      data-mobile={isMobile}
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-24"
+    >
       <div className="flex w-20 items-center gap-4">
         <div className="flex items-center">
           <Logo />

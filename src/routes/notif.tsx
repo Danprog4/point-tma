@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft } from "lucide-react";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -135,16 +136,25 @@ function RouteComponent() {
     }
   };
 
+  const isMobile = usePlatform();
+
   return (
-    <div>
-      <div className="relative flex items-center justify-center p-4">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-10 data-[mobile=true]:pt-35"
+    >
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-24"
+      >
         <button
           onClick={() => window.history.back()}
-          className="absolute left-4 flex h-6 w-6 items-center justify-center"
+          className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
         <h1 className="text-base font-bold text-gray-800">Уведомления</h1>
+        <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
       <div className="flex w-full flex-col items-start justify-center gap-4 px-4">
         {notifications && notifications.length > 0 ? (

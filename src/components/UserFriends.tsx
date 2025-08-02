@@ -84,6 +84,7 @@ export const UserFriends = ({
                     to: "/user-profile/$id",
                     params: { id: requestUser?.id.toString() || "" },
                   });
+                  setIsFriendsPage(false);
                 }}
               >
                 <div className="flex items-center justify-between pb-4">

@@ -7,6 +7,7 @@ import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
@@ -49,9 +50,13 @@ function RouteComponent() {
   console.log(meetingsWithEvents, "meetingsWithEvents");
 
   useScroll();
+  const isMobile = usePlatform();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-32">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-32 data-[mobile=true]:pt-35"
+    >
       {/* Top Navigation */}
       <Header />
 
@@ -61,14 +66,14 @@ function RouteComponent() {
           <h1 className="text-3xl font-bold text-black">Встречи</h1>
         </div>
         <div
-          className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2.5 text-sm font-medium text-black"
+          className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2 text-sm font-medium text-black"
           style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
           onClick={() => navigate({ to: "/my-meetings" })}
         >
           {activeMeetRequests && activeMeetRequests?.length > 0 ? (
             <div className="relative">
               Мои встречи
-              <div className="absolute top-0 right-[-10px] h-2 w-2 rounded-full bg-red-500"></div>
+              <div className="absolute top-0 right-[-10px] rounded-full bg-red-500"></div>
             </div>
           ) : (
             "Мои встречи"

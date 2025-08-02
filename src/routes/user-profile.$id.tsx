@@ -14,6 +14,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
+import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -239,6 +240,8 @@ function RouteComponent() {
   console.log(user?.gallery, "gallery");
   console.log(currentIndex, "currentIndex");
 
+  const isMobile = usePlatform();
+
   return (
     <>
       {isFriendsPage ? (
@@ -250,9 +253,15 @@ function RouteComponent() {
       ) : isSubscribersPage ? (
         <UserSubscribers viewedUser={user} setIsSubscribersPage={setIsSubscribersPage} />
       ) : (
-        <div className="scrollbar-hidden overflow-y-auto pt-14 pb-20">
+        <div
+          data-mobile={isMobile}
+          className="scrollbar-hidden overflow-y-auto pt-14 pb-20 data-[mobile=true]:pt-35"
+        >
           {isMore ? (
-            <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4">
+            <div
+              data-mobile={isMobile}
+              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-24"
+            >
               <button
                 onClick={() => setIsMore(false)}
                 className="absolute left-4 flex h-6 w-6 items-center justify-center"
@@ -264,7 +273,10 @@ function RouteComponent() {
               </h1>
             </div>
           ) : (
-            <div className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4">
+            <div
+              data-mobile={isMobile}
+              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-24"
+            >
               <button
                 // TODO: Make user-meetings as component
                 onClick={() => navigate({ to: "/profile" })}

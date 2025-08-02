@@ -64,7 +64,10 @@ function Home() {
   const isMobile = usePlatform();
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-10">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-10 data-[mobile=true]:pt-35"
+    >
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">

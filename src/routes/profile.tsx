@@ -25,6 +25,7 @@ import { CloseRed } from "~/components/Icons/CloseRed";
 import { MenuItem } from "~/components/MenuItem";
 import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
@@ -151,8 +152,13 @@ function RouteComponent() {
   };
 
   console.log(pageState, "pageState");
+
+  const isMobile = usePlatform();
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-20">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-20 data-[mobile=true]:pt-35"
+    >
       <Header />
 
       <div className="flex items-center justify-between px-4 py-5">

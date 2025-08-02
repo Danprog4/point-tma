@@ -15,6 +15,7 @@ import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { useActivate } from "~/hooks/useActivate";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
@@ -145,8 +146,13 @@ function RouteComponent() {
     setIsCompleted(true);
   };
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="min-h-screen overflow-y-auto">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto data-[mobile=true]:pt-22"
+    >
       {isOpen ? (
         <>
           <>
@@ -239,8 +245,11 @@ function RouteComponent() {
           )}
         </>
       ) : (
-        <div className="pt-18 pb-24">
-          <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
+        <div data-mobile={isMobile} className="pt-18 pb-24 data-[mobile=true]:pt-14">
+          <div
+            data-mobile={isMobile}
+            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+          >
             <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
               <button
                 onClick={() => window.history.back()}

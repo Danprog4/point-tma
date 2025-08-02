@@ -25,7 +25,7 @@ export const UserSubscribers = ({
   );
 
   return (
-    <div>
+    <div className="flex flex-col px-4">
       <div className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white">
         <button
           onClick={() => setIsSubscribersPage(false)}
@@ -53,7 +53,7 @@ export const UserSubscribers = ({
       </div>
       {filteredSubscribers && filteredSubscribers.length > 0 ? (
         <div className="flex flex-col gap-4">
-          <div className="text-lg font-medium">Друзья</div>
+          <div className="text-lg font-medium">Подписчики</div>
           {filteredSubscribers.map((subscriber) => {
             return (
               <div
@@ -63,6 +63,7 @@ export const UserSubscribers = ({
                     to: "/user-profile/$id",
                     params: { id: subscriber?.id.toString() || "" },
                   });
+                  setIsSubscribersPage(false);
                 }}
               >
                 <div className="flex items-center justify-between pb-4">

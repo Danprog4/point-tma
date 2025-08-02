@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { More } from "~/components/More";
-
+import { usePlatform } from "~/hooks/usePlatform";
 export const Route = createFileRoute("/calendar")({
   component: RouteComponent,
 });
@@ -109,12 +109,20 @@ function RouteComponent() {
     return days;
   };
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="mx-auto min-h-screen w-full bg-white">
+    <div
+      data-mobile={isMobile}
+      className="mx-auto min-h-screen w-full bg-white data-[mobile=true]:pt-35"
+    >
       {/* Header */}
 
       {/* Month Navigation */}
-      <div className="flex items-center justify-center gap-1 py-2">
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
+      >
         <button
           onClick={() => navigateMonth("prev")}
           className="flex items-center justify-center px-4"

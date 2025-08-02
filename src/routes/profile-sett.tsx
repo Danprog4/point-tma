@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { steps } from "~/config/steps";
+import { usePlatform } from "~/hooks/usePlatform";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -329,9 +330,17 @@ function RouteComponent() {
     return ((userSteps / totalSteps) * 100).toFixed(0);
   };
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="h-full overflow-y-auto pb-24">
-      <div className="flex items-center justify-between p-4 pb-2">
+    <div
+      data-mobile={isMobile}
+      className="h-full overflow-y-auto pb-24 data-[mobile=true]:pt-28"
+    >
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-[100000] flex items-center justify-between bg-white px-4 py-4 pb-2 data-[mobile=true]:py-0 data-[mobile=true]:pt-24"
+      >
         <button
           disabled={updateProfile.isPending}
           onClick={() => navigate({ to: "/profile" })}

@@ -3,7 +3,10 @@ import { retrieveLaunchParams } from "@telegram-apps/sdk";
 export const usePlatform = () => {
   const launchParams = retrieveLaunchParams();
 
-  console.log(launchParams, "launchParams");
-
-  return launchParams.tgWebAppPlatform;
+  return (
+    launchParams.tgWebAppPlatform === "ios" ||
+    launchParams.tgWebAppPlatform === "android" ||
+    launchParams.tgWebAppPlatform === "android-x" ||
+    launchParams.tgWebAppPlatform === "android_x"
+  );
 };

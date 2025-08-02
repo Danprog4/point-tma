@@ -214,7 +214,7 @@ export const Step1 = ({
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 py-4 pb-4">
+      <div className="flex flex-col items-start gap-2 py-4 pb-20">
         <div className="text-xl font-bold">Дата</div>
         <input
           value={date}

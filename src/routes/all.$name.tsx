@@ -8,7 +8,7 @@ import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
-
+import { usePlatform } from "~/hooks/usePlatform";
 export const Route = createFileRoute("/all/$name")({
   component: RouteComponent,
 });
@@ -41,9 +41,17 @@ function RouteComponent() {
       data = [];
   }
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="flex flex-col overflow-y-auto pt-10 pb-10">
-      <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
+    <div
+      data-mobile={isMobile}
+      className="flex flex-col overflow-y-auto pt-10 pb-10 data-[mobile=true]:pt-35"
+    >
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+      >
         <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
           <button
             onClick={() => navigate({ to: "/" })}

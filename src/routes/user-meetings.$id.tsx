@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
@@ -102,12 +103,20 @@ function RouteComponent() {
   const displayMeetings =
     activeFilter === "Активные" ? activeMeetings : completedMeetings;
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="min-h-screen overflow-y-auto bg-white pt-16 pb-10">
-      <div className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white">
+    <div
+      data-mobile={isMobile}
+      className="min-h-screen overflow-y-auto bg-white pt-16 pb-10 data-[mobile=true]:pt-40"
+    >
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white px-4 data-[mobile=true]:pt-20"
+      >
         <button
           onClick={() => navigate({ to: `/user-profile/${id}` })}
-          className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
+          className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
@@ -116,6 +125,7 @@ function RouteComponent() {
             Встречи {viewedUser?.name} {viewedUser?.surname}
           </h1>
         </div>
+        <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
 
       <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-10 overflow-x-auto px-4">

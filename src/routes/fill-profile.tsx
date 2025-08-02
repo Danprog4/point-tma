@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { SettingsIcon } from "~/components/Icons/Settings";
 import { steps } from "~/config/steps";
+import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/fill-profile")({
   component: RouteComponent,
@@ -185,24 +186,41 @@ function RouteComponent() {
   console.log(interests);
   console.log(cameFromSettings);
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="flex flex-col px-4">
-      <header className="flex items-center justify-between pt-4 pb-2">
-        <button onClick={handleback} className="flex h-6 w-6 items-center justify-center">
-          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-        </button>
+    <div
+      data-mobile={isMobile}
+      className="flex flex-col px-4 pt-10 data-[mobile=true]:pt-35"
+    >
+      <header
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 py-4 data-[mobile=true]:py-0 data-[mobile=true]:pt-24"
+      >
+        <div className="flex h-6 w-6 items-center justify-center">
+          {!isSettings && !isSettingsSearch ? (
+            <button onClick={() => setIsSettings(!isSettings)}>
+              <SettingsIcon />
+            </button>
+          ) : isSettingsSearch ? (
+            <button onClick={() => navigate({ to: "/profile" })}>
+              <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            </button>
+          ) : (
+            <button
+              onClick={handleback}
+              className="flex h-6 w-6 items-center justify-center"
+            >
+              <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            </button>
+          )}
+        </div>
         <div className="flex-1">
           <h1 className="text-center text-base font-bold text-gray-800">
             {isSettings ? "Вопросы" : "Заполнение профиля"}
           </h1>
         </div>
-        <div className="flex h-6 w-6 items-center justify-center">
-          {!isSettings && (
-            <button onClick={() => setIsSettings(!isSettings)}>
-              <SettingsIcon />
-            </button>
-          )}
-        </div>
+        <div className="h-6 w-6"></div>
       </header>
       {isSettings ? (
         <div>

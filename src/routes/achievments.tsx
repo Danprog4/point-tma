@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { usePlatform } from "~/hooks/usePlatform";
 
 export const Route = createFileRoute("/achievments")({
   component: RouteComponent,
@@ -166,24 +167,34 @@ function RouteComponent() {
     setSortDropdownOpen(false);
   };
 
+  const isMobile = usePlatform();
   return (
-    <div className="mx-auto min-h-screen w-full bg-white pb-24">
+    <div
+      data-mobile={isMobile}
+      className="mx-auto min-h-screen w-full bg-white pb-24 data-[mobile=true]:pt-35"
+    >
       {/* Top Bar */}
-      <button
-        onClick={() => navigate({ to: "/profile" })}
-        className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
       >
-        <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-      </button>
-      <div className="flex items-center justify-center p-4 pb-2">
-        <div className="flex-1">
-          <h1 className="text-center text-base font-bold text-gray-800">Достижения</h1>
+        <button
+          onClick={() => navigate({ to: "/profile" })}
+          className="flex h-6 w-6 items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+        </button>
+        <div className="flex items-center justify-center p-4 pb-2">
+          <div className="flex-1">
+            <h1 className="text-center text-base font-bold text-gray-800">Достижения</h1>
+          </div>
         </div>
+        <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
 
       {/* Filter Tabs */}
       <div className="px-4 py-4">
-        <div className="flex w-full flex-1 items-center gap-6 overflow-x-auto">
+        <div className="scrollbar-hidden flex w-full flex-1 items-center gap-6 overflow-x-auto">
           {filters.map((filter) => (
             <button
               key={filter}

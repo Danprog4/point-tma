@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { ReviewStar } from "./Icons/ReviewStar";
 export const Participations = ({
@@ -25,14 +26,20 @@ export const Participations = ({
   console.log(users, "users");
 
   console.log(participantsWithUsers, "participants");
+
+  const isMobile = usePlatform();
+
   return (
-    <div className="px-4 py-4">
-      <header className="flex items-center justify-between pb-4">
-        <button onClick={() => setIsOpen(false)}>
-          <ArrowLeft className="h-6 w-6" />
+    <div data-mobile={isMobile} className="px-4 py-4 data-[mobile=true]:pt-24">
+      <header className="flex items-center justify-between pt-0.5 pb-4">
+        <button
+          className="flex h-6 w-6 items-center justify-center"
+          onClick={() => setIsOpen(false)}
+        >
+          <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="text-xl font-bold">Оценка участников</div>
-        <div className="h-6 w-6"></div>
+        <div className="h-5 w-5"></div>
       </header>
       <div className="flex flex-col gap-4 text-black">
         {participantsWithUsers?.map((participant: any) => {

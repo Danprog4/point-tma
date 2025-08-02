@@ -29,7 +29,7 @@ export const Header = () => {
   return (
     <header
       data-mobile={isMobile}
-      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-24"
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
     >
       <div className="flex w-20 items-center gap-4">
         <div className="flex items-center">

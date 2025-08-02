@@ -15,7 +15,9 @@ import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
+import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
+
 export const Route = createFileRoute("/")({
   component: Home,
 });
@@ -58,6 +60,8 @@ function Home() {
       </div>
     );
   }
+
+  const isMobile = usePlatform();
 
   return (
     <div className="min-h-screen overflow-y-auto bg-white pt-14 pb-10">

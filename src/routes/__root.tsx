@@ -19,26 +19,9 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider } from "~/components/AuthProvider";
 import { Navbar } from "~/components/Navbar";
-import { usePlatform } from "~/hooks/usePlatform";
 import appCss from "~/lib/styles/app.css?url";
 import { useTRPC } from "~/trpc/init/react";
 import { TRPCRouter } from "~/trpc/init/router";
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        enableClosingConfirmation: () => void;
-        expand: () => void;
-        disableVerticalSwipes: () => void;
-        requestFullscreen: () => void;
-        lockOrientation: () => void;
-        platform: string;
-        version: string;
-        // Add other Telegram WebApp properties you might use here
-      };
-    };
-  }
-}
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -64,7 +47,6 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
-  const isMobile = usePlatform();
   useEffect(() => {
     const themeParams = {
       accent_text_color: "#6ab2f2",

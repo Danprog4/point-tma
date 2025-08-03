@@ -172,7 +172,13 @@ function RouteComponent() {
     });
   };
 
-  const rateUsers = useMutation(trpc.main.rateUsers.mutationOptions());
+  const rateUsers = useMutation(
+    trpc.main.rateUsers.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
+      },
+    }),
+  );
 
   const handleRateUsers = (userIds: number[], rating: number) => {
     rateUsers.mutate({ userIds, rating, meetId: meeting?.id! });

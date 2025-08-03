@@ -86,8 +86,6 @@ export const Participations = ({
       newRatings.forEach(([userId, rating]) => {
         handleRateUsers([Number(userId)], rating);
       });
-
-      queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
     }
   };
 
@@ -150,7 +148,9 @@ export const Participations = ({
                       {Array.from({ length: 5 }).map((_, index) => (
                         <ReviewStar
                           key={index}
-                          disabled={!!participant.existingRating}
+                          disabled={
+                            participant.existingRating && participant.existingRating > 0
+                          }
                           onClick={() =>
                             setRatings({ ...ratings, [participant.id]: index + 1 })
                           }

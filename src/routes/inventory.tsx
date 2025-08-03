@@ -27,7 +27,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-42"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-39"
     >
       {/* Header */}
       <div
@@ -38,11 +38,10 @@ function RouteComponent() {
           onClick={() => navigate({ to: "/profile" })}
           className="flex h-6 w-6 items-center justify-center"
         >
-          <ArrowLeft className="h-6 w-6 text-gray-800" strokeWidth={2} />
+          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex items-center justify-center">
-          <h1 className="text-center text-base font-bold text-gray-800">Инвентарь</h1>
-        </div>
+        <h1 className="text-center text-base font-bold text-gray-800">Инвентарь</h1>
+
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
       {inactiveTickets.length > 0 ? (

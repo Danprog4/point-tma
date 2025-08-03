@@ -126,11 +126,9 @@ function RouteComponent() {
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex items-center justify-center">
-          <div className="flex-1">
-            <h1 className="text-center text-base font-bold text-gray-800">Ваши навыки</h1>
-          </div>
-        </div>
+
+        <h1 className="text-center text-base font-bold text-gray-800">Ваши навыки</h1>
+
         <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
 

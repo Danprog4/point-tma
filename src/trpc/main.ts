@@ -579,7 +579,10 @@ export const router = {
     .input(z.object({ meetId: z.number() }))
     .query(async ({ ctx, input }) => {
       const userRating = await db.query.ratingsUserTable.findMany({
-        where: eq(ratingsUserTable.meetId, input.meetId),
+        where: and(
+          eq(ratingsUserTable.meetId, input.meetId),
+          eq(ratingsUserTable.fromUserId, ctx.userId),
+        ),
       });
 
       return userRating;

@@ -148,9 +148,7 @@ export const Participations = ({
                       {Array.from({ length: 5 }).map((_, index) => (
                         <ReviewStar
                           key={index}
-                          disabled={
-                            participant.existingRating && participant.existingRating > 0
-                          }
+                          disabled={participant.existingRating?.rating > 0}
                           onClick={() =>
                             setRatings({ ...ratings, [participant.id]: index + 1 })
                           }

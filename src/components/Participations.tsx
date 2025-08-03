@@ -78,13 +78,17 @@ export const Participations = ({
       return !existingRating || existingRating.rating !== rating;
     });
 
+    if (newRatings.length === 0) {
+      return;
+    }
+
     if (newRatings.length > 0) {
       newRatings.forEach(([userId, rating]) => {
         handleRateUsers([Number(userId)], rating);
       });
-    }
 
-    queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
+      queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
+    }
   };
 
   console.log(participantsWithUsers, "participants");

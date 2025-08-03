@@ -167,10 +167,8 @@ function RouteComponent() {
 
       <div className="space-y-4">
         {userQuestsData && userQuestsData.length > 0 && (
-          <div className="mb-6">
-            <h2 className="px-4 pb-4 text-lg font-semibold text-black">
-              Активные квесты
-            </h2>
+          <>
+            <h2 className="px-4 text-lg font-semibold text-black">Активные квесты</h2>
             {userQuestsData
               .filter(
                 (quest) =>
@@ -216,7 +214,7 @@ function RouteComponent() {
                   </div>
                 );
               })}
-          </div>
+          </>
         )}
 
         <div className="mb-6">

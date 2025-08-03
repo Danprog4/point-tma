@@ -528,43 +528,51 @@ export const router = {
       await db.delete(complaintsTable).where(eq(complaintsTable.id, input.id));
     }),
 
-  rateUser: procedure
-    .input(z.object({ userId: z.number(), rating: z.number(), meetId: z.number() }))
+  rateUsers: procedure
+    .input(
+      z.object({ userIds: z.array(z.number()), rating: z.number(), meetId: z.number() }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const user = await db.query.usersTable.findFirst({
-        where: eq(usersTable.id, input.userId),
-      });
+      const ratings = [];
 
-      if (!user) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
+      for (const userId of input.userIds) {
+        const user = await db.query.usersTable.findFirst({
+          where: eq(usersTable.id, userId),
         });
-      }
 
-      if (
-        await db.query.ratingsUserTable.findFirst({
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        const existingRating = await db.query.ratingsUserTable.findFirst({
           where: and(
-            eq(ratingsUserTable.userId, input.userId),
+            eq(ratingsUserTable.userId, userId),
             eq(ratingsUserTable.fromUserId, ctx.userId),
             eq(ratingsUserTable.meetId, input.meetId),
           ),
-        })
-      ) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "User already rated",
         });
+
+        if (existingRating && existingRating.rating && existingRating.rating > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User already rated",
+          });
+        }
+
+        const rating = await db.insert(ratingsUserTable).values({
+          userId: userId,
+          rating: input.rating,
+          fromUserId: ctx.userId,
+          meetId: input.meetId,
+        });
+
+        ratings.push(rating);
       }
 
-      const rating = await db.insert(ratingsUserTable).values({
-        userId: input.userId,
-        rating: input.rating,
-        fromUserId: ctx.userId,
-        meetId: input.meetId,
-      });
-
-      return rating;
+      return ratings;
     }),
 
   getUserRating: procedure

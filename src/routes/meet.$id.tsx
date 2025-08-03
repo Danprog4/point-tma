@@ -26,6 +26,7 @@ export const Route = createFileRoute("/meet/$id")({
 function RouteComponent() {
   useScroll();
   const [isParticipantPage, setIsParticipantPage] = useState(false);
+  const [isOwnerState, setIsOwnerState] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
   const [page, setPage] = useState("info");
@@ -171,10 +172,10 @@ function RouteComponent() {
     });
   };
 
-  const rateUser = useMutation(trpc.main.rateUser.mutationOptions());
+  const rateUsers = useMutation(trpc.main.rateUsers.mutationOptions());
 
-  const handleRateUser = (userId: number, rating: number) => {
-    rateUser.mutate({ userId, rating, meetId: meeting?.id! });
+  const handleRateUsers = (userIds: number[], rating: number) => {
+    rateUsers.mutate({ userIds, rating, meetId: meeting?.id! });
   };
 
   const { data: userRating } = useQuery(
@@ -197,8 +198,10 @@ function RouteComponent() {
           participants={meeting?.participantsIds || []}
           setIsOpen={setIsParticipantPage}
           users={users || []}
-          handleRateUser={handleRateUser}
+          handleRateUsers={handleRateUsers}
           userRating={userRating}
+          isOwner={isOwnerState}
+          organizer={organizer}
         />
       ) : (
         <>
@@ -414,7 +417,7 @@ function RouteComponent() {
               </>
             ) : (
               <div className="flex flex-col">
-                {meeting?.participantsIds?.map((p) => {
+                {[organizer?.id, ...(meeting?.participantsIds || [])].map((p) => {
                   const user = users?.find((u) => u.id === Number(p));
                   return (
                     <div key={p} className="flex flex-col gap-2 px-4 py-4">
@@ -435,7 +438,9 @@ function RouteComponent() {
                             <div className="text-lg font-bold">
                               {user?.name} {user?.surname}
                             </div>
-                            <div className="text-sm text-gray-500">участник</div>
+                            <div className="text-sm text-gray-500">
+                              {user?.id === organizer?.id ? "Организатор" : "Участник"}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -454,10 +459,10 @@ function RouteComponent() {
                 className="z-[10001] cursor-pointer px-4 py-5 text-[#9924FF]"
                 onClick={() => {
                   setIsParticipantPage(true);
-                  console.log("bim");
+                  setIsOwnerState(isOwner);
                 }}
               >
-                Оценить участников
+                {isOwner ? "Оценить участников" : "Оценить встречу"}
               </div>
               <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
                 <Info />

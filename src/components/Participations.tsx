@@ -1,21 +1,26 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { useTRPC } from "~/trpc/init/react";
 import { ReviewStar } from "./Icons/ReviewStar";
+
 export const Participations = ({
   participants,
   setIsOpen,
   users,
   meetId,
-  handleRateUser,
+  handleRateUsers,
   userRating,
+  isOwner,
+  organizer,
 }: {
   users: any[];
   participants: any[];
   setIsOpen: (isOpen: boolean) => void;
   meetId: number;
-  handleRateUser: (userId: number, rating: number) => void;
+  handleRateUsers: (userIds: number[], rating: number) => void;
   userRating:
     | {
         meetId: number | null;
@@ -26,9 +31,13 @@ export const Participations = ({
         createdAt: Date | null;
       }[]
     | undefined;
+  isOwner: boolean;
+  organizer: any;
 }) => {
+  const trpc = useTRPC();
   const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
   const [ratings, setRatings] = useState<Record<number, number>>({});
+  const queryClient = useQueryClient();
 
   if (!participants || participants.length === 0) {
     return <div>Нет участников</div>;
@@ -59,7 +68,24 @@ export const Participations = ({
     }
   }, [userRating, participantsWithUsers]);
 
-  console.log(users, "users");
+  const filteredParticipants = isOwner ? participantsWithUsers : [organizer];
+
+  const handleBack = () => {
+    setIsOpen(false);
+
+    const newRatings = Object.entries(ratings).filter(([userId, rating]) => {
+      const existingRating = userRating?.find((r) => r.userId === Number(userId));
+      return !existingRating || existingRating.rating !== rating;
+    });
+
+    if (newRatings.length > 0) {
+      newRatings.forEach(([userId, rating]) => {
+        handleRateUsers([Number(userId)], rating);
+      });
+    }
+
+    queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
+  };
 
   console.log(participantsWithUsers, "participants");
 
@@ -74,17 +100,18 @@ export const Participations = ({
         <button
           className="flex h-6 w-6 items-center justify-center"
           onClick={() => {
-            setIsOpen(false);
-            handleRateUser(selectedParticipant!, ratings[selectedParticipant!]);
+            handleBack();
           }}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="text-base font-bold">Оценка участников</div>
+        <div className="text-base font-bold">
+          {isOwner ? "Оценка участников" : "Оценка встречи"}
+        </div>
         <div className="h-5 w-5"></div>
       </header>
       <div className="flex flex-col gap-4 text-black">
-        {participantsWithUsers?.map((participant: any) => {
+        {filteredParticipants?.map((participant: any) => {
           return (
             <div>
               {participant.id === selectedParticipant ? (
@@ -107,7 +134,14 @@ export const Participations = ({
                     </div>
                   </div>
                   <div className="flex w-full flex-col items-center justify-center gap-4 rounded-3xl bg-[#FFF7D7] px-4 py-4">
-                    <div>Оцените участие пользователя</div>
+                    {isOwner ? (
+                      <div>Оцените участие пользователя</div>
+                    ) : (
+                      <div>
+                        Оцените как прошла встреча от {organizer?.name}{" "}
+                        {organizer?.surname}
+                      </div>
+                    )}
                     <div className="flex items-center justify-center gap-2">
                       {Array.from({ length: 5 }).map((_, index) => (
                         <ReviewStar

@@ -187,37 +187,35 @@ function RouteComponent() {
         <>
           <div
             data-mobile={isMobile}
-            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+            className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
           >
-            <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
+            <button
+              onClick={() => handleBack()}
+              className="flex h-6 w-6 items-center justify-center"
+            >
+              <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            </button>
+            <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
+              Встреча
+            </h1>
+            {!isOwner && (
               <button
-                onClick={() => handleBack()}
-                className="flex h-6 w-6 items-center justify-center"
+                onClick={() => {
+                  if (isComplaint) {
+                    toast.error("Вы уже пожаловались на эту встречу");
+                    return;
+                  }
+                  setIsComplaintOpen(true);
+                }}
               >
-                <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+                <ComplaintIcon />
               </button>
-              <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
-                Встреча
-              </h1>
-              {!isOwner && (
-                <button
-                  onClick={() => {
-                    if (isComplaint) {
-                      toast.error("Вы уже пожаловались на эту встречу");
-                      return;
-                    }
-                    setIsComplaintOpen(true);
-                  }}
-                >
-                  <ComplaintIcon />
-                </button>
-              )}
-            </div>
+            )}
           </div>
 
           <div
             data-mobile={isMobile}
-            className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-35"
+            className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-39"
           >
             <div className="relative">
               <img

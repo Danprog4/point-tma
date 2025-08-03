@@ -6,6 +6,7 @@ import {
   complaintsTable,
   favoritesTable,
   friendRequestsTable,
+  meetTable,
   notificationsTable,
   ratingsUserTable,
   reviewsTable,
@@ -586,6 +587,33 @@ export const router = {
       });
 
       return userRating;
+    }),
+
+  getMeetRating: procedure
+    .input(z.object({ meetId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const meet = await db.query.meetTable.findFirst({
+        where: eq(meetTable.id, input.meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Meet not found",
+        });
+      }
+      const meetRating = await db.query.ratingsUserTable.findMany({
+        where: and(
+          eq(ratingsUserTable.meetId, input.meetId),
+          eq(ratingsUserTable.userId, meet.userId!),
+        ),
+      });
+
+      const averageRating =
+        meetRating?.reduce((acc, curr) => acc + (curr.rating || 0), 0) /
+        (meetRating?.length || 0);
+
+      return averageRating;
     }),
 };
 

@@ -9,6 +9,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
+import { ReviewStar } from "~/components/Icons/ReviewStar";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
@@ -190,6 +191,11 @@ function RouteComponent() {
     }),
   );
 
+  const { data: meetRating } = useQuery(
+    trpc.main.getMeetRating.queryOptions({
+      meetId: meeting?.id!,
+    }),
+  );
   console.log(userRating, "userRating2");
 
   console.log(meeting, "meeting");
@@ -250,6 +256,22 @@ function RouteComponent() {
               />
               <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
                 <div className="text-2xl font-bold">{meeting?.name}</div>
+                {meetRating && meetRating > 0 && (
+                  <div className="flex items-center justify-center gap-1">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <ReviewStar
+                        key={index}
+                        disabled={true}
+                        onClick={() => {}}
+                        isLast={index === Math.ceil(meetRating!) - 1}
+                        fillPercentage={(meetRating! % 1) * 100}
+                        isActive={meetRating >= index + 1}
+                        width={20}
+                        height={20}
+                      />
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-center justify-start gap-2">
                   <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
                     {meeting?.type}

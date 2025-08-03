@@ -3,15 +3,17 @@ export const ReviewStar = ({
   isActive,
   width = 40,
   height = 40,
+  disabled = false,
 }: {
   onClick: () => void;
   isActive: boolean;
   width?: number;
   height?: number;
+  disabled?: boolean;
 }) => {
   return (
     <svg
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       width={width}
       height={height}
       viewBox="0 0 40 40"

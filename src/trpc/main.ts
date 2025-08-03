@@ -7,6 +7,7 @@ import {
   favoritesTable,
   friendRequestsTable,
   notificationsTable,
+  ratingsUserTable,
   reviewsTable,
   subscriptionsTable,
   usersTable,
@@ -525,6 +526,55 @@ export const router = {
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       await db.delete(complaintsTable).where(eq(complaintsTable.id, input.id));
+    }),
+
+  rateUser: procedure
+    .input(z.object({ userId: z.number(), rating: z.number(), meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      if (
+        await db.query.ratingsUserTable.findFirst({
+          where: and(
+            eq(ratingsUserTable.userId, input.userId),
+            eq(ratingsUserTable.fromUserId, ctx.userId),
+            eq(ratingsUserTable.meetId, input.meetId),
+          ),
+        })
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User already rated",
+        });
+      }
+
+      const rating = await db.insert(ratingsUserTable).values({
+        userId: input.userId,
+        rating: input.rating,
+        fromUserId: ctx.userId,
+        meetId: input.meetId,
+      });
+
+      return rating;
+    }),
+
+  getUserRating: procedure
+    .input(z.object({ meetId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const userRating = await db.query.ratingsUserTable.findMany({
+        where: eq(ratingsUserTable.meetId, input.meetId),
+      });
+
+      return userRating;
     }),
 };
 

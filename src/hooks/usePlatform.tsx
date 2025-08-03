@@ -7,6 +7,7 @@ export const usePlatform = () => {
     launchParams.tgWebAppPlatform === "ios" ||
     launchParams.tgWebAppPlatform === "android" ||
     launchParams.tgWebAppPlatform === "android-x" ||
-    launchParams.tgWebAppPlatform === "android_x"
+    launchParams.tgWebAppPlatform === "android_x" ||
+    launchParams.tgWebAppPlatform === "web"
   );
 };

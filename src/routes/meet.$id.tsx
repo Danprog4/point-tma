@@ -48,14 +48,6 @@ function RouteComponent() {
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
 
-  const handleUnsendComplaint = () => {
-    unsendComplaint.mutate({ id: meeting?.id! });
-
-    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
-      return old.filter((c: any) => c.meetId !== meeting?.id);
-    });
-  };
-
   const meetingsWithEvents = meetingsData?.map((meeting) => {
     const organizer = users?.find((u) => u.id === meeting.userId);
     const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
@@ -66,11 +58,19 @@ function RouteComponent() {
     };
   });
 
+  const meeting = meetingsWithEvents?.find((m) => m.id === parseInt(id));
+
+  const handleUnsendComplaint = () => {
+    unsendComplaint.mutate({ id: meeting?.id! });
+
+    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
+      return old.filter((c: any) => c.meetId !== meeting?.id);
+    });
+  };
+
   const isUserMeeting = useMemo(() => {
     return meetingsWithEvents?.some((m) => m.id === parseInt(id));
   }, [meetingsWithEvents, user?.id]);
-
-  const meeting = meetingsWithEvents?.find((m) => m.id === parseInt(id));
 
   const organizer = meetingsWithEvents?.find(
     (m) => m.id === parseInt(id) && m.name === meeting?.name,
@@ -171,6 +171,20 @@ function RouteComponent() {
     });
   };
 
+  const rateUser = useMutation(trpc.main.rateUser.mutationOptions());
+
+  const handleRateUser = (userId: number, rating: number) => {
+    rateUser.mutate({ userId, rating, meetId: meeting?.id! });
+  };
+
+  const { data: userRating } = useQuery(
+    trpc.main.getUserRating.queryOptions({
+      meetId: meeting?.id!,
+    }),
+  );
+
+  console.log(userRating, "userRating2");
+
   console.log(meeting, "meeting");
 
   const isMobile = usePlatform();
@@ -179,9 +193,12 @@ function RouteComponent() {
     <>
       {isParticipantPage ? (
         <Participations
+          meetId={meeting?.id!}
           participants={meeting?.participantsIds || []}
           setIsOpen={setIsParticipantPage}
           users={users || []}
+          handleRateUser={handleRateUser}
+          userRating={userRating}
         />
       ) : (
         <>

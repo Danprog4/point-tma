@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { ReviewStar } from "./Icons/ReviewStar";
@@ -7,21 +7,57 @@ export const Participations = ({
   participants,
   setIsOpen,
   users,
+  meetId,
+  handleRateUser,
+  userRating,
 }: {
   users: any[];
   participants: any[];
   setIsOpen: (isOpen: boolean) => void;
+  meetId: number;
+  handleRateUser: (userId: number, rating: number) => void;
+  userRating:
+    | {
+        meetId: number | null;
+        id: number;
+        userId: number | null;
+        rating: number | null;
+        fromUserId: number | null;
+        createdAt: Date | null;
+      }[]
+    | undefined;
 }) => {
   const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null);
-  const [star, setStar] = useState<number>(0);
+  const [ratings, setRatings] = useState<Record<number, number>>({});
 
   if (!participants || participants.length === 0) {
     return <div>Нет участников</div>;
   }
   const participantsWithUsers = participants.map((participant) => {
     const user = users?.find((user) => user.id === Number(participant));
-    return user;
+    const existingRating = userRating?.find((rating) => rating.userId === user?.id);
+    return {
+      ...user,
+      existingRating,
+    };
   });
+
+  console.log(userRating, "userRating");
+
+  useEffect(() => {
+    if (userRating && userRating.length > 0) {
+      const ratingsMap = userRating.reduce(
+        (acc, rating) => {
+          if (rating.userId && rating.rating) {
+            acc[rating.userId] = rating.rating;
+          }
+          return acc;
+        },
+        {} as Record<number, number>,
+      );
+      setRatings(ratingsMap);
+    }
+  }, [userRating, participantsWithUsers]);
 
   console.log(users, "users");
 
@@ -30,15 +66,21 @@ export const Participations = ({
   const isMobile = usePlatform();
 
   return (
-    <div data-mobile={isMobile} className="px-4 py-4 data-[mobile=true]:pt-24">
-      <header className="flex items-center justify-between pt-0.5 pb-4">
+    <div data-mobile={isMobile} className="px-4 py-4 data-[mobile=true]:pt-39">
+      <header
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+      >
         <button
           className="flex h-6 w-6 items-center justify-center"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false);
+            handleRateUser(selectedParticipant!, ratings[selectedParticipant!]);
+          }}
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="text-xl font-bold">Оценка участников</div>
+        <div className="text-base font-bold">Оценка участников</div>
         <div className="h-5 w-5"></div>
       </header>
       <div className="flex flex-col gap-4 text-black">
@@ -70,8 +112,11 @@ export const Participations = ({
                       {Array.from({ length: 5 }).map((_, index) => (
                         <ReviewStar
                           key={index}
-                          onClick={() => setStar(index + 1)}
-                          isActive={star >= index + 1}
+                          disabled={!!participant.existingRating}
+                          onClick={() =>
+                            setRatings({ ...ratings, [participant.id]: index + 1 })
+                          }
+                          isActive={ratings[participant.id] >= index + 1}
                           width={52}
                           height={52}
                         />

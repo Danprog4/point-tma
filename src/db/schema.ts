@@ -40,6 +40,15 @@ export const usersTable = pgTable("users", {
   isOnboarded: boolean("is_onboarded").default(false),
 });
 
+export const ratingsUserTable = pgTable("ratings_user", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  rating: integer("rating"),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
+  meetId: bigint("meet_id", { mode: "number" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const meetTable = pgTable("meets", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),

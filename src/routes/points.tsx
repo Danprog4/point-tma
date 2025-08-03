@@ -85,7 +85,7 @@ function RouteComponent() {
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {quest.reward.toLocaleString()}
+                      + {quest.rewards.toLocaleString()}
                     </span>
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />

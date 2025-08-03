@@ -120,11 +120,11 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto bg-white pt-16 pb-10 data-[mobile=true]:pt-40"
+      className="min-h-screen overflow-y-auto bg-white pt-16 pb-10 data-[mobile=true]:pt-39"
     >
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white px-4 data-[mobile=true]:pt-22"
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => window.history.back()}
@@ -132,9 +132,8 @@ function RouteComponent() {
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex w-full items-center justify-center p-4">
-          <h1 className="text-center text-base font-bold text-gray-800">Мои встречи</h1>
-        </div>
+        <h1 className="text-center text-base font-bold text-gray-800">Мои встречи</h1>
+
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
 

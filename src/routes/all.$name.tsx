@@ -46,25 +46,23 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="flex flex-col overflow-y-auto pt-10 pb-10 data-[mobile=true]:pt-35"
+      className="flex flex-col overflow-y-auto pt-10 pb-10 data-[mobile=true]:pt-39"
     >
       <div
         data-mobile={isMobile}
-        className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+        className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
-        <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
-          <button
-            onClick={() => navigate({ to: "/" })}
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-          </button>
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
-            {name}
-          </h1>
-          {/* Empty div to balance the right side */}
-          <div className="flex h-6 w-6" />
-        </div>
+        <button
+          onClick={() => navigate({ to: "/" })}
+          className="flex h-6 w-6 items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+        </button>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
+          {name}
+        </h1>
+        {/* Empty div to balance the right side */}
+        <div className="flex h-6 w-6" />
       </div>
       <div className="flex items-center gap-6 p-4 pb-6">
         <div className="flex items-center gap-2">

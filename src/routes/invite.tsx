@@ -10,6 +10,7 @@ import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
@@ -90,24 +91,24 @@ function RouteComponent() {
     };
   });
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="flex flex-col">
-      <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
-        <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
-          <button
-            onClick={() => window.history.back()}
-            className="flex h-6 w-6 items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-          </button>
-          <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-nowrap text-gray-800">
-            Куда вы хотите пригласить?
-          </h1>
-          <div className="flex h-6 w-6" />
-        </div>
+    <div data-mobile={isMobile} className="flex flex-col data-[mobile=true]:pt-39">
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
+      >
+        <button
+          onClick={() => window.history.back()}
+          className="absolute left-4 flex h-6 w-6 items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+        </button>
+        <h1 className="text-base font-bold text-gray-800">Куда вы хотите пригласить?</h1>
       </div>
 
-      <div className="pt-14">
+      <div className="">
         <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto px-4">
           <button
             onClick={() => setType("Готовые")}

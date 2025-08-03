@@ -77,12 +77,12 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="flex min-h-screen w-full flex-col bg-white data-[mobile=true]:pt-35"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-42"
     >
-      {/* Top Bar */}
+      {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-24"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => navigate({ to: "/profile" })}

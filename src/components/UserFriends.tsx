@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { useScroll } from "./hooks/useScroll";
@@ -37,20 +38,25 @@ export const UserFriends = ({
       });
   }, [friends, viewedUser?.id]);
 
+  const isMobile = usePlatform();
+
   return (
-    <div className="px-4 pt-14">
-      <div className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white">
+    <div data-mobile={isMobile} className="px-4 pt-14 data-[mobile=true]:pt-39">
+      <div
+        data-mobile={isMobile}
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+      >
         <button
           onClick={() => setIsFriendsPage(false)}
-          className="absolute top-4 left-4 flex h-6 w-6 items-center justify-center"
+          className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex w-full items-center justify-center p-4">
-          <h1 className="text-center text-base font-bold text-gray-800">
-            Друзья {viewedUser?.name} {viewedUser?.surname}
-          </h1>
-        </div>
+
+        <h1 className="text-center text-base font-bold text-gray-800">
+          Друзья {viewedUser?.name} {viewedUser?.surname}
+        </h1>
+        <div className="flex h-6 w-6"></div>
       </div>
       <input
         onChange={(e) => {

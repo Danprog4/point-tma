@@ -151,7 +151,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto data-[mobile=true]:pt-22"
+      className="min-h-screen overflow-y-auto data-[mobile=true]:pt-39"
     >
       {isOpen ? (
         <>
@@ -245,12 +245,12 @@ function RouteComponent() {
           )}
         </>
       ) : (
-        <div data-mobile={isMobile} className="pt-18 pb-24 data-[mobile=true]:pt-14">
+        <div data-mobile={isMobile} className="pb-24">
           <div
             data-mobile={isMobile}
-            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white data-[mobile=true]:pt-22"
+            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
           >
-            <div className="relative flex w-full max-w-md items-center justify-between px-4 py-3">
+            <div className="relative flex w-full max-w-md items-center justify-between">
               <button
                 onClick={() => window.history.back()}
                 className="flex h-6 w-6 items-center justify-center"

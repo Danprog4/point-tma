@@ -108,24 +108,21 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto bg-white pt-16 pb-10 data-[mobile=true]:pt-40"
+      className="min-h-screen overflow-y-auto bg-white pt-16 pb-10 data-[mobile=true]:pt-39"
     >
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center bg-white px-4 data-[mobile=true]:pt-20"
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => navigate({ to: `/user-profile/${id}` })}
-          className="flex h-6 w-6 items-center justify-center"
+          className="absolute left-4 flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex w-full items-center justify-center p-4">
-          <h1 className="text-center text-base font-bold text-gray-800">
-            Встречи {viewedUser?.name} {viewedUser?.surname}
-          </h1>
-        </div>
-        <button className="flex h-6 w-6 items-center justify-center"></button>
+        <h1 className="text-base font-bold text-gray-800">
+          Встречи {viewedUser?.name} {viewedUser?.surname}
+        </h1>
       </div>
 
       <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-10 overflow-x-auto px-4">

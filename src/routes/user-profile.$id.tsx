@@ -255,12 +255,12 @@ function RouteComponent() {
       ) : (
         <div
           data-mobile={isMobile}
-          className="scrollbar-hidden overflow-y-auto pt-14 pb-20 data-[mobile=true]:pt-35"
+          className="scrollbar-hidden overflow-y-auto pt-14 pb-20 data-[mobile=true]:pt-39"
         >
           {isMore ? (
             <div
               data-mobile={isMobile}
-              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-24"
+              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
             >
               <button
                 onClick={() => setIsMore(false)}
@@ -275,7 +275,7 @@ function RouteComponent() {
           ) : (
             <div
               data-mobile={isMobile}
-              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-24"
+              className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
             >
               <button
                 // TODO: Make user-meetings as component

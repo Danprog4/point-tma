@@ -171,12 +171,12 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full bg-white pb-24 data-[mobile=true]:pt-35"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-42"
     >
-      {/* Top Bar */}
+      {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => navigate({ to: "/profile" })}
@@ -184,7 +184,7 @@ function RouteComponent() {
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex items-center justify-center p-4 pb-2">
+        <div className="flex items-center justify-center">
           <div className="flex-1">
             <h1 className="text-center text-base font-bold text-gray-800">Достижения</h1>
           </div>
@@ -193,7 +193,7 @@ function RouteComponent() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="px-4 py-4">
+      <div className="px-4 pb-4">
         <div className="scrollbar-hidden flex w-full flex-1 items-center gap-6 overflow-x-auto">
           {filters.map((filter) => (
             <button

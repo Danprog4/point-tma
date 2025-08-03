@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { QuestCard } from "~/components/QuestCard";
+import { usePlatform } from "~/hooks/usePlatform";
 import { Quest } from "~/types/quest";
 import { Coin } from "../Icons/Coin";
 import { MinusIcon } from "../Icons/MinusIcon";
@@ -33,6 +34,8 @@ export const BuyQuest = ({
     }
   };
 
+  const isMobile = usePlatform();
+
   return (
     <>
       {isBought ? (
@@ -53,7 +56,10 @@ export const BuyQuest = ({
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-center p-4 pb-10 text-black">
+          <div
+            data-mobile={isMobile}
+            className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
+          >
             <button
               onClick={() => setIsOpen(false)}
               className="absolute left-4 flex h-6 w-6 items-center justify-center"

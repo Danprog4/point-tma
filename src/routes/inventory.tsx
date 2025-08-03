@@ -27,11 +27,12 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto data-[mobile=true]:pt-35"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-42"
     >
+      {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => navigate({ to: "/profile" })}
@@ -39,10 +40,8 @@ function RouteComponent() {
         >
           <ArrowLeft className="h-6 w-6 text-gray-800" strokeWidth={2} />
         </button>
-        <div className="flex items-center justify-center p-4">
-          <div className="flex-1">
-            <h1 className="text-center text-base font-bold text-gray-800">Инвентарь</h1>
-          </div>
+        <div className="flex items-center justify-center">
+          <h1 className="text-center text-base font-bold text-gray-800">Инвентарь</h1>
         </div>
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>

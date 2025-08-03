@@ -191,11 +191,11 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="flex flex-col px-4 pt-10 data-[mobile=true]:pt-35"
+      className="flex flex-col px-4 pt-10 data-[mobile=true]:pt-32"
     >
       <header
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 py-4 data-[mobile=true]:py-0 data-[mobile=true]:pt-24"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <div className="flex h-6 w-6 items-center justify-center">
           {!isSettings && !isSettingsSearch ? (

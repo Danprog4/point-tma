@@ -141,36 +141,44 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="relative flex h-screen w-screen flex-col p-4 pb-20 data-[mobile=true]:pt-24"
+      className="relative flex h-screen w-screen flex-col p-4 pb-20 data-[mobile=true]:pt-39"
     >
-      <header
+      <div
         data-mobile={isMobile}
-        className="fixed top-0 right-4 left-4 z-[10] flex items-center justify-between bg-white py-4 data-[mobile=true]:py-0 data-[mobile=true]:pt-22"
+        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
       >
         {isInvite ? (
-          <div onClick={() => setIsInvite(false)} className="cursor-pointer">
-            <X />
-          </div>
+          <button
+            onClick={() => setIsInvite(false)}
+            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+          >
+            <X className="h-5 w-5 text-gray-800" strokeWidth={2} />
+          </button>
         ) : isInventoryOpen ? (
-          <button onClick={() => setIsInventoryOpen(false)}>
-            <X />
+          <button
+            onClick={() => setIsInventoryOpen(false)}
+            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+          >
+            <X className="h-5 w-5 text-gray-800" strokeWidth={2} />
           </button>
         ) : (
-          <button onClick={() => window.history.back()}>
-            <ArrowLeft />
+          <button
+            onClick={() => window.history.back()}
+            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
           </button>
         )}
-        <div className="text-xl font-bold text-nowrap">
+        <h1 className="text-base font-bold text-gray-800">
           {isInvite
             ? "Приглашение"
             : isInventoryOpen
               ? "Выберите награду"
               : "Создание встречи"}
-        </div>
-        <div className="h-5 w-5"></div>
-      </header>
+        </h1>
+      </div>
       {step < 4 && (
-        <div className="flex items-center justify-center gap-2 pt-12 pb-6">
+        <div className="flex items-center justify-center gap-2 pb-6">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}

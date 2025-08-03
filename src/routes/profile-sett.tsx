@@ -335,11 +335,11 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="h-full overflow-y-auto pb-24 data-[mobile=true]:pt-28"
+      className="h-full overflow-y-auto p-4 pb-24 data-[mobile=true]:pt-32"
     >
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-[100000] flex items-center justify-between bg-white px-4 py-4 pb-2 data-[mobile=true]:py-0 data-[mobile=true]:pt-24"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
           disabled={updateProfile.isPending}

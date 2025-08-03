@@ -66,7 +66,7 @@ function Home() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto bg-white pt-14 pb-10 data-[mobile=true]:pt-35"
+      className="min-h-screen overflow-y-auto bg-white pt-14 pb-10 data-[mobile=true]:pt-39"
     >
       <Header />
 

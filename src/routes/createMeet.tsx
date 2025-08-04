@@ -48,6 +48,8 @@ function RouteComponent() {
   const [date, setDate] = useState<string>("");
   const [type, setType] = useState("");
   const [base64, setBase64] = useState("");
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [mainPhotoRaw, setMainPhotoRaw] = useState<string>("");
   const [participants, setParticipants] = useState(0);
   const [location, setLocation] = useState("");
   const [reward, setReward] = useState(0);
@@ -214,6 +216,10 @@ function RouteComponent() {
           setSelectedFile={setSelectedFile}
           base64={base64}
           setBase64={setBase64}
+          gallery={gallery}
+          setGallery={setGallery}
+          mainPhotoRaw={mainPhotoRaw}
+          setMainPhotoRaw={setMainPhotoRaw}
           isHeicFile={isHeicFile}
           isExtra={isExtra}
           setIsExtra={setIsExtra}

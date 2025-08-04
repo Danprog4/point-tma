@@ -9,9 +9,12 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
 import { DatePicker } from "../DatePicker";
 import { AddPhoto } from "../Icons/AddPhoto";
+import { PlusIcon } from "../Icons/Plus";
+
 export const Step1 = ({
   type,
   setType,
@@ -25,6 +28,10 @@ export const Step1 = ({
   setSelectedFile,
   base64,
   setBase64,
+  gallery,
+  setGallery,
+  mainPhotoRaw,
+  setMainPhotoRaw,
   isHeicFile,
   isExtra,
 
@@ -54,6 +61,10 @@ export const Step1 = ({
   setSelectedFile: (file: File | null) => void;
   base64: string;
   setBase64: (base64: string) => void;
+  gallery: string[];
+  setGallery: (gallery: string[] | ((prev: string[]) => string[])) => void;
+  mainPhotoRaw: string;
+  setMainPhotoRaw: (mainPhotoRaw: string) => void;
   isHeicFile: (file: File) => boolean;
   isExtra: boolean;
   setIsExtra: (isExtra: boolean) => void;
@@ -132,6 +143,72 @@ export const Step1 = ({
       return;
     }
     setBase64(base64str);
+    setMainPhotoRaw(base64str);
+  };
+
+  const handleAddGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    let fileToProcess = file;
+    if (isHeicFile(fileToProcess)) {
+      try {
+        fileToProcess = await convertHeicToPng(fileToProcess);
+      } catch (error: any) {
+        toast.error(`❌ Преобразование HEIC в PNG не удалось: ${error.message}`);
+        return;
+      }
+    }
+    // Compress image to 1MB max
+    try {
+      const compressedFile = await imageCompression(fileToProcess, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      fileToProcess = compressedFile;
+    } catch (error: any) {
+      toast.error(`❌ Сжатие изображения не удалось: ${error.message}`);
+      return;
+    }
+    let base64str: string;
+    try {
+      base64str = await convertToBase64(fileToProcess);
+    } catch (error: any) {
+      toast.error(`❌ Преобразование в Base64 не удалось: ${error.message}`);
+      return;
+    }
+    setGallery((prev) => [...prev, base64str]);
+  };
+
+  // Handler to delete gallery photo on click and set main photo to next or clear
+  const handleGalleryClick = (item: string) => {
+    setGallery((prev) => {
+      const newGallery = prev.filter((i) => i !== item);
+      if (mainPhotoRaw) newGallery.push(mainPhotoRaw);
+      return newGallery;
+    });
+    setMainPhotoRaw(item);
+    setBase64(item.startsWith("data:image/") ? item : getImageUrl(item));
+    setSelectedFile(null);
+  };
+
+  // Handler to delete main photo without triggering input
+  const handleDeletePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (gallery.length > 0) {
+      const [first, ...rest] = gallery;
+      // Promote first gallery photo to main in UI
+      setGallery(rest);
+      setMainPhotoRaw(first);
+      setBase64(first.startsWith("data:image/") ? first : getImageUrl(first));
+      setSelectedFile(null);
+    } else {
+      // No gallery photos, just clear main photo in UI
+      setBase64("");
+      setMainPhotoRaw("");
+      setSelectedFile(null);
+    }
   };
 
   useEffect(() => {
@@ -148,23 +225,33 @@ export const Step1 = ({
 
   return (
     <div className="scrollbar-hidden w-full overflow-y-auto pb-20">
-      <div className="flex w-full flex-col items-center gap-4">
+      <div className="mt-8 flex w-full flex-col items-center gap-4">
         <label
           htmlFor="photo-upload"
           className="flex w-full cursor-pointer flex-col items-center gap-2"
         >
           {base64 ? (
-            <img
-              src={base64}
-              alt="photo"
-              className="h-40 w-full rounded-2xl object-cover"
-            />
+            <div className="relative">
+              <img
+                src={base64}
+                alt="photo"
+                className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
+              />
+              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
+                <div className="z-[10000]" onClick={handleDeletePhoto}>
+                  Удалить
+                </div>
+                <div>Изменить</div>
+              </div>
+            </div>
           ) : (
-            <div className="flex h-40 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
-              <AddPhoto />
+            <div className="mb-2 flex h-40 w-[92vw] items-center justify-center rounded-2xl bg-[#F0F0F0]">
+              <div className="flex flex-col items-center gap-2">
+                <AddPhoto />
+                <div className="text-sm text-[#9924FF]">Загрузить фото/афишу</div>
+              </div>
             </div>
           )}
-          <div className="text-lg text-[#9924FF]">Загрузить фото/афишу</div>
           <input
             id="photo-upload"
             type="file"
@@ -174,6 +261,44 @@ export const Step1 = ({
           />
         </label>
       </div>
+
+      <div className="mb-4 text-2xl font-bold">Галерея</div>
+      <div className="mb-4 flex flex-wrap gap-4">
+        {gallery.map((item, idx) => {
+          const isBase64 = typeof item === "string" && item.startsWith("data:image/");
+          return (
+            <div
+              key={item || idx}
+              onClick={() => handleGalleryClick(item)}
+              className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+            >
+              <img
+                src={isBase64 ? item : getImageUrl(item)}
+                alt={`Галерея ${idx + 1}`}
+                className="h-full w-full rounded-lg object-cover"
+              />
+            </div>
+          );
+        })}
+
+        <label
+          htmlFor="gallery-upload"
+          className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+        >
+          <div className="flex flex-col items-center gap-1 px-2">
+            <PlusIcon />
+            <div className="text-center text-xs text-[#9924FF]">добавить еще</div>
+          </div>
+        </label>
+        <input
+          id="gallery-upload"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleAddGallery}
+        />
+      </div>
+
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
         <div className="text-xl font-bold">Тип встречи</div>
         <div

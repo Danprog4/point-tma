@@ -452,21 +452,23 @@ export const router = {
       return user;
     }),
 
-  getUserSubscriptions: procedure.query(async ({ ctx }) => {
-    const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.id, ctx.userId),
-    });
-
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "User not found",
+  getUserSubscribers: procedure
+    .input(z.object({ userId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input?.userId ?? ctx.userId),
       });
-    }
-    return await db.query.subscriptionsTable.findMany({
-      where: eq(subscriptionsTable.subscriberId, ctx.userId),
-    });
-  }),
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+      return await db.query.subscriptionsTable.findMany({
+        where: eq(subscriptionsTable.targetUserId, user.id),
+      });
+    }),
 
   sendReview: procedure
     .input(

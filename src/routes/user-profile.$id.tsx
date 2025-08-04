@@ -61,15 +61,15 @@ function RouteComponent() {
     setGalleryPhotos(user?.gallery ?? []);
   }, [user]);
 
-  const { data: userSubscriptions } = useQuery(
-    trpc.main.getUserSubscriptions.queryOptions(),
+  const { data: userSubscribers } = useQuery(
+    trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
+
+  console.log(userSubscribers, "userSubscribers");
 
   const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
   const { data: userRequests } = useQuery(trpc.main.getMyRequests.queryOptions());
-
-  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
 
   const unFriend = useMutation(trpc.friends.unFriend.mutationOptions());
 
@@ -85,14 +85,6 @@ function RouteComponent() {
     return events?.filter((event) => event.type === "Квест") || [];
   }, [events]);
 
-  const isFriend = useMemo(() => {
-    return friends?.some(
-      (f) =>
-        (f.fromUserId === user?.id && f.toUserId === me?.id) ||
-        (f.toUserId === user?.id && f.fromUserId === me?.id),
-    );
-  }, [friends, user?.id, me?.id]);
-
   const subscribe = useMutation(trpc.main.subscribe.mutationOptions());
   const unsubscribe = useMutation(trpc.main.unSubscribe.mutationOptions());
 
@@ -102,24 +94,31 @@ function RouteComponent() {
   );
   const { data: userFavorites } = useQuery(trpc.main.getUserFavorites.queryOptions());
 
+  const { data: friends } = useQuery(
+    trpc.friends.getFriends.queryOptions({ userId: user?.id }),
+  );
+
+  const isFriend = useMemo(() => {
+    return friends?.some(
+      (f) =>
+        (f.fromUserId === user?.id && f.toUserId === me?.id) ||
+        (f.toUserId === user?.id && f.fromUserId === me?.id),
+    );
+  }, [friends, user?.id, me?.id]);
+
   const uniqueFriends = useMemo(() => {
     if (!friends || !user?.id) return [];
     const seen = new Set<number>();
     return friends
       .filter((r) => r.status === "accepted")
       .filter((r) => {
-        const counterpartId = r.fromUserId === user.id ? r.toUserId : r.fromUserId;
+        const counterpartId = r.fromUserId === user?.id ? r.toUserId : r.fromUserId;
         if (counterpartId == null) return false;
         if (seen.has(counterpartId)) return false;
         seen.add(counterpartId);
         return true;
       });
   }, [friends, user?.id]);
-
-  // Get subscribers count for this user
-  const userSubscribersCount = useMemo(() => {
-    return userSubscriptions?.filter((s) => s.targetUserId === user?.id);
-  }, [userSubscriptions, user?.id]);
 
   const handleSendRequest = () => {
     if (isRequest) {
@@ -138,12 +137,12 @@ function RouteComponent() {
   const handleSubscribe = () => {
     if (isSubscribed) {
       unsubscribe.mutate({ userId: user?.id! });
-      queryClient.setQueryData(trpc.main.getUserSubscriptions.queryKey(), (old: any) => {
+      queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), (old: any) => {
         return old.filter((s: any) => s.targetUserId !== user?.id);
       });
     } else {
       subscribe.mutate({ userId: user?.id! });
-      queryClient.setQueryData(trpc.main.getUserSubscriptions.queryKey(), (old: any) => {
+      queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), (old: any) => {
         return [...(old || []), { subscriberId: user?.id!, targetUserId: user?.id! }];
       });
     }
@@ -199,10 +198,10 @@ function RouteComponent() {
   };
 
   const isSubscribed = useMemo(() => {
-    return userSubscriptions?.some(
+    return userSubscribers?.some(
       (s) => s.targetUserId === user?.id && s.subscriberId === user?.id,
     );
-  }, [userSubscriptions, user?.id]);
+  }, [userSubscribers, user?.id]);
 
   const age = getAge(user?.birthday ?? undefined);
 
@@ -373,7 +372,7 @@ function RouteComponent() {
                   className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
                   onClick={() => setIsSubscribersPage(true)}
                 >
-                  <div>{userSubscribersCount?.length || 0}</div>
+                  <div>{userSubscribers?.length || 0}</div>
                   <div className="text-sm text-neutral-500">Подписчиков</div>
                 </div>
                 <div
@@ -411,7 +410,15 @@ function RouteComponent() {
 
               <div className="mt-4 mb-6 px-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-xl bg-yellow-400 p-3 shadow-sm">
+                  <div
+                    className="rounded-xl bg-yellow-400 p-3 shadow-sm"
+                    onClick={() => {
+                      navigate({
+                        to: "/user-quests/$id",
+                        params: { id: user?.id!.toString()! },
+                      });
+                    }}
+                  >
                     <div className="mb-1 text-center text-xl font-bold text-black">
                       {activeQuests?.length || 0}
                     </div>
@@ -669,7 +676,7 @@ function RouteComponent() {
               mainPhoto={mainPhoto}
               galleryPhotos={galleryPhotos}
               age={age}
-              userSubscribersCount={userSubscribersCount}
+              userSubscribersCount={userSubscribers?.length}
               uniqueFriends={uniqueFriends}
               isSubscribed={isSubscribed!}
               isFriend={isFriend!}

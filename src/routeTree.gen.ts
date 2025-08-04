@@ -28,6 +28,7 @@ import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
 import { Route as UserQuestsPageImport } from './routes/user-quests.$page'
+import { Route as UserQuestsIdImport } from './routes/user-quests.$id'
 import { Route as UserProfileIdImport } from './routes/user-profile.$id'
 import { Route as UserMeetingsIdImport } from './routes/user-meetings.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
@@ -135,6 +136,12 @@ const IndexRoute = IndexImport.update({
 const UserQuestsPageRoute = UserQuestsPageImport.update({
   id: '/user-quests/$page',
   path: '/user-quests/$page',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UserQuestsIdRoute = UserQuestsIdImport.update({
+  id: '/user-quests/$id',
+  path: '/user-quests/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -312,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserProfileIdImport
       parentRoute: typeof rootRoute
     }
+    '/user-quests/$id': {
+      id: '/user-quests/$id'
+      path: '/user-quests/$id'
+      fullPath: '/user-quests/$id'
+      preLoaderRoute: typeof UserQuestsIdImport
+      parentRoute: typeof rootRoute
+    }
     '/user-quests/$page': {
       id: '/user-quests/$page'
       path: '/user-quests/$page'
@@ -352,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
+  '/user-quests/$id': typeof UserQuestsIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
@@ -377,6 +392,7 @@ export interface FileRoutesByTo {
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
+  '/user-quests/$id': typeof UserQuestsIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
@@ -403,6 +419,7 @@ export interface FileRoutesById {
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
+  '/user-quests/$id': typeof UserQuestsIdRoute
   '/user-quests/$page': typeof UserQuestsPageRoute
   '/event/$name/$id': typeof EventNameIdRoute
 }
@@ -430,6 +447,7 @@ export interface FileRouteTypes {
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
+    | '/user-quests/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -454,6 +472,7 @@ export interface FileRouteTypes {
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
+    | '/user-quests/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
   id:
@@ -478,6 +497,7 @@ export interface FileRouteTypes {
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
+    | '/user-quests/$id'
     | '/user-quests/$page'
     | '/event/$name/$id'
   fileRoutesById: FileRoutesById
@@ -504,6 +524,7 @@ export interface RootRouteChildren {
   MeetIdRoute: typeof MeetIdRoute
   UserMeetingsIdRoute: typeof UserMeetingsIdRoute
   UserProfileIdRoute: typeof UserProfileIdRoute
+  UserQuestsIdRoute: typeof UserQuestsIdRoute
   UserQuestsPageRoute: typeof UserQuestsPageRoute
   EventNameIdRoute: typeof EventNameIdRoute
 }
@@ -529,6 +550,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeetIdRoute: MeetIdRoute,
   UserMeetingsIdRoute: UserMeetingsIdRoute,
   UserProfileIdRoute: UserProfileIdRoute,
+  UserQuestsIdRoute: UserQuestsIdRoute,
   UserQuestsPageRoute: UserQuestsPageRoute,
   EventNameIdRoute: EventNameIdRoute,
 }
@@ -563,6 +585,7 @@ export const routeTree = rootRoute
         "/meet/$id",
         "/user-meetings/$id",
         "/user-profile/$id",
+        "/user-quests/$id",
         "/user-quests/$page",
         "/event/$name/$id"
       ]
@@ -626,6 +649,9 @@ export const routeTree = rootRoute
     },
     "/user-profile/$id": {
       "filePath": "user-profile.$id.tsx"
+    },
+    "/user-quests/$id": {
+      "filePath": "user-quests.$id.tsx"
     },
     "/user-quests/$page": {
       "filePath": "user-quests.$page.tsx"

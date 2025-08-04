@@ -7,7 +7,7 @@ interface ProfileMoreProps {
   mainPhoto?: string;
   galleryPhotos: string[];
   age?: number;
-  userSubscribersCount?: any[];
+  userSubscribersCount?: number;
   uniqueFriends: any[];
   isSubscribed: boolean;
   isFriend: boolean;

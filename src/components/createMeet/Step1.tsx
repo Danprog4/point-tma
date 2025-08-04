@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import imageCompression from "browser-image-compression";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,34 +12,28 @@ import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
 import { AddPhoto } from "../Icons/AddPhoto";
 export const Step1 = ({
-  name,
-  isBasic,
   type,
   setType,
-  selectedItem,
-  setSelectedItem,
-  setStep,
-  setTypeOfEvent,
-  title2,
-  setTitle2,
-  description2,
-  setDescription2,
+  subType,
+  setSubType,
+  title,
+  setTitle,
   description,
   setDescription,
-  selectedFile,
+
   setSelectedFile,
   base64,
   setBase64,
   isHeicFile,
   isExtra,
-  setIsExtra,
-  typeOfEvent,
-  item,
+
   date,
   setDate,
-  isDisabled,
+
   setIsDisabled,
 }: {
+  subType: string;
+  setSubType: (subType: string) => void;
   isDisabled: boolean;
   setIsDisabled: (isDisabled: boolean) => void;
   name: string;
@@ -51,12 +44,11 @@ export const Step1 = ({
   setSelectedItem: (item: any) => void;
   setStep: (step: number) => void;
   setTypeOfEvent: (type: string) => void;
-  title2: string;
-  setTitle2: (title: string) => void;
-  description2: string;
-  setDescription2: (description: string) => void;
+  title: string;
+  setTitle: (title: string) => void;
   description: string;
   setDescription: (description: string) => void;
+
   selectedFile: File | null;
   setSelectedFile: (file: File | null) => void;
   base64: string;
@@ -70,11 +62,7 @@ export const Step1 = ({
   setDate: (date: string) => void;
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
@@ -146,12 +134,12 @@ export const Step1 = ({
   };
 
   useEffect(() => {
-    if (title2 && description2 && type && base64 && date) {
+    if (title && description && type && base64 && date) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
     }
-  }, [title2, description2, type, base64, date]);
+  }, [title, description, type, base64, date]);
 
   console.log(isExtra, "isExtra");
 
@@ -191,15 +179,15 @@ export const Step1 = ({
           }}
           className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
         >
-          <div>{type || "Выберите тип"}</div>
+          <div>{subType || type || "Выберите тип"}</div>
           <ChevronDown className="h-4 w-4" />
         </div>
       </div>
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
         <div className="text-xl font-bold">Название</div>
         <input
-          value={title2}
-          onChange={(e) => setTitle2(e.target.value)}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           type="text"
           placeholder={`Введите название`}
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
@@ -208,8 +196,8 @@ export const Step1 = ({
       <div className="flex flex-col items-start gap-2">
         <div className="text-xl font-bold">Описание</div>
         <textarea
-          value={description2}
-          onChange={(e) => setDescription2(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder={`Введите описание`}
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
@@ -228,6 +216,9 @@ export const Step1 = ({
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
         setType={setType}
+        type={type}
+        subType={subType}
+        setSubType={setSubType}
       />
     </div>
   );

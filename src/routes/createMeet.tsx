@@ -54,6 +54,7 @@ function RouteComponent() {
   const [tags, setTags] = useState<string[]>([]);
   const isBasic = search.isBasic ?? false;
   const name = search.name ?? "";
+  const [subType, setSubType] = useState("");
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const isHeicFile = (file: File): boolean => {
     const ext = file.name.toLowerCase();
@@ -191,6 +192,8 @@ function RouteComponent() {
 
       {step === 0 && (
         <Step1
+          subType={subType}
+          setSubType={setSubType}
           isDisabled={isDisabled}
           setIsDisabled={setIsDisabled}
           name={name}
@@ -203,11 +206,9 @@ function RouteComponent() {
           selectedItem={selectedItem}
           setStep={setStep}
           setTypeOfEvent={setTypeOfEvent}
-          title2={title2}
-          setTitle2={setTitle2}
-          description2={description2}
+          title={title}
+          setTitle={setTitle}
           description={description}
-          setDescription2={setDescription2}
           setDescription={setDescription}
           selectedFile={selectedFile}
           setSelectedFile={setSelectedFile}

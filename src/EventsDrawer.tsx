@@ -65,7 +65,7 @@ export function EventsDrawer({ open, onOpenChange, setSelectedItem }: EventsDraw
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[90vh] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[500px] flex-col rounded-t-[16px] bg-white px-4 py-4">
           <div className="overflow-y-auto p-4">
             <div className="fixed top-0 right-0 left-0 z-[100] flex items-center bg-white px-4 py-4">
               <X

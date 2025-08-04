@@ -278,7 +278,7 @@ function RouteComponent() {
             >
               <button
                 // TODO: Make user-meetings as component
-                onClick={() => navigate({ to: "/profile" })}
+                onClick={() => window.history.back()}
                 className="absolute left-4 flex h-6 w-6 items-center justify-center"
               >
                 <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />

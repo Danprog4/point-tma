@@ -93,7 +93,7 @@ export const Step2 = ({
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <div className="text-xl font-bold">Место</div>
+                  <div className="text-xl font-bold">Адрес</div>
                   <div className="text-sm text-blue-500" onClick={() => setIsOpen(true)}>
                     Выбрать из афишы
                   </div>

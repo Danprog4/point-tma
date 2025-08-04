@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { getEventData } from "~/lib/utils/getEventData";
 import { Inventory } from "../Inventory";
 export const Step4 = ({
@@ -45,18 +44,6 @@ export const Step4 = ({
   const getEvent = (eventId: number, name: string) => {
     return getEventData(name, eventId);
   };
-
-  useEffect(() => {
-    setIsDisabled(true);
-  }, []);
-
-  useEffect(() => {
-    if (reward > 0) {
-      setIsDisabled(false);
-    } else {
-      setIsDisabled(true);
-    }
-  }, [reward]);
 
   return (
     <>

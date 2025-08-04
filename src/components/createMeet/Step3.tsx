@@ -19,6 +19,10 @@ export const Step3 = ({
   setIsInvite,
   isDisabled,
   setIsDisabled,
+  important,
+  setImportant,
+  tags,
+  setTags,
 }: {
   name: string;
   isBasic: boolean;
@@ -32,9 +36,12 @@ export const Step3 = ({
   setIsInvite: (isInvite: boolean) => void;
   isDisabled: boolean;
   setIsDisabled: (isDisabled: boolean) => void;
+  important: string;
+  setImportant: (important: string) => void;
+  tags: string[];
+  setTags: (tags: string[]) => void;
 }) => {
   const trpc = useTRPC();
-  const [important, setImportant] = useState("");
   const navigate = useNavigate();
 
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -42,7 +49,6 @@ export const Step3 = ({
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
   const activeRequests = requests?.filter((request) => request.status === "pending");
   const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
-  const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
@@ -71,16 +77,12 @@ export const Step3 = ({
   };
 
   useEffect(() => {
-    setIsDisabled(true);
-  }, []);
-
-  useEffect(() => {
-    if (participants > 0 && tags.length > 0 && important) {
+    if (participants > 0 && tags.length > 0 && important.trim()) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
     }
-  }, [participants, tags, important]);
+  }, [participants, tags, important, setIsDisabled]);
 
   console.log(selectedIds, "selectedIds");
 
@@ -106,10 +108,15 @@ export const Step3 = ({
           </div>
           <div className="mb-4 flex flex-col items-start gap-2">
             <input
-              type="text"
+              type="number"
+              min="1"
+              value={participants || ""}
               placeholder="Введите количество участников"
               className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-              onChange={(e) => setParticipants(Number(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+                setParticipants(value === "" ? 0 : Number(value));
+              }}
             />
             <div className="px-4 text-xs text-gray-500">Для свидания нужно двое</div>
           </div>

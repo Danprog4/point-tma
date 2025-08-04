@@ -51,6 +51,7 @@ function RouteComponent() {
   const [participants, setParticipants] = useState(0);
   const [location, setLocation] = useState("");
   const [reward, setReward] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
   const isBasic = search.isBasic ?? false;
   const name = search.name ?? "";
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -251,6 +252,10 @@ function RouteComponent() {
           setFriendName={setFriendName}
           setParticipants={setParticipants}
           participants={participants}
+          important={important}
+          setImportant={setImportant}
+          tags={tags}
+          setTags={setTags}
         />
       )}
       {step === 3 && (

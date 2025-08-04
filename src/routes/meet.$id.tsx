@@ -263,8 +263,29 @@ function RouteComponent() {
 
           <div
             data-mobile={isMobile}
-            className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-39"
+            className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-4"
           >
+            <div
+              data-mobile={isMobile}
+              className="flex gap-4 px-4 data-[mobile=true]:pt-34"
+            >
+              <button
+                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
+                  page === "info" ? "bg-black text-white" : "bg-white text-black"
+                }`}
+                onClick={() => setPage("info")}
+              >
+                Информация
+              </button>
+              <button
+                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
+                  page === "participants" ? "bg-black text-white" : "bg-white text-black"
+                }`}
+                onClick={() => setPage("participants")}
+              >
+                Участники
+              </button>
+            </div>
             <div className="relative">
               <div className="relative h-[50vh] rounded-t-2xl">
                 <img
@@ -310,24 +331,7 @@ function RouteComponent() {
                 />
               ))}
             </div>
-            <div className="flex gap-4 px-4 pt-4">
-              <button
-                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                  page === "info" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-                onClick={() => setPage("info")}
-              >
-                Информация
-              </button>
-              <button
-                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                  page === "participants" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-                onClick={() => setPage("participants")}
-              >
-                Участники
-              </button>
-            </div>
+
             {page === "info" ? (
               <>
                 <div className="flex flex-col gap-2 px-4 py-4">

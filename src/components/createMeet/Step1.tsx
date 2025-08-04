@@ -10,6 +10,7 @@ import { questsData } from "~/config/quests";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
+import { DatePicker } from "../DatePicker";
 import { AddPhoto } from "../Icons/AddPhoto";
 export const Step1 = ({
   type,
@@ -143,8 +144,10 @@ export const Step1 = ({
 
   console.log(isExtra, "isExtra");
 
+  const monthValue = date.split(".")[1] || "";
+
   return (
-    <div className="w-full">
+    <div className="scrollbar-hidden w-full overflow-y-auto pb-20">
       <div className="flex w-full flex-col items-center gap-4">
         <label
           htmlFor="photo-upload"
@@ -193,7 +196,7 @@ export const Step1 = ({
           className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <div className="flex flex-col items-start gap-2">
+      <div className="flex flex-col items-start gap-2 pb-4">
         <div className="text-xl font-bold">Описание</div>
         <textarea
           value={description}
@@ -202,16 +205,7 @@ export const Step1 = ({
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 py-4 pb-20">
-        <div className="text-xl font-bold">Дата</div>
-        <input
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          type="text"
-          placeholder={`Введите дату, например 25.05.2025`}
-          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-        />
-      </div>
+      <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
       <CreateMeetDrawer
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}

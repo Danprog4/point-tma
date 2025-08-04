@@ -5,10 +5,12 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { Selecter } from "~/components/Selecter";
+import { monthOptions } from "~/config/months";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { onboardingConfig } from "~/onboardingConfig";
 import { useTRPC } from "~/trpc/init/react";
+import { DatePicker } from "./DatePicker";
 
 export const OnboardingPage = () => {
   const trpc = useTRPC();
@@ -215,20 +217,6 @@ export const OnboardingPage = () => {
     }
   };
 
-  const monthOptions = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
   const monthValue = birthday.split(".")[1] || "";
   const filteredMonths =
     monthValue.length > 0
@@ -538,76 +526,11 @@ export const OnboardingPage = () => {
                   />
                 </div>
 
-                <div className="relative mb-4 flex w-full gap-2">
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
-                    <div className="flex w-full flex-col items-start text-xs">
-                      <div className="mb-1 text-[#ABABAB]">День</div>
-                      <input
-                        type="number"
-                        value={birthday ? birthday.split(".")[0] || "" : ""}
-                        onChange={(e) => {
-                          const day = e.target.value;
-                          const parts = birthday ? birthday.split(".") : ["", "", ""];
-                          setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
-                        }}
-                        className="w-full border-none bg-transparent text-base text-black outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
-                    <div className="relative w-full">
-                      <div className="mb-1 text-xs text-[#ABABAB]">Месяц</div>
-                      <input
-                        type="text"
-                        value={monthValue}
-                        onClick={() => {
-                          if (monthValue) {
-                            const [d, , y] = birthday.split(".");
-                            setBirthday(`${d || ""}.${""}.${y || ""}`);
-                          }
-                        }}
-                        onChange={(e) => {
-                          const m = e.target.value;
-                          const [d, , y] = birthday.split(".");
-                          setBirthday(`${d || ""}.${m}.${y || ""}`);
-                        }}
-                        className="w-full border-none bg-transparent text-base text-black outline-none"
-                      />
-                      {filteredMonths.length > 0 &&
-                        !monthOptions.includes(monthValue) && (
-                          <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white text-black shadow-lg">
-                            {filteredMonths.map((m) => (
-                              <li
-                                key={m}
-                                onClick={() => {
-                                  const [d, , y] = birthday.split(".");
-                                  setBirthday(`${d || ""}.${m}.${y || ""}`);
-                                }}
-                                className="cursor-pointer px-2 py-1 hover:bg-gray-100"
-                              >
-                                {m}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                    </div>
-                  </div>
-                  <div className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-3 py-3">
-                    <div className="flex w-full flex-col items-start text-xs">
-                      <div className="mb-1 text-[#ABABAB]">Год</div>
-                      <input
-                        type="number"
-                        value={birthday ? birthday.split(".")[2] || "" : ""}
-                        onChange={(e) => {
-                          const year = e.target.value;
-                          const parts = birthday ? birthday.split(".") : ["", "", ""];
-                          setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
-                        }}
-                        className="w-full border-none bg-transparent text-base text-black outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <DatePicker
+                  birthday={birthday}
+                  setBirthday={setBirthday}
+                  monthValue={monthValue}
+                />
 
                 <textarea
                   value={bio}

@@ -31,7 +31,6 @@ function RouteComponent() {
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isMore, setIsMore] = useState(false);
   const { state } = useRouterState({ select: (s) => s.location });
-  console.log(state, "state");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { id } = Route.useParams();
@@ -50,7 +49,6 @@ function RouteComponent() {
   const { data: userMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({ userId: Number(id) }),
   );
-  console.log(userMeetings, "userMeetings");
   const allPhotos = useMemo(() => {
     return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
   }, [mainPhoto, galleryPhotos]);
@@ -64,8 +62,6 @@ function RouteComponent() {
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
-
-  console.log(userSubscribers, "userSubscribers");
 
   const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
@@ -178,8 +174,6 @@ function RouteComponent() {
     [userFavorites],
   );
 
-  console.log(userMeetings, "userMeetings");
-
   const handlePhotoToFavorites = ({ photo }: { photo: string }) => {
     if (isPhotoFavorite(photo)) {
       removeFromFavorites.mutate({ userId: user?.id!, type: "photo", photo });
@@ -209,10 +203,6 @@ function RouteComponent() {
     return me?.id === user?.id;
   }, [me?.id, user?.id]);
 
-  console.log(isOwner, "isOwner");
-
-  console.log(user?.photoUrl, "mainPhoto");
-
   const handleRemoveFriend = () => {
     unFriend.mutate({ userId: user?.id! });
     // Optimistically update cache
@@ -234,10 +224,6 @@ function RouteComponent() {
       });
     });
   };
-
-  console.log(allPhotos[currentIndex], "current photo");
-  console.log(user?.gallery, "gallery");
-  console.log(currentIndex, "currentIndex");
 
   const isMobile = usePlatform();
 

@@ -64,6 +64,7 @@ export const meetTable = pgTable("meets", {
   typeOfEvent: varchar("type_of_event", { length: 255 }),
   isCustom: boolean("is_custom").default(false),
   isCompleted: boolean("is_completed").default(false),
+  gallery: jsonb("gallery").$type<string[]>(),
 });
 
 export const reviewsTable = pgTable("reviews", {

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import EndMeetDrawer from "~/components/EndMeetDrawer";
@@ -9,7 +9,6 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { Coin } from "~/components/Icons/Coin";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
-import { ReviewStar } from "~/components/Icons/ReviewStar";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
@@ -35,6 +34,13 @@ function RouteComponent() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+
+  // Gallery & photo state
+  const [mainPhoto, setMainPhoto] = useState<string | undefined>(undefined);
+  const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const trpc = useTRPC();
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const navigate = useNavigate();
@@ -50,17 +56,31 @@ function RouteComponent() {
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
 
-  const meetingsWithEvents = meetingsData?.map((meeting) => {
-    const organizer = users?.find((u) => u.id === meeting.userId);
-    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
-    return {
-      ...meeting,
-      organizer,
-      event,
-    };
-  });
+  const meetingsWithEvents = useMemo(() => {
+    return meetingsData?.map((meeting) => {
+      const organizer = users?.find((u) => u.id === meeting.userId);
+      const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+      return {
+        ...meeting,
+        organizer,
+        event,
+      };
+    });
+  }, [meetingsData, users]);
 
-  const meeting = meetingsWithEvents?.find((m) => m.id === parseInt(id));
+  const meeting = useMemo(() => {
+    return meetingsWithEvents?.find((m) => m.id === parseInt(id));
+  }, [meetingsWithEvents, id]);
+
+  const allPhotos = useMemo(() => {
+    return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
+  }, [mainPhoto, galleryPhotos]);
+
+  // Sync local state when fetched meeting changes
+  useEffect(() => {
+    setMainPhoto(meeting?.image || undefined);
+    setGalleryPhotos(meeting?.gallery ?? []);
+  }, [meeting?.image, meeting?.gallery]);
 
   const handleUnsendComplaint = () => {
     unsendComplaint.mutate({ id: meeting?.id! });
@@ -107,7 +127,6 @@ function RouteComponent() {
   // @ts-ignore
   const eventId = isUserMeeting ? meeting?.idOfEvent : meeting?.id;
   const event = getEventData(eventType ?? "", eventId ?? 0);
-  console.log(event, "event");
 
   const isOwner = useMemo(() => {
     return organizer?.id === user?.id;
@@ -196,9 +215,6 @@ function RouteComponent() {
       meetId: meeting?.id!,
     }),
   );
-  console.log(userRating, "userRating2");
-
-  console.log(meeting, "meeting");
 
   const isMobile = usePlatform();
 
@@ -250,34 +266,49 @@ function RouteComponent() {
             className="scrollbar-hidden overflow-y-auto pt-18 pb-30 data-[mobile=true]:pt-39"
           >
             <div className="relative">
-              <img
-                src={getImageUrl(meeting?.image!)}
-                className="h-[30vh] w-full rounded-t-xl object-cover"
-              />
-              <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
-                <div className="text-2xl font-bold">{meeting?.name}</div>
-                {meetRating && meetRating > 0 && (
-                  <div className="flex items-center justify-center gap-1">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <ReviewStar
-                        key={index}
-                        disabled={true}
-                        onClick={() => {}}
-                        isLast={index === Math.ceil(meetRating!) - 1}
-                        fillPercentage={(meetRating! % 1) * 100}
-                        isActive={meetRating >= index + 1}
-                        width={20}
-                        height={20}
-                      />
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center justify-start gap-2">
-                  <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
-                    {meeting?.type}
+              <div className="relative h-[50vh] rounded-t-2xl">
+                <img
+                  src={
+                    mainPhoto?.startsWith("data:image/")
+                      ? mainPhoto
+                      : getImageUrl(mainPhoto || meeting?.image || "")
+                  }
+                  alt={meeting?.name || ""}
+                  className="h-full w-full rounded-t-xl object-cover"
+                  onClick={() => {
+                    setCurrentIndex(0);
+                    setIsFullScreen(true);
+                  }}
+                />
+                <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
+                  <div className="text-2xl font-bold">{meeting?.name}</div>
+                  <div className="text-sm">{meeting?.description}</div>
+
+                  <div className="flex items-center justify-start gap-2">
+                    <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
+                      {meeting?.type}
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pt-4">
+              {galleryPhotos.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img.startsWith("data:image/") ? img : getImageUrl(img)}
+                  alt=""
+                  className="h-20 w-20 cursor-pointer rounded-lg object-cover"
+                  onClick={() => {
+                    setGalleryPhotos((prev) => {
+                      const newGallery = prev.filter((i) => i !== img);
+                      if (mainPhoto) newGallery.push(mainPhoto);
+                      return newGallery;
+                    });
+                    setMainPhoto(img);
+                  }}
+                />
+              ))}
             </div>
             <div className="flex gap-4 px-4 pt-4">
               <button
@@ -595,6 +626,44 @@ function RouteComponent() {
               meetId={Number(id)}
               handleEndMeeting={handleEndMeeting}
             />
+          )}
+
+          {isFullScreen && allPhotos.length > 0 && (
+            <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">
+              {allPhotos.length > 1 && (
+                <ChevronLeft
+                  className="absolute left-4 h-10 w-10 cursor-pointer text-white"
+                  onClick={() =>
+                    setCurrentIndex(
+                      (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
+                    )
+                  }
+                />
+              )}
+
+              {(() => {
+                const imgSrc = allPhotos[currentIndex];
+                return (
+                  <img
+                    src={imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)}
+                    alt="Full view"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                );
+              })()}
+
+              {allPhotos.length > 1 && (
+                <ChevronRight
+                  className="absolute right-4 h-10 w-10 cursor-pointer text-white"
+                  onClick={() => setCurrentIndex((prev) => (prev + 1) % allPhotos.length)}
+                />
+              )}
+
+              <XIcon
+                className="absolute top-24 right-4 h-8 w-8 cursor-pointer text-white"
+                onClick={() => setIsFullScreen(false)}
+              />
+            </div>
           )}
         </>
       )}

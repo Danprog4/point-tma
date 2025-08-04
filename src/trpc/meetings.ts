@@ -25,6 +25,8 @@ export const meetingRouter = createTRPCRouter({
         typeOfEvent: z.string().optional(),
         isCustom: z.boolean().optional(),
         image: z.string().optional(),
+        gallery: z.array(z.string()).optional(),
+        mainPhotoRaw: z.string().optional(),
         participants: z.number().optional(),
         location: z.string().optional(),
         reward: z.number().optional(),
@@ -44,6 +46,8 @@ export const meetingRouter = createTRPCRouter({
         reward,
         image,
         isCustom,
+        gallery,
+        mainPhotoRaw,
       } = input;
       const { userId } = ctx;
 
@@ -71,7 +75,7 @@ export const meetingRouter = createTRPCRouter({
           idOfEvent,
           typeOfEvent,
           userId: user.id,
-
+          gallery,
           location,
           reward,
           image: imageUrl,

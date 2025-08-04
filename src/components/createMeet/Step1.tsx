@@ -210,7 +210,7 @@ export const Step1 = ({
       setSelectedFile(null);
     }
   };
-
+  console.log(gallery, "gallery");
   useEffect(() => {
     if (title && description && type && base64 && date) {
       setIsDisabled(false);

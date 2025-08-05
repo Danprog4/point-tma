@@ -40,10 +40,7 @@ export const MeetHeader: React.FC<MeetHeaderProps> = ({
   setMainPhoto,
 }) => {
   return (
-    <div
-      data-mobile={isMobile}
-      className="scrollbar-hidden overflow-y-auto pt-18 data-[mobile=true]:pt-4"
-    >
+    <div data-mobile={isMobile} className="scrollbar-hidden overflow-y-auto">
       <div className="relative">
         <div className="relative h-[55vh] rounded-t-2xl">
           <img

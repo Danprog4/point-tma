@@ -59,11 +59,10 @@ function RouteComponent() {
   const meetingsWithEvents = useMemo(() => {
     return meetingsData?.map((meeting) => {
       const organizer = users?.find((u) => u.id === meeting.userId);
-      const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
+
       return {
         ...meeting,
         organizer,
-        event,
       };
     });
   }, [meetingsData, users]);

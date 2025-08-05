@@ -60,11 +60,11 @@ export const meetTable = pgTable("meets", {
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   userId: bigint("user_id", { mode: "number" }),
-  idOfEvent: bigint("id_of_event", { mode: "number" }),
-  typeOfEvent: varchar("type_of_event", { length: 255 }),
-  isCustom: boolean("is_custom").default(false),
   isCompleted: boolean("is_completed").default(false),
+
   gallery: jsonb("gallery").$type<string[]>(),
+  subType: varchar("sub_type", { length: 255 }),
+  isBig: boolean("is_big").default(false),
 });
 
 export const reviewsTable = pgTable("reviews", {

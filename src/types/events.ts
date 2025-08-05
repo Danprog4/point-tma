@@ -2,6 +2,7 @@ export const eventTypes = [
   {
     emoji: "💕",
     name: "Свидания",
+    isBig: false,
     description: "Романтические встречи и знакомства",
     bgColor: "bg-pink-100",
     subtypes: [
@@ -20,6 +21,7 @@ export const eventTypes = [
   {
     emoji: "💬",
     name: "Нетворкинг",
+    isBig: true,
     description: "Профессиональные встречи и общение по интересам",
     bgColor: "bg-blue-100",
     subtypes: [
@@ -37,6 +39,7 @@ export const eventTypes = [
   },
   {
     emoji: "⚽",
+    isBig: true,
     name: "Спортивные встречи",
     description: "Активный отдых и спортивные мероприятия",
     bgColor: "bg-green-100",
@@ -59,6 +62,7 @@ export const eventTypes = [
   },
   {
     emoji: "🎲",
+    isBig: true,
     name: "Игровые встречи",
     description: "Игры и интеллектуальные развлечения",
     bgColor: "bg-yellow-100",
@@ -77,6 +81,7 @@ export const eventTypes = [
   },
   {
     emoji: "🎉",
+    isBig: false,
     name: "Развлекательные встречи",
     description: "Веселье и развлечения",
     bgColor: "bg-purple-100",
@@ -100,6 +105,7 @@ export const eventTypes = [
   },
   {
     emoji: "🎭",
+    isBig: true,
     name: "Культурные мероприятия",
     description: "Искусство и культура",
     bgColor: "bg-indigo-100",
@@ -119,6 +125,7 @@ export const eventTypes = [
   },
   {
     emoji: "🍽️",
+    isBig: true,
     name: "Гастрономические встречи",
     description: "Еда и кулинария",
     bgColor: "bg-orange-100",
@@ -139,6 +146,7 @@ export const eventTypes = [
   },
   {
     emoji: "🏔️",
+    isBig: false,
     name: "Приключения и путешествия",
     description: "Путешествия и активный отдых",
     bgColor: "bg-emerald-100",
@@ -156,6 +164,7 @@ export const eventTypes = [
   },
   {
     emoji: "📚",
+    isBig: true,
     name: "Обучающие и развивающие встречи",
     description: "Образование и саморазвитие",
     bgColor: "bg-slate-100",
@@ -174,6 +183,7 @@ export const eventTypes = [
   },
   {
     emoji: "🤝",
+    isBig: true,
     name: "Волонтерские и социальные встречи",
     description: "Благотворительность и социальные проекты",
     bgColor: "bg-teal-100",
@@ -192,6 +202,7 @@ export const eventTypes = [
   },
   {
     emoji: "👨‍👩‍👧‍👦",
+    isBig: true,
     name: "Семейные встречи",
     description: "Семейные мероприятия и праздники",
     bgColor: "bg-rose-100",
@@ -210,6 +221,7 @@ export const eventTypes = [
   },
   {
     emoji: "🏙️",
+    isBig: false,
     name: "Городские встречи",
     description: "Городские прогулки и знакомство с местной культурой",
     bgColor: "bg-indigo-100",

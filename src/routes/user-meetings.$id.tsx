@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -76,10 +75,7 @@ function RouteComponent() {
 
   // Add event data to meetings
   const meetingsWithEvents = useMemo(() => {
-    return allUserMeetings.map((meeting) => {
-      const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
-      return { ...meeting, event };
-    });
+    return allUserMeetings;
   }, [allUserMeetings]);
 
   // Separate into active and completed based on creation date (last 30 days = active)

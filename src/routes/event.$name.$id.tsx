@@ -17,7 +17,6 @@ import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { useActivate } from "~/hooks/useActivate";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
-import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -44,7 +43,7 @@ function RouteComponent() {
   const [isBought, setIsBought] = useState(false);
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const meeting = meetings?.find((event) => event.id === Number(id));
-  const isCustom = meeting?.isCustom;
+
   const [count, setCount] = useState(1);
   const { useActivateEvent } = useActivate();
   const queryClient = useQueryClient();
@@ -91,9 +90,7 @@ function RouteComponent() {
 
   const showActivatedLabel = hasActiveTicket && !hasInactiveTicket;
 
-  const isDisabled =
-    (user?.balance ?? 0) <
-    (isCustom ? (meeting?.reward ?? 0) : (event?.price ?? 0)) * count;
+  const isDisabled = (user?.balance ?? 0) < (event?.price ?? 0) * count;
 
   const handleBuyEvent = () => {
     if (isDisabled) {
@@ -163,32 +160,6 @@ function RouteComponent() {
               count={count}
               setCount={setCount}
             />
-            {!isCustom && (
-              <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-                {!isBought ? (
-                  <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                    <button
-                      onClick={handleBuyEvent}
-                      className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-                      disabled={isDisabled}
-                    >
-                      <div>
-                        {isDisabled
-                          ? "Недостаточно средств"
-                          : buyEvent.isPending
-                            ? "Покупка..."
-                            : `Купить за ${event?.price! * count}`}
-                      </div>
-                      <Coin />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4"></div>
-                )}
-              </div>
-            )}
-          </>
-          {!isCustom && (
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               {!isBought ? (
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
@@ -208,41 +179,63 @@ function RouteComponent() {
                   </button>
                 </div>
               ) : (
-                <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
-                  <button
-                    onClick={() => {
-                      navigate({ to: "/" });
-                    }}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
-                  >
-                    <div>Вернуться на главную</div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      navigate({ to: "/inventory" });
-                    }}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
-                  >
-                    <div>В инвентарь</div>
-                  </button>
-                  <ActiveDrawer
-                    id={Number(id)}
-                    open={isActiveDrawerOpen}
-                    onOpenChange={setIsActiveDrawerOpen}
-                    name={name}
-                  >
-                    {event?.category === "Квест" ? (
-                      <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                        {showActivatedLabel ? "Билет активирован" : "Активировать билет"}
-                      </button>
-                    ) : (
-                      <div></div>
-                    )}
-                  </ActiveDrawer>
-                </div>
+                <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4"></div>
               )}
             </div>
-          )}
+          </>
+          <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+            {!isBought ? (
+              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <button
+                  onClick={handleBuyEvent}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                  disabled={isDisabled}
+                >
+                  <div>
+                    {isDisabled
+                      ? "Недостаточно средств"
+                      : buyEvent.isPending
+                        ? "Покупка..."
+                        : `Купить за ${event?.price! * count}`}
+                  </div>
+                  <Coin />
+                </button>
+              </div>
+            ) : (
+              <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
+                <button
+                  onClick={() => {
+                    navigate({ to: "/" });
+                  }}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                >
+                  <div>Вернуться на главную</div>
+                </button>
+                <button
+                  onClick={() => {
+                    navigate({ to: "/inventory" });
+                  }}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                >
+                  <div>В инвентарь</div>
+                </button>
+                <ActiveDrawer
+                  id={Number(id)}
+                  open={isActiveDrawerOpen}
+                  onOpenChange={setIsActiveDrawerOpen}
+                  name={name}
+                >
+                  {event?.category === "Квест" ? (
+                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                      {showActivatedLabel ? "Билет активирован" : "Активировать билет"}
+                    </button>
+                  ) : (
+                    <div></div>
+                  )}
+                </ActiveDrawer>
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <div data-mobile={isMobile} className="pb-24">
@@ -258,14 +251,14 @@ function RouteComponent() {
                 <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
               </button>
               <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
-                {isCustom ? meeting?.type : event?.category}
+                {event?.category}
               </h1>
               <div className="flex h-6 w-6" />
             </div>
           </div>
           <div className="relative">
             <img
-              src={isCustom ? getImageUrl(meeting?.image as string) : event?.image}
+              src={event?.image}
               alt={event?.title}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />
@@ -273,13 +266,8 @@ function RouteComponent() {
               <div className="text-2xl font-bold">{event?.title}</div>
               <div className="flex items-center justify-start gap-2">
                 <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
-                  {isCustom ? meeting?.type : event?.type}
+                  {event?.type}
                 </div>
-                {isCustom && (
-                  <div className="flex items-center justify-center rounded-full bg-[#2462FF] px-2">
-                    {event?.category}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -306,28 +294,20 @@ function RouteComponent() {
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Описание</div>
                 <div>
-                  {isCustom
-                    ? meeting?.description?.split(/\n{2,}/).map((paragraph, idx) => (
-                        <p key={idx} className="mb-3 last:mb-0">
-                          {paragraph}
-                        </p>
-                      ))
-                    : event?.description?.split(/\n{2,}/).map((paragraph, idx) => (
-                        <p key={idx} className="mb-3 last:mb-0">
-                          {paragraph}
-                        </p>
-                      ))}
+                  {event?.description?.split(/\n{2,}/).map((paragraph, idx) => (
+                    <p key={idx} className="mb-3 last:mb-0">
+                      {paragraph}
+                    </p>
+                  ))}
                 </div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Локация</div>
-                <div>{isCustom ? meeting?.location : event?.location}</div>
+                <div>{event?.location}</div>
               </div>
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Организатор</div>
-                <div className="text-l font-bold">
-                  {isCustom ? user?.name + " " + user?.surname : event?.organizer}
-                </div>
+                <div className="text-l font-bold">{event?.organizer}</div>
               </div>
               {event?.stages && event?.stages?.length > 0 ? (
                 <div className="flex flex-col gap-4 px-4 py-4">
@@ -384,9 +364,7 @@ function RouteComponent() {
               )}
               <div className="flex flex-col gap-2 px-4 py-4">
                 <div className="text-2xl font-bold">Расписание</div>
-                <div className="text-l font-bold">
-                  {isCustom ? "Сегодня" : event?.date}
-                </div>
+                <div className="text-l font-bold">{event?.date}</div>
               </div>
               <div className="flex flex-col justify-center gap-2 px-4 py-4">
                 <div className="flex flex-col items-start justify-start text-2xl font-bold">
@@ -394,41 +372,25 @@ function RouteComponent() {
                     <div className="text-2xl font-bold">Награда </div>
                     <div className="text-l pl-2 font-bold">
                       +
-                      {isCustom
-                        ? (meeting as any)?.rewards
-                            ?.find((reward: any) => reward.type === "point")
-                            ?.value?.toLocaleString() || 0
-                        : (event as any)?.rewards
-                            ?.find((reward: any) => reward.type === "point")
-                            ?.value?.toLocaleString() || 0}
+                      {(event as any)?.rewards
+                        ?.find((reward: any) => reward.type === "point")
+                        ?.value?.toLocaleString() || 0}
                     </div>
                     <Coin />
                   </div>
                   {name === "Квест" && (
                     <div className="text-sm">
-                      {isCustom
-                        ? (meeting as any)?.rewards
-                            ?.filter((reward: any) => reward.type === "text")
-                            .map((reward: any) => (
-                              <div key={reward.value}>
-                                {reward.value
-                                  .split("\n")
-                                  .map((line: string, index: number) => (
-                                    <div key={index}>+ {line}</div>
-                                  ))}
-                              </div>
-                            ))
-                        : (event as any)?.rewards
-                            ?.filter((reward: any) => reward.type === "text")
-                            .map((reward: any) => (
-                              <div key={reward.value}>
-                                {reward.value
-                                  .split("\n")
-                                  .map((line: string, index: number) => (
-                                    <div key={index}>+ {line}</div>
-                                  ))}
-                              </div>
-                            ))}
+                      {(event as any)?.rewards
+                        ?.filter((reward: any) => reward.type === "text")
+                        .map((reward: any) => (
+                          <div key={reward.value}>
+                            {reward.value
+                              .split("\n")
+                              .map((line: string, index: number) => (
+                                <div key={index}>+ {line}</div>
+                              ))}
+                          </div>
+                        ))}
                     </div>
                   )}
                 </div>
@@ -479,73 +441,72 @@ function RouteComponent() {
             </div>
           )}
 
-          {!isCustom &&
-            (!isTicketAvailable ||
-            (hasActiveTicket && !hasInactiveTicket && isCompleted) ? (
-              <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                  <button
-                    onClick={() => setIsOpen(true)}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-                  >
-                    <div>Купить за {event?.price}</div>
-                    <Coin />
-                  </button>
-                  <div className="flex flex-col items-center">
-                    <div
-                      className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-                      onClick={() => setIsMoreOpen(!isMoreOpen)}
-                    >
-                      <WhitePlusIcon />
-                    </div>
-                    <span className="text-xs">Ещё</span>
-                  </div>
-                </div>
-              </div>
-            ) : hasInactiveTicket ? (
-              <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-                {event?.category === "Квест" ? (
-                  <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                    <ActiveDrawer
-                      id={Number(id)}
-                      name={name}
-                      open={isActiveDrawerOpen}
-                      onOpenChange={setIsActiveDrawerOpen}
-                    >
-                      <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                        <div>Активировать</div>
-                      </button>
-                    </ActiveDrawer>
-                  </div>
-                ) : (
-                  <QrDrawer open={isQrOpen} onOpenChange={setIsQrOpen}>
-                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                      <div>QR CODE</div>
-                    </button>
-                  </QrDrawer>
-                )}
-              </div>
-            ) : (
-              <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                  <button
-                    onClick={handleEndQuest}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-                  >
-                    <div>{isCompleted ? "Вернуться на главную" : "Завершить этап"}</div>
-                  </button>
+          {!isTicketAvailable ||
+          (hasActiveTicket && !hasInactiveTicket && isCompleted) ? (
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                >
+                  <div>Купить за {event?.price}</div>
+                  <Coin />
+                </button>
+                <div className="flex flex-col items-center">
                   <div
-                    className="flex flex-col items-center justify-center"
-                    onClick={() => {
-                      openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
-                    }}
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
+                    onClick={() => setIsMoreOpen(!isMoreOpen)}
                   >
-                    <BlueTelegram />
-                    <div className="text-[#2462FF]">Чат</div>
+                    <WhitePlusIcon />
                   </div>
+                  <span className="text-xs">Ещё</span>
                 </div>
               </div>
-            ))}
+            </div>
+          ) : hasInactiveTicket ? (
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              {event?.category === "Квест" ? (
+                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                  <ActiveDrawer
+                    id={Number(id)}
+                    name={name}
+                    open={isActiveDrawerOpen}
+                    onOpenChange={setIsActiveDrawerOpen}
+                  >
+                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                      <div>Активировать</div>
+                    </button>
+                  </ActiveDrawer>
+                </div>
+              ) : (
+                <QrDrawer open={isQrOpen} onOpenChange={setIsQrOpen}>
+                  <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                    <div>QR CODE</div>
+                  </button>
+                </QrDrawer>
+              )}
+            </div>
+          ) : (
+            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                <button
+                  onClick={handleEndQuest}
+                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                >
+                  <div>{isCompleted ? "Вернуться на главную" : "Завершить этап"}</div>
+                </button>
+                <div
+                  className="flex flex-col items-center justify-center"
+                  onClick={() => {
+                    openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
+                  }}
+                >
+                  <BlueTelegram />
+                  <div className="text-[#2462FF]">Чат</div>
+                </div>
+              </div>
+            </div>
+          )}
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}
         </div>
       )}

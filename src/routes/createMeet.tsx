@@ -9,6 +9,7 @@ import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
+import { eventTypes } from "~/types/events";
 
 export const Route = createFileRoute("/createMeet")({
   component: RouteComponent,
@@ -33,8 +34,7 @@ function RouteComponent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
-  const [title2, setTitle2] = useState("");
-  const [description2, setDescription2] = useState("");
+
   const trpc = useTRPC();
   const [isDisabled, setIsDisabled] = useState(true);
   const [friendName, setFriendName] = useState("");
@@ -95,22 +95,25 @@ function RouteComponent() {
   const handleCreateMeeting = async () => {
     // предотвращаем повторный вызов
     if (createMeeting.isPending || createMeeting.isSuccess) return;
-    const idOfEvent = selectedItem?.id ?? (search.item as any)?.id;
 
-    const finalTypeOfEvent = typeOfEvent || (search.typeOfEvent as string) || "";
+    const isBig =
+      eventTypes.find((event) => event.name === type)?.isBig ??
+      eventTypes.find((event) => event.subtypes.includes(typeOfEvent))?.isBig ??
+      false;
+
     await createMeeting.mutateAsync(
       {
-        name: title2,
-        description: description2,
+        name: title,
+        description: description,
         type: type,
-        idOfEvent,
-        typeOfEvent: type,
-
+        subType,
+        isBig,
         participants: participants || 0,
         location,
         reward: reward || 0,
-        image: base64,
+        image: mainPhotoRaw,
         invitedId: search.id !== undefined ? String(search.id) : undefined,
+        gallery: gallery,
       },
       {
         onSuccess: (data: any) => {
@@ -135,7 +138,7 @@ function RouteComponent() {
   };
 
   console.log(base64, "base64");
-  console.log(title2, "title2");
+
   console.log(createMeeting.data);
 
   console.log(step);
@@ -286,13 +289,12 @@ function RouteComponent() {
       {step === 4 && (
         <Step5
           isLoading={createMeeting.isPending}
-          name={name}
+          title={title}
+          description={description}
           item={selectedItem || search.item}
           type={type}
           eventType={search.typeOfEvent || ""}
           isBasic={isBasic}
-          title2={title2}
-          description2={description2}
           reward={reward}
           setReward={setReward}
           base64={base64 || search.item?.image || selectedItem?.image}

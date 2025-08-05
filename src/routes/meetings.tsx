@@ -6,6 +6,7 @@ import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+import { LocationIcon } from "~/components/Icons/Location";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -48,6 +49,53 @@ function RouteComponent() {
   };
 
   console.log(meetingsWithEvents, "meetingsWithEvents");
+
+  // Фильтрация встреч
+  const filteredMeetings = meetingsWithEvents
+    ?.filter((meeting) => {
+      if (activeFilter === "Все") return true;
+      return meeting.type === filterMap[activeFilter as keyof typeof filterMap];
+    })
+    .filter((meeting) => {
+      const eventTitle = meeting.name || "Без названия";
+      const organizerName = meeting.organizer?.name || "Неизвестно";
+      return (
+        eventTitle.toLowerCase().includes(search.toLowerCase()) ||
+        organizerName.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+
+  // Группировка встреч по паттерну: 2 больших, 4 маленьких, 2 больших, 4 маленьких...
+  const groupMeetings = (meetings: any[]) => {
+    // Разделяем встречи на большие и маленькие
+    const bigMeetings = meetings.filter((meeting) => meeting.isBig);
+    const smallMeetings = meetings.filter((meeting) => !meeting.isBig);
+
+    const groups = [];
+    let bigIndex = 0;
+    let smallIndex = 0;
+
+    // Чередуем группы: 2 больших, затем 4 маленьких
+    while (bigIndex < bigMeetings.length || smallIndex < smallMeetings.length) {
+      // Добавляем группу из 2 больших встреч
+      if (bigIndex < bigMeetings.length) {
+        const bigGroup = bigMeetings.slice(bigIndex, bigIndex + 2);
+        groups.push({ type: "big", items: bigGroup });
+        bigIndex += 2;
+      }
+
+      // Добавляем группу из 4 маленьких встреч
+      if (smallIndex < smallMeetings.length) {
+        const smallGroup = smallMeetings.slice(smallIndex, smallIndex + 4);
+        groups.push({ type: "small", items: smallGroup });
+        smallIndex += 4;
+      }
+    }
+
+    return groups;
+  };
+
+  const meetingGroups = groupMeetings(filteredMeetings || []);
 
   useScroll();
   const isMobile = usePlatform();
@@ -162,62 +210,120 @@ function RouteComponent() {
               ))}
             </div>
           </div>
-          {/* Featured Meetings List */}
-          <div className="col-span-2 grid grid-cols-2 gap-4">
-            {meetingsWithEvents
-              ?.filter((meeting) => {
-                if (activeFilter === "Все") return true;
-                return (
-                  meeting.typeOfEvent ===
-                  filterMap[activeFilter as keyof typeof filterMap]
-                );
-              })
-              .filter((meeting) => {
-                const eventTitle = meeting.name || "Без названия";
-                const organizerName = meeting.organizer?.name || "Неизвестно";
-                return (
-                  eventTitle.toLowerCase().includes(search.toLowerCase()) ||
-                  organizerName.toLowerCase().includes(search.toLowerCase())
-                );
-              })
-              .map((meeting) => (
-                <div key={meeting.id} className="">
-                  {/* Profile Card */}
-                  <div
-                    className="overflow-hidden"
-                    onClick={() =>
-                      navigate({
-                        to: "/meet/$id",
-                        params: { id: meeting.id.toString() },
-                      })
-                    }
-                  >
-                    {/* Avatar Section */}
-                    <div className="relative h-36">
-                      <img
-                        src={
-                          meeting.organizer?.photo
-                            ? getImageUrl(meeting.organizer.photo!)
-                            : meeting.organizer?.photoUrl || ""
-                        }
-                        alt={meeting.organizer?.name!}
-                        className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
-                      />
-                    </div>
-                    {/* Text Content */}
-                    <div className="p-2">
-                      <div className="space-y-1">
-                        <h3 className="text-sm leading-tight font-medium text-gray-900">
-                          {meeting.organizer?.name}
-                        </h3>
-                        <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                          {meeting.name || "Без названия"}
-                        </p>
+
+          {/* Featured Meetings List with alternating layout */}
+          <div className="col-span-2 space-y-4">
+            {meetingGroups.map((group, groupIndex) => (
+              <div key={groupIndex}>
+                {group.type === "big" ? (
+                  // Большие карточки (1 в ряд)
+                  <div className="space-y-4">
+                    {group.items.map((meeting) => (
+                      <div key={meeting.id} className="">
+                        <div
+                          className="overflow-hidden"
+                          onClick={() =>
+                            navigate({
+                              to: "/meet/$id",
+                              params: { id: meeting.id.toString() },
+                            })
+                          }
+                        >
+                          {/* Avatar Section */}
+                          <div className="relative h-[172px]">
+                            <img
+                              src={
+                                meeting.organizer?.photo
+                                  ? getImageUrl(meeting.organizer.photo!)
+                                  : meeting.organizer?.photoUrl || ""
+                              }
+                              alt={meeting.organizer?.name!}
+                              className="h-full w-full rounded-3xl object-cover"
+                            />
+                          </div>
+                          {/* Text Content */}
+                          <div className="p-2">
+                            <div className="space-y-1">
+                              <h3 className="text-lg leading-tight font-bold text-gray-900">
+                                {meeting?.name}
+                              </h3>
+                              <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                                {meeting.description || "Без названия"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 px-2">
+                            <div className="h-10 w-10 rounded-full">
+                              <img
+                                src={getImageUrl(meeting.organizer?.photo!)}
+                                alt=""
+                                className="h-full w-full rounded-full object-cover"
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <div className="font-bold">{meeting.organizer?.name}</div>
+                              <div className="text-sm text-neutral-500">Организатор</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between p-2">
+                            <div className="flex items-center">
+                              <LocationIcon />
+                              <div className="text-sm text-neutral-500">
+                                {meeting.location || "Москва"}
+                              </div>
+                            </div>
+                            <div className="text-sm text-neutral-500">
+                              Сегодня в 15:30
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                ) : (
+                  // Маленькие карточки (2 в ряд)
+                  <div className="grid grid-cols-2 gap-4">
+                    {group.items.map((meeting) => (
+                      <div key={meeting.id} className="">
+                        <div
+                          className="overflow-hidden"
+                          onClick={() =>
+                            navigate({
+                              to: "/meet/$id",
+                              params: { id: meeting.id.toString() },
+                            })
+                          }
+                        >
+                          {/* Avatar Section */}
+                          <div className="relative h-36">
+                            <img
+                              src={
+                                meeting.organizer?.photo
+                                  ? getImageUrl(meeting.organizer.photo!)
+                                  : meeting.organizer?.photoUrl || ""
+                              }
+                              alt={meeting.organizer?.name!}
+                              className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
+                            />
+                          </div>
+                          {/* Text Content */}
+                          <div className="p-2">
+                            <div className="space-y-1">
+                              <h3 className="text-sm leading-tight font-medium text-gray-900">
+                                {meeting.organizer?.name}
+                              </h3>
+                              <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                                {meeting.name || "Без названия"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

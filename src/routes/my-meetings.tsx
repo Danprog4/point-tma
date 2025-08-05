@@ -7,7 +7,6 @@ import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 
 import { useTRPC } from "~/trpc/init/react";
@@ -53,9 +52,8 @@ function RouteComponent() {
       )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);
-        const event = getEventData(meeting?.typeOfEvent!, meeting?.idOfEvent!);
         const fromUser = users?.find((user) => user.id === request.fromUserId);
-        return { ...request, event, user: fromUser };
+        return { ...request, meeting, user: fromUser };
       });
   }, [requests, meetings, user?.id]);
 
@@ -83,8 +81,7 @@ function RouteComponent() {
     const uniqueMap = new Map(combined.map((m) => [m.id, m]));
 
     return Array.from(uniqueMap.values()).map((meeting) => {
-      const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
-      return { ...meeting, event };
+      return meeting;
     });
   }, [createdMeetings, acceptedMeetings]);
 
@@ -167,27 +164,27 @@ function RouteComponent() {
                     {(() => {
                       const description = quest?.isCustom
                         ? quest?.description
-                        : quest?.event?.description;
+                        : quest?.meeting?.description;
                       return description && description.length > 100
                         ? description.slice(0, 100) + "..."
                         : description;
                     })()}
                   </p>
                   <div className="mb-6 flex items-center justify-between">
-                    {quest?.event?.hasAchievement ? (
+                    {quest?.meeting?.hasAchievement ? (
                       <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
                         + Достижение
                       </span>
                     ) : (
                       <div></div>
                     )}
-                    {(quest?.event as any)?.rewards?.find(
+                    {(quest?.meeting as any)?.rewards?.find(
                       (r: any) => r.type === "point",
                     ) ? (
                       <div className="ml-auto flex items-center gap-1">
                         <span className="text-base font-medium text-black">
                           +
-                          {(quest?.event as any)?.rewards
+                          {(quest?.meeting as any)?.rewards
                             ?.find((r: any) => r.type === "point")
                             ?.value?.toLocaleString() || 0}
                         </span>
@@ -218,14 +215,15 @@ function RouteComponent() {
                   />
                   {request.user?.name} {request.user?.surname} приглашает
                 </div>
-                <MeetCard meet={request.event || ({} as Quest)} isNavigable={true} />
+                <MeetCard meet={request.meeting || ({} as Quest)} isNavigable={true} />
                 <p className="my-2 text-xs leading-4 text-black">
-                  {request.event?.description && request.event.description.length > 100
-                    ? request.event.description.slice(0, 100) + "..."
-                    : request.event?.description}
+                  {request.meeting?.description &&
+                  request.meeting.description.length > 100
+                    ? request.meeting.description.slice(0, 100) + "..."
+                    : request.meeting?.description}
                 </p>
                 <div className="mb-6 flex items-center justify-between px-4">
-                  {request.event?.hasAchievement && (
+                  {request.meeting?.reward && (
                     <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
                       + Достижение
                     </span>
@@ -233,7 +231,7 @@ function RouteComponent() {
                   <div className="ml-auto flex items-center gap-1">
                     <span className="text-base font-medium text-black">
                       +
-                      {(request.event as any)?.rewards
+                      {(request.meeting as any)?.rewards
                         ?.find((r: any) => r.type === "point")
                         ?.value?.toLocaleString() || 0}
                     </span>

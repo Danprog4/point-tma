@@ -18,36 +18,31 @@ export const meetingRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         description: z.string(),
-        type: z.string().optional(),
-
-        invitedId: z.string().optional(),
-        idOfEvent: z.number().optional(),
-        typeOfEvent: z.string().optional(),
-        isCustom: z.boolean().optional(),
-        image: z.string().optional(),
-        gallery: z.array(z.string()).optional(),
-        mainPhotoRaw: z.string().optional(),
+        type: z.string(),
+        subType: z.string().optional(),
+        isBig: z.boolean().optional(),
         participants: z.number().optional(),
         location: z.string().optional(),
         reward: z.number().optional(),
+        image: z.string().optional(),
+        invitedId: z.string().optional(),
+        gallery: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const {
+        subType,
         name,
         description,
         type,
-
+        isBig,
         invitedId,
-        idOfEvent,
-        typeOfEvent,
-        participants,
+
         location,
         reward,
         image,
-        isCustom,
+
         gallery,
-        mainPhotoRaw,
       } = input;
       const { userId } = ctx;
 
@@ -72,14 +67,13 @@ export const meetingRouter = createTRPCRouter({
           type,
           name,
           participantsIds: invitedId ? [invitedId] : [],
-          idOfEvent,
-          typeOfEvent,
           userId: user.id,
           gallery,
           location,
+          subType,
           reward,
           image: imageUrl,
-          isCustom,
+          isBig,
         })
         .returning();
 

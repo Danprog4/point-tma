@@ -11,7 +11,6 @@ import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 import { Quest } from "~/types/quest";
@@ -22,7 +21,12 @@ export const Route = createFileRoute("/invite")({
 function RouteComponent() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: meetings } = useQuery(
+    trpc.meetings.getMeetings.queryOptions({
+      userId: Number(user?.id),
+    }),
+  );
   const inviteUsers = useMutation(
     trpc.meetings.inviteUsers.mutationOptions({
       onSuccess: () => {
@@ -83,13 +87,6 @@ function RouteComponent() {
     default:
       data = [];
   }
-  const meetingsWithEvents = meetings?.map((meeting) => {
-    const event = getEventData(meeting.typeOfEvent!, meeting.idOfEvent!);
-    return {
-      ...meeting,
-      event,
-    };
-  });
 
   const isMobile = usePlatform();
 
@@ -244,7 +241,7 @@ function RouteComponent() {
         )}
         {type === "Мои встречи" && (
           <div className="flex flex-col gap-4">
-            {meetingsWithEvents
+            {meetings
               ?.sort(
                 (a, b) =>
                   new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),

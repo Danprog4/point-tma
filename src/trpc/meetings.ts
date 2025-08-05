@@ -1,8 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, or } from "drizzle-orm";
+import { and, asc, eq, gt, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  meetMessagesTable,
   meetParticipantsTable,
   meetTable,
   notificationsTable,
@@ -430,4 +431,59 @@ export const meetingRouter = createTRPCRouter({
 
       return request;
     }),
+
+  // Chat ------------------------------------------------------------------
+
+  sendMessage: procedure
+    .input(
+      z.object({
+        meetId: z.number(),
+        message: z.string().max(255),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, message } = input;
+
+      // Rate limit: max 2 messages per minute per user
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+
+      const recentMessages = await db.query.meetMessagesTable.findMany({
+        where: and(
+          eq(meetMessagesTable.meetId, meetId),
+          eq(meetMessagesTable.userId, ctx.userId),
+          gt(meetMessagesTable.createdAt, oneMinuteAgo),
+        ),
+      });
+
+      if (recentMessages.length >= 2) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Можно отправлять не более 2 сообщений в минуту",
+        });
+      }
+
+      const [msg] = await db
+        .insert(meetMessagesTable)
+        .values({
+          meetId,
+          userId: ctx.userId,
+          message,
+        })
+        .returning();
+
+      return msg;
+    }),
+
+  getMessages: procedure
+    .input(z.object({ meetId: z.number() }))
+    .query(async ({ input }) => {
+      const messages = await db.query.meetMessagesTable.findMany({
+        where: eq(meetMessagesTable.meetId, input.meetId),
+        orderBy: asc(meetMessagesTable.createdAt),
+      });
+
+      return messages;
+    }),
 });
+
+export type Router = typeof meetingRouter;

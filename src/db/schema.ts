@@ -158,3 +158,11 @@ export const historyTable = pgTable("history", {
   eventId: bigint("event_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const meetMessagesTable = pgTable("meet_messages", {
+  id: serial("id").primaryKey(),
+  meetId: bigint("meet_id", { mode: "number" }),
+  userId: bigint("user_id", { mode: "number" }),
+  message: varchar("message", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});

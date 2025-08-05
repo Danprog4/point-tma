@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   Check,
@@ -65,6 +66,35 @@ function RouteComponent() {
   const endMeeting = useMutation(trpc.meetings.endMeeting.mutationOptions());
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
+  const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
+  const { data: chatMessages } = useQuery(
+    trpc.meetings.getMessages.queryOptions({ meetId: Number(id) }),
+  );
+
+  const sendChatMessage = useMutation(
+    trpc.meetings.sendMessage.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.meetings.getMessages.queryKey(),
+        });
+      },
+      onError: (err: any) => {
+        toast.error(err.message || "Ошибка отправки сообщения");
+      },
+    }),
+  );
+
+  const handleSendChatMessage = (msg: string) => {
+    if (!meeting?.id) return;
+    const now = Date.now();
+    const recent = chatTimestamps.filter((t) => now - t < 60_000);
+    if (recent.length >= 2) {
+      toast.error("Можно отправлять не более 2 сообщений в минуту");
+      return;
+    }
+    setChatTimestamps([...recent, now]);
+    sendChatMessage.mutate({ meetId: meeting.id, message: msg });
+  };
 
   const meetingsWithEvents = useMemo(() => {
     return meetingsData?.map((meeting) => {
@@ -475,7 +505,20 @@ function RouteComponent() {
                     </div>
                   </div>
                 </div>
-                <div className="h-[44vh] w-full bg-[#EBF1FF]"></div>
+                <div className="h-[44vh] w-full space-y-2 overflow-y-auto bg-[#EBF1FF] p-4">
+                  {chatMessages?.map((m: any) => {
+                    const sender = users?.find((u) => u.id === m.userId);
+                    return (
+                      <div key={m.id} className="flex flex-col gap-0.5">
+                        <span className="text-xs text-gray-600">
+                          {sender?.name} {sender?.surname} ·{" "}
+                          {format(new Date(m.createdAt), "HH:mm")}
+                        </span>
+                        <span className="text-sm text-black">{m.message}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -511,8 +554,7 @@ function RouteComponent() {
                           key={index}
                           className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
                           onClick={() => {
-                            // Handle sending the message
-                            console.log("Sending message:", message);
+                            handleSendChatMessage(message);
                             setSelectedCategory(null);
                           }}
                         >

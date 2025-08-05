@@ -15,6 +15,7 @@ import { MeetHeader } from "~/components/MeetHeader";
 import { MeetInfo } from "~/components/MeetInfo";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
+import { chatData } from "~/config/chat";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
@@ -35,6 +36,7 @@ function RouteComponent() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Gallery & photo state
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(undefined);
@@ -309,9 +311,17 @@ function RouteComponent() {
             >
               Участники
             </button>
+            <button
+              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
+                page === "chat" ? "bg-black text-white" : "bg-white text-black"
+              }`}
+              onClick={() => setPage("chat")}
+            >
+              Чат
+            </button>
           </div>
           <div>
-            {page === "info" ? (
+            {page === "info" && (
               <>
                 <MeetHeader
                   isMobile={isMobile}
@@ -334,7 +344,8 @@ function RouteComponent() {
                   getImageUrl={getImageUrl}
                 />
               </>
-            ) : (
+            )}
+            {page === "participants" && (
               <div className="flex flex-col">
                 <div className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]">
                   Пригласить участников
@@ -442,6 +453,24 @@ function RouteComponent() {
                 })}
               </div>
             )}
+            {page === "chat" && (
+              <div className="flex flex-col">
+                <div className="relative flex h-[10vh] w-full items-center justify-center">
+                  <img
+                    src={getImageUrl(meeting?.image || "")}
+                    alt=""
+                    className="h-full w-full rounded-t-2xl object-cover"
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-xl font-bold text-white">{meeting?.name}</div>
+                    <div className="flex items-center justify-center rounded-full bg-[#DFD2EA] px-2 text-sm text-black">
+                      {meeting?.type}
+                    </div>
+                  </div>
+                </div>
+                <div className="h-[44vh] w-full bg-[#EBF1FF]"></div>
+              </div>
+            )}
           </div>
 
           {meeting?.isCompleted ? (
@@ -462,6 +491,53 @@ function RouteComponent() {
             </div>
           ) : (
             <>
+              {selectedCategory && page === "chat" && (
+                <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
+                  <div className="mb-2 text-sm font-semibold text-gray-700">
+                    {selectedCategory}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {chatData
+                      .find((cat) => cat.category === selectedCategory)
+                      ?.messages.map((message, index) => (
+                        <button
+                          key={index}
+                          className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => {
+                            // Handle sending the message
+                            console.log("Sending message:", message);
+                            setSelectedCategory(null);
+                          }}
+                        >
+                          {message}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {page === "chat" && (
+                <div className="fixed right-4 bottom-20 left-4 z-[10000] mx-auto mt-4 flex w-auto flex-col items-start justify-center gap-4 bg-white py-4 text-center font-semibold text-black">
+                  <div className="">Быстрые ответы</div>
+                  <div className="scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4">
+                    {chatData.map((category) => (
+                      <button
+                        key={category.category}
+                        className="rounded-full bg-gray-100 px-3 py-1 text-sm text-nowrap text-gray-700 hover:bg-gray-200"
+                        onClick={() => {
+                          setSelectedCategory(
+                            selectedCategory === category.category
+                              ? null
+                              : category.category,
+                          );
+                        }}
+                      >
+                        {category.category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {isOwner ? (
                 <div className="fixed right-4 bottom-0 left-4 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white py-4 text-center font-semibold text-white">
                   <div
@@ -528,7 +604,7 @@ function RouteComponent() {
             </>
           )}
 
-          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}
+          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
           {isComplaintOpen && (
             <ComplaintDrawer
               handleSendComplaint={handleSendComplaint}

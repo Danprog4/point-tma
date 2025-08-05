@@ -6,15 +6,15 @@ import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import EndMeetDrawer from "~/components/EndMeetDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
-import { Coin } from "~/components/Icons/Coin";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
+import { MeetHeader } from "~/components/MeetHeader";
+import { MeetInfo } from "~/components/MeetInfo";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
@@ -125,7 +125,6 @@ function RouteComponent() {
   const eventType = isUserMeeting ? meeting?.typeOfEvent : meeting?.type;
   // @ts-ignore
   const eventId = isUserMeeting ? meeting?.idOfEvent : meeting?.id;
-  const event = getEventData(eventType ?? "", eventId ?? 0);
 
   const isOwner = useMemo(() => {
     return organizer?.id === user?.id;
@@ -259,281 +258,50 @@ function RouteComponent() {
               </button>
             )}
           </div>
-
           <div
             data-mobile={isMobile}
-            className="scrollbar-hidden overflow-y-auto pt-18 pb-20 data-[mobile=true]:pt-4"
+            className="flex gap-4 px-4 pb-4 data-[mobile=true]:pt-38"
           >
-            <div
-              data-mobile={isMobile}
-              className="flex gap-4 px-4 pb-4 data-[mobile=true]:pt-38"
+            <button
+              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
+                page === "info" ? "bg-black text-white" : "bg-white text-black"
+              }`}
+              onClick={() => setPage("info")}
             >
-              <button
-                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                  page === "info" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-                onClick={() => setPage("info")}
-              >
-                Информация
-              </button>
-              <button
-                className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                  page === "participants" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-                onClick={() => setPage("participants")}
-              >
-                Участники
-              </button>
-            </div>
-            <div className="relative">
-              <div className="relative h-[55vh] rounded-t-2xl">
-                <img
-                  src={
-                    mainPhoto?.startsWith("data:image/")
-                      ? mainPhoto
-                      : getImageUrl(mainPhoto || meeting?.image || "")
-                  }
-                  alt={meeting?.name || ""}
-                  className="h-full w-full rounded-t-xl object-cover"
-                  onClick={() => {
-                    setCurrentIndex(0);
-                    setIsFullScreen(true);
-                  }}
-                />
-                <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
-                  <div className="text-2xl font-bold">{meeting?.name}</div>
-                  <div className="text-sm">{meeting?.description}</div>
-
-                  <div className="flex items-center justify-start gap-2">
-                    <div className="flex items-center justify-center rounded-full bg-[#DFD2EA] px-2 text-sm text-black">
-                      {meeting?.type}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-full">
-                      <img
-                        src={getImageUrl(meeting?.organizer?.photo!)}
-                        alt=""
-                        className="h-full w-full rounded-full object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="font-bold">{meeting?.organizer?.name}</div>
-                      <div className="text-sm text-white">
-                        {user?.id === meeting?.organizer?.id
-                          ? "Вы организатор"
-                          : "Организатор"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="px-4 pt-2 text-xl font-bold">Галерея</div>
-            <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pb-4">
-              {galleryPhotos.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img.startsWith("data:image/") ? img : getImageUrl(img)}
-                  alt=""
-                  className="h-20 w-20 cursor-pointer rounded-lg object-cover"
-                  onClick={() => {
-                    setGalleryPhotos((prev) => {
-                      const newGallery = prev.filter((i) => i !== img);
-                      if (mainPhoto) newGallery.push(mainPhoto);
-                      return newGallery;
-                    });
-                    setMainPhoto(img);
-                  }}
-                />
-              ))}
-            </div>
-
+              Информация
+            </button>
+            <button
+              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
+                page === "participants" ? "bg-black text-white" : "bg-white text-black"
+              }`}
+              onClick={() => setPage("participants")}
+            >
+              Участники
+            </button>
+          </div>
+          <div>
             {page === "info" ? (
               <>
-                <div className="flex flex-col gap-2 px-4 py-4">
-                  <div className="text-xl font-bold">Достижение</div>
-                  <div>+1 Активный участник</div>
-                </div>
-
-                {meeting?.important && (
-                  <div className="flex flex-col gap-2 px-4 py-4">
-                    <div className="text-xl font-bold">Важное</div>
-                    <div>{meeting?.important}</div>
-                  </div>
-                )}
-                {meeting?.description && (
-                  <div className="flex flex-col gap-2 px-4 py-4">
-                    <div className="text-xl font-bold">Описание</div>
-                    <div>{meeting?.description}</div>
-                  </div>
-                )}
-                {meeting?.date && (
-                  <div className="flex flex-col gap-2 px-4 py-4">
-                    <div className="text-xl font-bold">Дата начала</div>
-                    <div>{meeting?.date}</div>
-                  </div>
-                )}
-
-                {meeting?.locations && meeting?.locations?.length > 0 ? (
-                  <div className="flex flex-col gap-4 px-4 py-4">
-                    <div className="text-xl font-bold">Этапы встречи</div>
-                    <div className="relative">
-                      {meeting?.locations?.map((location, idx) => (
-                        <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
-                          <div className="relative flex w-8 flex-none items-start justify-center">
-                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
-                              {idx + 1}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            <div className="font-bold text-black">
-                              {location.location}
-                            </div>
-                            <div className="text-sm text-black/80">
-                              {location.address}
-                            </div>
-                            {location.time && (
-                              <div className="text-xs text-black/60">{location.time}</div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2 px-4 py-4">
-                    <div className="text-xl font-bold">Этапы вечеринки</div>
-                    <div>Этапы не указаны</div>
-                  </div>
-                )}
-                <div className="flex flex-col gap-2 px-4 py-4">
-                  <div className="text-xl font-bold">Организатор</div>
-                  <div
-                    className="relative flex items-center gap-4"
-                    onClick={() => {
-                      navigate({
-                        to: "/user-profile/$id",
-                        params: { id: organizer?.id?.toString() || "" },
-                      });
-                    }}
-                  >
-                    <div className="relative h-10 w-10 rounded-full bg-gray-200">
-                      <img
-                        src={
-                          organizer?.photo
-                            ? getImageUrl(organizer?.photo)
-                            : organizer?.photoUrl || ""
-                        }
-                        alt={organizer?.name || ""}
-                        className="h-10 w-10 cursor-pointer rounded-full"
-                      />
-                    </div>
-                    <div>
-                      {organizer?.name} {organizer?.surname}
-                    </div>
-                  </div>
-                </div>
-                {/* {event?.stages && event?.stages.length > 0 ? (
-              <div className="flex flex-col gap-4 px-4 py-4">
-                <div className="text-2xl font-bold">Этапы встречи</div>
-                <div className="relative">
-                  {event?.stages.map((stage, idx) => (
-                    <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
-                      <div className="relative flex w-8 flex-none items-start justify-center">
-                        <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
-                          {idx + 1}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <div className="font-bold text-black">{stage.title}</div>
-                        <div className="text-sm text-black/80">{stage.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2 px-4 py-4">
-                {event?.quests?.map((quest) => (
-                  <>
-                    <QuestCard key={quest.id} quest={quest as any} isNavigable={true} />
-                    {event?.description.slice(0, 100)}
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
-                        + Достижение
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-base font-medium text-black">
-                          +
-                          {(event as any)?.rewards
-                            ?.find((reward: any) => reward.type === "point")
-                            ?.value?.toLocaleString() || 0}
-                        </span>
-
-                        <span>
-                          {(event as any)?.rewards
-                            ?.filter((reward: any) => reward.type === "text")
-                            .map((reward: any) => (
-                              <span key={reward.value}>{reward.value}</span>
-                            ))}
-                        </span>
-                        <span className="text-base font-medium text-black">points</span>
-                        <Coin />
-                      </div>
-                    </div>
-                  </>
-                ))}
-              </div>
-            )} */}
-
-                <div className="flex flex-col justify-center gap-2 px-4 py-4">
-                  <div className="flex flex-col items-start justify-start text-2xl font-bold">
-                    <div className="flex items-center">
-                      <div className="text-xl font-bold">Награда </div>
-                    </div>
-
-                    <div className="text-sm">
-                      {(event as any)?.rewards
-                        ?.filter((reward: any) => reward.type === "text")
-                        .map((reward: any) => (
-                          <div key={reward.value}>
-                            {reward.value
-                              .split("\n")
-                              .map((line: string, index: number) => (
-                                <div key={index}>+ {line}</div>
-                              ))}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>За успешное посещение вы получите:</div>
-                    <div className="text-l pl-4 font-bold">
-                      +
-                      {(event as any)?.rewards
-                        ?.find((reward: any) => reward.type === "point")
-                        ?.value?.toLocaleString() || 0}
-                    </div>
-                    <Coin />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
-                      <img src="/shit.png" alt="coin" className="h-10 w-10" />
-                      <span className="mt-1 text-sm">Кепка BUCS</span>
-                    </div>
-                    <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-red-200">
-                      <img src="/cap.png" alt="coin" className="h-10 w-10" />
-                      <span className="mt-1 text-sm">Любитель к...</span>
-                    </div>
-                  </div>
-                </div>
+                <MeetHeader
+                  isMobile={isMobile}
+                  page={page}
+                  setPage={setPage}
+                  mainPhoto={mainPhoto}
+                  meeting={meeting as any}
+                  user={user as any}
+                  getImageUrl={getImageUrl}
+                  setCurrentIndex={setCurrentIndex}
+                  setIsFullScreen={setIsFullScreen}
+                  galleryPhotos={galleryPhotos}
+                  setGalleryPhotos={setGalleryPhotos}
+                  setMainPhoto={setMainPhoto}
+                />
+                <MeetInfo
+                  meeting={meeting as any}
+                  organizer={organizer as any}
+                  users={users as any}
+                  getImageUrl={getImageUrl}
+                />
               </>
             ) : (
               <div className="flex flex-col">

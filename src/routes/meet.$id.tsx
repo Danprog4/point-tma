@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import EndMeetDrawer from "~/components/EndMeetDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
+import { CloseRed } from "~/components/Icons/CloseRed";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
@@ -214,6 +215,36 @@ function RouteComponent() {
     }),
   );
 
+  const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
+
+  const filteredRequests = useMemo(() => {
+    return requests?.filter((r) => r.meetId === meeting?.id && r.status === "pending");
+  }, [requests, meeting?.id]);
+
+  const invitedUsers = useMemo(() => {
+    return requests?.filter(
+      (r) =>
+        r.meetId === meeting?.id && r.status === "pending" && r.fromUserId === user?.id,
+    );
+  }, [meeting?.participantsIds, users]);
+
+  const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
+  const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
+
+  const handleAcceptRequest = (request: any) => {
+    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
+      return old?.filter((r) => r.id !== request.id);
+    });
+  };
+
+  const handleDeclineRequest = (request: any) => {
+    declineRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
+      return old?.filter((r) => r.id !== request.id);
+    });
+  };
+
   const isMobile = usePlatform();
 
   return (
@@ -305,6 +336,80 @@ function RouteComponent() {
               </>
             ) : (
               <div className="flex flex-col">
+                <div className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]">
+                  Пригласить участников
+                </div>
+                <div className="flex flex-col gap-2 px-4 py-4">
+                  <div className="items-cetner flex justify-between">
+                    <div>Количество участников</div>
+                    <div>
+                      {Number(meeting?.participantsIds?.length || 0) + 1} из{" "}
+                      {meeting?.maxParticipants || "не ограничено"}
+                    </div>
+                  </div>
+                  <div className="h-1 w-full bg-[#9924FF]"></div>
+                </div>
+                <div className="mx-4 flex items-center justify-start text-xl font-bold">
+                  Входящие заявки
+                </div>
+                {filteredRequests?.map((r) => {
+                  const user = users?.find((u) => u.id === r.fromUserId);
+                  return (
+                    <div key={r?.id}>
+                      <div className="flex items-center justify-between px-4 py-4">
+                        <div className="flex items-center justify-start gap-2">
+                          <div
+                            className="mr-4 p-2"
+                            onClick={() => handleDeclineRequest(r)}
+                          >
+                            <CloseRed />
+                          </div>
+                          <img
+                            src={getImageUrl(user?.photo || "")}
+                            alt=""
+                            className="h-14 w-14 rounded-lg"
+                          />
+                          <div className="flex flex-col items-start justify-between">
+                            <div className="text-lg">
+                              {user?.name} {user?.surname}
+                            </div>
+                            <div>{user?.login}</div>
+                          </div>
+                        </div>
+                        <div
+                          className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                          onClick={() => handleAcceptRequest(r)}
+                        >
+                          <Check />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="mx-4 flex items-center justify-start text-xl font-bold">
+                  Приглашения
+                </div>
+                {invitedUsers && invitedUsers.length > 0 ? (
+                  invitedUsers?.map((i) => {
+                    const user = users?.find((u) => u.id === i.toUserId);
+                    return (
+                      <div key={i.id}>
+                        <div>{user?.name}</div>
+                        <div>{user?.login}</div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-4 text-sm text-neutral-500">
+                    Никто не был приглашен на встречу
+                  </div>
+                )}
+
+                <div className="mx-4 flex items-center justify-start text-xl font-bold">
+                  Участники
+                </div>
+
                 {[organizer?.id, ...(meeting?.participantsIds || [])].map((p) => {
                   const user = users?.find((u) => u.id === Number(p));
                   return (
@@ -332,8 +437,6 @@ function RouteComponent() {
                           </div>
                         </div>
                       </div>
-
-                      <div className="h-0.5 w-full bg-gray-200"></div>
                     </div>
                   );
                 })}

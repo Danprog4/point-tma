@@ -69,7 +69,7 @@ export const meetTable = pgTable("meets", {
   createdAt: timestamp("created_at").defaultNow(),
   userId: bigint("user_id", { mode: "number" }),
   isCompleted: boolean("is_completed").default(false),
-
+  maxParticipants: integer("max_participants"),
   gallery: jsonb("gallery").$type<string[]>(),
   subType: varchar("sub_type", { length: 255 }),
   isBig: boolean("is_big").default(false),

@@ -50,7 +50,7 @@ export const meetingRouter = createTRPCRouter({
         locations,
         reward,
         image,
-
+        participants,
         gallery,
       } = input;
       const { userId } = ctx;
@@ -84,6 +84,7 @@ export const meetingRouter = createTRPCRouter({
           image: imageUrl,
           isBig,
           date,
+          maxParticipants: participants,
         })
         .returning();
 

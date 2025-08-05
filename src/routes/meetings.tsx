@@ -25,6 +25,8 @@ function RouteComponent() {
     (request) => request.status === "pending",
   );
 
+  console.log(meetingsData, "meetingsData");
+
   const meetingsWithEvents = meetingsData?.map((meeting) => {
     const organizer = users?.find((u) => u.id === meeting.userId);
     return {
@@ -227,11 +229,7 @@ function RouteComponent() {
                           {/* Avatar Section */}
                           <div className="relative h-[172px]">
                             <img
-                              src={
-                                meeting.organizer?.photo
-                                  ? getImageUrl(meeting.organizer.photo!)
-                                  : meeting.organizer?.photoUrl || ""
-                              }
+                              src={getImageUrl(meeting.image!)}
                               alt={meeting.organizer?.name!}
                               className="h-full w-full rounded-3xl object-cover"
                             />
@@ -250,7 +248,7 @@ function RouteComponent() {
                           <div className="flex items-center gap-2 px-2">
                             <div className="h-10 w-10 rounded-full">
                               <img
-                                src={getImageUrl(meeting.organizer?.photo!)}
+                                src={getImageUrl(meeting.image!)}
                                 alt=""
                                 className="h-full w-full rounded-full object-cover"
                               />

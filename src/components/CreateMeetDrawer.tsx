@@ -1,4 +1,5 @@
 import { ArrowLeft, ChevronRight, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Drawer } from "vaul";
 import { eventTypes } from "~/types/events";
 
@@ -19,6 +20,15 @@ export function CreateMeetDrawer({
   type,
   subType,
 }: CreateMeetDrawerProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Handle scroll behavior when drawer opens or type changes
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [open, type]);
+
   const handleEventTypeSelect = (eventType: string) => {
     console.log("Selected event type:", eventType);
   };
@@ -27,13 +37,13 @@ export function CreateMeetDrawer({
     const underType = eventTypes.find((eventType) => eventType.name === type);
     return underType?.subtypes;
   };
-  console.log(type, "type");
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80%] flex-col rounded-t-[16px] bg-white lg:h-[320px]">
-          <div className="scrollbar-hidden overflow-y-auto p-4">
+          <div className="scrollbar-hidden overflow-y-auto p-4" ref={scrollRef}>
             <div className="fixed inset-x-0 top-0 z-10 mb-6 flex w-full items-center justify-between bg-white px-4 py-4">
               <button
                 className="flex items-center justify-center"
@@ -53,7 +63,7 @@ export function CreateMeetDrawer({
             </div>
 
             {type ? (
-              <div className="space-y-4 overflow-y-auto pt-12">
+              <div className="space-y-4 overflow-y-auto pt-12 pb-12">
                 {getSubType(type)?.map((subType, index) => (
                   <button
                     key={index}

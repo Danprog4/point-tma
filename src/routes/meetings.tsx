@@ -65,9 +65,7 @@ function RouteComponent() {
       );
     });
 
-  // Группировка встреч по паттерну: 2 больших, 4 маленьких, 2 больших, 4 маленьких...
   const groupMeetings = (meetings: any[]) => {
-    // Разделяем встречи на большие и маленькие
     const bigMeetings = meetings.filter((meeting) => meeting.isBig);
     const smallMeetings = meetings.filter((meeting) => !meeting.isBig);
 
@@ -75,16 +73,13 @@ function RouteComponent() {
     let bigIndex = 0;
     let smallIndex = 0;
 
-    // Чередуем группы: 2 больших, затем 4 маленьких
     while (bigIndex < bigMeetings.length || smallIndex < smallMeetings.length) {
-      // Добавляем группу из 2 больших встреч
       if (bigIndex < bigMeetings.length) {
         const bigGroup = bigMeetings.slice(bigIndex, bigIndex + 2);
         groups.push({ type: "big", items: bigGroup });
         bigIndex += 2;
       }
 
-      // Добавляем группу из 4 маленьких встреч
       if (smallIndex < smallMeetings.length) {
         const smallGroup = smallMeetings.slice(smallIndex, smallIndex + 4);
         groups.push({ type: "small", items: smallGroup });

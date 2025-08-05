@@ -224,7 +224,7 @@ export const Step1 = ({
   const monthValue = date.split(".")[1] || "";
 
   return (
-    <div className="scrollbar-hidden w-full overflow-y-auto pb-20">
+    <div className="scrollbar-hidden w-full overflow-y-auto pb-4">
       <div className="mt-8 flex w-full flex-col items-center gap-4">
         <label
           htmlFor="photo-upload"

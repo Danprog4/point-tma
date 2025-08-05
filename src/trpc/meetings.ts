@@ -16,13 +16,22 @@ export const meetingRouter = createTRPCRouter({
   createMeeting: procedure
     .input(
       z.object({
+        date: z.string(),
         name: z.string(),
         description: z.string(),
         type: z.string(),
         subType: z.string().optional(),
         isBig: z.boolean().optional(),
         participants: z.number().optional(),
-        location: z.string().optional(),
+        locations: z
+          .array(
+            z.object({
+              location: z.string(),
+              address: z.string(),
+              time: z.string().optional(),
+            }),
+          )
+          .optional(),
         reward: z.number().optional(),
         image: z.string().optional(),
         invitedId: z.string().optional(),
@@ -37,8 +46,8 @@ export const meetingRouter = createTRPCRouter({
         type,
         isBig,
         invitedId,
-
-        location,
+        date,
+        locations,
         reward,
         image,
 
@@ -69,11 +78,12 @@ export const meetingRouter = createTRPCRouter({
           participantsIds: invitedId ? [invitedId] : [],
           userId: user.id,
           gallery,
-          location,
+          locations,
           subType,
           reward,
           image: imageUrl,
           isBig,
+          date,
         })
         .returning();
 

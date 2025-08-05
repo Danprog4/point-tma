@@ -7,17 +7,11 @@ import { Clocks } from "../Icons/Clocks";
 const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
 
 export const Step2 = ({
-  name,
-  isBasic,
-  item,
-  title,
-  description,
-  setTitle,
-  setLocation,
-  setDescription,
+  setLocations,
+
   isDisabled,
-  location,
-  important,
+  locations,
+
   setImportant,
   setSelectedItem,
   setIsDisabled,
@@ -28,10 +22,12 @@ export const Step2 = ({
   title: string;
   description: string;
   setTitle: (title: string) => void;
-  setLocation: (location: string) => void;
+  setLocations: (
+    locations: { location: string; address: string; time?: string }[],
+  ) => void;
   setDescription: (description: string) => void;
   isDisabled: boolean;
-  location: string;
+  locations: { location: string; address: string; time?: string }[];
   important: string;
   setImportant: (important: string) => void;
   setSelectedItem: (item: any) => void;
@@ -71,12 +67,13 @@ export const Step2 = ({
   }, []);
 
   useEffect(() => {
-    if (location) {
+    if (locations[0]?.location) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
     }
-  }, [location]);
+  }, [locations]);
+
   return (
     <>
       <div className="scrollbar-hidden flex flex-col overflow-y-auto pb-20">
@@ -84,12 +81,21 @@ export const Step2 = ({
           <div className="flex flex-col gap-2">
             {Array.from({ length: length }).map((_, index) => (
               <>
-                <div className="text-xl font-bold">Локации</div>
+                <div className="text-xl font-bold">Этапы вечеринки</div>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <input
+                    value={locations[index]?.location || ""}
                     type="text"
                     placeholder="Название"
                     className="h-11 flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                    onChange={(e) => {
+                      const newLocations = [...locations];
+                      if (!newLocations[index]) {
+                        newLocations[index] = { location: "", address: "" };
+                      }
+                      newLocations[index].location = e.target.value;
+                      setLocations(newLocations);
+                    }}
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
@@ -106,9 +112,16 @@ export const Step2 = ({
                     <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
                     <input
                       type="text"
-                      value={location}
-                      placeholder="Название"
-                      onChange={(e) => setLocation(e.target.value)}
+                      value={locations[index]?.address || ""}
+                      placeholder="Адрес"
+                      onChange={(e) => {
+                        const newLocations = [...locations];
+                        if (!newLocations[index]) {
+                          newLocations[index] = { location: "", address: "" };
+                        }
+                        newLocations[index].address = e.target.value;
+                        setLocations(newLocations);
+                      }}
                       className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
                     />
                     <div className="flex h-6 w-6 shrink-0 items-start">

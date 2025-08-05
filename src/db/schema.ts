@@ -55,7 +55,15 @@ export const meetTable = pgTable("meets", {
   description: varchar("description", { length: 255 }),
   type: varchar("type", { length: 255 }),
   participantsIds: jsonb("participantsIds").$type<string[]>(),
-  location: varchar("location", { length: 255 }),
+  locations: jsonb("locations").$type<
+    Array<{
+      location: string;
+      address: string;
+      time?: string;
+    }>
+  >(),
+  important: varchar("important", { length: 255 }),
+  date: varchar("date", { length: 255 }),
   reward: integer("reward"),
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),

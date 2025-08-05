@@ -51,7 +51,13 @@ function RouteComponent() {
   const [gallery, setGallery] = useState<string[]>([]);
   const [mainPhotoRaw, setMainPhotoRaw] = useState<string>("");
   const [participants, setParticipants] = useState(0);
-  const [location, setLocation] = useState("");
+  const [locations, setLocations] = useState<
+    {
+      location: string;
+      address: string;
+      time?: string;
+    }[]
+  >([]);
   const [reward, setReward] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const isBasic = search.isBasic ?? false;
@@ -109,7 +115,8 @@ function RouteComponent() {
         subType,
         isBig,
         participants: participants || 0,
-        location,
+        locations,
+        date,
         reward: reward || 0,
         image: mainPhotoRaw,
         invitedId: search.id !== undefined ? String(search.id) : undefined,
@@ -244,8 +251,8 @@ function RouteComponent() {
           description={description}
           setTitle={setTitle}
           setDescription={setDescription}
-          location={location}
-          setLocation={setLocation}
+          locations={locations}
+          setLocations={setLocations}
         />
       )}
       {step === 2 && (

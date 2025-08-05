@@ -517,13 +517,13 @@ function RouteComponent() {
               )}
 
               {page === "chat" && (
-                <div className="fixed right-4 bottom-20 left-4 z-[10000] mx-auto mt-4 flex w-auto flex-col items-start justify-center gap-4 bg-white py-4 text-center font-semibold text-black">
+                <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
                   <div className="">Быстрые ответы</div>
-                  <div className="scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4">
+                  <div className="scrollbar-hidden flex w-full gap-2 overflow-x-auto">
                     {chatData.map((category) => (
                       <button
                         key={category.category}
-                        className="rounded-full bg-gray-100 px-3 py-1 text-sm text-nowrap text-gray-700 hover:bg-gray-200"
+                        className="flex-shrink-0 rounded-full px-4 py-2 text-sm whitespace-nowrap text-black hover:bg-gray-200"
                         onClick={() => {
                           setSelectedCategory(
                             selectedCategory === category.category
@@ -539,7 +539,7 @@ function RouteComponent() {
                 </div>
               )}
               {isOwner ? (
-                <div className="fixed right-4 bottom-0 left-4 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white py-4 text-center font-semibold text-white">
+                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
                   <div
                     className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white"
                     onClick={() => {

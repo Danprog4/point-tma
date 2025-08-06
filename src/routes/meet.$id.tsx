@@ -300,7 +300,7 @@ function RouteComponent() {
           organizer={organizer}
         />
       ) : (
-        <>
+        <div className="overflow- h-screen">
           <div
             data-mobile={isMobile}
             className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
@@ -330,7 +330,7 @@ function RouteComponent() {
           </div>
           <div
             data-mobile={isMobile}
-            className="flex gap-4 px-4 pb-4 data-[mobile=true]:pt-38"
+            className="flex gap-4 overflow-y-hidden px-4 pb-4 data-[mobile=true]:pt-38"
           >
             <button
               className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
@@ -491,8 +491,8 @@ function RouteComponent() {
               </div>
             )}
             {page === "chat" && (
-              <div className="flex flex-col">
-                <div className="relative flex h-[10vh] w-full items-center justify-center">
+              <div className="flex flex-col overflow-y-hidden">
+                <div className="relative flex h-[10vh] w-full items-center justify-center overflow-y-hidden">
                   <img
                     src={getImageUrl(meeting?.image || "")}
                     alt=""
@@ -727,7 +727,7 @@ function RouteComponent() {
               />
             </div>
           )}
-        </>
+        </div>
       )}
     </>
   );

@@ -83,8 +83,10 @@ export const MeetHeader: React.FC<MeetHeaderProps> = ({
           </div>
         </div>
       </div>
-      <div className="px-4 pt-2 text-xl font-bold">Галерея</div>
-      <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pb-4">
+      {galleryPhotos && galleryPhotos.length > 0 && (
+        <div className="px-4 pt-2 text-xl font-bold">Галерея</div>
+      )}
+      <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4">
         {galleryPhotos.map((img, idx) => (
           <img
             key={idx}

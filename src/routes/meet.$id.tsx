@@ -300,7 +300,7 @@ function RouteComponent() {
           organizer={organizer}
         />
       ) : (
-        <div className={`h-screen ${page === "chat" ? "overflow-y-hiden" : ""}`}>
+        <div className={`h-screen ${page === "chat" ? "overflow-y-hidden" : ""}`}>
           <div
             data-mobile={isMobile}
             className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"

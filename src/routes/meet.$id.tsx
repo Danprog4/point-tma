@@ -892,6 +892,7 @@ function RouteComponent() {
       )}
       {isDrawerOpen && (
         <InviteDrawer
+          meeting={meeting}
           open={isDrawerOpen}
           onOpenChange={setIsDrawerOpen}
           friends={friends || []}

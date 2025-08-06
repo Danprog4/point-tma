@@ -1,5 +1,6 @@
+import { shareURL } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import { ShareIcon } from "./Icons/Share";
 
@@ -14,6 +15,7 @@ export default function InviteDrawer({
   users,
   participants,
   setParticipants,
+  meeting,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +27,7 @@ export default function InviteDrawer({
   users: any[];
   participants: any[];
   setParticipants: (participants: any[]) => void;
+  meeting: any;
 }) {
   const [friendName, setFriendName] = useState("");
 
@@ -40,6 +43,11 @@ export default function InviteDrawer({
     console.log(selectedIds, "selectedIds");
   }, [selectedIds]);
 
+  const link = useMemo((): string => {
+    return `https://t.me/pointTMA_bot/meet${meeting?.id}?startapp=ref_${user?.id || ""}`;
+  }, [user?.id, meeting?.id]);
+
+  const text = `Приглашаю тебя на встречу ${meeting?.name} в Point!`;
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
@@ -53,7 +61,14 @@ export default function InviteDrawer({
             </button>
           </header>
           <div className="flex items-center justify-between">
-            <div className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2">
+            <div
+              onClick={() => {
+                if (shareURL.isAvailable()) {
+                  shareURL(link, text);
+                }
+              }}
+              className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2"
+            >
               <ShareIcon />
               Поделиться ссылкой на встречу
             </div>

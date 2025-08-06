@@ -23,11 +23,21 @@ export const Step2 = ({
   description: string;
   setTitle: (title: string) => void;
   setLocations: (
-    locations: { location: string; address: string; time?: string }[],
+    locations: {
+      location: string;
+      address: string;
+      starttime?: string;
+      endtime?: string;
+    }[],
   ) => void;
   setDescription: (description: string) => void;
   isDisabled: boolean;
-  locations: { location: string; address: string; time?: string }[];
+  locations: {
+    location: string;
+    address: string;
+    starttime?: string;
+    endtime?: string;
+  }[];
   important: string;
   setImportant: (important: string) => void;
   setSelectedItem: (item: any) => void;
@@ -38,6 +48,19 @@ export const Step2 = ({
   const [isOpen, setIsOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  // Helper functions for time validation
+  const isValidTime = (time?: string): boolean => {
+    if (!time) return false;
+    const t = time.trim();
+    return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(t);
+  };
+
+  const isStartBeforeEnd = (start?: string, end?: string): boolean => {
+    if (!isValidTime(start) || !isValidTime(end)) return false;
+    const [h1, m1] = start!.split(":").map(Number);
+    const [h2, m2] = end!.split(":").map(Number);
+    return h1 < h2 || (h1 === h2 && m1 < m2);
+  };
 
   const filteredSuggestions = predefinedTags.filter(
     (tag) => tag.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(tag),
@@ -67,11 +90,20 @@ export const Step2 = ({
   }, []);
 
   useEffect(() => {
-    if (locations[0]?.location) {
-      setIsDisabled(false);
-    } else {
+    if (locations.length === 0) {
       setIsDisabled(true);
+      return;
     }
+    const valid = locations.every(
+      (loc) =>
+        loc.location &&
+        loc.starttime &&
+        loc.endtime &&
+        isValidTime(loc.starttime) &&
+        isValidTime(loc.endtime) &&
+        isStartBeforeEnd(loc.starttime, loc.endtime),
+    );
+    setIsDisabled(!valid);
   }, [locations]);
 
   return (
@@ -141,9 +173,15 @@ export const Step2 = ({
                         <input
                           type="text"
                           placeholder="Начало"
-                          className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:pl-2 placeholder:text-black/50"
+                          value={locations[index]?.starttime}
+                          onChange={(e) => {
+                            const newLocations = [...locations];
+                            newLocations[index].starttime = e.target.value;
+                            setLocations(newLocations);
+                          }}
+                          className="placeholder:pl- h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white pr-4 pl-10 text-sm text-black placeholder:text-black/50"
                         />
-                        <div className="absolute top-1/2 left-1 -translate-y-1/2">
+                        <div className="absolute top-1/2 left-3 -translate-y-1/2">
                           <Clocks />
                         </div>
                       </div>
@@ -151,14 +189,44 @@ export const Step2 = ({
                         <input
                           type="text"
                           placeholder="Завершение"
-                          className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:pl-2 placeholder:text-black/50"
+                          value={locations[index]?.endtime}
+                          onChange={(e) => {
+                            const newLocations = [...locations];
+                            newLocations[index].endtime = e.target.value;
+                            setLocations(newLocations);
+                          }}
+                          className="placeholder:pl- h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white pr-4 pl-10 text-sm text-black placeholder:text-black/50"
                         />
-                        <div className="absolute top-1/2 left-1 -translate-y-1/2">
+                        <div className="absolute top-1/2 left-3 -translate-y-1/2">
                           <Clocks />
                         </div>
                       </div>
                     </div>
                   </div>
+                  {locations[index]?.starttime &&
+                    !isValidTime(locations[index].starttime) && (
+                      <div className="mt-1 text-sm text-red-500">
+                        Неверный формат времени начала (ЧЧ:ММ)
+                      </div>
+                    )}
+                  {locations[index]?.endtime &&
+                    !isValidTime(locations[index].endtime) && (
+                      <div className="mt-1 text-sm text-red-500">
+                        Неверный формат времени завершения (ЧЧ:ММ)
+                      </div>
+                    )}
+                  {locations[index]?.starttime &&
+                    locations[index]?.endtime &&
+                    isValidTime(locations[index].starttime) &&
+                    isValidTime(locations[index].endtime) &&
+                    !isStartBeforeEnd(
+                      locations[index].starttime,
+                      locations[index].endtime,
+                    ) && (
+                      <div className="mt-1 text-sm text-red-500">
+                        Время завершения должно быть позже начала
+                      </div>
+                    )}
                 </div>
               </>
             ))}

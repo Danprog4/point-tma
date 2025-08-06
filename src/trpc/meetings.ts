@@ -29,7 +29,8 @@ export const meetingRouter = createTRPCRouter({
             z.object({
               location: z.string(),
               address: z.string(),
-              time: z.string().optional(),
+              starttime: z.string().optional(),
+              endtime: z.string().optional(),
             }),
           )
           .optional(),

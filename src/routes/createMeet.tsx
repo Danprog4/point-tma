@@ -55,7 +55,8 @@ function RouteComponent() {
     {
       location: string;
       address: string;
-      time?: string;
+      starttime?: string;
+      endtime?: string;
     }[]
   >([]);
   const [reward, setReward] = useState(0);
@@ -87,6 +88,8 @@ function RouteComponent() {
       handleCreateMeeting();
     }
   };
+
+  console.log(locations);
 
   console.log(search.id, "search.id");
 
@@ -175,13 +178,15 @@ function RouteComponent() {
           >
             <X className="h-5 w-5 text-gray-800" strokeWidth={2} />
           </button>
-        ) : (
+        ) : step < 4 ? (
           <button
             onClick={() => (step > 0 ? setStep(step - 1) : window.history.back())}
             className="absolute left-4 flex h-6 w-6 items-center justify-center"
           >
             <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
           </button>
+        ) : (
+          <div></div>
         )}
         <h1 className="text-base font-bold text-gray-800">
           {isInvite
@@ -324,12 +329,15 @@ function RouteComponent() {
         <div className="flx-1 fixed right-0 bottom-4 left-0 z-[100] flex w-full flex-col items-center justify-between gap-2 px-4">
           <button
             className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
-            onClick={() => navigate({ to: "/" })}
+            onClick={() => navigate({ to: "/meetings" })}
           >
-            Вернуться в афишу
+            Вернуться ко встречам
           </button>
-          <button className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50">
-            Поделиться
+          <button
+            className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            onClick={() => navigate({ to: "/my-meetings" })}
+          >
+            Мои встречи
           </button>
         </div>
       )}

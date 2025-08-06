@@ -212,7 +212,7 @@ export const Step1 = ({
   };
   console.log(gallery, "gallery");
   useEffect(() => {
-    if (title && description && type && base64 && date) {
+    if (title && description && type && base64 && date && isValidDate(date)) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
@@ -222,6 +222,21 @@ export const Step1 = ({
   console.log(isExtra, "isExtra");
 
   const monthValue = date.split(".")[1] || "";
+
+  const isValidDate = (dateStr: string): boolean => {
+    const [day, month, year] = dateStr.split(".");
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return false;
+    if (monthNum < 1 || monthNum > 12) return false;
+    const dateObj = new Date(yearNum, monthNum - 1, dayNum);
+    return (
+      dateObj.getFullYear() === yearNum &&
+      dateObj.getMonth() === monthNum - 1 &&
+      dateObj.getDate() === dayNum
+    );
+  };
 
   return (
     <div className="scrollbar-hidden w-full overflow-y-auto pb-4">
@@ -238,9 +253,6 @@ export const Step1 = ({
                 className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
               />
               <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
-                <div className="z-[10000]" onClick={handleDeletePhoto}>
-                  Удалить
-                </div>
                 <div>Изменить</div>
               </div>
             </div>
@@ -331,6 +343,11 @@ export const Step1 = ({
         />
       </div>
       <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
+      {date && !isValidDate(date) && (
+        <div className="mt-2 text-sm text-red-500">
+          Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)
+        </div>
+      )}
       <CreateMeetDrawer
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}

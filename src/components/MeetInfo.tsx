@@ -11,7 +11,8 @@ interface Meeting {
   locations?: Array<{
     location: string;
     address: string;
-    time?: string;
+    starttime?: string;
+    endtime?: string;
   }>;
   important?: string;
   date?: string;
@@ -52,7 +53,7 @@ interface MeetInfoProps {
   meeting?: Meeting;
   organizer?: Organizer;
   users?: User[];
-
+  locations?: Location[];
   getImageUrl?: (photo: string) => string;
 }
 
@@ -106,8 +107,10 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                 <div className="flex flex-col gap-1">
                   <div className="font-bold text-black">{location.location}</div>
                   <div className="text-sm text-black/80">{location.address}</div>
-                  {location.time && (
-                    <div className="text-xs text-black/60">{location.time}</div>
+                  {location.starttime && location.endtime && (
+                    <div className="text-xs text-black/60">
+                      {location.starttime} - {location.endtime}
+                    </div>
                   )}
                 </div>
               </div>

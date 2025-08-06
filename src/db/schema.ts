@@ -59,7 +59,8 @@ export const meetTable = pgTable("meets", {
     Array<{
       location: string;
       address: string;
-      time?: string;
+      starttime?: string;
+      endtime?: string;
     }>
   >(),
   important: varchar("important", { length: 255 }),

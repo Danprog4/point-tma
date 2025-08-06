@@ -30,42 +30,36 @@ export const DatePicker = ({
           />
         </div>
       </div>
-      <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-        <div className="relative w-full">
+      <div className="relative flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
+        <div className="flex w-full flex-col items-start text-sm">
           <div className="text-[#ABABAB]">Месяц</div>
           <input
-            type="text"
-            value={monthValue}
-            onClick={() => {
-              if (monthValue) {
-                const [d, , y] = birthday.split(".");
-                setBirthday(`${d || ""}.${""}.${y || ""}`);
-              }
-            }}
+            type="number"
+            value={birthday ? birthday.split(".")[1] || "" : ""}
             onChange={(e) => {
-              const m = e.target.value;
-              const [d, , y] = birthday.split(".");
-              setBirthday(`${d || ""}.${m}.${y || ""}`);
+              const month = e.target.value;
+              const parts = birthday ? birthday.split(".") : ["", "", ""];
+              setBirthday(`${parts[0] || ""}.${month}.${parts[2] || ""}`);
             }}
             className="w-full border-none bg-transparent text-black outline-none"
           />
-          {filteredMonths.length > 0 && !monthOptions.includes(monthValue) && (
-            <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white shadow-lg">
-              {filteredMonths.map((m) => (
-                <li
-                  key={m}
-                  onClick={() => {
-                    const [d, , y] = birthday.split(".");
-                    setBirthday(`${d || ""}.${m}.${y || ""}`);
-                  }}
-                  className="cursor-pointer px-2 py-1 hover:bg-gray-100"
-                >
-                  {m}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
+        {filteredMonths.length > 0 && !monthOptions.includes(monthValue) && (
+          <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white shadow-lg">
+            {filteredMonths.map((m) => (
+              <li
+                key={m}
+                onClick={() => {
+                  const [d, , y] = birthday.split(".");
+                  setBirthday(`${d || ""}.${m}.${y || ""}`);
+                }}
+                className="cursor-pointer px-2 py-1 hover:bg-gray-100"
+              >
+                {m}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
         <div className="flex w-full flex-col items-start text-sm">

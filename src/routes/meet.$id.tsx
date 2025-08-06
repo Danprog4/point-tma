@@ -316,7 +316,15 @@ function RouteComponent() {
     });
   };
 
-  const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
+  const inviteUsers = useMutation(
+    trpc.meetings.inviteUsers.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.meetings.getRequests.queryKey(),
+        });
+      },
+    }),
+  );
 
   const handleInvite = () => {
     if (selectedFriends.length > 0 && isDrawerOpen!) {

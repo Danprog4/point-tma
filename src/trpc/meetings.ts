@@ -165,7 +165,7 @@ export const meetingRouter = createTRPCRouter({
         toUserId,
         meetId,
         status: "pending" as const,
-        isRequest: true,
+        isRequest: false,
       }));
 
       if (rows.length) {

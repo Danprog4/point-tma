@@ -1,5 +1,5 @@
 import { ArrowLeft, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { ShareIcon } from "./Icons/Share";
 
@@ -12,6 +12,8 @@ export default function InviteDrawer({
   getImageUrl,
   user,
   users,
+  participants,
+  setParticipants,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -21,15 +23,28 @@ export default function InviteDrawer({
   getImageUrl: (url: string) => string;
   user: any;
   users: any[];
+  participants: any[];
+  setParticipants: (participants: any[]) => void;
 }) {
   const [friendName, setFriendName] = useState("");
 
-  console.log(friends, "friends");
+  // Log friends data only when it actually changes to avoid spam in the console
+  useEffect(() => {
+    if (friends && friends.length) {
+      console.log(friends, "friends");
+    }
+  }, [friends]);
+
+  // Log selectedIds changes only when the value actually updates
+  useEffect(() => {
+    console.log(selectedIds, "selectedIds");
+  }, [selectedIds]);
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit min-h-[70vh] flex-col rounded-t-[16px] bg-white px-4 py-4">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[10000] mt-24 flex h-[80%] flex-col rounded-t-[16px] bg-white p-4 lg:h-[320px]">
           <header className="flex items-center justify-between pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-xl font-bold">Приглашения</div>
@@ -38,12 +53,12 @@ export default function InviteDrawer({
             </button>
           </header>
           <div className="flex items-center justify-between">
-            <ShareIcon />
-            <div className="w-full rounded-3xl border border-[#DEB8FF] px-4 py-2">
+            <div className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2">
+              <ShareIcon />
               Поделиться ссылкой на встречу
             </div>
           </div>
-          <div className="flex w-full flex-col items-start gap-2 py-4">
+          <div className="flex w-full flex-col items-start gap-2 overflow-y-auto py-4">
             <div className="mb-2 flex w-full gap-2 text-xl font-bold">
               Пригласите друга
             </div>
@@ -58,7 +73,7 @@ export default function InviteDrawer({
               <div className="px-4 text-xs">Можете ввести фамилию или ник</div>
             </div>
             {friends && friends?.length > 0 && (
-              <div className="flex w-full flex-col gap-2">
+              <div className="flex w-full flex-col gap-2 overflow-y-auto pb-10">
                 {friends
                   ?.filter((request) => request.status === "accepted")
                   .map((request) => {
@@ -70,7 +85,7 @@ export default function InviteDrawer({
                           : request.fromUserId),
                     );
                     return (
-                      <div key={request.id}>
+                      <div key={`request-${request.id}`}>
                         <div className="flex items-center justify-between pb-4">
                           <div className="flex items-center justify-start gap-2">
                             <img
@@ -97,7 +112,7 @@ export default function InviteDrawer({
                             >
                               Приглашен(-а)
                             </div>
-                          ) : (
+                          ) : !participants.includes(requestUser?.id || 0) ? (
                             <div
                               className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]"
                               onClick={(e) => {
@@ -109,6 +124,10 @@ export default function InviteDrawer({
                               <div className="pb-1 text-2xl leading-none font-bold text-[#721DBD]">
                                 +
                               </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-nowrap text-[#00A349]">
+                              Участник
                             </div>
                           )}
                         </div>
@@ -131,7 +150,7 @@ export default function InviteDrawer({
                   )
                   .map((user) => {
                     return (
-                      <div key={user.id}>
+                      <div key={`search-${user.id}`}>
                         <div className="flex items-center justify-between pb-4">
                           <div className="flex items-center justify-start gap-2">
                             <img

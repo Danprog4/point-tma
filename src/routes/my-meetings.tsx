@@ -30,7 +30,7 @@ function RouteComponent() {
       ?.filter(
         (request) =>
           request.status === "pending" &&
-          !request.isCreator &&
+          request.isRequest &&
           request.toUserId === user?.id,
       )
       ?.map((request) => {
@@ -48,7 +48,7 @@ function RouteComponent() {
         (request) =>
           request.status === "pending" &&
           request.toUserId === user?.id &&
-          request.isCreator,
+          !request.isRequest,
       )
       ?.map((request) => {
         const meeting = meetings?.find((m) => m.id === request.meetId);

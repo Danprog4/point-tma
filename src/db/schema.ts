@@ -92,7 +92,7 @@ export const notificationsTable = pgTable("notifications", {
   isRead: boolean("is_read").default(false),
   meetId: bigint("meet_id", { mode: "number" }),
   eventId: bigint("event_id", { mode: "number" }),
-  isCreator: boolean("is_creator").default(false),
+  isRequest: boolean("is_request").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -112,7 +112,7 @@ export const meetParticipantsTable = pgTable("meet_participants", {
   toUserId: bigint("to_user_id", { mode: "number" }),
   status: varchar("status", { length: 32 }).default("pending"), // pending, accepted, rejected
   meetId: bigint("meet_id", { mode: "number" }),
-  isCreator: boolean("is_creator").default(false),
+  isRequest: boolean("is_request").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

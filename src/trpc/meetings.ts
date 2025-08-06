@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, gt, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -94,7 +94,7 @@ export const meetingRouter = createTRPCRouter({
         toUserId: user.id,
         meetId: meet.id,
         status: "accepted",
-        isCreator: true,
+        isRequest: true,
       });
 
       return meet;
@@ -142,7 +142,6 @@ export const meetingRouter = createTRPCRouter({
           eq(meetParticipantsTable.toUserId, ctx.userId),
         ),
       });
-
       if (!isParticipant) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -150,23 +149,34 @@ export const meetingRouter = createTRPCRouter({
         });
       }
 
-      const rows = userIds.map((toUserId) => ({
+      const existingRequests = await db.query.meetParticipantsTable.findMany({
+        where: and(
+          eq(meetParticipantsTable.meetId, meetId),
+          eq(meetParticipantsTable.fromUserId, ctx.userId),
+          inArray(meetParticipantsTable.toUserId, userIds),
+        ),
+      });
+
+      const existingUserIds = existingRequests.map((req) => req.toUserId);
+      const newUserIds = userIds.filter((userId) => !existingUserIds.includes(userId));
+
+      const rows = newUserIds.map((toUserId) => ({
         fromUserId: ctx.userId,
         toUserId,
         meetId,
         status: "pending" as const,
-        isCreator: true,
+        isRequest: true,
       }));
 
       if (rows.length) {
         await db.insert(meetParticipantsTable).values(rows).onConflictDoNothing();
 
-        const notificationRows = userIds.map((toUserId) => ({
+        const notificationRows = newUserIds.map((toUserId) => ({
           fromUserId: ctx.userId,
           toUserId,
           type: "meet invite" as const,
           meetId,
-          isCreator: true,
+          isRequest: false,
         }));
 
         await db.insert(notificationsTable).values(notificationRows);
@@ -229,6 +239,8 @@ export const meetingRouter = createTRPCRouter({
         fromUserId: user.id,
         toUserId: meet.userId,
         meetId: meet.id,
+        status: "pending",
+        isRequest: true,
       });
 
       await db.insert(notificationsTable).values({
@@ -236,16 +248,14 @@ export const meetingRouter = createTRPCRouter({
         toUserId: meet.userId,
         type: "meet request",
         meetId: meet.id,
-        isCreator: false,
+        isRequest: true,
       });
 
       return meetParticipant;
     }),
 
   getRequests: procedure.query(async ({ ctx }) => {
-    const requests = await db.query.meetParticipantsTable.findMany({
-      where: eq(meetParticipantsTable.toUserId, ctx.userId),
-    });
+    const requests = await db.query.meetParticipantsTable.findMany({});
 
     return requests;
   }),
@@ -273,6 +283,8 @@ export const meetingRouter = createTRPCRouter({
         fromUserId: ctx.userId,
         toUserId: input.toUserId,
         meetId: input.meetId,
+        status: "pending",
+        isRequest: true,
       });
 
       await db.insert(notificationsTable).values({
@@ -280,7 +292,7 @@ export const meetingRouter = createTRPCRouter({
         toUserId: input.toUserId,
         type: "meet request",
         meetId: input.meetId,
-        isCreator: false,
+        isRequest: true,
       });
 
       return request;
@@ -333,6 +345,7 @@ export const meetingRouter = createTRPCRouter({
             eq(meetParticipantsTable.fromUserId, input.fromUserId),
             eq(meetParticipantsTable.toUserId, ctx.userId),
             eq(meetParticipantsTable.meetId, input.meetId),
+            eq(meetParticipantsTable.status, "pending"),
           ),
         );
 
@@ -355,6 +368,7 @@ export const meetingRouter = createTRPCRouter({
             eq(meetParticipantsTable.fromUserId, input.fromUserId),
             eq(meetParticipantsTable.toUserId, ctx.userId),
             eq(meetParticipantsTable.meetId, input.meetId),
+            eq(meetParticipantsTable.status, "pending"),
           ),
         );
 

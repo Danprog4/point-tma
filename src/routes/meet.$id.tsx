@@ -45,7 +45,8 @@ function RouteComponent() {
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [participants, setParticipants] = useState<number[]>([]);
   // Gallery & photo state
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(undefined);
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
@@ -278,7 +279,11 @@ function RouteComponent() {
   const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
 
   const filteredRequests = useMemo(() => {
-    return requests?.filter((r) => r.meetId === meeting?.id && r.status === "pending");
+    console.log(requests, "requests");
+    return requests?.filter(
+      (r) =>
+        r.meetId === meeting?.id && r.status === "pending" && r.toUserId === user?.id,
+    );
   }, [requests, meeting?.id]);
 
   const invitedUsers = useMemo(() => {
@@ -304,6 +309,43 @@ function RouteComponent() {
       return old?.filter((r) => r.id !== request.id);
     });
   };
+
+  const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
+
+  const handleInvite = () => {
+    if (selectedFriends.length > 0 && isDrawerOpen!) {
+      inviteUsers.mutate({
+        meetId: meeting?.id!,
+        userIds: selectedFriends,
+      });
+    }
+  };
+
+  useEffect(() => {
+    console.log(requests, "requests");
+    if (requests && requests?.length > 0) {
+      const filteredRequests = requests.filter(
+        (r) =>
+          r.meetId === meeting?.id && r.status === "pending" && r.toUserId === user?.id,
+      );
+      console.log(filteredRequests, "filteredRequests");
+
+      setParticipants(
+        requests
+          .filter((r) => r.meetId === meeting?.id && r.status === "accepted")
+          .map((r) => r.fromUserId)
+          .filter((userId): userId is number => userId !== null),
+      );
+      console.log(participants, "participants");
+      setSelectedFriends(filteredRequests.map((r) => r.toUserId));
+    }
+  }, [requests]);
+
+  useEffect(() => {
+    if (selectedFriends.length > 0 && isDrawerOpen!) {
+      handleInvite();
+    }
+  }, [selectedFriends, isDrawerOpen]);
 
   const isMobile = usePlatform();
 
@@ -405,7 +447,12 @@ function RouteComponent() {
             )}
             {page === "participants" && (
               <div className="flex flex-col">
-                <div className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]">
+                <div
+                  onClick={() => {
+                    setIsDrawerOpen(true);
+                  }}
+                  className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]"
+                >
                   Пригласить участников
                 </div>
                 <div className="flex flex-col gap-2 px-4 py-4">
@@ -463,7 +510,7 @@ function RouteComponent() {
                   invitedUsers?.map((i) => {
                     const user = users?.find((u) => u.id === i.toUserId);
                     return (
-                      <div key={i.id}>
+                      <div key={i.id + "r"}>
                         <div>{user?.name}</div>
                         <div>{user?.login}</div>
                       </div>
@@ -479,22 +526,37 @@ function RouteComponent() {
                   Участники
                 </div>
 
-                {[organizer?.id, ...(meeting?.participantsIds || [])].map((p) => {
+                {(() => {
+                  const participantIds = Array.from(
+                    new Set(
+                      [organizer?.id, ...(meeting?.participantsIds || [])]
+                        .map((id) => Number(id))
+                        .filter(Boolean),
+                    ),
+                  );
+                  return participantIds;
+                })().map((p) => {
                   const user = users?.find((u) => u.id === Number(p));
                   return (
-                    <div key={p} className="flex flex-col gap-2 px-4 py-4">
+                    <div
+                      key={`participant-${p}`}
+                      className="flex flex-col gap-2 px-4 py-4"
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="h-10 w-10 rounded-full bg-gray-200">
-                            <img
-                              src={
-                                user?.photo
-                                  ? getImageUrl(user?.photo)
-                                  : user?.photoUrl || ""
-                              }
-                              alt={user?.name || ""}
-                              className="h-10 w-10 rounded-full"
-                            />
+                            {(() => {
+                              const imgSrc = user?.photo
+                                ? getImageUrl(user.photo)
+                                : user?.photoUrl;
+                              return imgSrc ? (
+                                <img
+                                  src={imgSrc}
+                                  alt={user?.name || ""}
+                                  className="h-10 w-10 rounded-full"
+                                />
+                              ) : null;
+                            })()}
                           </div>
                           <div className="flex flex-col">
                             <div className="text-lg font-bold">
@@ -657,14 +719,6 @@ function RouteComponent() {
               {isOwner ? (
                 <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
                   <div
-                    className="z-[1000] rounded-tl-2xl rounded-br-2xl bg-[#9924FF] px-8 py-3 text-white"
-                    onClick={() => {
-                      setIsInviteOpen(true);
-                    }}
-                  >
-                    Пригласить
-                  </div>
-                  <div
                     className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
                     onClick={() => {
                       setIsEndOpen(true);
@@ -731,18 +785,7 @@ function RouteComponent() {
               meetId={Number(id)}
             />
           )}
-          {isInviteOpen && (
-            <InviteDrawer
-              open={isInviteOpen}
-              onOpenChange={setIsInviteOpen}
-              friends={friends || []}
-              selectedIds={selectedFriends}
-              setSelectedIds={setSelectedFriends}
-              getImageUrl={getImageUrl}
-              user={user}
-              users={users || []}
-            ></InviteDrawer>
-          )}
+
           {isEndOpen && (
             <EndMeetDrawer
               open={isEndOpen}
@@ -790,6 +833,20 @@ function RouteComponent() {
             </div>
           )}
         </div>
+      )}
+      {isDrawerOpen && (
+        <InviteDrawer
+          open={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
+          friends={friends || []}
+          selectedIds={selectedFriends}
+          setSelectedIds={setSelectedFriends}
+          getImageUrl={getImageUrl}
+          user={user}
+          users={users || []}
+          participants={participants}
+          setParticipants={setParticipants}
+        />
       )}
     </div>
   );

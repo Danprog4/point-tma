@@ -360,17 +360,25 @@ export const meetingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Получаем текущую запись о заявке/приглашении, чтобы понять её тип
+      const participantRow = await db.query.meetParticipantsTable.findFirst({
+        where: and(
+          eq(meetParticipantsTable.fromUserId, input.fromUserId),
+          eq(meetParticipantsTable.toUserId, ctx.userId),
+          eq(meetParticipantsTable.meetId, input.meetId),
+          eq(meetParticipantsTable.status, "pending"),
+        ),
+      });
+
+      if (!participantRow) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Request not found" });
+      }
+
+      // Обновляем статус на accepted
       const request = await db
         .update(meetParticipantsTable)
         .set({ status: "accepted" })
-        .where(
-          and(
-            eq(meetParticipantsTable.fromUserId, input.fromUserId),
-            eq(meetParticipantsTable.toUserId, ctx.userId),
-            eq(meetParticipantsTable.meetId, input.meetId),
-            eq(meetParticipantsTable.status, "pending"),
-          ),
-        );
+        .where(eq(meetParticipantsTable.id, participantRow.id));
 
       const meet = await db.query.meetTable.findFirst({
         where: eq(meetTable.id, input.meetId),
@@ -380,16 +388,17 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
       }
 
-      const newParticipantsIds = [
-        ...(meet.participantsIds || []),
-        input.fromUserId.toString(),
-      ];
+      // Для заявки (isRequest = true) в участники добавляем fromUserId,
+      // для приглашения (isRequest = false) — текущего пользователя (ctx.userId)
+      const participantIdToAdd = participantRow.isRequest ? input.fromUserId : ctx.userId;
+
+      const newParticipantsIds = Array.from(
+        new Set([...(meet.participantsIds || []), participantIdToAdd.toString()]),
+      );
 
       await db
         .update(meetTable)
-        .set({
-          participantsIds: newParticipantsIds,
-        })
+        .set({ participantsIds: newParticipantsIds })
         .where(eq(meetTable.id, input.meetId));
 
       return request;

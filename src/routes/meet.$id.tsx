@@ -282,16 +282,22 @@ function RouteComponent() {
     console.log(requests, "requests");
     return requests?.filter(
       (r) =>
-        r.meetId === meeting?.id && r.status === "pending" && r.toUserId === user?.id,
+        r.meetId === meeting?.id &&
+        r.status === "pending" &&
+        r.toUserId === user?.id &&
+        r.isRequest,
     );
   }, [requests, meeting?.id]);
 
   const invitedUsers = useMemo(() => {
     return requests?.filter(
       (r) =>
-        r.meetId === meeting?.id && r.status === "pending" && r.fromUserId === user?.id,
+        r.meetId === meeting?.id &&
+        r.status === "pending" &&
+        r.fromUserId === user?.id &&
+        !r.isRequest,
     );
-  }, [meeting?.participantsIds, users]);
+  }, [requests, meeting?.id, user?.id]);
 
   const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
   const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
@@ -326,7 +332,10 @@ function RouteComponent() {
     if (requests && requests?.length > 0) {
       const filteredRequests = requests.filter(
         (r) =>
-          r.meetId === meeting?.id && r.status === "pending" && r.toUserId === user?.id,
+          r.meetId === meeting?.id &&
+          r.status === "pending" &&
+          r.toUserId === user?.id &&
+          r.isRequest,
       );
       console.log(filteredRequests, "filteredRequests");
 
@@ -511,8 +520,44 @@ function RouteComponent() {
                     const user = users?.find((u) => u.id === i.toUserId);
                     return (
                       <div key={i.id + "r"}>
-                        <div>{user?.name}</div>
-                        <div>{user?.login}</div>
+                        <div className="flex items-center justify-between px-4 pb-4">
+                          <div className="flex items-center justify-start gap-2">
+                            <img
+                              src={getImageUrl(user?.photo || "")}
+                              alt=""
+                              className="h-14 w-14 rounded-lg"
+                            />
+                            <div className="flex flex-col items-start justify-between gap-2">
+                              <div className="text-lg">
+                                {user?.name} {user?.surname}
+                              </div>
+                              <div>{user?.login}</div>
+                            </div>
+                          </div>
+                          {(() => {
+                            const participantIds = Array.from(
+                              new Set(
+                                [organizer?.id, ...(meeting?.participantsIds || [])]
+                                  .map((id) => Number(id))
+                                  .filter(Boolean),
+                              ),
+                            );
+
+                            if (participantIds.includes(user?.id || 0)) {
+                              return (
+                                <div className="text-sm text-nowrap text-[#00A349]">
+                                  Участник
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <div className="text-sm text-nowrap text-[#FFA500]">
+                                  Приглашен(-а)
+                                </div>
+                              );
+                            }
+                          })()}
+                        </div>
                       </div>
                     );
                   })

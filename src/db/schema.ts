@@ -52,9 +52,9 @@ export const ratingsUserTable = pgTable("ratings_user", {
 export const meetTable = pgTable("meets", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),
-  description: varchar("description", { length: 255 }),
+  description: varchar("description", { length: 1024 }),
   type: varchar("type", { length: 255 }),
-  participantsIds: jsonb("participantsIds").$type<string[]>(),
+  participantsIds: jsonb("participantsIds").$type<string[]>().default([]),
   locations: jsonb("locations").$type<
     Array<{
       location: string;

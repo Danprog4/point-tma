@@ -300,7 +300,7 @@ function RouteComponent() {
           organizer={organizer}
         />
       ) : (
-        <div className="overflow- h-screen">
+        <div className={`h-screen ${page === "chat" ? "overflow-y-hiden" : ""}`}>
           <div
             data-mobile={isMobile}
             className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
@@ -508,13 +508,52 @@ function RouteComponent() {
                 <div className="h-[44vh] w-full space-y-2 overflow-y-auto bg-[#EBF1FF] p-4">
                   {chatMessages?.map((m: any) => {
                     const sender = users?.find((u) => u.id === m.userId);
+                    const isCurrentUser = sender?.id === user?.id;
                     return (
-                      <div key={m.id} className="flex flex-col gap-0.5">
-                        <span className="text-xs text-gray-600">
-                          {sender?.name} {sender?.surname} ·{" "}
-                          {format(new Date(m.createdAt), "HH:mm")}
-                        </span>
-                        <span className="text-sm text-black">{m.message}</span>
+                      <div
+                        key={m.id}
+                        className={`flex items-end gap-2 ${isCurrentUser ? "justify-end" : "justify-start"}`}
+                      >
+                        {!isCurrentUser && (
+                          <img
+                            src={getImageUrl(sender?.photo || "")}
+                            alt=""
+                            onClick={() => {
+                              navigate({
+                                to: "/user-profile/$id",
+                                params: {
+                                  id: sender?.id?.toString() || "",
+                                },
+                              });
+                            }}
+                            className="h-[30px] w-[30px] rounded-lg"
+                          />
+                        )}
+                        <div
+                          className={`relative flex w-[60%] flex-col gap-0.5 rounded-lg px-2 pt-2 pb-4 ${
+                            isCurrentUser ? "bg-[#FFF7D7]" : "bg-[#A3BDFF]"
+                          }`}
+                        >
+                          <span className="text-xs text-gray-600">
+                            {sender?.name} {sender?.surname}
+                          </span>
+                          <span className="text-sm text-black">{m.message}</span>
+                          <div className="absolute right-2 bottom-2 text-xs text-gray-600">
+                            {format(new Date(m.createdAt), "HH:mm")}
+                          </div>
+                        </div>
+                        {isCurrentUser && (
+                          <img
+                            src={getImageUrl(sender?.photo || "")}
+                            alt=""
+                            onClick={() => {
+                              navigate({
+                                to: "/profile",
+                              });
+                            }}
+                            className="h-[30px] w-[30px] rounded-lg"
+                          />
+                        )}
                       </div>
                     );
                   })}

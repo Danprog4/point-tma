@@ -287,7 +287,7 @@ function RouteComponent() {
   const isMobile = usePlatform();
 
   return (
-    <>
+    <div className={`h-screen ${page === "chat" ? "overflow-y-hidden" : ""}`}>
       {isParticipantPage ? (
         <Participations
           meetId={meeting?.id!}
@@ -768,6 +768,6 @@ function RouteComponent() {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -76,7 +76,7 @@ export const meetingRouter = createTRPCRouter({
           description,
           type,
           name,
-          participantsIds: invitedId ? [invitedId] : [],
+          participantsIds: invitedId ? [parseInt(invitedId), user.id] : [user.id],
           userId: user.id,
           gallery,
           locations,
@@ -398,7 +398,11 @@ export const meetingRouter = createTRPCRouter({
 
       await db
         .update(meetTable)
-        .set({ participantsIds: newParticipantsIds })
+        .set({
+          participantsIds: newParticipantsIds.map((p) =>
+            typeof p === "string" ? parseInt(p) : p,
+          ),
+        })
         .where(eq(meetTable.id, input.meetId));
 
       return request;
@@ -428,7 +432,7 @@ export const meetingRouter = createTRPCRouter({
 
       if (meet.participantsIds) {
         const newParticipantsIds = meet.participantsIds.filter(
-          (uid) => uid !== ctx.userId.toString(),
+          (uid) => uid !== ctx.userId,
         );
 
         await db

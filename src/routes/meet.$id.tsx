@@ -456,14 +456,19 @@ function RouteComponent() {
             )}
             {page === "participants" && (
               <div className="flex flex-col">
-                <div
+                <button
                   onClick={() => {
                     setIsDrawerOpen(true);
                   }}
+                  disabled={
+                    meeting?.maxParticipants !== undefined &&
+                    meeting?.maxParticipants !== null &&
+                    meeting?.maxParticipants <= (meeting?.participantsIds?.length || 0)
+                  }
                   className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]"
                 >
                   Пригласить участников
-                </div>
+                </button>
                 <div className="flex flex-col gap-2 px-4 py-4">
                   <div className="items-cetner flex justify-between">
                     <div>Количество участников</div>
@@ -477,40 +482,46 @@ function RouteComponent() {
                 <div className="mx-4 flex items-center justify-start text-xl font-bold">
                   Входящие заявки
                 </div>
-                {filteredRequests?.map((r) => {
-                  const user = users?.find((u) => u.id === r.fromUserId);
-                  return (
-                    <div key={r?.id}>
-                      <div className="flex items-center justify-between px-4 py-4">
-                        <div className="flex items-center justify-start gap-2">
-                          <div
-                            className="mr-4 p-2"
-                            onClick={() => handleDeclineRequest(r)}
-                          >
-                            <CloseRed />
-                          </div>
-                          <img
-                            src={getImageUrl(user?.photo || "")}
-                            alt=""
-                            className="h-14 w-14 rounded-lg"
-                          />
-                          <div className="flex flex-col items-start justify-between">
-                            <div className="text-lg">
-                              {user?.name} {user?.surname}
+                {filteredRequests && filteredRequests?.length > 0 ? (
+                  filteredRequests?.map((r) => {
+                    const user = users?.find((u) => u.id === r.fromUserId);
+                    return (
+                      <div key={r?.id}>
+                        <div className="flex items-center justify-between px-4 py-4">
+                          <div className="flex items-center justify-start gap-2">
+                            <div
+                              className="mr-4 p-2"
+                              onClick={() => handleDeclineRequest(r)}
+                            >
+                              <CloseRed />
                             </div>
-                            <div>{user?.login}</div>
+                            <img
+                              src={getImageUrl(user?.photo || "")}
+                              alt=""
+                              className="h-14 w-14 rounded-lg"
+                            />
+                            <div className="flex flex-col items-start justify-between">
+                              <div className="text-lg">
+                                {user?.name} {user?.surname}
+                              </div>
+                              <div>{user?.login}</div>
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                          onClick={() => handleAcceptRequest(r)}
-                        >
-                          <Check />
+                          <div
+                            className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                            onClick={() => handleAcceptRequest(r)}
+                          >
+                            <Check />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-4 text-sm text-neutral-500">
+                    Заявок на встречу пока нет
+                  </div>
+                )}
 
                 <div className="mx-4 flex items-center justify-start text-xl font-bold">
                   Приглашения

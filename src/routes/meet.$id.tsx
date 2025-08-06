@@ -9,7 +9,7 @@ import {
   ChevronUp,
   X as XIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import EndMeetDrawer from "~/components/EndMeetDrawer";
@@ -67,9 +67,30 @@ function RouteComponent() {
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
   const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
+  // Ref to keep the chat scrolled to the newest message
+  const chatBottomRef = useRef<HTMLDivElement | null>(null);
   const { data: chatMessages } = useQuery(
     trpc.meetings.getMessages.queryOptions({ meetId: Number(id) }),
   );
+
+  // Scroll chat to the bottom whenever the messages list or page changes
+  useEffect(() => {
+    if (page === "chat") {
+      chatBottomRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [chatMessages, page]);
+
+  // Disable page scrolling when the chat is open so that only the chat list can scroll
+  useEffect(() => {
+    if (page !== "chat") return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [page]);
 
   const sendChatMessage = useMutation(
     trpc.meetings.sendMessage.mutationOptions({
@@ -557,6 +578,8 @@ function RouteComponent() {
                       </div>
                     );
                   })}
+                  {/* Dummy element to anchor the scroll position at the bottom */}
+                  <div ref={chatBottomRef} />
                 </div>
               </div>
             )}

@@ -95,10 +95,11 @@ function RouteComponent() {
 
   const sendChatMessage = useMutation(
     trpc.meetings.sendMessage.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getMessages.queryKey(),
-        });
+      onSuccess: (newMessage: any) => {
+        queryClient.setQueryData(
+          trpc.meetings.getMessages.queryKey(),
+          (old: any[] = []) => [...old, newMessage],
+        );
       },
       onError: (err: any) => {
         toast.error(err.message || "Ошибка отправки сообщения");
@@ -240,7 +241,7 @@ function RouteComponent() {
 
   // Handler for accepting an invitation (owner invited me)
   const handleAcceptInvite = (invite: any) => {
-    joinMeeting.mutate({ id: invite.meetId });
+    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
     queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
       ...(old || []),
       { fromUserId: user?.id!, meetId: invite.meetId, status: "accepted" },

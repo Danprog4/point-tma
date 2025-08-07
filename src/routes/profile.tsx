@@ -641,7 +641,7 @@ function RouteComponent() {
               )}
 
               <XIcon
-                className="absolute top-4 right-4 h-8 w-8 cursor-pointer text-white"
+                className="absolute top-24 right-4 h-8 w-8 cursor-pointer text-white"
                 onClick={() => setIsFullScreen(false)}
               />
             </div>

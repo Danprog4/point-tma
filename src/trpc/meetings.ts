@@ -170,16 +170,13 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
       }
 
-      const isParticipant = await db.query.meetParticipantsTable.findFirst({
-        where: and(
-          eq(meetParticipantsTable.meetId, meetId),
-          eq(meetParticipantsTable.toUserId, ctx.userId),
-        ),
+      const isOwner = await db.query.meetTable.findFirst({
+        where: and(eq(meetTable.id, meetId), eq(meetTable.userId, ctx.userId)),
       });
-      if (!isParticipant) {
+      if (!isOwner) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "You are not a participant of this meet",
+          message: "You are not the owner of this meet",
         });
       }
 

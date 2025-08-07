@@ -246,10 +246,6 @@ function RouteComponent() {
 
   // Handler for accepting an invitation (owner invited me)
   const handleAcceptInvite = (invite: any) => {
-    // optimistic updates -----------------------------
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
-      (old || []).filter((r: any) => r.id !== invite.id),
-    );
     // Update participants cache: convert pending invitation to accepted, or add if missing
     queryClient.setQueryData(
       trpc.meetings.getParticipants.queryKey(),

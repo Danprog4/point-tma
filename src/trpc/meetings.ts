@@ -451,7 +451,10 @@ export const meetingRouter = createTRPCRouter({
         .delete(meetParticipantsTable)
         .where(
           and(
-            eq(meetParticipantsTable.fromUserId, ctx.userId),
+            or(
+              eq(meetParticipantsTable.fromUserId, ctx.userId),
+              eq(meetParticipantsTable.toUserId, ctx.userId),
+            ),
             eq(meetParticipantsTable.meetId, id),
           ),
         );

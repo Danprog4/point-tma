@@ -26,6 +26,7 @@ import { Participations } from "~/components/Participations";
 import { chatData } from "~/config/chat";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/meet/$id")({
@@ -173,30 +174,28 @@ function RouteComponent() {
   const isParticipant = useMemo(() => {
     return userParticipants
       ?.filter((p) => p.status === "accepted")
-      .some((p) => p.meetId === meeting?.id && p.fromUserId === user?.id);
+      .some(
+        (p) =>
+          p.meetId === meeting?.id &&
+          (p.fromUserId === user?.id || p.toUserId === user?.id),
+      );
   }, [userParticipants, meeting?.id, user?.id]);
 
   const isRequestParticipant = useMemo(() => {
     return userParticipants
       ?.filter((p) => p.status === "pending")
-      .some((p) => p.meetId === meeting?.id && p.fromUserId === user?.id);
+      .some(
+        (p) =>
+          p.meetId === meeting?.id &&
+          (p.fromUserId === user?.id || p.toUserId === user?.id),
+      );
   }, [userParticipants, meeting?.id, user?.id]);
-
-  // @ts-ignore
-  const eventType = isUserMeeting ? meeting?.typeOfEvent : meeting?.type;
-  // @ts-ignore
-  const eventId = isUserMeeting ? meeting?.idOfEvent : meeting?.id;
 
   const isOwner = useMemo(() => {
     return organizer?.id === user?.id;
   }, [organizer?.id, user?.id]);
 
   const handleJoin = () => {
-    if (!isClicked) {
-      setIsClicked(true);
-      return;
-    }
-
     if (isOwner) {
       return;
     }
@@ -205,6 +204,19 @@ function RouteComponent() {
       leaveMeeting.mutate({ id: meeting?.id! });
       queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
         return old.filter((p: any) => p.meetId !== meeting?.id);
+      });
+      queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) => {
+        return old.filter((r: any) => r.meetId !== meeting?.id);
+      });
+      queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) => {
+        return old.map((r: any) =>
+          r.id == meeting?.id
+            ? {
+                ...r,
+                participantsIds: r.participantsIds.filter((p: any) => p !== user?.id),
+              }
+            : r,
+        );
       });
     } else {
       joinMeeting.mutate({ id: meeting?.id! });
@@ -224,6 +236,27 @@ function RouteComponent() {
     }
 
     window.history.back();
+  };
+
+  // Handler for accepting an invitation (owner invited me)
+  const handleAcceptInvite = (invite: any) => {
+    joinMeeting.mutate(
+      { id: invite.meetId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: trpc.meetings.getParticipants.queryKey(),
+          });
+        },
+      },
+    );
+    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
+      ...(old || []),
+      { fromUserId: user?.id!, meetId: invite.meetId, status: "accepted" },
+    ]);
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
+      old?.filter((r: any) => r.id !== invite.id),
+    );
   };
 
   const handleSendComplaint = () => {
@@ -297,7 +330,8 @@ function RouteComponent() {
         !r.isRequest,
     );
   }, [requests, meeting?.id, user?.id]);
-  // Track pending invitations for the current user (invitations to me)
+
+  // Re-add pending invitations to me
   const invitesForUser = requests
     ? requests.filter(
         (r) =>
@@ -317,6 +351,11 @@ function RouteComponent() {
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
       return old?.filter((r) => r.id !== request.id);
     });
+    // Add accepted invitation to participants cache
+    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
+      ...(old || []),
+      { fromUserId: request.fromUserId, meetId: request.meetId, status: "accepted" },
+    ]);
   };
 
   const handleDeclineRequest = (request: any) => {
@@ -739,70 +778,73 @@ function RouteComponent() {
             </div>
           ) : (
             <>
-              {/* Quick replies when in chat */}
-              {page === "chat" && (
-                <>
-                  {selectedCategory && (
-                    <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
-                      <div className="mb-2 text-sm font-semibold text-gray-700">
-                        {selectedCategory}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {chatData
-                          .find((cat) => cat.category === selectedCategory)
-                          ?.messages.map((message, index) => (
-                            <button
-                              key={index}
-                              className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                              onClick={() => {
-                                handleSendChatMessage(message);
-                                setSelectedCategory(null);
-                              }}
-                            >
-                              {message}
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                  <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
-                    <div>Быстрые ответы</div>
-                    <div className="scrollbar-hidden flex w-full gap-8 overflow-x-auto whitespace-nowrap">
-                      {chatData.map((category) => (
-                        <div
-                          className="flex items-center justify-start gap-2"
-                          key={category.category}
-                        >
-                          <button
-                            className="flex-shrink-0 rounded-full py-2 text-black hover:bg-gray-200"
-                            onClick={() => setSelectedCategory(category.category)}
-                          >
-                            {category.category}
-                          </button>
-                          <ChevronUp className="h-5 w-5" />
-                        </div>
-                      ))}
-                    </div>
+              {selectedCategory && page === "chat" && (
+                <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
+                  <div className="mb-2 text-sm font-semibold text-gray-700">
+                    {selectedCategory}
                   </div>
-                </>
-              )}
-
-              {/* Bottom action bar */}
-              {isOwner && (
-                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
-                  <div
-                    className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
-                    onClick={() => setIsEndOpen(true)}
-                  >
-                    Завершить встречу
+                  <div className="flex flex-col gap-2">
+                    {chatData
+                      .find((cat) => cat.category === selectedCategory)
+                      ?.messages.map((message, index) => (
+                        <button
+                          key={index}
+                          className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => {
+                            handleSendChatMessage(message);
+                            setSelectedCategory(null);
+                          }}
+                        >
+                          {message}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
-              {!isOwner && isInvited && (
-                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto flex w-full items-center justify-around bg-white px-4 py-4 font-semibold text-black">
+
+              {page === "chat" && (
+                <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
+                  <div className="">Быстрые ответы</div>
+                  <div className="scrollbar-hidden flex w-full gap-8 overflow-x-auto whitespace-nowrap">
+                    {chatData.map((category) => (
+                      <div className="flex items-center justify-start gap-2">
+                        <button
+                          key={category.category}
+                          className="flex-shrink-0 rounded-full py-2 text-black hover:bg-gray-200"
+                          onClick={() => {
+                            setSelectedCategory(
+                              selectedCategory === category.category
+                                ? null
+                                : category.category,
+                            );
+                          }}
+                        >
+                          {category.category}
+                        </button>
+                        <div className="flex items-center justify-center">
+                          <ChevronUp className="h-5 w-5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {isOwner ? (
+                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
+                  <div
+                    className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
+                    onClick={() => {
+                      setIsEndOpen(true);
+                    }}
+                  >
+                    Завершить
+                  </div>
+                </div>
+              ) : isInvited ? (
+                <div className="fixed right-0 bottom-0 left-0 z-50 mx-auto flex w-full items-center justify-around bg-white px-4 py-4 font-semibold text-black">
                   <button
                     className="px-6 py-2 text-[#00A349]"
-                    onClick={() => handleAcceptRequest(invitesForUser[0])}
+                    onClick={() => handleAcceptInvite(invitesForUser[0])}
                   >
                     Принять приглашение
                   </button>
@@ -813,34 +855,38 @@ function RouteComponent() {
                     Отклонить
                   </button>
                 </div>
-              )}
-              {!isOwner && !isInvited && isRequestParticipant && (
-                <div className="fixed right-0 bottom-0 left-0 z-50 flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 font-semibold text-black">
-                  <button
-                    className="flex-1 py-3"
-                    onClick={() => leaveMeeting.mutate({ id: meeting?.id! })}
-                  >
-                    Отменить запрос
-                  </button>
+              ) : isComplaint ? (
+                <div>
+                  <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
+                    <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
+                      <Info />
+                      Вы пожаловались на эту встречу
+                    </div>
+                    <button
+                      className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
+                      onClick={() => handleUnsendComplaint()}
+                    >
+                      Отозвать жалобу
+                    </button>
+                  </div>
                 </div>
-              )}
-              {!isOwner && !isInvited && isParticipant && (
-                <div className="fixed right-0 bottom-0 left-0 z-50 flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 font-semibold text-black">
-                  <button
-                    className="flex-1 py-3"
-                    onClick={() => leaveMeeting.mutate({ id: meeting?.id! })}
-                  >
-                    Выйти из встречи
-                  </button>
-                </div>
-              )}
-              {!isOwner && !isInvited && !isRequestParticipant && !isParticipant && (
+              ) : (
                 <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
                   <div
                     className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
                     onClick={() => handleJoin()}
                   >
-                    Откликнуться
+                    {isOwner ? (
+                      <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
+                        <div>Управление</div>
+                      </ManageDrawer>
+                    ) : isParticipant ? (
+                      "Выйти"
+                    ) : isRequestParticipant ? (
+                      "Отменить запрос"
+                    ) : (
+                      "Откликнуться"
+                    )}
                   </div>
                   <div className="flex flex-col items-center">
                     <div
@@ -855,6 +901,7 @@ function RouteComponent() {
               )}
             </>
           )}
+
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
           {isComplaintOpen && (
             <ComplaintDrawer

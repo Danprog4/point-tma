@@ -173,13 +173,12 @@ function RouteComponent() {
   }, [userParticipants, meeting?.id, user?.id]);
 
   const isParticipant = useMemo(() => {
-    return userParticipants
-      ?.filter((p) => p.status === "accepted")
-      .some(
-        (p) =>
-          p.meetId === meeting?.id &&
-          (p.fromUserId === user?.id || p.toUserId === user?.id),
-      );
+    return userParticipants?.some(
+      (p) =>
+        p.meetId === meeting?.id &&
+        (p.fromUserId === user?.id || p.toUserId === user?.id) &&
+        p.status === "accepted",
+    );
   }, [userParticipants, meeting?.id, user?.id]);
 
   const isRequestParticipant = useMemo(() => {
@@ -250,31 +249,28 @@ function RouteComponent() {
     queryClient.setQueryData(
       trpc.meetings.getParticipants.queryKey(),
       (old: any = []) => {
-        const updated = old.map((p: any) =>
-          p.meetId === invite.meetId &&
-          p.fromUserId === invite.fromUserId &&
-          p.toUserId === user?.id
-            ? { ...p, status: "accepted" }
-            : p,
-        );
-        const exists = updated.some(
+        const existingIndex = old.findIndex(
           (p: any) =>
             p.meetId === invite.meetId &&
             p.fromUserId === invite.fromUserId &&
-            p.toUserId === user?.id &&
-            p.status === "accepted",
+            p.toUserId === user?.id,
         );
-        return exists
-          ? updated
-          : [
-              ...updated,
-              {
-                fromUserId: invite.fromUserId,
-                toUserId: user?.id!,
-                meetId: invite.meetId,
-                status: "accepted",
-              },
-            ];
+
+        if (existingIndex >= 0) {
+          return old.map((p: any, index: number) =>
+            index === existingIndex ? { ...p, status: "accepted" } : p,
+          );
+        }
+
+        return [
+          ...old,
+          {
+            fromUserId: invite.fromUserId,
+            toUserId: user?.id!,
+            meetId: invite.meetId,
+            status: "accepted",
+          },
+        ];
       },
     );
     queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
@@ -382,8 +378,17 @@ function RouteComponent() {
 
   const handleAcceptRequest = (request: any) => {
     // optimistic cache updates -----------------------
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) =>
-      (old || []).filter((r: any) => r.id !== request.id),
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
+      old.filter(
+        (r: any) =>
+          !(
+            r.meetId === request.meetId &&
+            r.fromUserId === request.fromUserId &&
+            r.toUserId === user?.id &&
+            r.status === "pending" &&
+            r.isRequest
+          ),
+      ),
     );
     queryClient.setQueryData(
       trpc.meetings.getParticipants.queryKey(),

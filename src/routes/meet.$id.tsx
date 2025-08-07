@@ -246,21 +246,28 @@ function RouteComponent() {
 
   // Handler for accepting an invitation (owner invited me)
   const handleAcceptInvite = (invite: any) => {
-    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
+    // optimistic updates -----------------------------
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
+      (old || []).filter((r: any) => r.id !== invite.id),
+    );
     queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
       ...(old || []),
       { fromUserId: user?.id!, meetId: invite.meetId, status: "accepted" },
     ]);
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
-      old?.filter((r: any) => r.id !== invite.id),
-    );
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
       old.map((m: any) =>
         m.id === invite.meetId
-          ? { ...m, participantsIds: [...m.participantsIds, user?.id!] }
+          ? {
+              ...m,
+              participantsIds: Array.from(
+                new Set([...(m.participantsIds || []), user?.id!]),
+              ),
+            }
           : m,
       ),
     );
+    // server call -----------------------------------
+    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
   };
 
   const handleSendComplaint = () => {
@@ -351,28 +358,28 @@ function RouteComponent() {
   const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
 
   const handleAcceptRequest = (request: any) => {
-    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
-      return old?.filter((r) => r.id !== request.id);
-    });
-    // Add accepted invitation to participants cache
+    // optimistic cache updates -----------------------
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) =>
+      (old || []).filter((r: any) => r.id !== request.id),
+    );
     queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
       ...(old || []),
       { fromUserId: request.fromUserId, meetId: request.meetId, status: "accepted" },
     ]);
-    // Optimistically update participantsIds inside meetings cache
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
-      old?.map((m: any) =>
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
+      old.map((m: any) =>
         m.id === request.meetId
           ? {
               ...m,
               participantsIds: Array.from(
-                new Set([...(m.participantsIds || []), user?.id!]),
+                new Set([...(m.participantsIds || []), request.fromUserId]),
               ),
             }
           : m,
       ),
     );
+    // server call -----------------------------------
+    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
   };
 
   const handleDeclineRequest = (request: any) => {
@@ -530,19 +537,21 @@ function RouteComponent() {
             )}
             {page === "participants" && (
               <div className="flex flex-col">
-                <button
-                  onClick={() => {
-                    setIsDrawerOpen(true);
-                  }}
-                  disabled={
-                    meeting?.maxParticipants !== undefined &&
-                    meeting?.maxParticipants !== null &&
-                    meeting?.maxParticipants <= (meeting?.participantsIds?.length || 0)
-                  }
-                  className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]"
-                >
-                  Пригласить участников
-                </button>
+                {meeting?.userId === user?.id && (
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(true);
+                    }}
+                    disabled={
+                      meeting?.maxParticipants !== undefined &&
+                      meeting?.maxParticipants !== null &&
+                      meeting?.maxParticipants <= (meeting?.participantsIds?.length || 0)
+                    }
+                    className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]"
+                  >
+                    Пригласить участников
+                  </button>
+                )}
                 <div className="flex flex-col gap-2 px-4 py-4">
                   <div className="items-cetner flex justify-between">
                     <div>Количество участников</div>
@@ -553,103 +562,107 @@ function RouteComponent() {
                   </div>
                   <div className="h-1 w-full bg-[#9924FF]"></div>
                 </div>
-                <div className="mx-4 flex items-center justify-start text-xl font-bold">
-                  Входящие заявки
-                </div>
-                {filteredRequests && filteredRequests?.length > 0 ? (
-                  filteredRequests?.map((r) => {
-                    const user = users?.find((u) => u.id === r.fromUserId);
-                    return (
-                      <div key={r?.id}>
-                        <div className="flex items-center justify-between px-4 py-4">
-                          <div className="flex items-center justify-start gap-2">
-                            <div
-                              className="mr-4 p-2"
-                              onClick={() => handleDeclineRequest(r)}
-                            >
-                              <CloseRed />
-                            </div>
-                            <img
-                              src={getImageUrl(user?.photo || "")}
-                              alt=""
-                              className="h-14 w-14 rounded-lg"
-                            />
-                            <div className="flex flex-col items-start justify-between">
-                              <div className="text-lg">
-                                {user?.name} {user?.surname}
-                              </div>
-                              <div>{user?.login}</div>
-                            </div>
-                          </div>
-                          <div
-                            className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                            onClick={() => handleAcceptRequest(r)}
-                          >
-                            <Check />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="px-4 py-4 text-sm text-neutral-500">
-                    Заявок на встречу пока нет
-                  </div>
-                )}
-
-                <div className="mx-4 flex items-center justify-start text-xl font-bold">
-                  Приглашения
-                </div>
-                {invitedUsers && invitedUsers.length > 0 ? (
-                  invitedUsers?.map((i) => {
-                    const user = users?.find((u) => u.id === i.toUserId);
-                    return (
-                      <div key={i.id + "r"}>
-                        <div className="flex items-center justify-between px-4 pb-4">
-                          <div className="flex items-center justify-start gap-2">
-                            <img
-                              src={getImageUrl(user?.photo || "")}
-                              alt=""
-                              className="h-14 w-14 rounded-lg"
-                            />
-                            <div className="flex flex-col items-start justify-between gap-2">
-                              <div className="text-lg">
-                                {user?.name} {user?.surname}
-                              </div>
-                              <div>{user?.login}</div>
-                            </div>
-                          </div>
-                          {(() => {
-                            const participantIds = Array.from(
-                              new Set(
-                                [organizer?.id, ...(meeting?.participantsIds || [])]
-                                  .map((id) => Number(id))
-                                  .filter(Boolean),
-                              ),
-                            );
-
-                            if (participantIds.includes(user?.id || 0)) {
-                              return (
-                                <div className="text-sm text-nowrap text-[#00A349]">
-                                  Участник
+                {user?.id === meeting?.userId && (
+                  <>
+                    <div className="mx-4 flex items-center justify-start text-xl font-bold">
+                      Входящие заявки
+                    </div>
+                    {filteredRequests && filteredRequests?.length > 0 ? (
+                      filteredRequests?.map((r) => {
+                        const user = users?.find((u) => u.id === r.fromUserId);
+                        return (
+                          <div key={r?.id}>
+                            <div className="flex items-center justify-between px-4 py-4">
+                              <div className="flex items-center justify-start gap-2">
+                                <div
+                                  className="mr-4 p-2"
+                                  onClick={() => handleDeclineRequest(r)}
+                                >
+                                  <CloseRed />
                                 </div>
-                              );
-                            } else {
-                              return (
-                                <div className="text-sm text-nowrap text-[#FFA500]">
-                                  Приглашен(-а)
+                                <img
+                                  src={getImageUrl(user?.photo || "")}
+                                  alt=""
+                                  className="h-14 w-14 rounded-lg"
+                                />
+                                <div className="flex flex-col items-start justify-between">
+                                  <div className="text-lg">
+                                    {user?.name} {user?.surname}
+                                  </div>
+                                  <div>{user?.login}</div>
                                 </div>
-                              );
-                            }
-                          })()}
-                        </div>
+                              </div>
+                              <div
+                                className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
+                                onClick={() => handleAcceptRequest(r)}
+                              >
+                                <Check />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-4 text-sm text-neutral-500">
+                        Заявок на встречу пока нет
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="px-4 py-4 text-sm text-neutral-500">
-                    Никто не был приглашен на встречу
-                  </div>
+                    )}
+
+                    <div className="mx-4 flex items-center justify-start text-xl font-bold">
+                      Приглашения
+                    </div>
+                    {invitedUsers && invitedUsers.length > 0 ? (
+                      invitedUsers?.map((i) => {
+                        const user = users?.find((u) => u.id === i.toUserId);
+                        return (
+                          <div key={i.id + "r"}>
+                            <div className="flex items-center justify-between px-4 pb-4">
+                              <div className="flex items-center justify-start gap-2">
+                                <img
+                                  src={getImageUrl(user?.photo || "")}
+                                  alt=""
+                                  className="h-14 w-14 rounded-lg"
+                                />
+                                <div className="flex flex-col items-start justify-between gap-2">
+                                  <div className="text-lg">
+                                    {user?.name} {user?.surname}
+                                  </div>
+                                  <div>{user?.login}</div>
+                                </div>
+                              </div>
+                              {(() => {
+                                const participantIds = Array.from(
+                                  new Set(
+                                    [organizer?.id, ...(meeting?.participantsIds || [])]
+                                      .map((id) => Number(id))
+                                      .filter(Boolean),
+                                  ),
+                                );
+
+                                if (participantIds.includes(user?.id || 0)) {
+                                  return (
+                                    <div className="text-sm text-nowrap text-[#00A349]">
+                                      Участник
+                                    </div>
+                                  );
+                                } else {
+                                  return (
+                                    <div className="text-sm text-nowrap text-[#FFA500]">
+                                      Приглашен(-а)
+                                    </div>
+                                  );
+                                }
+                              })()}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-4 text-sm text-neutral-500">
+                        Никто не был приглашен на встречу
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="mx-4 flex items-center justify-start text-xl font-bold">

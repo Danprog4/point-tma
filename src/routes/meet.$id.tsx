@@ -528,7 +528,7 @@ function RouteComponent() {
                   <div className="items-cetner flex justify-between">
                     <div>Количество участников</div>
                     <div>
-                      {Number(meeting?.participantsIds?.length || 0) + 1} из{" "}
+                      {Number(meeting?.participantsIds?.length || 0)} из{" "}
                       {meeting?.maxParticipants || "не ограничено"}
                     </div>
                   </div>

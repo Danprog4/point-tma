@@ -2,24 +2,52 @@ import { useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
-import { conferencesData } from "./config/conf";
-import { kinoData } from "./config/kino";
-import { networkingData } from "./config/networking";
-import { partiesData } from "./config/party";
-import { questsData } from "./config/quests";
 
 interface EventsDrawerProps {
   open: boolean;
+  index: number;
   onOpenChange: (open: boolean) => void;
-  setSelectedItem: (item: any) => void;
+  setSelectedItems: (items: { id: number; type: string; index: number }[]) => void;
+  selectedItems: { id: number; type: string; index: number }[];
+  data: any[];
+  setActiveFilter: (filter: string) => void;
+  activeFilter: string;
+  setLocations: (
+    locations: {
+      location: string;
+      address: string;
+      starttime?: string;
+      endtime?: string;
+      index?: number;
+      isCustom?: boolean;
+    }[],
+  ) => void;
+  locations: {
+    location: string;
+    address: string;
+    starttime?: string;
+    endtime?: string;
+    index?: number;
+    isCustom?: boolean;
+  }[];
 }
 
-export function EventsDrawer({ open, onOpenChange, setSelectedItem }: EventsDrawerProps) {
+export function EventsDrawer({
+  open,
+  index: locationIndex,
+  onOpenChange,
+  setSelectedItems,
+  selectedItems,
+  data,
+  setActiveFilter,
+  activeFilter,
+  setLocations,
+  locations,
+}: EventsDrawerProps) {
   const [search, setSearch] = useState("");
 
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState("Все");
 
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
@@ -29,44 +57,12 @@ export function EventsDrawer({ open, onOpenChange, setSelectedItem }: EventsDraw
     onOpenChange(false);
   };
 
-  let data: any[] = [];
-
-  switch (activeFilter) {
-    case "Все":
-      data = [
-        ...questsData,
-        ...kinoData,
-        ...conferencesData,
-        ...networkingData,
-        ...partiesData,
-      ];
-      break;
-    case "Квесты":
-      data = questsData;
-      console.log(data);
-      break;
-    case "Кино":
-      data = kinoData;
-      break;
-    case "Конференции":
-      data = conferencesData;
-      break;
-    case "Вечеринки":
-      data = partiesData;
-      break;
-    case "Нетворкинг":
-      data = networkingData;
-      break;
-    default:
-      data = [];
-  }
-
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[500px] flex-col rounded-t-[16px] bg-white px-4 py-4">
-          <div className="overflow-y-auto p-4">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80%] flex-col rounded-t-[16px] bg-white px-4 py-4">
+          <div className="overflow-y-auto">
             <div className="fixed top-0 right-0 left-0 z-[100] flex items-center bg-white px-4 py-4">
               <X
                 className="absolute h-6 w-6 cursor-pointer"
@@ -75,7 +71,7 @@ export function EventsDrawer({ open, onOpenChange, setSelectedItem }: EventsDraw
               <div className="mx-auto text-lg font-bold">Выбор из афишы</div>
             </div>
             <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto pt-12">
-              {filters.map((filter, index) => (
+              {filters.map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
@@ -90,11 +86,24 @@ export function EventsDrawer({ open, onOpenChange, setSelectedItem }: EventsDraw
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {data.map((item, index) => (
+              {data.map((item, dataIdx) => (
                 <div
-                  key={index}
+                  key={`${item.id}-${dataIdx}`}
                   onClick={() => {
-                    setSelectedItem(item);
+                    setSelectedItems([
+                      ...selectedItems,
+                      { id: item.id, type: item.type, index: locationIndex },
+                    ]);
+                    setLocations([
+                      ...locations,
+                      {
+                        location: item.title,
+                        address: item.location,
+                        starttime: item.date,
+                        isCustom: true,
+                        index: locationIndex,
+                      },
+                    ]);
                     onOpenChange(false);
                   }}
                 >

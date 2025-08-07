@@ -31,6 +31,13 @@ function RouteComponent() {
   const [isInvite, setIsInvite] = useState(false);
   const [important, setImportant] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedItems, setSelectedItems] = useState<
+    {
+      id: number;
+      type: string;
+      index: number;
+    }[]
+  >([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [typeOfEvent, setTypeOfEvent] = useState("");
   const queryClient = useQueryClient();
@@ -51,15 +58,19 @@ function RouteComponent() {
   const [gallery, setGallery] = useState<string[]>([]);
   const [mainPhotoRaw, setMainPhotoRaw] = useState<string>("");
   const [participants, setParticipants] = useState(0);
+  const [index, setIndex] = useState(0);
   const [locations, setLocations] = useState<
     {
       location: string;
       address: string;
       starttime?: string;
       endtime?: string;
+      index?: number;
+      isCustom?: boolean;
     }[]
   >([]);
   const [reward, setReward] = useState(0);
+  const [length, setLength] = useState(1);
   const [tags, setTags] = useState<string[]>([]);
   const isBasic = search.isBasic ?? false;
   const name = search.name ?? "";
@@ -244,11 +255,12 @@ function RouteComponent() {
       )}
       {step === 1 && (
         <Step2
+          index={index}
+          setIndex={setIndex}
           isDisabled={isDisabled}
           setIsDisabled={setIsDisabled}
           name={name}
           isBasic={isBasic}
-          setSelectedItem={setSelectedItem}
           important={important}
           setImportant={setImportant}
           item={selectedItem || search.item}
@@ -258,6 +270,10 @@ function RouteComponent() {
           setDescription={setDescription}
           locations={locations}
           setLocations={setLocations}
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
+          length={length}
+          setLength={setLength}
         />
       )}
       {step === 2 && (

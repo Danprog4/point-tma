@@ -231,6 +231,8 @@ export const Step1 = ({
     if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return false;
     if (monthNum < 1 || monthNum > 12) return false;
     const dateObj = new Date(yearNum, monthNum - 1, dayNum);
+    const currentYear = new Date().getFullYear();
+    if (yearNum < currentYear || yearNum > currentYear + 1) return false;
     return (
       dateObj.getFullYear() === yearNum &&
       dateObj.getMonth() === monthNum - 1 &&

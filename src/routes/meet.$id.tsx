@@ -240,22 +240,20 @@ function RouteComponent() {
 
   // Handler for accepting an invitation (owner invited me)
   const handleAcceptInvite = (invite: any) => {
-    joinMeeting.mutate(
-      { id: invite.meetId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: trpc.meetings.getParticipants.queryKey(),
-          });
-        },
-      },
-    );
+    joinMeeting.mutate({ id: invite.meetId });
     queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
       ...(old || []),
       { fromUserId: user?.id!, meetId: invite.meetId, status: "accepted" },
     ]);
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
       old?.filter((r: any) => r.id !== invite.id),
+    );
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
+      old.map((m: any) =>
+        m.id === invite.meetId
+          ? { ...m, participantsIds: [...m.participantsIds, user?.id!] }
+          : m,
+      ),
     );
   };
 

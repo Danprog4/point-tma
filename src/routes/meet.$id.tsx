@@ -250,10 +250,37 @@ function RouteComponent() {
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
       (old || []).filter((r: any) => r.id !== invite.id),
     );
-    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
-      ...(old || []),
-      { fromUserId: user?.id!, meetId: invite.meetId, status: "accepted" },
-    ]);
+    // Update participants cache: convert pending invitation to accepted, or add if missing
+    queryClient.setQueryData(
+      trpc.meetings.getParticipants.queryKey(),
+      (old: any = []) => {
+        const updated = old.map((p: any) =>
+          p.meetId === invite.meetId &&
+          p.fromUserId === invite.fromUserId &&
+          p.toUserId === user?.id
+            ? { ...p, status: "accepted" }
+            : p,
+        );
+        const exists = updated.some(
+          (p: any) =>
+            p.meetId === invite.meetId &&
+            p.fromUserId === invite.fromUserId &&
+            p.toUserId === user?.id &&
+            p.status === "accepted",
+        );
+        return exists
+          ? updated
+          : [
+              ...updated,
+              {
+                fromUserId: invite.fromUserId,
+                toUserId: user?.id!,
+                meetId: invite.meetId,
+                status: "accepted",
+              },
+            ];
+      },
+    );
     queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
       old.map((m: any) =>
         m.id === invite.meetId
@@ -362,10 +389,36 @@ function RouteComponent() {
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) =>
       (old || []).filter((r: any) => r.id !== request.id),
     );
-    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
-      ...(old || []),
-      { fromUserId: request.fromUserId, meetId: request.meetId, status: "accepted" },
-    ]);
+    queryClient.setQueryData(
+      trpc.meetings.getParticipants.queryKey(),
+      (old: any = []) => {
+        const updated = old.map((p: any) =>
+          p.meetId === request.meetId &&
+          p.fromUserId === request.fromUserId &&
+          p.toUserId === user?.id
+            ? { ...p, status: "accepted" }
+            : p,
+        );
+        const exists = updated.some(
+          (p: any) =>
+            p.meetId === request.meetId &&
+            p.fromUserId === request.fromUserId &&
+            p.toUserId === user?.id &&
+            p.status === "accepted",
+        );
+        return exists
+          ? updated
+          : [
+              ...updated,
+              {
+                fromUserId: request.fromUserId,
+                toUserId: user?.id!,
+                meetId: request.meetId,
+                status: "accepted",
+              },
+            ];
+      },
+    );
     queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
       old.map((m: any) =>
         m.id === request.meetId

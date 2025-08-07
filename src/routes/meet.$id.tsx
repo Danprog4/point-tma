@@ -221,12 +221,17 @@ function RouteComponent() {
       });
     } else {
       joinMeeting.mutate({ id: meeting?.id! });
-      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
-        return [
-          ...(old || []),
-          { fromUserId: user?.id!, meetId: meeting?.id!, status: "pending" },
-        ];
-      });
+      // Optimistically add pending participant row so UI switches to "Отменить запрос"
+      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
+        ...(old || []),
+        {
+          fromUserId: user?.id!,
+          toUserId: organizer?.id!,
+          meetId: meeting?.id!,
+          status: "pending",
+        },
+      ]);
+      // No participantsIds update yet for pending request
     }
   };
 
@@ -355,6 +360,19 @@ function RouteComponent() {
       ...(old || []),
       { fromUserId: request.fromUserId, meetId: request.meetId, status: "accepted" },
     ]);
+    // Optimistically update participantsIds inside meetings cache
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
+      old?.map((m: any) =>
+        m.id === request.meetId
+          ? {
+              ...m,
+              participantsIds: Array.from(
+                new Set([...(m.participantsIds || []), user?.id!]),
+              ),
+            }
+          : m,
+      ),
+    );
   };
 
   const handleDeclineRequest = (request: any) => {

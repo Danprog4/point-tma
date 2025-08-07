@@ -4,6 +4,18 @@ import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 
+const allEvents = [
+  ...conferencesData,
+  ...kinoData,
+  ...partiesData,
+  ...networkingData,
+  ...questsData,
+];
+
+export function getEventFromName(name: string) {
+  return allEvents.find((e) => e.title === name);
+}
+
 export function getEventData(eventType: string, eventId: number) {
   if (eventType === "Конференция") {
     return conferencesData.find((e) => e.id === eventId);

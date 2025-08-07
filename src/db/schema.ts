@@ -66,6 +66,15 @@ export const meetTable = pgTable("meets", {
   important: varchar("important", { length: 255 }),
   date: varchar("date", { length: 255 }),
   reward: integer("reward"),
+  items: jsonb("items").$type<
+    Array<{
+      type: string;
+      eventId: number;
+      isActive?: boolean;
+      name: string;
+      id?: number;
+    }>
+  >(),
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   userId: bigint("user_id", { mode: "number" }),

@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
+import { getEventData, getEventFromName } from "~/lib/utils/getEventData";
 import { Coin } from "./Icons/Coin";
 
 interface Meeting {
@@ -13,6 +14,7 @@ interface Meeting {
     address: string;
     starttime?: string;
     endtime?: string;
+    isCustom?: boolean;
   }>;
   important?: string;
   date?: string;
@@ -24,6 +26,13 @@ interface Meeting {
   gallery?: string[];
   subType?: string;
   isBig?: boolean;
+  items?: Array<{
+    type: string;
+    eventId: number;
+    isActive?: boolean;
+    name: string;
+    id?: number;
+  }>;
 }
 
 interface User {
@@ -103,16 +112,32 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                     {idx + 1}
                   </span>
                 </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="font-bold text-black">{location.location}</div>
-                  <div className="text-sm text-black/80">{location.address}</div>
-                  {location.starttime && location.endtime && (
-                    <div className="text-xs text-black/60">
-                      {location.starttime} - {location.endtime}
+                {location.isCustom ? (
+                  <div className="flex items-center justify-start gap-2">
+                    <img
+                      src={getEventFromName(location.location)?.image}
+                      alt="image"
+                      className="h-16 w-16 rounded-lg"
+                    />
+                    <div className="flex flex-col items-start justify-center">
+                      <div className="text-sm font-bold">{location.location}</div>
+                      <div className="text-sm">{location.address}</div>
+                      <div className="flex items-center gap-2 text-sm text-neutral-500">
+                        <div>{location.starttime}</div>
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <div className="font-bold text-black">{location.location}</div>
+                    <div className="text-sm text-black/80">{location.address}</div>
+                    {location.starttime && location.endtime && (
+                      <div className="text-xs text-black/60">
+                        {location.starttime} - {location.endtime}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
             <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
@@ -170,16 +195,27 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
           <Coin />
         </div>
 
-        <div className="flex gap-2">
-          <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
-            <img src="/shit.png" alt="coin" className="h-10 w-10" />
-            <span className="mt-1 text-sm">Кепка BUCS</span>
+        {meeting?.items && meeting.items.length > 0 ? (
+          <div className="grid grid-cols-3 gap-4">
+            {meeting.items.map((item, index) => (
+              <div
+                key={index}
+                className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+              >
+                <img
+                  src={getEventData(item.name, item.eventId)?.image}
+                  alt={getEventData("Квест", 2)?.title || "Предмет"}
+                  className="h-[61px] w-[61px] rounded-lg"
+                />
+                <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
+                  {item.name || "Предмет"}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-red-200">
-            <img src="/cap.png" alt="coin" className="h-10 w-10" />
-            <span className="mt-1 text-sm">Любитель к...</span>
-          </div>
-        </div>
+        ) : (
+          <div className="text-start text-gray-500">Предметы не указаны</div>
+        )}
       </div>
     </div>
   );

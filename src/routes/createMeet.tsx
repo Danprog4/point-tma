@@ -132,6 +132,7 @@ function RouteComponent() {
         locations,
         date,
         reward: reward || 0,
+        inventory: selectedInventory,
         image: mainPhotoRaw,
         invitedId: search.id !== undefined ? String(search.id) : undefined,
         gallery: gallery,

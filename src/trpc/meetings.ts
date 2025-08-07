@@ -31,6 +31,7 @@ export const meetingRouter = createTRPCRouter({
               address: z.string(),
               starttime: z.string().optional(),
               endtime: z.string().optional(),
+              isCustom: z.boolean().optional(),
             }),
           )
           .optional(),
@@ -38,6 +39,7 @@ export const meetingRouter = createTRPCRouter({
         image: z.string().optional(),
         invitedId: z.string().optional(),
         gallery: z.array(z.string()).optional(),
+        inventory: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -54,6 +56,7 @@ export const meetingRouter = createTRPCRouter({
         image,
         participants,
         gallery,
+        inventory,
       } = input;
       const { userId } = ctx;
 
@@ -71,6 +74,13 @@ export const meetingRouter = createTRPCRouter({
         imageUrl = await uploadBase64Image(image);
       }
 
+      let itemsWithInfo = null;
+      if (inventory) {
+        itemsWithInfo = user.inventory?.filter((item) =>
+          inventory.includes(item?.id?.toString() ?? ""),
+        );
+      }
+
       const [meet] = await db
         .insert(meetTable)
         .values({
@@ -83,12 +93,35 @@ export const meetingRouter = createTRPCRouter({
           locations,
           subType,
           reward,
+          items: itemsWithInfo,
           image: imageUrl,
           isBig,
           date,
           maxParticipants: participants,
         })
         .returning();
+
+      if (inventory) {
+        const newInventory = user.inventory?.filter(
+          (item) => !inventory.includes(item?.id?.toString() ?? ""),
+        );
+
+        await db
+          .update(usersTable)
+          .set({
+            inventory: newInventory,
+          })
+          .where(eq(usersTable.id, user.id));
+      }
+
+      if (reward) {
+        await db
+          .update(usersTable)
+          .set({
+            balance: (user.balance ?? 0) - reward * (participants ?? 0),
+          })
+          .where(eq(usersTable.id, user.id));
+      }
 
       await db.insert(meetParticipantsTable).values({
         fromUserId: user.id,

@@ -26,7 +26,6 @@ import { Participations } from "~/components/Participations";
 import { chatData } from "~/config/chat";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
-import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/meet/$id")({
@@ -298,6 +297,17 @@ function RouteComponent() {
         !r.isRequest,
     );
   }, [requests, meeting?.id, user?.id]);
+  // Track pending invitations for the current user (invitations to me)
+  const invitesForUser = requests
+    ? requests.filter(
+        (r) =>
+          r.meetId === meeting?.id &&
+          r.status === "pending" &&
+          r.toUserId === user?.id &&
+          !r.isRequest,
+      )
+    : [];
+  const isInvited = invitesForUser.length > 0;
 
   const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
   const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
@@ -729,100 +739,108 @@ function RouteComponent() {
             </div>
           ) : (
             <>
-              {selectedCategory && page === "chat" && (
-                <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
-                  <div className="mb-2 text-sm font-semibold text-gray-700">
-                    {selectedCategory}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {chatData
-                      .find((cat) => cat.category === selectedCategory)
-                      ?.messages.map((message, index) => (
-                        <button
-                          key={index}
-                          className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                          onClick={() => {
-                            handleSendChatMessage(message);
-                            setSelectedCategory(null);
-                          }}
-                        >
-                          {message}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-
+              {/* Quick replies when in chat */}
               {page === "chat" && (
-                <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
-                  <div className="">Быстрые ответы</div>
-                  <div className="scrollbar-hidden flex w-full gap-8 overflow-x-auto whitespace-nowrap">
-                    {chatData.map((category) => (
-                      <div className="flex items-center justify-start gap-2">
-                        <button
+                <>
+                  {selectedCategory && (
+                    <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
+                      <div className="mb-2 text-sm font-semibold text-gray-700">
+                        {selectedCategory}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {chatData
+                          .find((cat) => cat.category === selectedCategory)
+                          ?.messages.map((message, index) => (
+                            <button
+                              key={index}
+                              className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                              onClick={() => {
+                                handleSendChatMessage(message);
+                                setSelectedCategory(null);
+                              }}
+                            >
+                              {message}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
+                    <div>Быстрые ответы</div>
+                    <div className="scrollbar-hidden flex w-full gap-8 overflow-x-auto whitespace-nowrap">
+                      {chatData.map((category) => (
+                        <div
+                          className="flex items-center justify-start gap-2"
                           key={category.category}
-                          className="flex-shrink-0 rounded-full py-2 text-black hover:bg-gray-200"
-                          onClick={() => {
-                            setSelectedCategory(
-                              selectedCategory === category.category
-                                ? null
-                                : category.category,
-                            );
-                          }}
                         >
-                          {category.category}
-                        </button>
-                        <div className="flex items-center justify-center">
+                          <button
+                            className="flex-shrink-0 rounded-full py-2 text-black hover:bg-gray-200"
+                            onClick={() => setSelectedCategory(category.category)}
+                          >
+                            {category.category}
+                          </button>
                           <ChevronUp className="h-5 w-5" />
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
-              {isOwner ? (
+
+              {/* Bottom action bar */}
+              {isOwner && (
                 <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
                   <div
                     className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
-                    onClick={() => {
-                      setIsEndOpen(true);
-                    }}
+                    onClick={() => setIsEndOpen(true)}
                   >
-                    Завершить
+                    Завершить встречу
                   </div>
                 </div>
-              ) : isComplaint ? (
-                <div>
-                  <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
-                    <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
-                      <Info />
-                      Вы пожаловались на эту встречу
-                    </div>
-                    <button
-                      className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
-                      onClick={() => handleUnsendComplaint()}
-                    >
-                      Отозвать жалобу
-                    </button>
-                  </div>
+              )}
+              {!isOwner && isInvited && (
+                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto flex w-full items-center justify-around bg-white px-4 py-4 font-semibold text-black">
+                  <button
+                    className="px-6 py-2 text-[#00A349]"
+                    onClick={() => handleAcceptRequest(invitesForUser[0])}
+                  >
+                    Принять приглашение
+                  </button>
+                  <button
+                    className="px-6 py-2 text-[#FF4D4F]"
+                    onClick={() => handleDeclineRequest(invitesForUser[0])}
+                  >
+                    Отклонить
+                  </button>
                 </div>
-              ) : (
+              )}
+              {!isOwner && !isInvited && isRequestParticipant && (
+                <div className="fixed right-0 bottom-0 left-0 z-50 flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 font-semibold text-black">
+                  <button
+                    className="flex-1 py-3"
+                    onClick={() => leaveMeeting.mutate({ id: meeting?.id! })}
+                  >
+                    Отменить запрос
+                  </button>
+                </div>
+              )}
+              {!isOwner && !isInvited && isParticipant && (
+                <div className="fixed right-0 bottom-0 left-0 z-50 flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 font-semibold text-black">
+                  <button
+                    className="flex-1 py-3"
+                    onClick={() => leaveMeeting.mutate({ id: meeting?.id! })}
+                  >
+                    Выйти из встречи
+                  </button>
+                </div>
+              )}
+              {!isOwner && !isInvited && !isRequestParticipant && !isParticipant && (
                 <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
                   <div
                     className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
                     onClick={() => handleJoin()}
                   >
-                    {isOwner ? (
-                      <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
-                        <div>Управление</div>
-                      </ManageDrawer>
-                    ) : isParticipant ? (
-                      "Выйти"
-                    ) : isRequestParticipant ? (
-                      "Отменить запрос"
-                    ) : (
-                      "Откликнуться"
-                    )}
+                    Откликнуться
                   </div>
                   <div className="flex flex-col items-center">
                     <div
@@ -837,7 +855,6 @@ function RouteComponent() {
               )}
             </>
           )}
-
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
           {isComplaintOpen && (
             <ComplaintDrawer

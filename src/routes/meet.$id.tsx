@@ -243,9 +243,7 @@ function RouteComponent() {
     window.history.back();
   };
 
-  // Handler for accepting an invitation (owner invited me)
   const handleAcceptInvite = (invite: any) => {
-    // Update participants cache: convert pending invitation to accepted, or add if missing
     queryClient.setQueryData(
       trpc.meetings.getParticipants.queryKey(),
       (old: any = []) => {
@@ -261,16 +259,6 @@ function RouteComponent() {
             index === existingIndex ? { ...p, status: "accepted" } : p,
           );
         }
-
-        return [
-          ...old,
-          {
-            fromUserId: invite.fromUserId,
-            toUserId: user?.id!,
-            meetId: invite.meetId,
-            status: "accepted",
-          },
-        ];
       },
     );
     queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>

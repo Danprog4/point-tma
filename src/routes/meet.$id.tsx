@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,11 +18,10 @@ import { MeetInfo } from "~/components/MeetInfo";
 import { MeetParticipations } from "~/components/MeetParticipations";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
+import { useMeetPage } from "~/hooks/useMeetPage";
 import { usePlatform } from "~/hooks/usePlatform";
-import { useRequests } from "~/hooks/useRequests";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
-import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
@@ -32,50 +30,53 @@ export const Route = createFileRoute("/meet/$id")({
 function RouteComponent() {
   useScroll();
   const [isParticipantPage, setIsParticipantPage] = useState(false);
-  const [isOwnerState, setIsOwnerState] = useState(false);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
-  const [page, setPage] = useState("info");
+  const [page, setPage] = useState<"info" | "participants" | "chat">("info");
   const [complaint, setComplaint] = useState("");
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
-  const [isClicked, setIsClicked] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [participants, setParticipants] = useState<number[]>([]);
+  const [selectedFriends, setSelectedFriends] = useState<number[]>([]);
   // Gallery & photo state
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(undefined);
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const trpc = useTRPC();
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
-  const [selectedFriends, setSelectedFriends] = useState<any[]>([]);
   const { id } = Route.useParams();
-  const queryClient = useQueryClient();
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
-  const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
-
-  // Единый hook заявок / приглашений (после получения meetingsData)
-  const { requests, accept, decline } = useRequests(
-    user?.id,
-    meetingsData || [],
-    users || [],
-  );
-  const endMeeting = useMutation(trpc.meetings.endMeeting.mutationOptions());
-  const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
-  const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
-  const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
-  // Ref to keep the chat scrolled to the newest message
+  const meetId = Number(id);
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
-  const { data: chatMessages } = useQuery(
-    trpc.meetings.getMessages.queryOptions({ meetId: Number(id) }),
-  );
+  const {
+    users,
+    user,
+    friends,
+    chatMessages,
+    meeting,
+    organizer,
+    isOwner,
+    isParticipant,
+    isRequestParticipant,
+    isComplaint,
+    isInvited,
+    userRating,
+    meetRating,
+    invitesForUser,
+    filteredRequests,
+    invitedUsers,
+    allParticipantIds,
+    handleJoin,
+    handleEndMeeting,
+    handleSendComplaint,
+    handleUnsendComplaint,
+    handleRateUsers,
+    accept,
+    decline,
+    inviteUsersByIds,
+    handleSendChatMessage,
+  } = useMeetPage(meetId);
 
   // Scroll chat to the bottom whenever the messages list or page changes
   useEffect(() => {
@@ -96,422 +97,24 @@ function RouteComponent() {
     };
   }, [page]);
 
-  const sendChatMessage = useMutation(
-    trpc.meetings.sendMessage.mutationOptions({
-      onSuccess: (newMessage: any) => {
-        queryClient.setQueryData(
-          trpc.meetings.getMessages.queryKey(),
-          (old: any[] = []) => [...old, newMessage],
-        );
-      },
-      onError: (err: any) => {
-        toast.error(err.message || "Ошибка отправки сообщения");
-      },
-    }),
-  );
-
-  const handleSendChatMessage = (msg: string) => {
-    if (!meeting?.id) return;
-    const now = Date.now();
-    const recent = chatTimestamps.filter((t) => now - t < 60_000);
-    if (recent.length >= 2) {
-      toast.error("Можно отправлять не более 2 сообщений в минуту");
-      return;
-    }
-    setChatTimestamps([...recent, now]);
-    sendChatMessage.mutate({ meetId: meeting.id, message: msg });
-  };
-
-  const meetingsWithEvents = useMemo(() => {
-    return meetingsData?.map((meeting) => {
-      const organizer = users?.find((u) => u.id === meeting.userId);
-
-      return {
-        ...meeting,
-        organizer,
-      };
-    });
-  }, [meetingsData, users]);
-
-  const meeting = useMemo(() => {
-    return meetingsWithEvents?.find((m) => m.id === parseInt(id));
-  }, [meetingsWithEvents, id]);
+  const handleBack = () => window.history.back();
 
   const allPhotos = useMemo(() => {
     return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
   }, [mainPhoto, galleryPhotos]);
 
-  // Sync local state when fetched meeting changes
+  // Sync local photo state when meeting changes
   useEffect(() => {
     setMainPhoto(meeting?.image || undefined);
     setGalleryPhotos(meeting?.gallery ?? []);
   }, [meeting?.image, meeting?.gallery]);
 
-  const handleUnsendComplaint = () => {
-    unsendComplaint.mutate({ id: meeting?.id! });
-
-    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
-      return old.filter((c: any) => c.meetId !== meeting?.id);
-    });
-  };
-
-  const organizer = meetingsWithEvents?.find(
-    (m) => m.id === parseInt(id) && m.name === meeting?.name,
-  )?.organizer;
-
-  const joinMeeting = useMutation(trpc.meetings.joinMeeting.mutationOptions());
-  const leaveMeeting = useMutation(trpc.meetings.leaveMeeting.mutationOptions());
-  const { data: userParticipants } = useQuery(
-    trpc.meetings.getParticipants.queryOptions(),
-  );
-
-  const isParticipant = useMemo(() => {
-    return userParticipants?.some(
-      (p) =>
-        p.meetId === meeting?.id &&
-        (p.fromUserId === user?.id || p.toUserId === user?.id) &&
-        p.status === "accepted",
-    );
-  }, [userParticipants, meeting?.id, user?.id]);
-
-  const isRequestParticipant = useMemo(() => {
-    return userParticipants
-      ?.filter((p) => p.status === "pending")
-      .some(
-        (p) =>
-          p.meetId === meeting?.id &&
-          (p.fromUserId === user?.id || p.toUserId === user?.id),
-      );
-  }, [userParticipants, meeting?.id, user?.id]);
-
-  const isOwner = useMemo(() => {
-    return organizer?.id === user?.id;
-  }, [organizer?.id, user?.id]);
-
-  const handleJoin = () => {
-    if (isOwner) {
-      return;
-    }
-
-    if (isParticipant || isRequestParticipant) {
-      leaveMeeting.mutate({ id: meeting?.id! });
-      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => {
-        return old.filter((p: any) => p.meetId !== meeting?.id);
-      });
-      queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) => {
-        return old.filter((r: any) => r.meetId !== meeting?.id);
-      });
-      queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) => {
-        return old.map((r: any) =>
-          r.id == meeting?.id
-            ? {
-                ...r,
-                participantsIds: r.participantsIds.filter((p: any) => p !== user?.id),
-              }
-            : r,
-        );
-      });
-    } else {
-      joinMeeting.mutate({ id: meeting?.id! });
-      // Optimistically add pending participant row so UI switches to "Отменить запрос"
-      queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) => [
-        ...(old || []),
-        {
-          fromUserId: user?.id!,
-          toUserId: organizer?.id!,
-          meetId: meeting?.id!,
-          status: "pending",
-        },
-      ]);
-      // No participantsIds update yet for pending request
-    }
-  };
-
-  const handleBack = () => {
-    if (isClicked) {
-      setIsClicked(false);
-      return;
-    }
-
-    window.history.back();
-  };
-
-  const handleAcceptInvite = (invite: any) => {
-    accept(invite);
-
-    // Optimistically remove invitation row so isInvited switches to false
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
-      old.filter(
-        (r: any) =>
-          !(
-            r.meetId === invite.meetId &&
-            r.fromUserId === invite.fromUserId &&
-            r.toUserId === user?.id &&
-            r.status === "pending" &&
-            !r.isRequest
-          ),
-      ),
-    );
-    queryClient.setQueryData(
-      trpc.meetings.getParticipants.queryKey(),
-      (old: any = []) => {
-        const existingIndex = old.findIndex(
-          (p: any) =>
-            p.meetId === invite.meetId &&
-            p.fromUserId === invite.fromUserId &&
-            p.toUserId === user?.id,
-        );
-
-        if (existingIndex >= 0) {
-          return old.map((p: any, index: number) =>
-            index === existingIndex ? { ...p, status: "accepted" } : p,
-          );
-        }
-      },
-    );
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
-      old.map((m: any) =>
-        m.id === invite.meetId
-          ? {
-              ...m,
-              participantsIds: Array.from(
-                new Set([...(m.participantsIds || []), user?.id!]),
-              ),
-            }
-          : m,
-      ),
-    );
-  };
-
-  const handleSendComplaint = () => {
-    sendComplaint.mutate({ meetId: meeting?.id!, complaint: complaint });
-
-    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
-      return [
-        ...(old || []),
-        { meetId: meeting?.id!, userId: user?.id!, complaint: complaint },
-      ];
-    });
-  };
-
-  const isComplaint = useMemo(() => {
-    return complaints?.some((c) => c.meetId === meeting?.id && c.userId === user?.id);
-  }, [complaints, meeting?.id, user?.id]);
-
-  const handleEndMeeting = () => {
-    endMeeting.mutate({ id: meeting?.id! });
-
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) => {
-      return old.map((m: any) =>
-        m.id === meeting?.id ? { ...m, isCompleted: true } : m,
-      );
-    });
-  };
-
-  const rateUsers = useMutation(
-    trpc.main.rateUsers.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: trpc.main.getUserRating.queryKey() });
-      },
-    }),
-  );
-
-  const handleRateUsers = (userIds: number[], rating: number) => {
-    rateUsers.mutate({ userIds, rating, meetId: meeting?.id! });
-  };
-
-  const { data: userRating } = useQuery(
-    trpc.main.getUserRating.queryOptions({
-      meetId: meeting?.id!,
-    }),
-  );
-
-  const { data: meetRating } = useQuery(
-    trpc.main.getMeetRating.queryOptions({
-      meetId: meeting?.id!,
-    }),
-  );
-
-  // requests теперь получаем из useRequests
-  const filteredRequests = useMemo(() => {
-    console.log(requests, "requests");
-    return requests?.filter(
-      (r) =>
-        r.meetId === meeting?.id &&
-        r.status === "pending" &&
-        r.toUserId === user?.id &&
-        r.isRequest,
-    );
-  }, [requests, meeting?.id]);
-
-  const invitedUsers = useMemo(() => {
-    return requests?.filter(
-      (r) =>
-        r.meetId === meeting?.id &&
-        r.status === "pending" &&
-        r.fromUserId === user?.id &&
-        !r.isRequest,
-    );
-  }, [requests, meeting?.id, user?.id]);
-
-  // Re-add pending invitations to me
-  const invitesForUser = requests
-    ? requests.filter(
-        (r) =>
-          r.meetId === meeting?.id &&
-          r.status === "pending" &&
-          r.toUserId === user?.id &&
-          !r.isRequest,
-      )
-    : [];
-  const isInvited = invitesForUser.length > 0;
-
-  // accept / decline функции уже приходят из useRequests
-  const handleAcceptRequest = (request: any) => {
-    // optimistic cache updates -----------------------
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
-      old.filter(
-        (r: any) =>
-          !(
-            r.meetId === request.meetId &&
-            r.fromUserId === request.fromUserId &&
-            r.toUserId === user?.id &&
-            r.status === "pending" &&
-            r.isRequest
-          ),
-      ),
-    );
-    queryClient.setQueryData(
-      trpc.meetings.getParticipants.queryKey(),
-      (old: any = []) => {
-        const updated = old.map((p: any) =>
-          p.meetId === request.meetId &&
-          p.fromUserId === request.fromUserId &&
-          p.toUserId === user?.id
-            ? { ...p, status: "accepted" }
-            : p,
-        );
-        const exists = updated.some(
-          (p: any) =>
-            p.meetId === request.meetId &&
-            p.fromUserId === request.fromUserId &&
-            p.toUserId === user?.id &&
-            p.status === "accepted",
-        );
-        return exists
-          ? updated
-          : [
-              ...updated,
-              {
-                fromUserId: request.fromUserId,
-                toUserId: user?.id!,
-                meetId: request.meetId,
-                status: "accepted",
-              },
-            ];
-      },
-    );
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
-      old.map((m: any) =>
-        m.id === request.meetId
-          ? {
-              ...m,
-              participantsIds: Array.from(
-                new Set([...(m.participantsIds || []), request.fromUserId]),
-              ),
-            }
-          : m,
-      ),
-    );
-    // server call -----------------------------------
-    accept(request);
-  };
-
-  const handleDeclineRequest = (request: any) => {
-    // Optimistically remove pending row from participants and requests
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
-      old.filter(
-        (r: any) =>
-          !(
-            r.meetId === request.meetId &&
-            r.fromUserId === request.fromUserId &&
-            r.toUserId === user?.id &&
-            r.status === "pending"
-          ),
-      ),
-    );
-    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any = []) =>
-      old.filter(
-        (p: any) =>
-          !(
-            p.meetId === request.meetId &&
-            p.fromUserId === request.fromUserId &&
-            p.toUserId === user?.id &&
-            p.status === "pending"
-          ),
-      ),
-    );
-    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
-      old.map((m: any) =>
-        m.id === request.meetId
-          ? {
-              ...m,
-              participantsIds: (m.participantsIds || []).filter(
-                (uid: any) => uid !== user?.id,
-              ),
-            }
-          : m,
-      ),
-    );
-    // server call
-    decline(request);
-  };
-
-  const inviteUsers = useMutation(
-    trpc.meetings.inviteUsers.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getRequests.queryKey(),
-        });
-      },
-    }),
-  );
-
-  const handleInvite = () => {
-    if (selectedFriends.length > 0 && isDrawerOpen!) {
-      inviteUsers.mutate({
-        meetId: meeting?.id!,
-        userIds: selectedFriends,
-      });
-    }
-  };
-
+  // Simplified: back button only
+  const handleAcceptInvite = (invite: any) => accept(invite);
+  const handleDeclineRequest = (request: any) => decline(request);
   useEffect(() => {
-    console.log(requests, "requests");
-    if (requests && requests?.length > 0) {
-      const filteredRequests = requests.filter(
-        (r) =>
-          r.meetId === meeting?.id &&
-          r.status === "pending" &&
-          r.toUserId === user?.id &&
-          r.isRequest,
-      );
-      console.log(filteredRequests, "filteredRequests");
-
-      setParticipants(
-        requests
-          .filter((r) => r.meetId === meeting?.id && r.status === "accepted")
-          .map((r) => r.fromUserId)
-          .filter((userId): userId is number => userId !== null),
-      );
-      console.log(participants, "participants");
-      setSelectedFriends(filteredRequests.map((r) => r.toUserId));
-    }
-  }, [requests]);
-
-  useEffect(() => {
-    if (selectedFriends.length > 0 && isDrawerOpen!) {
-      handleInvite();
+    if (selectedFriends.length > 0 && isDrawerOpen) {
+      inviteUsersByIds(selectedFriends);
     }
   }, [selectedFriends, isDrawerOpen]);
 
@@ -527,7 +130,7 @@ function RouteComponent() {
           users={users || []}
           handleRateUsers={handleRateUsers}
           userRating={userRating}
-          isOwner={isOwnerState}
+          isOwner={isOwner}
           organizer={organizer}
         />
       ) : (
@@ -594,7 +197,7 @@ function RouteComponent() {
                 <MeetHeader
                   isMobile={isMobile}
                   page={page}
-                  setPage={setPage}
+                  setPage={(p: string) => setPage(p as any)}
                   mainPhoto={mainPhoto}
                   meeting={meeting as any}
                   user={user as any}
@@ -619,12 +222,12 @@ function RouteComponent() {
                 users={users}
                 user={user}
                 getImageUrl={getImageUrl}
-                handleAcceptRequest={handleAcceptRequest}
+                handleAcceptRequest={handleAcceptInvite}
                 handleDeclineRequest={handleDeclineRequest}
                 filteredRequests={filteredRequests}
                 invitedUsers={invitedUsers}
                 organizer={organizer}
-                handleInvite={handleInvite}
+                handleInvite={() => {}}
                 setIsDrawerOpen={setIsDrawerOpen}
               />
             )}
@@ -646,7 +249,6 @@ function RouteComponent() {
                 className="z-[10001] cursor-pointer px-4 py-5 text-[#9924FF]"
                 onClick={() => {
                   setIsParticipantPage(true);
-                  setIsOwnerState(isOwner);
                 }}
               >
                 {isOwner ? "Оценить участников" : "Оценить встречу"}
@@ -748,7 +350,7 @@ function RouteComponent() {
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
           {isComplaintOpen && (
             <ComplaintDrawer
-              handleSendComplaint={handleSendComplaint}
+              handleSendComplaint={() => handleSendComplaint(complaint)}
               complaint={complaint}
               setComplaint={setComplaint}
               open={isComplaintOpen}
@@ -787,8 +389,8 @@ function RouteComponent() {
           getImageUrl={getImageUrl}
           user={user}
           users={users || []}
-          participants={participants}
-          setParticipants={setParticipants}
+          participants={allParticipantIds}
+          setParticipants={() => {}}
         />
       )}
     </div>

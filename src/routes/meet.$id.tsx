@@ -76,6 +76,7 @@ function RouteComponent() {
     decline,
     inviteUsersByIds,
     handleSendChatMessage,
+    handleDeleteParticipant,
   } = useMeetPage(meetId);
 
   // Scroll chat to the bottom whenever the messages list or page changes
@@ -218,6 +219,8 @@ function RouteComponent() {
             )}
             {page === "participants" && (
               <MeetParticipations
+                isOwner={isOwner}
+                handleDeleteParticipant={handleDeleteParticipant}
                 meeting={meeting}
                 users={users}
                 user={user}

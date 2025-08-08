@@ -303,6 +303,47 @@ export const meetingRouter = createTRPCRouter({
     return participants;
   }),
 
+  deleteParticipant: procedure
+    .input(z.object({ userId: z.number(), meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const participant = await db.query.meetParticipantsTable.findFirst({
+        where: and(
+          eq(meetParticipantsTable.meetId, input.meetId),
+          eq(meetParticipantsTable.status, "accepted"),
+          or(
+            and(
+              eq(meetParticipantsTable.fromUserId, input.userId),
+              eq(meetParticipantsTable.toUserId, ctx.userId),
+            ),
+            and(
+              eq(meetParticipantsTable.fromUserId, ctx.userId),
+              eq(meetParticipantsTable.toUserId, input.userId),
+            ),
+          ),
+        ),
+      });
+      if (!participant)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Participant not found" });
+
+      await db
+        .delete(meetParticipantsTable)
+        .where(eq(meetParticipantsTable.id, participant.id));
+
+      const meet = await db.query.meetTable.findFirst({
+        where: eq(meetTable.id, input.meetId),
+      });
+      if (!meet) throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+
+      await db
+        .update(meetTable)
+        .set({
+          participantsIds: (meet.participantsIds || []).filter((p) => p !== input.userId),
+        })
+        .where(eq(meetTable.id, input.meetId));
+
+      return participant;
+    }),
+
   sendRequest: procedure
     .input(
       z.object({

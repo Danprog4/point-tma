@@ -13,6 +13,8 @@ export const MeetParticipations = ({
   invitedUsers,
   organizer,
   handleInvite,
+  handleDeleteParticipant,
+  isOwner,
 }: {
   meeting: any;
   users: any;
@@ -25,6 +27,8 @@ export const MeetParticipations = ({
   invitedUsers: any;
   organizer: any;
   handleInvite: (userIds: number[]) => void;
+  handleDeleteParticipant: (participantId: number) => void;
+  isOwner: boolean;
 }) => {
   return (
     <div className="flex flex-col">
@@ -193,6 +197,14 @@ export const MeetParticipations = ({
                   </div>
                 </div>
               </div>
+              {isOwner && user?.id !== organizer?.id && (
+                <div
+                  className="rounded-lg bg-[#F8F0FF] p-2 text-sm text-[#721DBD]"
+                  onClick={() => handleDeleteParticipant(user?.id)}
+                >
+                  Исключить
+                </div>
+              )}
             </div>
           </div>
         );

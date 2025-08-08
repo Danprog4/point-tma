@@ -81,6 +81,9 @@ export function useMeetPage(meetId: number) {
   const isInvited = invitesForUser.length > 0;
 
   // Mutations
+  const deleteParticipant = useMutation(
+    trpc.meetings.deleteParticipant.mutationOptions(),
+  );
   const endMeeting = useMutation(trpc.meetings.endMeeting.mutationOptions());
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
@@ -204,6 +207,24 @@ export function useMeetPage(meetId: number) {
     inviteUsers.mutate({ meetId: meeting.id, userIds });
   };
 
+  const handleDeleteParticipant = (userId: number) => {
+    if (!meeting?.id) return;
+    deleteParticipant.mutate({ userId, meetId: meeting.id });
+    qc.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) =>
+      (old || []).filter((p: any) => p.toUserId !== userId),
+    );
+    qc.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
+      (old || []).map((m: any) =>
+        m.id === meeting?.id
+          ? {
+              ...m,
+              participantsIds: (m.participantsIds || []).filter((p: any) => p !== userId),
+            }
+          : m,
+      ),
+    );
+  };
+
   const allParticipantIds = useMemo(() => {
     const ids = [organizer?.id, ...(meeting?.participantsIds || [])]
       .map((n) => Number(n))
@@ -248,5 +269,6 @@ export function useMeetPage(meetId: number) {
     decline,
     inviteUsersByIds,
     handleSendChatMessage,
+    handleDeleteParticipant,
   };
 }

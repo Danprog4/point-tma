@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/people")({
 });
 
 function RouteComponent() {
+  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const isMobile = usePlatform();
   const [search, setSearch] = useState("");
@@ -30,6 +31,38 @@ function RouteComponent() {
       user.login?.toLowerCase().includes(search.toLowerCase())
     );
   });
+
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+
+  const { data: userFavorites } = useQuery(trpc.main.getUserFavorites.queryOptions());
+  const addToFavorites = useMutation(trpc.main.addToFavorites.mutationOptions());
+  const removeFromFavorites = useMutation(
+    trpc.main.removeFromFavorites.mutationOptions(),
+  );
+
+  const isFavorite = useMemo(
+    () => (favUserId: number) => userFavorites?.some((f) => f.toUserId === favUserId),
+    [userFavorites],
+  );
+
+  const handleToFavorites = (favUserId: number) => {
+    if (isFavorite(favUserId)) {
+      removeFromFavorites.mutate({ userId: favUserId, type: "user" });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return old.filter(
+          (f: any) => f.toUserId !== favUserId && f.fromUserId !== user?.id,
+        );
+      });
+    } else {
+      addToFavorites.mutate({ userId: favUserId, type: "user" });
+      queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), (old: any) => {
+        return [
+          ...(old || []),
+          { fromUserId: user?.id!, toUserId: favUserId, type: "user" },
+        ];
+      });
+    }
+  };
 
   return (
     <div
@@ -69,12 +102,12 @@ function RouteComponent() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {filteredUsers?.map((user) => (
-          <div key={user.id}>
+        {filteredUsers?.map((u) => (
+          <div key={u.id}>
             <div className="flex flex-col items-start justify-center">
               <img
-                src={user.photo ? getImageUrl(user.photo) : user.photoUrl || ""}
-                alt={user.name || ""}
+                src={u.photo ? getImageUrl(u.photo) : u.photoUrl || ""}
+                alt={u.name || ""}
                 className="h-60 w-full rounded-lg object-cover"
               />
               <div className="flex w-full items-center justify-between px-4 py-4">
@@ -85,7 +118,7 @@ function RouteComponent() {
                     </div>
                   </div>
                   <div className="font-bold text-nowrap">
-                    {user.name} {user.surname}
+                    {u.name} {u.surname}
                   </div>
                 </div>
 
@@ -93,23 +126,28 @@ function RouteComponent() {
                   className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // handleToFavorites();
+                    handleToFavorites(u.id);
                   }}
                 >
-                  <Heart className={cn("h-6 w-6 text-black", true && "text-red-500")} />
+                  <Heart
+                    className={cn(
+                      "h-6 w-6 text-black",
+                      isFavorite(u.id) && "text-red-500",
+                    )}
+                  />
                 </button>
               </div>
               <div className="flex w-full items-center justify-between px-4 pb-4">
                 <div className="text-sm text-neutral-500">
-                  г. {user?.city}, {getAge(user?.birthday) || "не указано"}
+                  г. {u?.city}, {getAge(u?.birthday) || "не указано"}
                 </div>
                 <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
               </div>
               <div className="px-4">
                 <div className="text-sm">
-                  {user.bio?.length && user.bio?.length > 100
-                    ? user.bio?.slice(0, 100) + "..."
-                    : user.bio || "не указано"}
+                  {u.bio?.length && u.bio?.length > 100
+                    ? u.bio?.slice(0, 100) + "..."
+                    : u.bio || "не указано"}
                 </div>
               </div>
             </div>

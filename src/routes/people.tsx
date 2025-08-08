@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { useMemo, useState } from "react";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
+import { useScroll } from "~/components/hooks/useScroll";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import PeopleDrawer from "~/components/PeopleDrawer";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -17,11 +19,15 @@ export const Route = createFileRoute("/people")({
 });
 
 function RouteComponent() {
+  useScroll();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
   const isMobile = usePlatform();
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
 
   const filteredUsers = users?.filter((user) => {
@@ -105,11 +111,29 @@ function RouteComponent() {
         {filteredUsers?.map((u) => (
           <div key={u.id}>
             <div className="flex flex-col items-start justify-center">
-              <img
-                src={u.photo ? getImageUrl(u.photo) : u.photoUrl || ""}
-                alt={u.name || ""}
-                className="h-60 w-full rounded-lg object-cover"
-              />
+              <div className="relative w-full">
+                <img
+                  src={u.photo ? getImageUrl(u.photo) : u.photoUrl || ""}
+                  alt={u.name || ""}
+                  className="h-60 w-full rounded-lg object-cover"
+                  onClick={() => {
+                    navigate({
+                      to: "/user-profile/$id",
+                      params: { id: u.id.toString() },
+                    });
+                  }}
+                />
+                <div
+                  onClick={() => {
+                    setSelectedUser(u.id);
+                    setIsDrawerOpen(true);
+                  }}
+                  className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
+                >
+                  <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
+                </div>
+              </div>
+
               <div className="flex w-full items-center justify-between px-4 py-4">
                 <div className="flex items-center justify-center gap-2">
                   <div className="relative flex items-center">
@@ -154,6 +178,15 @@ function RouteComponent() {
           </div>
         ))}
       </div>
+      <PeopleDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        user={selectedUser}
+        onHide={() => {}}
+        onComplain={() => {}}
+        onSave={() => {}}
+        onShare={() => {}}
+      />
     </div>
   );
 }

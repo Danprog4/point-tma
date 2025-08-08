@@ -1,29 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { format } from "date-fns";
-import {
-  ArrowLeft,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  X as XIcon,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Chat } from "~/components/Chat";
+import { ChatMessages } from "~/components/ChatMessages";
+import { ChatNav } from "~/components/ChatNav";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import EndMeetDrawer from "~/components/EndMeetDrawer";
+import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { useScroll } from "~/components/hooks/useScroll";
-import { CloseRed } from "~/components/Icons/CloseRed";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { Info } from "~/components/Icons/Info";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
 import { MeetHeader } from "~/components/MeetHeader";
 import { MeetInfo } from "~/components/MeetInfo";
+import { MeetParticipations } from "~/components/MeetParticipations";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
-import { chatData } from "~/config/chat";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
@@ -614,257 +609,29 @@ function RouteComponent() {
               </>
             )}
             {page === "participants" && (
-              <div className="flex flex-col">
-                {meeting?.userId === user?.id && (
-                  <button
-                    onClick={() => {
-                      setIsDrawerOpen(true);
-                    }}
-                    disabled={
-                      meeting?.maxParticipants !== undefined &&
-                      meeting?.maxParticipants !== null &&
-                      meeting?.maxParticipants <= (meeting?.participantsIds?.length || 0)
-                    }
-                    className="mx-4 flex items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#F8F0FF] px-4 py-3 text-[#721DBD]"
-                  >
-                    Пригласить участников
-                  </button>
-                )}
-                <div className="flex flex-col gap-2 px-4 py-4">
-                  <div className="items-cetner flex justify-between">
-                    <div>Количество участников</div>
-                    <div>
-                      {Number(meeting?.participantsIds?.length || 0)} из{" "}
-                      {meeting?.maxParticipants || "не ограничено"}
-                    </div>
-                  </div>
-                  <div className="h-1 w-full bg-[#9924FF]"></div>
-                </div>
-                {user?.id === meeting?.userId && (
-                  <>
-                    <div className="mx-4 flex items-center justify-start text-xl font-bold">
-                      Входящие заявки
-                    </div>
-                    {filteredRequests && filteredRequests?.length > 0 ? (
-                      filteredRequests?.map((r) => {
-                        const user = users?.find((u) => u.id === r.fromUserId);
-                        return (
-                          <div key={r?.id}>
-                            <div className="flex items-center justify-between px-4 py-4">
-                              <div className="flex items-center justify-start gap-2">
-                                <div
-                                  className="mr-4 p-2"
-                                  onClick={() => handleDeclineRequest(r)}
-                                >
-                                  <CloseRed />
-                                </div>
-                                <img
-                                  src={getImageUrl(user?.photo || "")}
-                                  alt=""
-                                  className="h-14 w-14 rounded-lg"
-                                />
-                                <div className="flex flex-col items-start justify-between">
-                                  <div className="text-lg">
-                                    {user?.name} {user?.surname}
-                                  </div>
-                                  <div>{user?.login}</div>
-                                </div>
-                              </div>
-                              <div
-                                className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                                onClick={() => handleAcceptRequest(r)}
-                              >
-                                <Check />
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-4 py-4 text-sm text-neutral-500">
-                        Заявок на встречу пока нет
-                      </div>
-                    )}
-
-                    <div className="mx-4 flex items-center justify-start text-xl font-bold">
-                      Приглашения
-                    </div>
-                    {invitedUsers && invitedUsers.length > 0 ? (
-                      invitedUsers?.map((i) => {
-                        const user = users?.find((u) => u.id === i.toUserId);
-                        return (
-                          <div key={i.id + "r"}>
-                            <div className="flex items-center justify-between px-4 py-4 pb-4">
-                              <div className="flex items-center justify-start gap-2">
-                                <img
-                                  src={getImageUrl(user?.photo || "")}
-                                  alt=""
-                                  className="h-14 w-14 rounded-lg"
-                                />
-                                <div className="flex flex-col items-start justify-between">
-                                  <div className="text-lg">
-                                    {user?.name} {user?.surname}
-                                  </div>
-                                  <div>{user?.login}</div>
-                                </div>
-                              </div>
-                              {(() => {
-                                const participantIds = Array.from(
-                                  new Set(
-                                    [organizer?.id, ...(meeting?.participantsIds || [])]
-                                      .map((id) => Number(id))
-                                      .filter(Boolean),
-                                  ),
-                                );
-
-                                if (participantIds.includes(user?.id || 0)) {
-                                  return (
-                                    <div className="text-sm text-nowrap text-[#00A349]">
-                                      Участник
-                                    </div>
-                                  );
-                                } else {
-                                  return (
-                                    <div className="text-sm text-nowrap text-[#FFA500]">
-                                      Приглашен(-а)
-                                    </div>
-                                  );
-                                }
-                              })()}
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="px-4 py-4 text-sm text-neutral-500">
-                        Никто не был приглашен на встречу
-                      </div>
-                    )}
-                  </>
-                )}
-
-                <div className="mx-4 flex items-center justify-start text-xl font-bold">
-                  Участники
-                </div>
-
-                {(() => {
-                  const participantIds = Array.from(
-                    new Set(
-                      [organizer?.id, ...(meeting?.participantsIds || [])]
-                        .map((id) => Number(id))
-                        .filter(Boolean),
-                    ),
-                  );
-                  return participantIds;
-                })().map((p) => {
-                  const user = users?.find((u) => u.id === Number(p));
-                  return (
-                    <div
-                      key={`participant-${p}`}
-                      className="flex flex-col gap-2 px-4 py-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-10 w-10 rounded-full bg-gray-200">
-                            {(() => {
-                              const imgSrc = user?.photo
-                                ? getImageUrl(user.photo)
-                                : user?.photoUrl;
-                              return imgSrc ? (
-                                <img
-                                  src={imgSrc}
-                                  alt={user?.name || ""}
-                                  className="h-10 w-10 rounded-full"
-                                />
-                              ) : null;
-                            })()}
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="text-lg font-bold">
-                              {user?.name} {user?.surname}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {user?.id === organizer?.id ? "Организатор" : "Участник"}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <MeetParticipations
+                meeting={meeting}
+                users={users}
+                user={user}
+                getImageUrl={getImageUrl}
+                handleAcceptRequest={handleAcceptRequest}
+                handleDeclineRequest={handleDeclineRequest}
+                filteredRequests={filteredRequests}
+                invitedUsers={invitedUsers}
+                organizer={organizer}
+                handleInvite={handleInvite}
+                setIsDrawerOpen={setIsDrawerOpen}
+              />
             )}
             {page === "chat" && (
-              <div className="flex flex-col overflow-y-hidden">
-                <div className="relative flex h-[10vh] w-full items-center justify-center overflow-y-hidden">
-                  <img
-                    src={getImageUrl(meeting?.image || "")}
-                    alt=""
-                    className="h-full w-full rounded-t-2xl object-cover"
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="text-xl font-bold text-white">{meeting?.name}</div>
-                    <div className="flex items-center justify-center rounded-full bg-[#DFD2EA] px-2 text-sm text-black">
-                      {meeting?.type}
-                    </div>
-                  </div>
-                </div>
-                <div className="h-[44vh] w-full space-y-2 overflow-y-auto bg-[#EBF1FF] p-4">
-                  {chatMessages?.map((m: any) => {
-                    const sender = users?.find((u) => u.id === m.userId);
-                    const isCurrentUser = sender?.id === user?.id;
-                    return (
-                      <div
-                        key={m.id}
-                        className={`flex items-end gap-2 ${isCurrentUser ? "justify-end" : "justify-start"}`}
-                      >
-                        {!isCurrentUser && (
-                          <img
-                            src={getImageUrl(sender?.photo || "")}
-                            alt=""
-                            onClick={() => {
-                              navigate({
-                                to: "/user-profile/$id",
-                                params: {
-                                  id: sender?.id?.toString() || "",
-                                },
-                              });
-                            }}
-                            className="h-[30px] w-[30px] rounded-lg"
-                          />
-                        )}
-                        <div
-                          className={`relative flex w-[60%] flex-col gap-0.5 rounded-lg px-2 pt-2 pb-4 ${
-                            isCurrentUser ? "bg-[#FFF7D7]" : "bg-[#A3BDFF]"
-                          }`}
-                        >
-                          <span className="text-xs text-gray-600">
-                            {sender?.name} {sender?.surname}
-                          </span>
-                          <span className="text-sm text-black">{m.message}</span>
-                          <div className="absolute right-2 bottom-2 text-xs text-gray-600">
-                            {format(new Date(m.createdAt), "HH:mm")}
-                          </div>
-                        </div>
-                        {isCurrentUser && (
-                          <img
-                            src={getImageUrl(sender?.photo || "")}
-                            alt=""
-                            onClick={() => {
-                              navigate({
-                                to: "/profile",
-                              });
-                            }}
-                            className="h-[30px] w-[30px] rounded-lg"
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                  {/* Dummy element to anchor the scroll position at the bottom */}
-                  <div ref={chatBottomRef} />
-                </div>
-              </div>
+              <Chat
+                meeting={meeting}
+                chatMessages={chatMessages}
+                users={users}
+                user={user}
+                navigate={navigate}
+                chatBottomRef={chatBottomRef}
+              />
             )}
           </div>
 
@@ -887,55 +654,18 @@ function RouteComponent() {
           ) : (
             <>
               {selectedCategory && page === "chat" && (
-                <div className="fixed right-4 bottom-[8em] left-4 z-[10001] mx-auto rounded-lg bg-white p-3 shadow-lg">
-                  <div className="mb-2 text-sm font-semibold text-gray-700">
-                    {selectedCategory}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {chatData
-                      .find((cat) => cat.category === selectedCategory)
-                      ?.messages.map((message, index) => (
-                        <button
-                          key={index}
-                          className="rounded-lg bg-gray-50 px-3 py-2 text-left text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                          onClick={() => {
-                            handleSendChatMessage(message);
-                            setSelectedCategory(null);
-                          }}
-                        >
-                          {message}
-                        </button>
-                      ))}
-                  </div>
-                </div>
+                <ChatMessages
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  handleSendChatMessage={handleSendChatMessage}
+                />
               )}
 
               {page === "chat" && (
-                <div className="fixed right-0 bottom-20 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-start justify-center gap-4 bg-white px-4 py-4 text-center font-semibold text-black">
-                  <div className="">Быстрые ответы</div>
-                  <div className="scrollbar-hidden flex w-full gap-8 overflow-x-auto whitespace-nowrap">
-                    {chatData.map((category) => (
-                      <div className="flex items-center justify-start gap-2">
-                        <button
-                          key={category.category}
-                          className="flex-shrink-0 rounded-full py-2 text-black hover:bg-gray-200"
-                          onClick={() => {
-                            setSelectedCategory(
-                              selectedCategory === category.category
-                                ? null
-                                : category.category,
-                            );
-                          }}
-                        >
-                          {category.category}
-                        </button>
-                        <div className="flex items-center justify-center">
-                          <ChevronUp className="h-5 w-5" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <ChatNav
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                />
               )}
               {isOwner ? (
                 <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
@@ -1032,41 +762,12 @@ function RouteComponent() {
           )}
 
           {isFullScreen && allPhotos.length > 0 && (
-            <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">
-              {allPhotos.length > 1 && (
-                <ChevronLeft
-                  className="absolute left-4 h-10 w-10 cursor-pointer text-white"
-                  onClick={() =>
-                    setCurrentIndex(
-                      (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
-                    )
-                  }
-                />
-              )}
-
-              {(() => {
-                const imgSrc = allPhotos[currentIndex];
-                return (
-                  <img
-                    src={imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)}
-                    alt="Full view"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                );
-              })()}
-
-              {allPhotos.length > 1 && (
-                <ChevronRight
-                  className="absolute right-4 h-10 w-10 cursor-pointer text-white"
-                  onClick={() => setCurrentIndex((prev) => (prev + 1) % allPhotos.length)}
-                />
-              )}
-
-              <XIcon
-                className="absolute top-24 right-4 h-8 w-8 cursor-pointer text-white"
-                onClick={() => setIsFullScreen(false)}
-              />
-            </div>
+            <FullScreenPhoto
+              allPhotos={allPhotos}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              setIsFullScreen={setIsFullScreen}
+            />
           )}
         </div>
       )}

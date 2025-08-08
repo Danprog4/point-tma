@@ -20,6 +20,7 @@ import { MeetParticipations } from "~/components/MeetParticipations";
 import { More } from "~/components/More";
 import { Participations } from "~/components/Participations";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useRequests } from "~/hooks/useRequests";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
@@ -59,6 +60,13 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+
+  // Единый hook заявок / приглашений (после получения meetingsData)
+  const { requests, accept, decline } = useRequests(
+    user?.id,
+    meetingsData || [],
+    users || [],
+  );
   const endMeeting = useMutation(trpc.meetings.endMeeting.mutationOptions());
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
@@ -229,7 +237,7 @@ function RouteComponent() {
   };
 
   const handleAcceptInvite = (invite: any) => {
-    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
+    accept(invite);
 
     // Optimistically remove invitation row so isInvited switches to false
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
@@ -324,8 +332,7 @@ function RouteComponent() {
     }),
   );
 
-  const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
-
+  // requests теперь получаем из useRequests
   const filteredRequests = useMemo(() => {
     console.log(requests, "requests");
     return requests?.filter(
@@ -359,9 +366,7 @@ function RouteComponent() {
     : [];
   const isInvited = invitesForUser.length > 0;
 
-  const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
-  const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
-
+  // accept / decline функции уже приходят из useRequests
   const handleAcceptRequest = (request: any) => {
     // optimistic cache updates -----------------------
     queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
@@ -419,7 +424,7 @@ function RouteComponent() {
       ),
     );
     // server call -----------------------------------
-    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    accept(request);
   };
 
   const handleDeclineRequest = (request: any) => {
@@ -459,7 +464,7 @@ function RouteComponent() {
       ),
     );
     // server call
-    declineRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
+    decline(request);
   };
 
   const inviteUsers = useMutation(

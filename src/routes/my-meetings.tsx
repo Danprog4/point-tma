@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 
@@ -7,6 +7,7 @@ import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useRequests } from "~/hooks/useRequests";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 
 import { useTRPC } from "~/trpc/init/react";
@@ -16,46 +17,21 @@ export const Route = createFileRoute("/my-meetings")({
 });
 
 function RouteComponent() {
-  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState("Мои встречи");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
-  const { data: requests } = useQuery(trpc.meetings.getRequests.queryOptions());
 
-  const requestsWithInfo = useMemo(() => {
-    return requests
-      ?.filter(
-        (request) =>
-          request.status === "pending" &&
-          request.isRequest &&
-          request.toUserId === user?.id,
-      )
-      ?.map((request) => {
-        const meeting = meetings?.find((m) => m.id === request.meetId);
-        const fromUser = users?.find((user) => user.id === request.fromUserId);
-        return { ...request, meeting, user: fromUser };
-      });
-  }, [requests, meetings, user?.id]);
-
+  // Используем единый hook работы с заявками / приглашениями
+  const {
+    pendingInvitesInfo: invitesWithInfo,
+    pendingRequestsInfo: requestsWithInfo,
+    accept: handleAcceptRequest,
+    decline: handleDeclineRequest,
+  } = useRequests(user?.id, meetings || [], users || []);
   const { data: participants } = useQuery(trpc.meetings.getParticipants.queryOptions());
-
-  const invitesWithInfo = useMemo(() => {
-    return requests
-      ?.filter(
-        (request) =>
-          request.status === "pending" &&
-          request.toUserId === user?.id &&
-          !request.isRequest,
-      )
-      ?.map((request) => {
-        const meeting = meetings?.find((m) => m.id === request.meetId);
-        const fromUser = users?.find((user) => user.id === request.fromUserId);
-        return { ...request, meeting, user: fromUser };
-      });
-  }, [requests, meetings, user?.id]);
 
   const createdMeetings = useMemo(() => {
     return meetings?.filter((m) => m.userId === user?.id) || [];
@@ -85,22 +61,7 @@ function RouteComponent() {
     });
   }, [createdMeetings, acceptedMeetings]);
 
-  const acceptRequest = useMutation(trpc.meetings.acceptRequest.mutationOptions());
-  const declineRequest = useMutation(trpc.meetings.declineRequest.mutationOptions());
-
-  const handleAcceptRequest = (request: any) => {
-    acceptRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
-      return old?.filter((r) => r.id !== request.id);
-    });
-  };
-
-  const handleDeclineRequest = (request: any) => {
-    declineRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
-      return old?.filter((r) => r.id !== request.id);
-    });
-  };
+  // handleAcceptRequest / handleDeclineRequest уже возвращаются из useRequests
 
   const filters = [
     { name: "Мои встречи", count: meetingsWithEvents?.length || 0 },
@@ -204,7 +165,7 @@ function RouteComponent() {
 
       {activeFilter === "Приглашения" && (
         <div className="flex flex-col gap-4">
-          {invitesWithInfo?.map((request) => (
+          {invitesWithInfo?.map((request: any) => (
             <div key={request?.id}>
               <div className="px-4">
                 <div className="flex items-center gap-2 pb-2">
@@ -263,7 +224,7 @@ function RouteComponent() {
 
       {activeFilter === "Заявки" && (
         <div className="flex flex-col gap-4">
-          {requestsWithInfo?.map((request) => (
+          {requestsWithInfo?.map((request: any) => (
             <div key={request?.id}>
               <div className="flex items-center justify-start gap-2 px-4">
                 <img

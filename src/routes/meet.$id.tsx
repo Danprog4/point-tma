@@ -273,7 +273,7 @@ function RouteComponent() {
           : m,
       ),
     );
-    // server call -----------------------------------
+
     acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
   };
 

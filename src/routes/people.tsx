@@ -107,7 +107,7 @@ function RouteComponent() {
         </FilterDrawer>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-8">
         {filteredUsers?.map((u) => (
           <div key={u.id}>
             <div className="flex flex-col items-start justify-center">

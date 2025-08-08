@@ -147,6 +147,7 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
               color: "#fff",
               borderRadius: "16px",
               border: "1px solid white",
+              marginTop: "96px",
             },
           }}
         />

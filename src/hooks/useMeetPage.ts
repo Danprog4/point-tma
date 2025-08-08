@@ -99,10 +99,7 @@ export function useMeetPage(meetId: number) {
   const sendChatMessage = useMutation(
     trpc.meetings.sendMessage.mutationOptions({
       onSuccess: (newMessage: any) => {
-        qc.setQueryData(trpc.meetings.getMessages.queryKey(), (old: any[] = []) => [
-          ...old,
-          newMessage,
-        ]);
+        qc.invalidateQueries({ queryKey: trpc.meetings.getMessages.queryKey() });
       },
       onError: (err: any) => {
         toast.error(err.message || "Ошибка отправки сообщения");

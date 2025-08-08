@@ -152,10 +152,6 @@ function RouteComponent() {
     });
   };
 
-  const isUserMeeting = useMemo(() => {
-    return meetingsWithEvents?.some((m) => m.id === parseInt(id));
-  }, [meetingsWithEvents, user?.id]);
-
   const organizer = meetingsWithEvents?.find(
     (m) => m.id === parseInt(id) && m.name === meeting?.name,
   )?.organizer;
@@ -165,12 +161,6 @@ function RouteComponent() {
   const { data: userParticipants } = useQuery(
     trpc.meetings.getParticipants.queryOptions(),
   );
-
-  const isJoined = useMemo(() => {
-    return userParticipants?.some(
-      (p) => p.meetId === meeting?.id && p.fromUserId === user?.id,
-    );
-  }, [userParticipants, meeting?.id, user?.id]);
 
   const isParticipant = useMemo(() => {
     return userParticipants?.some(
@@ -244,6 +234,21 @@ function RouteComponent() {
   };
 
   const handleAcceptInvite = (invite: any) => {
+    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
+
+    // Optimistically remove invitation row so isInvited switches to false
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
+      old.filter(
+        (r: any) =>
+          !(
+            r.meetId === invite.meetId &&
+            r.fromUserId === invite.fromUserId &&
+            r.toUserId === user?.id &&
+            r.status === "pending" &&
+            !r.isRequest
+          ),
+      ),
+    );
     queryClient.setQueryData(
       trpc.meetings.getParticipants.queryKey(),
       (old: any = []) => {
@@ -273,8 +278,6 @@ function RouteComponent() {
           : m,
       ),
     );
-
-    acceptRequest.mutate({ meetId: invite.meetId, fromUserId: invite.fromUserId });
   };
 
   const handleSendComplaint = () => {
@@ -425,10 +428,43 @@ function RouteComponent() {
   };
 
   const handleDeclineRequest = (request: any) => {
+    // Optimistically remove pending row from participants and requests
+    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any = []) =>
+      old.filter(
+        (r: any) =>
+          !(
+            r.meetId === request.meetId &&
+            r.fromUserId === request.fromUserId &&
+            r.toUserId === user?.id &&
+            r.status === "pending"
+          ),
+      ),
+    );
+    queryClient.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any = []) =>
+      old.filter(
+        (p: any) =>
+          !(
+            p.meetId === request.meetId &&
+            p.fromUserId === request.fromUserId &&
+            p.toUserId === user?.id &&
+            p.status === "pending"
+          ),
+      ),
+    );
+    queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any = []) =>
+      old.map((m: any) =>
+        m.id === request.meetId
+          ? {
+              ...m,
+              participantsIds: (m.participantsIds || []).filter(
+                (uid: any) => uid !== user?.id,
+              ),
+            }
+          : m,
+      ),
+    );
+    // server call
     declineRequest.mutate({ meetId: request.meetId, fromUserId: request.fromUserId });
-    queryClient.setQueryData(trpc.meetings.getRequests.queryKey(), (old) => {
-      return old?.filter((r) => r.id !== request.id);
-    });
   };
 
   const inviteUsers = useMutation(
@@ -658,14 +694,14 @@ function RouteComponent() {
                         const user = users?.find((u) => u.id === i.toUserId);
                         return (
                           <div key={i.id + "r"}>
-                            <div className="flex items-center justify-between px-4 pb-4">
+                            <div className="flex items-center justify-between px-4 py-4 pb-4">
                               <div className="flex items-center justify-start gap-2">
                                 <img
                                   src={getImageUrl(user?.photo || "")}
                                   alt=""
                                   className="h-14 w-14 rounded-lg"
                                 />
-                                <div className="flex flex-col items-start justify-between gap-2">
+                                <div className="flex flex-col items-start justify-between">
                                   <div className="text-lg">
                                     {user?.name} {user?.surname}
                                   </div>

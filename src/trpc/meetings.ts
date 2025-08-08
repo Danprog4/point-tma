@@ -185,6 +185,7 @@ export const meetingRouter = createTRPCRouter({
           eq(meetParticipantsTable.meetId, meetId),
           eq(meetParticipantsTable.fromUserId, ctx.userId),
           inArray(meetParticipantsTable.toUserId, userIds),
+          eq(meetParticipantsTable.status, "pending"),
         ),
       });
 

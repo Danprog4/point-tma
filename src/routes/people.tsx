@@ -107,11 +107,6 @@ function RouteComponent() {
 
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
 
-  const openComplaintDrawer = () => {
-    setIsComplaintOpen(true);
-    setIsDrawerOpen(false);
-  };
-
   const submitComplaint = (complaint: string, type: "event" | "user") => {
     if (!selectedUser) return;
     sendComplaint.mutate({
@@ -124,6 +119,29 @@ function RouteComponent() {
         ...(old || []),
         { type, toUserId: selectedUser as number, complaint, fromUserId: user?.id! },
       ];
+    });
+  };
+
+  const openComplaintDrawer = () => {
+    if (isComplained) {
+      handleUnsendComplaint("user", selectedUser as number);
+    } else {
+      setIsComplaintOpen(true);
+      setIsDrawerOpen(false);
+    }
+  };
+
+  const unsendComplaint = useMutation(trpc.main.unsendComplaint.mutationOptions());
+  const handleUnsendComplaint = (type: "event" | "user", userId: number) => {
+    if (!selectedUser) return;
+    unsendComplaint.mutate({
+      toUserId: userId,
+      type,
+    });
+    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
+      return old.filter(
+        (c: any) => c.toUserId !== selectedUser && c.fromUserId !== user?.id,
+      );
     });
   };
 

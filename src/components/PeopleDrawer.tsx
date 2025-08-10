@@ -63,13 +63,12 @@ export default function PeopleDrawer({
               </button>
 
               <button
-                disabled={isComplained}
                 className="flex w-full items-center gap-3 px-4 py-5"
                 onClick={() => onComplain(userId)}
               >
                 <ComplaintIcon />
                 <span className="text-base font-medium">
-                  {isComplained ? "Вы уже жаловались" : "Пожаловаться"}
+                  {isComplained ? "Отозвать жалобу" : "Пожаловаться"}
                 </span>
               </button>
 

@@ -530,9 +530,21 @@ export const router = {
   }),
 
   unsendComplaint: procedure
-    .input(z.object({ id: z.number() }))
+    .input(
+      z.object({
+        type: z.enum(["event", "user"]),
+        toUserId: z.number().optional(),
+        meetId: z.number().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      await db.delete(complaintsTable).where(eq(complaintsTable.id, input.id));
+      if (input.type === "user" && input.toUserId) {
+        await db
+          .delete(complaintsTable)
+          .where(eq(complaintsTable.toUserId, input.toUserId!));
+      } else {
+        await db.delete(complaintsTable).where(eq(complaintsTable.meetId, input.meetId!));
+      }
     }),
 
   rateUsers: procedure

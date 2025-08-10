@@ -145,23 +145,23 @@ function RouteComponent() {
     });
   };
 
-  const addUserToFavorites = useMutation(trpc.main.addUserToFavorites.mutationOptions());
+  const saveUser = useMutation(trpc.main.saveUser.mutationOptions());
 
-  const handleAddUserToFavorites = (userId: number) => {
-    addUserToFavorites.mutate({ userId });
+  const handleSaveUser = (userId: number) => {
+    saveUser.mutate({ userId });
 
-    if (user?.favoritesIds?.includes(userId)) {
+    if (user?.savedIds?.includes(userId)) {
       queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
         return {
           ...old,
-          favoritesIds: old?.favoritesIds?.filter((id: number) => id !== userId),
+          savedIds: old?.savedIds?.filter((id: number) => id !== userId),
         };
       });
     } else {
       queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
         return {
           ...old,
-          favoritesIds: [...(old?.favoritesIds || []), userId],
+          savedIds: [...(old?.savedIds || []), userId],
         };
       });
     }
@@ -290,7 +290,7 @@ function RouteComponent() {
           openComplaintDrawer();
         }}
         onSave={() => {
-          handleAddUserToFavorites(selectedUser as number);
+          handleSaveUser(selectedUser as number);
         }}
         onHide={handleHideUser}
         user={user as User}

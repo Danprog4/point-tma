@@ -547,7 +547,7 @@ export const router = {
       }
     }),
 
-  addUserToFavorites: procedure
+  saveUser: procedure
     .input(z.object({ userId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const user = await db.query.usersTable.findFirst({
@@ -561,14 +561,14 @@ export const router = {
         });
       }
 
-      const userFavoritesIds = user.favoritesIds || [];
+      const userFavoritesIds = user.savedIds || [];
       const updatedIds = userFavoritesIds.includes(input.userId)
         ? userFavoritesIds.filter((id) => id !== input.userId)
         : [...userFavoritesIds, input.userId];
 
       await db
         .update(usersTable)
-        .set({ favoritesIds: updatedIds })
+        .set({ savedIds: updatedIds })
         .where(eq(usersTable.id, ctx.userId));
 
       return user;

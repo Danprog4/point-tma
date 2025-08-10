@@ -78,13 +78,11 @@ export default function PeopleDrawer({
               >
                 <Bookmark
                   className={`h-6 w-6 ${
-                    user?.favoritesIds?.includes(userId)
-                      ? "text-[#721DBD]"
-                      : "text-[#721DBD]"
+                    user?.savedIds?.includes(userId) ? "text-red-500" : "text-[#721DBD]"
                   }`}
                 />
                 <span className="text-base font-medium">
-                  {user?.favoritesIds?.includes(userId)
+                  {user?.savedIds?.includes(userId)
                     ? "Убрать из сохранённых"
                     : "Сохранить"}
                 </span>

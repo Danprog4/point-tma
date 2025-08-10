@@ -7,6 +7,7 @@ import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import PeopleDrawer from "~/components/PeopleDrawer";
+import { User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -214,10 +215,10 @@ function RouteComponent() {
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
         userId={selectedUser as number}
-        onHide={handleHideUser}
         onComplain={() => {}}
         onSave={() => {}}
-        onShare={() => {}}
+        onHide={handleHideUser}
+        user={user as User}
       />
     </div>
   );

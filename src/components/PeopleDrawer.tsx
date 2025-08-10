@@ -1,7 +1,10 @@
+import { shareURL } from "@telegram-apps/sdk";
 import { Bookmark, EyeOff, X } from "lucide-react";
+import { useMemo } from "react";
 import { Drawer } from "vaul";
 import { ComplaintIcon } from "~/components/Icons/Complaint";
 import { ShareIcon } from "~/components/Icons/Share";
+import { User } from "~/db/schema";
 
 export default function PeopleDrawer({
   open,
@@ -10,8 +13,7 @@ export default function PeopleDrawer({
   onHide,
   onComplain,
   onSave,
-
-  onShare,
+  user,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,8 +21,21 @@ export default function PeopleDrawer({
   onHide: (userId: number) => void;
   onComplain: (userId: number) => void;
   onSave: (userId: number) => void;
-  onShare: (userId: number) => void;
+
+  user: User;
 }) {
+  const link = useMemo((): string => {
+    return `https://t.me/pointTMA_bot/user-profile/${userId}?startapp=ref_${userId || ""}`;
+  }, [userId]);
+
+  const text = `Приглашаю тебя в поинт на профиль ${user?.name} ${user?.surname} в Point!`;
+
+  const handleShare = () => {
+    if (shareURL.isAvailable()) {
+      shareURL(link, text);
+    }
+  };
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
@@ -64,7 +79,7 @@ export default function PeopleDrawer({
 
               <button
                 className="flex w-full items-center gap-3 px-4 py-5"
-                onClick={() => onShare(userId)}
+                onClick={handleShare}
               >
                 <ShareIcon />
                 <span className="text-base font-medium">Поделиться</span>

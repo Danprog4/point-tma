@@ -29,18 +29,47 @@ function RouteComponent() {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
 
-  const filteredUsers = users?.filter((user) => {
-    return (
-      user.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user.surname?.toLowerCase().includes(search.toLowerCase()) ||
-      user.login?.toLowerCase().includes(search.toLowerCase())
-    );
-  });
-
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+
+  const filteredUsers = useMemo(() => {
+    return users?.filter((u) => {
+      if (user?.notInterestedIds?.includes(u.id)) {
+        return false;
+      }
+      return (
+        u.name?.toLowerCase().includes(search.toLowerCase()) ||
+        u.surname?.toLowerCase().includes(search.toLowerCase()) ||
+        u.login?.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [users, user, search]);
+
+  const hideUser = useMutation(trpc.main.hideUser.mutationOptions());
+
+  const handleHideUser = (userId: number) => {
+    hideUser.mutate({ userId });
+
+    setIsDrawerOpen(false);
+
+    if (user?.notInterestedIds?.includes(userId)) {
+      queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+        return {
+          ...old,
+          notInterestedIds: old?.notInterestedIds?.filter((id: number) => id !== userId),
+        };
+      });
+    } else {
+      queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+        return {
+          ...old,
+          notInterestedIds: [...(old?.notInterestedIds || []), userId],
+        };
+      });
+    }
+  };
 
   const { data: userFavorites } = useQuery(trpc.main.getUserFavorites.queryOptions());
   const addToFavorites = useMutation(trpc.main.addToFavorites.mutationOptions());
@@ -184,8 +213,8 @@ function RouteComponent() {
       <PeopleDrawer
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
-        user={selectedUser}
-        onHide={() => {}}
+        userId={selectedUser as number}
+        onHide={handleHideUser}
         onComplain={() => {}}
         onSave={() => {}}
         onShare={() => {}}

@@ -6,7 +6,7 @@ import { ShareIcon } from "~/components/Icons/Share";
 export default function PeopleDrawer({
   open,
   onOpenChange,
-  user,
+  userId,
   onHide,
   onComplain,
   onSave,
@@ -15,7 +15,7 @@ export default function PeopleDrawer({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: any;
+  userId: number;
   onHide: (userId: number) => void;
   onComplain: (userId: number) => void;
   onSave: (userId: number) => void;
@@ -40,7 +40,7 @@ export default function PeopleDrawer({
             <div className="flex flex-col">
               <button
                 className="flex w-full items-center gap-3 px-4 py-5"
-                onClick={() => onHide(user?.id)}
+                onClick={() => onHide(userId)}
               >
                 <EyeOff className="h-6 w-6 text-[#721DBD]" />
                 <span className="text-base font-medium">Не интересует</span>
@@ -48,7 +48,7 @@ export default function PeopleDrawer({
 
               <button
                 className="flex w-full items-center gap-3 px-4 py-5"
-                onClick={() => onComplain(user?.id)}
+                onClick={() => onComplain(userId)}
               >
                 <ComplaintIcon />
                 <span className="text-base font-medium">Пожаловаться</span>
@@ -56,7 +56,7 @@ export default function PeopleDrawer({
 
               <button
                 className="flex w-full items-center gap-3 px-4 py-5"
-                onClick={() => onSave(user?.id)}
+                onClick={() => onSave(userId)}
               >
                 <Bookmark className="h-6 w-6 text-[#721DBD]" />
                 <span className="text-base font-medium">Сохранить</span>
@@ -64,7 +64,7 @@ export default function PeopleDrawer({
 
               <button
                 className="flex w-full items-center gap-3 px-4 py-5"
-                onClick={() => onShare(user?.id)}
+                onClick={() => onShare(userId)}
               >
                 <ShareIcon />
                 <span className="text-base font-medium">Поделиться</span>

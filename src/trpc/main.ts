@@ -617,6 +617,31 @@ export const router = {
 
       return averageRating;
     }),
+
+  hideUser: procedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const notInterestedIds = user.notInterestedIds || [];
+      const updatedIds = notInterestedIds.includes(input.userId)
+        ? notInterestedIds.filter((id) => id !== input.userId)
+        : [...notInterestedIds, input.userId];
+
+      await db
+        .update(usersTable)
+        .set({ notInterestedIds: updatedIds })
+        .where(eq(usersTable.id, ctx.userId));
+    }),
 };
 
 export type Router = typeof router;

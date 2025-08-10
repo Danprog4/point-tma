@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import PeopleDrawer from "~/components/PeopleDrawer";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -11,11 +12,7 @@ import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
-import {
-  clearScrollPosition,
-  getScrollPosition,
-  saveScrollPosition,
-} from "~/lib/utils/scrollPosition";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/people")({
@@ -24,23 +21,7 @@ export const Route = createFileRoute("/people")({
 
 function RouteComponent() {
   // Restore saved scroll position (if any) when returning to the list
-  useEffect(() => {
-    const saved = getScrollPosition("people");
-    if (saved != null) {
-      // Ensure layout is ready before scrolling
-      requestAnimationFrame(() => {
-        window.scrollTo(0, saved);
-      });
-      // Scroll again shortly after mount to account for async content/image layout
-      const t = setTimeout(() => {
-        window.scrollTo(0, saved);
-        clearScrollPosition("people");
-      }, 300);
-      return () => clearTimeout(t);
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+  useScrollRestoration("people");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const trpc = useTRPC();

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
-import { useScroll } from "~/components/hooks/useScroll";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Coin } from "~/components/Icons/Coin";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
@@ -68,6 +68,7 @@ const filters = [
 ];
 
 function RouteComponent() {
+  useScrollRestoration("quests");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -78,8 +79,6 @@ function RouteComponent() {
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
 
   console.log(activeFilter);
-
-  useScroll();
 
   const filteredEvents = data
     ?.filter((event) => event.type === "Квест")

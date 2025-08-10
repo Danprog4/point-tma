@@ -5,19 +5,22 @@ import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
-import { useScroll } from "~/components/hooks/useScroll";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { LocationIcon } from "~/components/Icons/Location";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  useScrollRestoration("meetings");
   const trpc = useTRPC();
+
   const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
@@ -94,7 +97,6 @@ function RouteComponent() {
 
   const meetingGroups = groupMeetings(filteredMeetings || []);
 
-  useScroll();
   const isMobile = usePlatform();
 
   return (
@@ -113,7 +115,10 @@ function RouteComponent() {
         <div
           className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2 text-sm font-medium text-black"
           style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
-          onClick={() => navigate({ to: "/my-meetings" })}
+          onClick={() => {
+            saveScrollPosition("meetings");
+            navigate({ to: "/my-meetings" });
+          }}
         >
           {activeMeetRequests && activeMeetRequests?.length > 0 ? (
             <div className="relative">
@@ -181,12 +186,13 @@ function RouteComponent() {
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
               {meetingsWithEvents?.slice(0, 7).map((event, idx) => (
                 <div
-                  onClick={() =>
+                  onClick={() => {
+                    saveScrollPosition("meetings");
                     navigate({
                       to: "/meet/$id",
                       params: { id: event.id.toString() },
-                    })
-                  }
+                    });
+                  }}
                   key={idx}
                   className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                 >
@@ -219,12 +225,13 @@ function RouteComponent() {
                       <div key={meeting.id} className="">
                         <div
                           className="overflow-hidden"
-                          onClick={() =>
+                          onClick={() => {
+                            saveScrollPosition("meetings");
                             navigate({
                               to: "/meet/$id",
                               params: { id: meeting.id.toString() },
-                            })
-                          }
+                            });
+                          }}
                         >
                           {/* Avatar Section */}
                           <div className="relative h-[172px]">
@@ -280,12 +287,13 @@ function RouteComponent() {
                       <div key={meeting.id} className="">
                         <div
                           className="overflow-hidden"
-                          onClick={() =>
+                          onClick={() => {
+                            saveScrollPosition("meetings");
                             navigate({
                               to: "/meet/$id",
                               params: { id: meeting.id.toString() },
-                            })
-                          }
+                            });
+                          }}
                         >
                           {/* Avatar Section */}
                           <div className="relative h-36">
@@ -322,7 +330,10 @@ function RouteComponent() {
       </div>
       <div className="fixed right-4 bottom-20 left-4">
         <button
-          onClick={() => navigate({ to: "/createMeet" })}
+          onClick={() => {
+            saveScrollPosition("meetings");
+            navigate({ to: "/createMeet" });
+          }}
           className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
         >
           Создать встречу

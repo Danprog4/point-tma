@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useRequests } from "~/hooks/useRequests";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/my-meetings")({
 });
 
 function RouteComponent() {
+  useScrollRestoration("my-meetings");
   const [activeFilter, setActiveFilter] = useState("Мои встречи");
   const trpc = useTRPC();
   const navigate = useNavigate();

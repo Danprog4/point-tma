@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { Header } from "~/components/Header";
 import { Selecter } from "~/components/Selecter";
-import { useScroll } from "~/components/hooks/useScroll";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { useTRPC } from "~/trpc/init/react";
 
 import { EventCard } from "~/components/EventCard";
@@ -17,12 +17,14 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
+  useScrollRestoration("home");
   const [selectedFilter, setSelectedFilter] = useState("Все");
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -31,8 +33,6 @@ function Home() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-
-  useScroll();
 
   function ConferenceCard({ conf }: { conf: any }) {
     return (
@@ -182,7 +182,10 @@ function Home() {
             <h2 className="text-xl font-bold text-gray-900">Кино</h2>
             <ArrowRight
               className="h-5 w-5 cursor-pointer text-gray-500"
-              onClick={() => navigate({ to: "/all/$name", params: { name: "Кино" } })}
+              onClick={() => {
+                saveScrollPosition("home");
+                navigate({ to: "/all/$name", params: { name: "Кино" } });
+              }}
             />
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
@@ -191,6 +194,7 @@ function Home() {
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {
+                    saveScrollPosition("home");
                     navigate({
                       to: "/event/$name/$id",
                       params: { name: event.category, id: event.id },
@@ -209,7 +213,10 @@ function Home() {
             <h2 className="text-xl font-bold text-gray-900">Квесты</h2>
             <ArrowRight
               className="h-5 w-5 cursor-pointer text-gray-500"
-              onClick={() => navigate({ to: "/all/$name", params: { name: "Квесты" } })}
+              onClick={() => {
+                saveScrollPosition("home");
+                navigate({ to: "/all/$name", params: { name: "Квесты" } });
+              }}
             />
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
@@ -218,6 +225,7 @@ function Home() {
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {
+                    saveScrollPosition("home");
                     navigate({
                       to: "/event/$name/$id",
                       params: { name: event.category, id: event.id },
@@ -236,7 +244,10 @@ function Home() {
             <div className="flex items-center justify-between">
               <span
                 className="text-lg font-bold"
-                onClick={() => navigate({ to: "/all/$name", params: { name: "Квесты" } })}
+                onClick={() => {
+                  saveScrollPosition("home");
+                  navigate({ to: "/all/$name", params: { name: "Квесты" } });
+                }}
               >
                 Квесты для компании
               </span>
@@ -253,9 +264,10 @@ function Home() {
             <h2 className="text-xl font-bold text-gray-900">ТОП Конференций</h2>
             <ArrowRight
               className="h-5 w-5 cursor-pointer text-gray-500"
-              onClick={() =>
-                navigate({ to: "/all/$name", params: { name: "Конференции" } })
-              }
+              onClick={() => {
+                saveScrollPosition("home");
+                navigate({ to: "/all/$name", params: { name: "Конференции" } });
+              }}
             />
           </div>
           <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4">
@@ -264,6 +276,7 @@ function Home() {
               .map((conf: any, idx: number) => (
                 <div
                   onClick={() => {
+                    saveScrollPosition("home");
                     navigate({
                       to: "/event/$name/$id",
                       params: { name: conf.category, id: conf.id },
@@ -282,9 +295,10 @@ function Home() {
             <h2 className="text-xl font-bold text-gray-900">Вечеринки</h2>
             <ArrowRight
               className="h-5 w-5 cursor-pointer text-gray-500"
-              onClick={() =>
-                navigate({ to: "/all/$name", params: { name: "Вечеринки" } })
-              }
+              onClick={() => {
+                saveScrollPosition("home");
+                navigate({ to: "/all/$name", params: { name: "Вечеринки" } });
+              }}
             />
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
@@ -293,6 +307,7 @@ function Home() {
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {
+                    saveScrollPosition("home");
                     navigate({
                       to: "/event/$name/$id",
                       params: { name: event.category, id: event.id },

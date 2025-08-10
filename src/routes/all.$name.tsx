@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Selecter } from "~/components/Selecter";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
@@ -9,11 +10,13 @@ import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 export const Route = createFileRoute("/all/$name")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  useScrollRestoration("all");
   const { name } = Route.useParams();
   const [selectedFilter, setSelectedFilter] = useState(name);
   const navigate = useNavigate();
@@ -191,6 +194,7 @@ function RouteComponent() {
               <div
                 key={item.id}
                 onClick={() => {
+                  saveScrollPosition("all");
                   navigate({
                     to: "/event/$name/$id",
                     params: { name: item.category!, id: item.id!.toString()! },

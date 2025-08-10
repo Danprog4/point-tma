@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Clock, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { getTypeColor } from "~/routes/quests";
 
 export function MeetCard({
@@ -33,6 +34,7 @@ export function MeetCard({
           onClick();
         }
         if (isNavigable && meet && meet.id !== undefined && meet.id !== null) {
+          saveScrollPosition("my-meetings");
           navigate({
             to: pathUrl,
             params: {

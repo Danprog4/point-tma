@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Clock, MapPin } from "lucide-react";
 import { Coin } from "~/components/Icons/Coin";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { Quest } from "~/types/quest";
 
 export function SeriesQuestCard({ quest }: { quest: Quest }) {
@@ -14,6 +15,7 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
         className="relative cursor-pointer rounded-2xl bg-purple-100 p-4"
         onClick={() => {
           if (quest && quest.id !== undefined && quest.id !== null) {
+            saveScrollPosition("quests");
             navigate({
               to: "/event/$name/$id",
               params: { name: "Квест", id: quest.id.toString() },

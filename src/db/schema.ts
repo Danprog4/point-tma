@@ -176,3 +176,25 @@ export const meetMessagesTable = pgTable("meet_messages", {
   message: varchar("message", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Export all table types
+export type User = typeof usersTable.$inferSelect;
+export type NewUser = typeof usersTable.$inferInsert;
+
+export type Meet = typeof meetTable.$inferSelect;
+export type NewMeet = typeof meetTable.$inferInsert;
+
+export type FriendRequest = typeof friendRequestsTable.$inferSelect;
+export type NewFriendRequest = typeof friendRequestsTable.$inferInsert;
+
+export type Subscription = typeof subscriptionsTable.$inferSelect;
+export type NewSubscription = typeof subscriptionsTable.$inferInsert;
+
+export type Favorite = typeof favoritesTable.$inferSelect;
+export type NewFavorite = typeof favoritesTable.$inferInsert;
+
+export type History = typeof historyTable.$inferSelect;
+export type NewHistory = typeof historyTable.$inferInsert;
+
+export type MeetMessage = typeof meetMessagesTable.$inferSelect;
+export type NewMeetMessage = typeof meetMessagesTable.$inferInsert;

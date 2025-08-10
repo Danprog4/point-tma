@@ -17,6 +17,7 @@ import { UserSubscribers } from "~/components/UserSubscribers";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
 import { getAge } from "~/lib/utils/getAge";
+import { getImage } from "~/lib/utils/getImage";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
@@ -278,13 +279,7 @@ function RouteComponent() {
                 <div className="relative h-[30vh] rounded-t-2xl">
                   <div className="absolute top-4 right-4 z-10"></div>
                   <img
-                    src={
-                      mainPhoto
-                        ? getImageUrl(mainPhoto)
-                        : user?.photo
-                          ? getImageUrl(user?.photo ?? "")
-                          : user?.photoUrl || ""
-                    }
+                    src={getImage(user as any, mainPhoto || "")}
                     alt={user?.name || ""}
                     className="h-full w-full rounded-2xl object-cover"
                     onClick={() => {

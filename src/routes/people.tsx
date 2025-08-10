@@ -11,7 +11,7 @@ import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
-import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getImage } from "~/lib/utils/getImage";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -115,7 +115,7 @@ function RouteComponent() {
             <div className="flex flex-col items-start justify-center">
               <div className="relative w-full">
                 <img
-                  src={u.photo ? getImageUrl(u.photo) : u.photoUrl || ""}
+                  src={getImage(u as any, "")}
                   alt={u.name || ""}
                   className="h-60 w-full rounded-lg object-cover"
                   onClick={() => {

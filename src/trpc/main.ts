@@ -547,6 +547,33 @@ export const router = {
       }
     }),
 
+  addUserToFavorites: procedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const userFavoritesIds = user.favoritesIds || [];
+      const updatedIds = userFavoritesIds.includes(input.userId)
+        ? userFavoritesIds.filter((id) => id !== input.userId)
+        : [...userFavoritesIds, input.userId];
+
+      await db
+        .update(usersTable)
+        .set({ favoritesIds: updatedIds })
+        .where(eq(usersTable.id, ctx.userId));
+
+      return user;
+    }),
+
   rateUsers: procedure
     .input(
       z.object({ userIds: z.array(z.number()), rating: z.number(), meetId: z.number() }),

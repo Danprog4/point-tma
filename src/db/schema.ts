@@ -39,6 +39,7 @@ export const usersTable = pgTable("users", {
   gallery: jsonb("gallery").$type<string[]>(),
   isOnboarded: boolean("is_onboarded").default(false),
   notInterestedIds: jsonb("not_interested_ids").$type<number[]>(),
+  favoritesIds: jsonb("favorites_ids").$type<number[]>(),
 });
 
 export const ratingsUserTable = pgTable("ratings_user", {

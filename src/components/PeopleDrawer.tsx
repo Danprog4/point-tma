@@ -76,8 +76,18 @@ export default function PeopleDrawer({
                 className="flex w-full items-center gap-3 px-4 py-5"
                 onClick={() => onSave(userId)}
               >
-                <Bookmark className="h-6 w-6 text-[#721DBD]" />
-                <span className="text-base font-medium">Сохранить</span>
+                <Bookmark
+                  className={`h-6 w-6 ${
+                    user?.favoritesIds?.includes(userId)
+                      ? "text-[#721DBD]"
+                      : "text-[#721DBD]"
+                  }`}
+                />
+                <span className="text-base font-medium">
+                  {user?.favoritesIds?.includes(userId)
+                    ? "Убрать из сохранённых"
+                    : "Сохранить"}
+                </span>
               </button>
 
               <button

@@ -145,6 +145,28 @@ function RouteComponent() {
     });
   };
 
+  const addUserToFavorites = useMutation(trpc.main.addUserToFavorites.mutationOptions());
+
+  const handleAddUserToFavorites = (userId: number) => {
+    addUserToFavorites.mutate({ userId });
+
+    if (user?.favoritesIds?.includes(userId)) {
+      queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+        return {
+          ...old,
+          favoritesIds: old?.favoritesIds?.filter((id: number) => id !== userId),
+        };
+      });
+    } else {
+      queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+        return {
+          ...old,
+          favoritesIds: [...(old?.favoritesIds || []), userId],
+        };
+      });
+    }
+  };
+
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
 
   const isComplained = useMemo(() => {
@@ -267,7 +289,9 @@ function RouteComponent() {
         onComplain={() => {
           openComplaintDrawer();
         }}
-        onSave={() => {}}
+        onSave={() => {
+          handleAddUserToFavorites(selectedUser as number);
+        }}
         onHide={handleHideUser}
         user={user as User}
         isComplained={isComplained || false}

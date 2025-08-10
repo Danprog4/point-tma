@@ -14,6 +14,7 @@ export default function PeopleDrawer({
   onComplain,
   onSave,
   user,
+  isComplained,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -21,7 +22,7 @@ export default function PeopleDrawer({
   onHide: (userId: number) => void;
   onComplain: (userId: number) => void;
   onSave: (userId: number) => void;
-
+  isComplained: boolean;
   user: User;
 }) {
   const link = useMemo((): string => {
@@ -62,11 +63,14 @@ export default function PeopleDrawer({
               </button>
 
               <button
+                disabled={isComplained}
                 className="flex w-full items-center gap-3 px-4 py-5"
                 onClick={() => onComplain(userId)}
               >
                 <ComplaintIcon />
-                <span className="text-base font-medium">Пожаловаться</span>
+                <span className="text-base font-medium">
+                  {isComplained ? "Вы уже жаловались" : "Пожаловаться"}
+                </span>
               </button>
 
               <button

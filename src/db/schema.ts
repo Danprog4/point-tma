@@ -110,11 +110,13 @@ export const notificationsTable = pgTable("notifications", {
 export const complaintsTable = pgTable("complaints", {
   id: serial("id").primaryKey(),
   eventId: bigint("event_id", { mode: "number" }),
-  userId: bigint("user_id", { mode: "number" }),
+  toUserId: bigint("to_user_id", { mode: "number" }),
   complaint: varchar("complaint", { length: 255 }),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
   name: varchar("name", { length: 255 }),
   meetId: bigint("meet_id", { mode: "number" }),
+  type: varchar("type", { length: 255 }), // event, user
 });
 
 export const meetParticipantsTable = pgTable("meet_participants", {

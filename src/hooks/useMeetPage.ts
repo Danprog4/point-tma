@@ -58,7 +58,7 @@ export function useMeetPage(meetId: number) {
   }, [userParticipants, meeting?.id, user?.id]);
 
   const isComplaint = useMemo(() => {
-    return complaints?.some((c) => c.meetId === meeting?.id && c.userId === user?.id);
+    return complaints?.some((c) => c.meetId === meeting?.id && c.fromUserId === user?.id);
   }, [complaints, meeting?.id, user?.id]);
 
   // Ratings
@@ -177,20 +177,20 @@ export function useMeetPage(meetId: number) {
     );
   };
 
-  const handleSendComplaint = (complaint: string) => {
+  const handleSendComplaint = (complaint: string, type: "event" | "user") => {
     if (!meeting?.id) return;
-    sendComplaint.mutate({ meetId: meeting.id, complaint });
+    sendComplaint.mutate({ meetId: meeting.id, complaint, type });
     qc.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => [
       ...(old || []),
-      { meetId: meeting.id, userId: user?.id!, complaint },
+      { meetId: meeting.id, fromUserId: user?.id!, complaint, type },
     ]);
   };
 
-  const handleUnsendComplaint = () => {
+  const handleUnsendComplaint = (type: "event" | "user") => {
     if (!meeting?.id) return;
     unsendComplaint.mutate({ id: meeting.id });
     qc.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) =>
-      (old || []).filter((c: any) => c.meetId !== meeting.id),
+      (old || []).filter((c: any) => c.meetId !== meeting.id && c.type === type),
     );
   };
 

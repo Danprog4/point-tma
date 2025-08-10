@@ -312,7 +312,7 @@ function RouteComponent() {
                     </div>
                     <button
                       className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
-                      onClick={() => handleUnsendComplaint()}
+                      onClick={() => handleUnsendComplaint("event")}
                     >
                       Отозвать жалобу
                     </button>
@@ -353,12 +353,13 @@ function RouteComponent() {
           {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
           {isComplaintOpen && (
             <ComplaintDrawer
-              handleSendComplaint={() => handleSendComplaint(complaint)}
+              handleSendComplaint={() => handleSendComplaint(complaint, "event")}
               complaint={complaint}
               setComplaint={setComplaint}
               open={isComplaintOpen}
               onOpenChange={setIsComplaintOpen}
               meetId={Number(id)}
+              type="event"
             />
           )}
 

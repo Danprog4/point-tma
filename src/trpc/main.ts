@@ -509,6 +509,8 @@ export const router = {
         complaint: z.string(),
         name: z.string().optional(),
         meetId: z.number().optional(),
+        type: z.enum(["event", "user"]),
+        toUserId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -516,8 +518,10 @@ export const router = {
         eventId: input.eventId,
         name: input.name,
         complaint: input.complaint,
-        userId: ctx.userId,
+        fromUserId: ctx.userId,
         meetId: input.meetId,
+        toUserId: input.toUserId,
+        type: input.type,
       });
     }),
 

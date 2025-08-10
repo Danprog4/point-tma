@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
@@ -31,6 +32,8 @@ function RouteComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  const [isComplaintOpen, setIsComplaintOpen] = useState(false);
+  const [complaint, setComplaint] = useState("");
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
 
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -101,6 +104,34 @@ function RouteComponent() {
       });
     }
   };
+
+  const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
+
+  const openComplaintDrawer = () => {
+    setIsComplaintOpen(true);
+    setIsDrawerOpen(false);
+  };
+
+  const submitComplaint = (complaint: string, type: "event" | "user") => {
+    if (!selectedUser) return;
+    sendComplaint.mutate({
+      complaint,
+      type,
+      toUserId: selectedUser as number,
+    });
+    queryClient.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) => {
+      return [
+        ...(old || []),
+        { type, toUserId: selectedUser as number, complaint, fromUserId: user?.id! },
+      ];
+    });
+  };
+
+  const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
+
+  const isComplained = useMemo(() => {
+    return complaints?.some((c) => c.type === "user" && c.toUserId === selectedUser);
+  }, [complaints, selectedUser]);
 
   return (
     <div
@@ -215,11 +246,26 @@ function RouteComponent() {
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}
         userId={selectedUser as number}
-        onComplain={() => {}}
+        onComplain={() => {
+          openComplaintDrawer();
+        }}
         onSave={() => {}}
         onHide={handleHideUser}
         user={user as User}
+        isComplained={isComplained || false}
       />
+      {isComplaintOpen && (
+        <ComplaintDrawer
+          handleSendComplaint={() => submitComplaint(complaint, "user")}
+          complaint={complaint}
+          setComplaint={setComplaint}
+          open={isComplaintOpen}
+          onOpenChange={setIsComplaintOpen}
+          userId={selectedUser as number}
+          type="user"
+          isComplained={isComplained || false}
+        />
+      )}
     </div>
   );
 }

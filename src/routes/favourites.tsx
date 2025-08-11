@@ -244,7 +244,7 @@ function RouteComponent() {
         </div>
       )}
       {activeFilter === "Встречи" && userMeetings && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-4">
           {user?.savedMeetsIds?.map((meetId) => {
             const meetData = userMeetings.find((meet) => meet.id === meetId);
             return (

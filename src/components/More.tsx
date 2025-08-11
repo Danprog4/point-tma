@@ -20,7 +20,7 @@ export const More = ({
 }) => {
   const navigate = useNavigate();
   const funcProps = !meet
-    ? { eventId: event?.id, type: event?.type }
+    ? { eventId: event?.id, type: event?.category }
     : { meetId: meet?.id };
   return (
     <div className="fixed inset-0 z-10" onClick={() => setIsMoreOpen(false)}>
@@ -33,24 +33,26 @@ export const More = ({
           <Gift />
           <div>Подарить</div>
         </div>
-        <div
-          className="flex cursor-pointer items-center justify-center gap-4"
-          onClick={() => {
-            navigate({
-              to: "/createMeet",
-              search: {
-                step: 0,
-                isExtra: true,
-                isBasic: false,
-                typeOfEvent: event.category,
-                item: event,
-              },
-            });
-          }}
-        >
-          <Calendar />
-          <div>Создать встречу</div>
-        </div>
+        {event && (
+          <div
+            className="flex cursor-pointer items-center justify-center gap-4"
+            onClick={() => {
+              navigate({
+                to: "/createMeet",
+                search: {
+                  step: 0,
+                  isExtra: true,
+                  isBasic: false,
+                  typeOfEvent: event.category,
+                  item: event,
+                },
+              });
+            }}
+          >
+            <Calendar />
+            <div>Создать встречу</div>
+          </div>
+        )}
         <div
           className="flex cursor-pointer items-center justify-center gap-4"
           onClick={() => {

@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +23,7 @@ import { useMeetPage } from "~/hooks/useMeetPage";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import ManageDrawer from "~/ManageDrawer";
+import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/meet/$id")({
   component: RouteComponent,
@@ -29,6 +31,8 @@ export const Route = createFileRoute("/meet/$id")({
 
 function RouteComponent() {
   useScroll();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [isParticipantPage, setIsParticipantPage] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
   const [page, setPage] = useState<"info" | "participants" | "chat">("info");
@@ -120,6 +124,30 @@ function RouteComponent() {
   }, [selectedFriends, isDrawerOpen]);
 
   const isMobile = usePlatform();
+
+  const saveEventOrMeet = useMutation(trpc.main.saveEventOrMeet.mutationOptions());
+
+  const isSaved = user?.savedMeetsIds?.some((saved: any) => saved === Number(id));
+
+  const handleSaveEventOrMeet = () => {
+    saveEventOrMeet.mutate({
+      meetId: Number(id),
+    });
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      if (!old) return old;
+      if (isSaved) {
+        return {
+          ...old,
+          savedMeetsIds: old.savedMeetsIds.filter((saved: any) => saved !== Number(id)),
+        };
+      } else {
+        return {
+          ...old,
+          savedMeetsIds: [...(old.savedMeetsIds || []), Number(id)],
+        };
+      }
+    });
+  };
 
   return (
     <div className={`h-screen ${page === "chat" ? "overflow-y-hidden" : ""}`}>
@@ -350,7 +378,14 @@ function RouteComponent() {
             </>
           )}
 
-          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={meeting} />}
+          {isMoreOpen && (
+            <More
+              setIsMoreOpen={setIsMoreOpen}
+              meet={meeting}
+              handleSaveEventOrMeet={handleSaveEventOrMeet}
+              isSaved={isSaved}
+            />
+          )}
           {isComplaintOpen && (
             <ComplaintDrawer
               handleSendComplaint={() => handleSendComplaint(complaint, "event")}

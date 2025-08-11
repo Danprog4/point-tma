@@ -24,6 +24,7 @@ import { Route as InviteImport } from './routes/invite'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
 import { Route as FillProfileImport } from './routes/fill-profile'
+import { Route as FavouritesImport } from './routes/favourites'
 import { Route as CreateMeetImport } from './routes/createMeet'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
@@ -113,6 +114,12 @@ const HistoryRoute = HistoryImport.update({
 const FillProfileRoute = FillProfileImport.update({
   id: '/fill-profile',
   path: '/fill-profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FavouritesRoute = FavouritesImport.update({
+  id: '/favourites',
+  path: '/favourites',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -212,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/createMeet'
       fullPath: '/createMeet'
       preLoaderRoute: typeof CreateMeetImport
+      parentRoute: typeof rootRoute
+    }
+    '/favourites': {
+      id: '/favourites'
+      path: '/favourites'
+      fullPath: '/favourites'
+      preLoaderRoute: typeof FavouritesImport
       parentRoute: typeof rootRoute
     }
     '/fill-profile': {
@@ -364,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/createMeet': typeof CreateMeetRoute
+  '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -391,6 +406,7 @@ export interface FileRoutesByTo {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/createMeet': typeof CreateMeetRoute
+  '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -419,6 +435,7 @@ export interface FileRoutesById {
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
   '/createMeet': typeof CreateMeetRoute
+  '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
@@ -448,6 +465,7 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/createMeet'
+    | '/favourites'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -474,6 +492,7 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/createMeet'
+    | '/favourites'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -500,6 +519,7 @@ export interface FileRouteTypes {
     | '/achievments'
     | '/calendar'
     | '/createMeet'
+    | '/favourites'
     | '/fill-profile'
     | '/history'
     | '/inventory'
@@ -528,6 +548,7 @@ export interface RootRouteChildren {
   AchievmentsRoute: typeof AchievmentsRoute
   CalendarRoute: typeof CalendarRoute
   CreateMeetRoute: typeof CreateMeetRoute
+  FavouritesRoute: typeof FavouritesRoute
   FillProfileRoute: typeof FillProfileRoute
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
@@ -555,6 +576,7 @@ const rootRouteChildren: RootRouteChildren = {
   AchievmentsRoute: AchievmentsRoute,
   CalendarRoute: CalendarRoute,
   CreateMeetRoute: CreateMeetRoute,
+  FavouritesRoute: FavouritesRoute,
   FillProfileRoute: FillProfileRoute,
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
@@ -591,6 +613,7 @@ export const routeTree = rootRoute
         "/achievments",
         "/calendar",
         "/createMeet",
+        "/favourites",
         "/fill-profile",
         "/history",
         "/inventory",
@@ -624,6 +647,9 @@ export const routeTree = rootRoute
     },
     "/createMeet": {
       "filePath": "createMeet.tsx"
+    },
+    "/favourites": {
+      "filePath": "favourites.tsx"
     },
     "/fill-profile": {
       "filePath": "fill-profile.tsx"

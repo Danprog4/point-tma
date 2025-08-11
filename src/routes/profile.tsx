@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { CloseRed } from "~/components/Icons/CloseRed";
+import { FavIcon } from "~/components/Icons/Fav";
 import { MenuItem } from "~/components/MenuItem";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
@@ -442,6 +443,13 @@ function RouteComponent() {
                     }}
                     icon={<Calendar className="h-6 w-6 text-purple-300" />}
                     title="Календарь"
+                  />
+                  <MenuItem
+                    onClick={() => {
+                      navigate({ to: "/favourites" });
+                    }}
+                    icon={<FavIcon />}
+                    title="Избранное"
                   />
                   <MenuItem
                     onClick={() => {

@@ -188,7 +188,7 @@ export function useMeetPage(meetId: number) {
 
   const handleUnsendComplaint = (type: "event" | "user") => {
     if (!meeting?.id) return;
-    unsendComplaint.mutate({ id: meeting.id });
+    unsendComplaint.mutate({ meetId: meeting.id, type });
     qc.setQueryData(trpc.main.getComplaints.queryKey(), (old: any) =>
       (old || []).filter((c: any) => c.meetId !== meeting.id && c.type === type),
     );

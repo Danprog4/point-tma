@@ -40,6 +40,13 @@ export const usersTable = pgTable("users", {
   isOnboarded: boolean("is_onboarded").default(false),
   notInterestedIds: jsonb("not_interested_ids").$type<number[]>(),
   savedIds: jsonb("saved_ids").$type<number[]>(),
+  savedEvents: jsonb("saved_events").$type<
+    Array<{
+      type: string;
+      eventId: number;
+    }>
+  >(),
+  savedMeetsIds: jsonb("saved_meets_ids").$type<number[]>(),
 });
 
 export const ratingsUserTable = pgTable("ratings_user", {

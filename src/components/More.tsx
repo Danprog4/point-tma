@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Calendar } from "./Icons/Calendar";
+import { FavIcon } from "./Icons/Fav";
 import { Gift } from "./Icons/More/Gift";
 import { Plus } from "./Icons/More/Plus";
 import { Schedule } from "./Icons/More/Schedule";
@@ -7,11 +8,20 @@ import { Schedule } from "./Icons/More/Schedule";
 export const More = ({
   setIsMoreOpen,
   event,
+  meet,
+  handleSaveEventOrMeet,
+  isSaved,
 }: {
   setIsMoreOpen: (isMoreOpen: boolean) => void;
   event?: any;
+  meet?: any;
+  handleSaveEventOrMeet: (meetId?: number, eventId?: number, type?: string) => void;
+  isSaved?: boolean;
 }) => {
   const navigate = useNavigate();
+  const funcProps = !meet
+    ? { eventId: event?.id, type: event?.type }
+    : { meetId: meet?.id };
   return (
     <div className="fixed inset-0 z-10" onClick={() => setIsMoreOpen(false)}>
       <div
@@ -40,6 +50,21 @@ export const More = ({
         >
           <Calendar />
           <div>Создать встречу</div>
+        </div>
+        <div
+          className="flex cursor-pointer items-center justify-center gap-4"
+          onClick={() => {
+            if (meet) {
+              handleSaveEventOrMeet(funcProps.meetId);
+            } else {
+              handleSaveEventOrMeet(undefined, funcProps.eventId, funcProps.type);
+            }
+          }}
+        >
+          <FavIcon width="32" height="32" />
+          <div className="text-nowrap">
+            {isSaved ? "Удалить из избранного" : "Добавить в избранное"}
+          </div>
         </div>
         <div className="flex cursor-pointer items-center justify-center gap-4">
           <Plus />

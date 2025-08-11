@@ -101,7 +101,7 @@ function RootComponent() {
 
     viewport.mount().then(() => viewport.requestFullscreen());
 
-    console.log(hapticFeedback.isSupported(), "hapticFeedback");
+    // dev-only debugging can be enabled with ENV if needed
   }, []);
 
   return (

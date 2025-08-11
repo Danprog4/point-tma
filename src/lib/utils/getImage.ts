@@ -7,6 +7,5 @@ export const getImage = (user: User, mainPhoto: string) => {
     : user?.photo
       ? getImageUrl(user?.photo)
       : user?.photoUrl || (user?.sex === "male" ? "/men.jpeg" : "/women.jpeg");
-  console.log(img, "img");
   return img;
 };

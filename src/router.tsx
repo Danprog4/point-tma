@@ -26,6 +26,13 @@ function getUrl() {
 export function createRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        refetchOnMount: false,
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+      },
       dehydrate: { serializeData: superjson.serialize },
       hydrate: { deserializeData: superjson.deserialize },
     },

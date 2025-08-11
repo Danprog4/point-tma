@@ -574,6 +574,50 @@ export const router = {
       return user;
     }),
 
+  saveEventOrMeet: procedure
+    .input(
+      z.object({
+        meetId: z.number().optional(),
+        eventId: z.number().optional(),
+        type: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const savedMeetsIds = user.savedMeetsIds || [];
+      const savedEvents = user.savedEvents || [];
+
+      if (input.meetId) {
+        const updatedMeetIds = savedMeetsIds.includes(input.meetId)
+          ? savedMeetsIds.filter((id) => id !== input.meetId)
+          : [...savedMeetsIds, input.meetId];
+
+        await db
+          .update(usersTable)
+          .set({ savedMeetsIds: updatedMeetIds })
+          .where(eq(usersTable.id, ctx.userId));
+      } else if (input.eventId && input.type) {
+        const updatedEvents = savedEvents.some((event) => event.eventId === input.eventId)
+          ? savedEvents.filter((event) => event.eventId !== input.eventId)
+          : [...savedEvents, { type: input.type, eventId: input.eventId }];
+
+        await db
+          .update(usersTable)
+          .set({ savedEvents: updatedEvents })
+          .where(eq(usersTable.id, ctx.userId));
+      }
+    }),
+
   rateUsers: procedure
     .input(
       z.object({ userIds: z.array(z.number()), rating: z.number(), meetId: z.number() }),

@@ -4,7 +4,6 @@ import { clearScrollPosition, getScrollPosition } from "~/lib/utils/scrollPositi
 export const useScrollRestoration = (key: string) => {
   useEffect(() => {
     const saved = getScrollPosition(key);
-    console.log(saved, "saved");
     if (saved != null) {
       // Ensure layout is ready before scrolling
       requestAnimationFrame(() => {

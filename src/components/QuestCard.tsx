@@ -1,11 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
+import { memo } from "react";
 import { Clock, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { getTypeColor } from "~/routes/quests";
 import { Quest } from "~/types/quest";
 
-export function QuestCard({
+export const QuestCard = memo(function QuestCard({
   quest,
   isNavigable = true,
   id,
@@ -25,7 +26,6 @@ export function QuestCard({
   }
 
   const pathUrl = !quest.isCustom ? "/event/$name/$id" : "/meet/$id";
-  console.log(quest, "quest");
 
   return (
     <div
@@ -88,4 +88,4 @@ export function QuestCard({
       </div>
     </div>
   );
-}
+});

@@ -1,10 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
+import { memo } from "react";
 import { Clock, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { getTypeColor } from "~/routes/quests";
 
-export function MeetCard({
+export const MeetCard = memo(function MeetCard({
   meet,
   isNavigable = true,
   id,
@@ -24,7 +25,6 @@ export function MeetCard({
   }
 
   const pathUrl = "/meet/$id";
-  console.log(meet, "meet");
 
   return (
     <div
@@ -79,4 +79,4 @@ export function MeetCard({
       </div>
     </div>
   );
-}
+});

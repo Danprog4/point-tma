@@ -128,6 +128,40 @@ function RouteComponent() {
     );
   };
 
+  const saveEventOrMeet = useMutation(trpc.main.saveEventOrMeet.mutationOptions());
+
+  const isSaved = user?.savedEvents?.some(
+    (saved: any) =>
+      saved.eventId === Number(id) && saved.type === (event?.category ?? ""),
+  );
+
+  const handleSaveEventOrMeet = () => {
+    saveEventOrMeet.mutate({
+      eventId: Number(id),
+      type: event?.category ?? "",
+    });
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      if (!old) return old;
+      if (isSaved) {
+        return {
+          ...old,
+          savedEvents: old.savedEvents.filter(
+            (saved: any) =>
+              !(saved.eventId === Number(id) && saved.type === (event?.category ?? "")),
+          ),
+        };
+      } else {
+        return {
+          ...old,
+          savedEvents: [
+            ...(old.savedEvents || []),
+            { type: event?.category ?? "", eventId: Number(id) },
+          ],
+        };
+      }
+    });
+  };
+
   console.log(event?.category === "Квест", "event cat2");
 
   const endQuest = useMutation(trpc.event.endQuest.mutationOptions());
@@ -507,7 +541,14 @@ function RouteComponent() {
               </div>
             </div>
           )}
-          {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} event={event} />}
+          {isMoreOpen && (
+            <More
+              setIsMoreOpen={setIsMoreOpen}
+              handleSaveEventOrMeet={handleSaveEventOrMeet}
+              event={event}
+              isSaved={isSaved}
+            />
+          )}
         </div>
       )}
       {isReviewOpen && (

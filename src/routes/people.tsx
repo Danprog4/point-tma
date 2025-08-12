@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
@@ -35,9 +35,39 @@ function RouteComponent() {
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [complaint, setComplaint] = useState("");
-
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
-  // Per-user chosen main photo (by image id or base64). If not set, fallback to user's main photo.
+  const [galleryPhotosByUserId, setGalleryPhotosByUserId] = useState<
+    Record<number, string[]>
+  >({});
+
+  useEffect(() => {
+    if (users) {
+      setGalleryPhotosByUserId(
+        users.reduce(
+          (acc, u) => {
+            acc[u.id] = u.gallery || [];
+            return acc;
+          },
+          {} as Record<number, string[]>,
+        ),
+      );
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (users) {
+      setSelectedMainPhotoByUserId(
+        users.reduce(
+          (acc, u) => {
+            acc[u.id] = u.photo || "";
+            return acc;
+          },
+          {} as Record<number, string>,
+        ),
+      );
+    }
+  }, [users]);
+
   const [selectedMainPhotoByUserId, setSelectedMainPhotoByUserId] = useState<
     Record<number, string | undefined>
   >({});
@@ -226,11 +256,6 @@ function RouteComponent() {
                   alt={u.name || ""}
                   className="h-60 w-full rounded-lg object-cover"
                   onClick={() => {
-                    const mainId = selectedMainPhotoByUserId[u.id] ?? u.photo;
-                    const photos: string[] = [mainId, ...(u.gallery ?? [])].filter(
-                      Boolean,
-                    ) as string[];
-
                     saveScrollPosition("people");
                     navigate({
                       to: "/user-profile/$id",
@@ -249,14 +274,28 @@ function RouteComponent() {
                 </div>
               </div>
               <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pt-4">
-                {u.gallery?.map((img, idx) => (
+                {galleryPhotosByUserId[u.id]?.map((img, idx) => (
                   <img
                     key={idx}
                     src={getImageUrl(img)}
                     alt=""
                     className="h-20 w-20 cursor-pointer rounded-lg object-cover"
                     onClick={() => {
-                      setSelectedMainPhotoByUserId((prev) => ({ ...prev, [u.id]: img }));
+                      setGalleryPhotosByUserId((prev) => {
+                        const newGallery = prev[u.id]?.filter((i) => i !== img);
+
+                        if (selectedMainPhotoByUserId[u.id])
+                          newGallery.push(selectedMainPhotoByUserId[u.id]!);
+                        if (newGallery.length === 0) newGallery.push(u.photo!);
+                        return {
+                          ...prev,
+                          [u.id]: newGallery,
+                        };
+                      });
+                      setSelectedMainPhotoByUserId((prev) => ({
+                        ...prev,
+                        [u.id]: img,
+                      }));
                     }}
                   />
                 ))}

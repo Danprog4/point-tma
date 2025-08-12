@@ -14,6 +14,7 @@ import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
 import { getImage } from "~/lib/utils/getImage";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -34,7 +35,12 @@ function RouteComponent() {
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [isComplaintOpen, setIsComplaintOpen] = useState(false);
   const [complaint, setComplaint] = useState("");
+
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  // Per-user chosen main photo (by image id or base64). If not set, fallback to user's main photo.
+  const [selectedMainPhotoByUserId, setSelectedMainPhotoByUserId] = useState<
+    Record<number, string | undefined>
+  >({});
 
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
@@ -216,10 +222,15 @@ function RouteComponent() {
             <div className="flex flex-col items-start justify-center">
               <div className="relative w-full">
                 <img
-                  src={getImage(u as any, "")}
+                  src={getImage(u as any, selectedMainPhotoByUserId[u.id] ?? "")}
                   alt={u.name || ""}
                   className="h-60 w-full rounded-lg object-cover"
                   onClick={() => {
+                    const mainId = selectedMainPhotoByUserId[u.id] ?? u.photo;
+                    const photos: string[] = [mainId, ...(u.gallery ?? [])].filter(
+                      Boolean,
+                    ) as string[];
+
                     saveScrollPosition("people");
                     navigate({
                       to: "/user-profile/$id",
@@ -232,10 +243,23 @@ function RouteComponent() {
                     setSelectedUser(u.id);
                     setIsDrawerOpen(true);
                   }}
-                  className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
+                  className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
                 >
                   <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
                 </div>
+              </div>
+              <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pt-4">
+                {u.gallery?.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={getImageUrl(img)}
+                    alt=""
+                    className="h-20 w-20 cursor-pointer rounded-lg object-cover"
+                    onClick={() => {
+                      setSelectedMainPhotoByUserId((prev) => ({ ...prev, [u.id]: img }));
+                    }}
+                  />
+                ))}
               </div>
 
               <div className="flex w-full items-center justify-between px-4 py-4">

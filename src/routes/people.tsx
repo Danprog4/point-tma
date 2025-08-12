@@ -286,7 +286,7 @@ function RouteComponent() {
 
                         if (selectedMainPhotoByUserId[u.id])
                           newGallery.push(selectedMainPhotoByUserId[u.id]!);
-                        if (newGallery.length === 0) newGallery.push(u.photo!);
+
                         return {
                           ...prev,
                           [u.id]: newGallery,

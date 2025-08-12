@@ -298,11 +298,7 @@ function RouteComponent() {
                           {/* Avatar Section */}
                           <div className="relative h-36">
                             <img
-                              src={
-                                meeting.organizer?.photo
-                                  ? getImageUrl(meeting.organizer.photo!)
-                                  : meeting.organizer?.photoUrl || ""
-                              }
+                              src={getImageUrl(meeting.image!)}
                               alt={meeting.organizer?.name!}
                               className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
                             />

@@ -13,7 +13,6 @@ import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
-import { Quest } from "~/types/quest";
 export const Route = createFileRoute("/invite")({
   component: RouteComponent,
 });
@@ -250,8 +249,9 @@ function RouteComponent() {
                 <div key={quest?.id}>
                   <div className="px-4">
                     <QuestCard
-                      quest={quest?.isCustom ? quest : quest?.event || ({} as Quest)}
+                      quest={quest}
                       isNavigable={false}
+                      isMeeting={true}
                       onClick={() => {
                         setSelectedItem(quest);
                         handleInvite();

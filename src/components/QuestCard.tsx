@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { memo } from "react";
 import { Clock, MapPin } from "lucide-react";
+import { memo } from "react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { getTypeColor } from "~/routes/quests";
@@ -10,13 +10,14 @@ export const QuestCard = memo(function QuestCard({
   quest,
   isNavigable = true,
   id,
+  isMeeting = false,
 
   onClick,
 }: {
   quest?: Quest | any;
   isNavigable?: boolean;
   id?: number;
-
+  isMeeting?: boolean;
   onClick?: () => void;
 }) {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export const QuestCard = memo(function QuestCard({
       }}
     >
       <img
-        src={!quest.isCustom ? quest.image : getImageUrl(quest.image)}
+        src={!isMeeting ? quest.image : getImageUrl(quest.image!)}
         alt={quest.title}
         className="h-[88px] w-[88px] flex-shrink-0 rounded-lg object-cover"
       />
@@ -62,11 +63,6 @@ export const QuestCard = memo(function QuestCard({
           >
             {quest.type || ""}
           </span>
-          {!quest.isCustom && (
-            <div className="rounded-full bg-gray-300 px-2.5 py-0.5 text-xs font-medium text-black">
-              {quest.category}
-            </div>
-          )}
         </div>
 
         <div className="flex items-center justify-between">

@@ -137,7 +137,7 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                     {idx + 1}
                   </span>
                 </div>
-                {location.isCustom ? (
+                {!location.isCustom ? (
                   <div className="flex items-center justify-start gap-2">
                     <img
                       src={getEventFromName(location.location)?.image}

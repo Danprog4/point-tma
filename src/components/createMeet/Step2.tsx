@@ -18,19 +18,14 @@ export const Step2 = ({
   locations,
   length,
   setLength,
-  setImportant,
+
   setSelectedItems,
   setIsDisabled,
   selectedItems,
 }: {
-  name: string;
-  isBasic: boolean;
-  item: any;
-  title: string;
   index: number;
   setIndex: (index: number) => void;
-  description: string;
-  setTitle: (title: string) => void;
+
   setLocations: (
     locations: {
       location: string;
@@ -41,7 +36,7 @@ export const Step2 = ({
       isCustom?: boolean;
     }[],
   ) => void;
-  setDescription: (description: string) => void;
+
   isDisabled: boolean;
   locations: {
     location: string;
@@ -53,8 +48,7 @@ export const Step2 = ({
   }[];
   length: number;
   setLength: (length: number) => void;
-  important: string;
-  setImportant: (important: string) => void;
+
   setSelectedItems: (items: { id: number; type: string; index: number }[]) => void;
   setIsDisabled: (isDisabled: boolean) => void;
   selectedItems: { id: number; type: string; index: number }[];
@@ -132,12 +126,15 @@ export const Step2 = ({
   }, [selectedItems, all]);
 
   useEffect(() => {
-    setIsDisabled(true);
-  }, []);
-
-  useEffect(() => {
     if (locations.length === 0) {
       setIsDisabled(true);
+    }
+  }, [locations]);
+
+  useEffect(() => {
+    console.log(locations, "locations");
+    if (locations.length > 0) {
+      setIsDisabled(false);
       return;
     }
     const valid = locations

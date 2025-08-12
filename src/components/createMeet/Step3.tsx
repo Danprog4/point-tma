@@ -7,8 +7,6 @@ import { Thrash } from "../Icons/Thrash";
 import { Invite } from "../Invite";
 
 export const Step3 = ({
-  name,
-  isBasic,
   friendName,
   setFriendName,
   setParticipants,
@@ -24,8 +22,6 @@ export const Step3 = ({
   tags,
   setTags,
 }: {
-  name: string;
-  isBasic: boolean;
   friendName: string;
   setFriendName: (friendName: string) => void;
   setParticipants: (participants: number) => void;
@@ -77,7 +73,7 @@ export const Step3 = ({
   };
 
   useEffect(() => {
-    if (participants > 0 && tags.length > 0 && important.trim()) {
+    if (participants > 0 && important.trim()) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);

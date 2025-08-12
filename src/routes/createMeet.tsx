@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Step1 } from "~/components/createMeet/Step1";
 import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
 import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 
@@ -21,9 +22,8 @@ function RouteComponent() {
     isExtra?: boolean;
     isBasic?: boolean;
     typeOfEvent?: string;
-    item?: any;
-    id?: string;
-    name?: string;
+    idOfEvent?: string;
+    userId?: string;
   };
   console.log({ search }, "search");
   const [selectedInventory, setSelectedInventory] = useState<string[]>([]);
@@ -47,7 +47,7 @@ function RouteComponent() {
   const [friendName, setFriendName] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
   const [step, setStep] = useState((search as any).step || 0);
@@ -73,7 +73,7 @@ function RouteComponent() {
   const [length, setLength] = useState(1);
   const [tags, setTags] = useState<string[]>([]);
   const isBasic = search.isBasic ?? false;
-  const name = search.name ?? "";
+
   const [subType, setSubType] = useState("");
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const isHeicFile = (file: File): boolean => {
@@ -86,6 +86,36 @@ function RouteComponent() {
       mime === "image/heif"
     );
   };
+
+  useEffect(() => {
+    if (search.userId) {
+      setSelectedIds([Number(search.userId)]);
+    }
+  }, [search.userId]);
+
+  console.log(search, "search");
+
+  useEffect(() => {
+    console.log(search.idOfEvent, "search.idOfEvent");
+    if (search.typeOfEvent) {
+      const event = getEventData(search.typeOfEvent, Number(search.idOfEvent));
+      console.log(event, "event");
+      setSelectedItems([
+        ...selectedItems,
+        { id: event?.id || 0, type: event?.type || "", index: 0 },
+      ]);
+      setLocations([
+        {
+          location: event?.title || "",
+          address: event?.location || "",
+          starttime: event?.date,
+          isCustom: false,
+          index: 0,
+        },
+      ]);
+      setIndex(0);
+    }
+  }, [search.idOfEvent]);
 
   const handleNext = () => {
     setStep(step + 1);
@@ -101,8 +131,6 @@ function RouteComponent() {
   };
 
   console.log(locations);
-
-  console.log(search.id, "search.id");
 
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
   const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
@@ -134,16 +162,19 @@ function RouteComponent() {
         reward: reward || 0,
         inventory: selectedInventory,
         image: mainPhotoRaw,
-        invitedId: search.id !== undefined ? String(search.id) : undefined,
+        invitedIds:
+          search.userId !== undefined
+            ? [Number(search.userId), ...selectedIds]
+            : selectedIds,
         gallery: gallery,
         important: important,
       },
       {
         onSuccess: (data: any) => {
-          if (search?.id) {
+          if (search?.userId) {
             inviteUsers.mutate({
               meetId: data.id,
-              userIds: [Number(search.id)],
+              userIds: [Number(search.userId)],
             });
           }
 
@@ -222,18 +253,16 @@ function RouteComponent() {
 
       {step === 0 && (
         <Step1
+          name={title}
           subType={subType}
           setSubType={setSubType}
           isDisabled={isDisabled}
           setIsDisabled={setIsDisabled}
-          name={name}
           isBasic={isBasic}
           date={date}
           setDate={setDate}
           type={type}
           setType={setType}
-          setSelectedItem={setSelectedItem}
-          selectedItem={selectedItem}
           setStep={setStep}
           setTypeOfEvent={setTypeOfEvent}
           title={title}
@@ -252,7 +281,6 @@ function RouteComponent() {
           isExtra={isExtra}
           setIsExtra={setIsExtra}
           typeOfEvent={search.typeOfEvent || ""}
-          item={search.item}
         />
       )}
       {step === 1 && (
@@ -261,15 +289,6 @@ function RouteComponent() {
           setIndex={setIndex}
           isDisabled={isDisabled}
           setIsDisabled={setIsDisabled}
-          name={name}
-          isBasic={isBasic}
-          important={important}
-          setImportant={setImportant}
-          item={selectedItem || search.item}
-          title={title}
-          description={description}
-          setTitle={setTitle}
-          setDescription={setDescription}
           locations={locations}
           setLocations={setLocations}
           selectedItems={selectedItems}
@@ -280,10 +299,10 @@ function RouteComponent() {
       )}
       {step === 2 && (
         <Step3
+          important={important}
+          setImportant={setImportant}
           isDisabled={isDisabled}
           setIsDisabled={setIsDisabled}
-          name={name}
-          isBasic={isBasic}
           isInvite={isInvite}
           setIsInvite={setIsInvite}
           selectedIds={selectedIds}
@@ -292,8 +311,6 @@ function RouteComponent() {
           setFriendName={setFriendName}
           setParticipants={setParticipants}
           participants={participants}
-          important={important}
-          setImportant={setImportant}
           tags={tags}
           setTags={setTags}
         />
@@ -301,13 +318,8 @@ function RouteComponent() {
       {step === 3 && (
         <Step4
           isDisabled={isDisabled}
-          setIsDisabled={setIsDisabled}
-          name={name}
-          isBasic={isBasic}
-          item={selectedItem || search.item}
           reward={reward}
           setReward={setReward}
-          isInvite={isInvite}
           isInventoryOpen={isInventoryOpen}
           setIsInventoryOpen={setIsInventoryOpen}
           setSelectedInventory={setSelectedInventory}
@@ -320,14 +332,12 @@ function RouteComponent() {
         <Step5
           isLoading={createMeeting.isPending}
           title={title}
-          description={description}
-          item={selectedItem || search.item}
           type={type}
           eventType={search.typeOfEvent || ""}
           isBasic={isBasic}
           reward={reward}
           setReward={setReward}
-          base64={base64 || search.item?.image || selectedItem?.image}
+          base64={base64}
         />
       )}
       {!isInvite && step < 4 ? (

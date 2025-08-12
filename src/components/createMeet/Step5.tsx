@@ -4,29 +4,23 @@ import { Right } from "./images/Right";
 export const Step5 = ({
   isLoading,
 
-  item,
   type,
 
   title,
-  description,
 
   base64,
 }: {
   isLoading: boolean;
 
-  item: any;
   type: string;
   eventType: string;
   isBasic: boolean;
   title: string;
-  description: string;
+
   reward: number;
   setReward: (reward: number) => void;
   base64: string;
 }) => {
-  const descRaw = item?.description ?? description ?? "";
-  const desc = descRaw.length > 20 ? descRaw.slice(0, 20) + "..." : descRaw;
-
   return (
     <div className="">
       {isLoading ? (

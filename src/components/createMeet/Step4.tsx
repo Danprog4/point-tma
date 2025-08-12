@@ -2,32 +2,24 @@ import { getEventData } from "~/lib/utils/getEventData";
 import { Coin } from "../Icons/Coin";
 import { Inventory } from "../Inventory";
 export const Step4 = ({
-  name,
-  isBasic,
-  item,
   reward,
   setReward,
-  isInvite,
+
   isInventoryOpen,
   setIsInventoryOpen,
   setSelectedInventory,
   selectedInventory,
   user,
-  setIsDisabled,
-  isDisabled,
 }: {
-  name: string;
-  isBasic: boolean;
-  item: any;
   reward: number;
   setReward: (reward: number) => void;
-  isInvite: boolean;
+
   isInventoryOpen: boolean;
   setIsInventoryOpen: (isInventoryOpen: boolean) => void;
   setSelectedInventory: (selectedInventory: string[]) => void;
   selectedInventory: string[];
   user: any;
-  setIsDisabled: (isDisabled: boolean) => void;
+
   isDisabled: boolean;
 }) => {
   const getItem = (id: string) => {

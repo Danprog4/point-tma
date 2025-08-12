@@ -100,7 +100,7 @@ export function EventsDrawer({
                         location: item.title,
                         address: item.location,
                         starttime: item.date,
-                        isCustom: true,
+                        isCustom: false,
                         index: locationIndex,
                       },
                     ]);

@@ -48,8 +48,7 @@ export const Step1 = ({
   isBasic: boolean;
   type: string;
   setType: (type: string) => void;
-  selectedItem: any;
-  setSelectedItem: (item: any) => void;
+
   setStep: (step: number) => void;
   setTypeOfEvent: (type: string) => void;
   title: string;
@@ -69,7 +68,7 @@ export const Step1 = ({
   isExtra: boolean;
   setIsExtra: (isExtra: boolean) => void;
   typeOfEvent: string;
-  item: any;
+
   date: string;
   setDate: (date: string) => void;
 }) => {

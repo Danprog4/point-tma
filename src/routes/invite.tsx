@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Coin } from "~/components/Icons/Coin";
@@ -12,7 +12,6 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
-import { eventTypes } from "~/types/events";
 export const Route = createFileRoute("/invite")({
   component: RouteComponent,
 });
@@ -117,7 +116,12 @@ function RouteComponent() {
             Выбрать
           </button>
           <button
-            onClick={() => setType("Кастомные")}
+            onClick={() =>
+              navigate({
+                to: "/createMeet",
+                search: { inviteId: Number(search.id) },
+              })
+            }
             className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
               type === "Кастомные"
                 ? "bg-black text-white"
@@ -169,8 +173,8 @@ function RouteComponent() {
                         isExtra: true,
                         isBasic: false,
                         typeOfEvent: item.category,
-                        item,
-                        id: search.id,
+                        idOfEvent: item.id,
+                        userId: search.id,
                       },
                     });
                   }}
@@ -200,44 +204,7 @@ function RouteComponent() {
             </div>
           </>
         )}
-        {type === "Кастомные" && (
-          <div className="flex-1 rounded-t-[16px] bg-white p-4">
-            <div className="min-h-[calc(100vh-200px)] space-y-4 overflow-y-auto">
-              {eventTypes.map((eventType, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    navigate({
-                      to: "/createMeet",
-                      search: {
-                        step: 0,
-                        isExtra: true,
-                        isBasic: false,
-                        typeOfEvent: eventType.name,
-                        item: eventType,
-                        id: search.id,
-                      },
-                    });
-                  }}
-                  className={`w-full rounded-2xl p-4 ${eventType.bgColor} flex items-center justify-between transition-opacity hover:opacity-80`}
-                >
-                  <div className="text-left">
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="text-base">{eventType.emoji}</span>
-                      <span className="text-base font-medium text-gray-900">
-                        {eventType.name}
-                      </span>
-                    </div>
-                    <p className="text-xs leading-tight text-gray-900">
-                      {eventType.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="ml-2 h-5 w-5 flex-shrink-0 text-gray-900" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+
         {type === "Мои встречи" && (
           <div className="flex flex-col gap-4">
             {meetings

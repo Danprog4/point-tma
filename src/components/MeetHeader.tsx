@@ -1,22 +1,11 @@
+import { Meet } from "~/db/schema";
+
 interface MeetHeaderProps {
   isMobile: boolean;
   page: string;
   setPage: (page: string) => void;
   mainPhoto?: string;
-  meeting?: {
-    name?: string;
-    description?: string;
-    type?: string;
-    image?: string;
-    organizer?: {
-      id?: number;
-      name?: string;
-      photo?: string;
-    };
-  };
-  user?: {
-    id?: number;
-  };
+  meeting?: Meet;
   getImageUrl: (photo: string) => string;
   setCurrentIndex: (index: number) => void;
   setIsFullScreen: (isFullScreen: boolean) => void;
@@ -31,7 +20,7 @@ export const MeetHeader: React.FC<MeetHeaderProps> = ({
   setPage,
   mainPhoto,
   meeting,
-  user,
+
   getImageUrl,
   setCurrentIndex,
   setIsFullScreen,
@@ -65,26 +54,12 @@ export const MeetHeader: React.FC<MeetHeaderProps> = ({
                 {meeting?.type}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-10 w-10 rounded-full">
-                <img
-                  src={getImageUrl(meeting?.organizer?.photo || "")}
-                  alt=""
-                  className="h-full w-full rounded-full object-cover"
-                />
-              </div>
-              <div className="flex flex-col">
-                <div className="font-bold">{meeting?.organizer?.name}</div>
-                <div className="text-sm text-white">
-                  {user?.id === meeting?.organizer?.id ? "Вы организатор" : "Организатор"}
-                </div>
-              </div>
-            </div>
+            <div className="flex items-center justify-start">{meeting?.date}</div>
           </div>
         </div>
       </div>
       {galleryPhotos && galleryPhotos.length > 0 && (
-        <div className="px-4 pt-2 text-xl font-bold">Галерея</div>
+        <div className="px-4 pt-2 pb-2 text-xl font-bold">Галерея</div>
       )}
       <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4">
         {galleryPhotos.map((img, idx) => (

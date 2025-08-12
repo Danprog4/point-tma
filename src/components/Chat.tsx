@@ -11,20 +11,7 @@ export const Chat = ({
 }: any) => {
   return (
     <div className="flex flex-col overflow-y-hidden">
-      <div className="relative flex h-[10vh] w-full items-center justify-center overflow-y-hidden">
-        <img
-          src={getImageUrl(meeting?.image || "")}
-          alt=""
-          className="h-full w-full rounded-t-2xl object-cover"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-xl font-bold text-white">{meeting?.name}</div>
-          <div className="flex items-center justify-center rounded-full bg-[#DFD2EA] px-2 text-sm text-black">
-            {meeting?.type}
-          </div>
-        </div>
-      </div>
-      <div className="h-[44vh] w-full space-y-2 overflow-y-auto bg-[#EBF1FF] p-4">
+      <div className="h-[54vh] w-full space-y-2 overflow-y-auto rounded-t-2xl bg-[#EBF1FF] p-4">
         {chatMessages?.map((m: any) => {
           const sender = users?.find((u: any) => u.id === m.userId);
           const isCurrentUser = sender?.id === user?.id;

@@ -136,6 +136,7 @@ function RouteComponent() {
         image: mainPhotoRaw,
         invitedId: search.id !== undefined ? String(search.id) : undefined,
         gallery: gallery,
+        important: important,
       },
       {
         onSuccess: (data: any) => {

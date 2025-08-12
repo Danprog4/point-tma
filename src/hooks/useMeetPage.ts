@@ -99,7 +99,9 @@ export function useMeetPage(meetId: number) {
   const sendChatMessage = useMutation(
     trpc.meetings.sendMessage.mutationOptions({
       onSuccess: (newMessage: any) => {
-        qc.invalidateQueries({ queryKey: trpc.meetings.getMessages.queryKey() });
+        qc.invalidateQueries({
+          queryKey: trpc.meetings.getMessages.queryKey({ meetId }),
+        });
       },
       onError: (err: any) => {
         toast.error(err.message || "Ошибка отправки сообщения");
@@ -126,6 +128,22 @@ export function useMeetPage(meetId: number) {
     }
     setChatTimestamps([...recent, now]);
     sendChatMessage.mutate({ meetId: meeting.id, message: msg });
+    qc.setQueryData(
+      trpc.meetings.getMessages.queryKey({ meetId: meeting.id }),
+      (old: any) => {
+        const existing = Array.isArray(old) ? old : [];
+        return [
+          ...existing,
+          {
+            id: Math.random(),
+            message: msg,
+            userId: user?.id,
+            createdAt: new Date(),
+            meetId: meeting.id,
+          },
+        ];
+      },
+    );
   };
 
   // Handlers

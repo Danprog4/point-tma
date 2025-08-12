@@ -40,6 +40,7 @@ export const meetingRouter = createTRPCRouter({
         invitedId: z.string().optional(),
         gallery: z.array(z.string()).optional(),
         inventory: z.array(z.string()).optional(),
+        important: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -57,6 +58,7 @@ export const meetingRouter = createTRPCRouter({
         participants,
         gallery,
         inventory,
+        important,
       } = input;
       const { userId } = ctx;
 
@@ -98,6 +100,7 @@ export const meetingRouter = createTRPCRouter({
           isBig,
           date,
           maxParticipants: participants,
+          important,
         })
         .returning();
 

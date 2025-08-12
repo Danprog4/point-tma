@@ -229,7 +229,6 @@ function RouteComponent() {
                   setPage={(p: string) => setPage(p as any)}
                   mainPhoto={mainPhoto}
                   meeting={meeting as any}
-                  user={user as any}
                   getImageUrl={getImageUrl}
                   setCurrentIndex={setCurrentIndex}
                   setIsFullScreen={setIsFullScreen}

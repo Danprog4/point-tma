@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import FilterDrawer from "~/components/FilterDrawer";
+import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
@@ -14,8 +16,6 @@ import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
 import { getImage } from "~/lib/utils/getImage";
-import { getImageUrl } from "~/lib/utils/getImageURL";
-import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/people")({
@@ -40,6 +40,18 @@ function RouteComponent() {
     Record<number, string[]>
   >({});
 
+  const [currentIndexByUserId, setCurrentIndexByUserId] = useState<
+    Record<number, number>
+  >({});
+
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullScreenPhotos, setFullScreenPhotos] = useState<string[]>([]);
+  const [fullScreenIndex, setFullScreenIndex] = useState(0);
+
+  const touchStartXRef = useRef<Record<number, number>>({});
+  const touchEndXRef = useRef<Record<number, number>>({});
+  const didSwipeRef = useRef<Record<number, boolean>>({});
+
   useEffect(() => {
     if (users) {
       setGalleryPhotosByUserId(
@@ -49,6 +61,15 @@ function RouteComponent() {
             return acc;
           },
           {} as Record<number, string[]>,
+        ),
+      );
+      setCurrentIndexByUserId(
+        users.reduce(
+          (acc, u) => {
+            acc[u.id] = 0;
+            return acc;
+          },
+          {} as Record<number, number>,
         ),
       );
     }
@@ -250,56 +271,95 @@ function RouteComponent() {
         {filteredUsers?.map((u) => (
           <div key={u.id}>
             <div className="flex flex-col items-start justify-center">
-              <div className="relative w-full">
-                <img
-                  src={getImage(u as any, selectedMainPhotoByUserId[u.id] ?? "")}
-                  alt={u.name || ""}
-                  className="h-60 w-full rounded-lg object-cover"
-                  onClick={() => {
-                    saveScrollPosition("people");
-                    navigate({
-                      to: "/user-profile/$id",
-                      params: { id: u.id.toString() },
-                    });
-                  }}
-                />
-                <div
-                  onClick={() => {
-                    setSelectedUser(u.id);
-                    setIsDrawerOpen(true);
-                  }}
-                  className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
-                >
-                  <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
-                </div>
-              </div>
-              <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-4 pt-4">
-                {galleryPhotosByUserId[u.id]?.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={getImageUrl(img)}
-                    alt=""
-                    className="h-20 w-20 cursor-pointer rounded-lg object-cover"
-                    onClick={() => {
-                      setGalleryPhotosByUserId((prev) => {
-                        const newGallery = prev[u.id]?.filter((i) => i !== img);
-
-                        if (selectedMainPhotoByUserId[u.id])
-                          newGallery.push(selectedMainPhotoByUserId[u.id]!);
-
-                        return {
-                          ...prev,
-                          [u.id]: newGallery,
-                        };
-                      });
-                      setSelectedMainPhotoByUserId((prev) => ({
-                        ...prev,
-                        [u.id]: img,
-                      }));
+              {(() => {
+                const allPhotos = [
+                  selectedMainPhotoByUserId[u.id] ?? "",
+                  ...(galleryPhotosByUserId[u.id] ?? []),
+                ].filter(Boolean);
+                const currentIndex = currentIndexByUserId[u.id] ?? 0;
+                const currentPhoto = allPhotos[currentIndex] ?? "";
+                const handleSwipe = (direction: "left" | "right") => {
+                  if (allPhotos.length <= 1) return;
+                  const len = allPhotos.length;
+                  const nextIndex =
+                    direction === "left"
+                      ? (currentIndex + 1) % len
+                      : (currentIndex - 1 + len) % len;
+                  setCurrentIndexByUserId((prev) => ({ ...prev, [u.id]: nextIndex }));
+                };
+                return (
+                  <div
+                    className="relative w-full"
+                    onTouchStart={(e) => {
+                      touchStartXRef.current[u.id] = e.touches[0].clientX;
+                      touchEndXRef.current[u.id] = e.touches[0].clientX;
+                      didSwipeRef.current[u.id] = false;
                     }}
-                  />
-                ))}
-              </div>
+                    onTouchMove={(e) => {
+                      touchEndXRef.current[u.id] = e.touches[0].clientX;
+                    }}
+                    onTouchEnd={() => {
+                      const startX = touchStartXRef.current[u.id] ?? 0;
+                      const endX = touchEndXRef.current[u.id] ?? 0;
+                      const deltaX = endX - startX;
+                      if (Math.abs(deltaX) > 50) {
+                        didSwipeRef.current[u.id] = true;
+                        if (deltaX < 0) handleSwipe("left");
+                        else handleSwipe("right");
+                        // Prevent immediate click after swipe
+                        setTimeout(() => {
+                          didSwipeRef.current[u.id] = false;
+                        }, 0);
+                      }
+                    }}
+                    onClick={() => {
+                      if (didSwipeRef.current[u.id]) return;
+                      if (allPhotos.length === 0) return;
+                      setFullScreenPhotos(allPhotos);
+                      setFullScreenIndex(currentIndex);
+                      setIsFullScreen(true);
+                    }}
+                  >
+                    <div className="h-60 w-full overflow-hidden rounded-lg">
+                      <AnimatePresence initial={false}>
+                        <motion.img
+                          key={currentIndex}
+                          src={getImage(u as any, currentPhoto)}
+                          alt={u.name || ""}
+                          className="h-60 w-full object-cover"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                        />
+                      </AnimatePresence>
+                    </div>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedUser(u.id);
+                        setIsDrawerOpen(true);
+                      }}
+                      className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
+                    >
+                      <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
+                    </div>
+                    {allPhotos.length > 1 && (
+                      <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                        {allPhotos.map((_, idx) => (
+                          <span
+                            key={idx}
+                            className={
+                              "h-2 w-2 rounded-full " +
+                              (idx === currentIndex ? "bg-[#9924FF]" : "bg-white/70")
+                            }
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex w-full items-center justify-between px-4 py-4">
                 <div className="flex items-center justify-center gap-2">
@@ -359,6 +419,14 @@ function RouteComponent() {
         user={user as User}
         isComplained={isComplained || false}
       />
+      {isFullScreen && fullScreenPhotos.length > 0 && (
+        <FullScreenPhoto
+          allPhotos={fullScreenPhotos}
+          currentIndex={fullScreenIndex}
+          setCurrentIndex={setFullScreenIndex}
+          setIsFullScreen={setIsFullScreen}
+        />
+      )}
       {isComplaintOpen && (
         <ComplaintDrawer
           handleSendComplaint={() => submitComplaint(complaint, "user")}

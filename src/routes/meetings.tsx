@@ -57,6 +57,7 @@ function RouteComponent() {
 
   // Фильтрация встреч
   const filteredMeetings = meetingsWithEvents
+    ?.filter((m) => !m.isCompleted)
     ?.filter((meeting) => {
       if (activeFilter === "Все") return true;
       return meeting.type === filterMap[activeFilter as keyof typeof filterMap];

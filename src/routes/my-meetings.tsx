@@ -63,10 +63,19 @@ function RouteComponent() {
     });
   }, [createdMeetings, acceptedMeetings]);
 
+  const completedMeetings = useMemo(() => {
+    return meetingsWithEvents?.filter((m) => m.isCompleted) || [];
+  }, [meetingsWithEvents]);
+
+  const activeMeetings = useMemo(() => {
+    return meetingsWithEvents?.filter((m) => !m.isCompleted) || [];
+  }, [meetingsWithEvents]);
+
   // handleAcceptRequest / handleDeclineRequest уже возвращаются из useRequests
 
   const filters = [
-    { name: "Мои встречи", count: meetingsWithEvents?.length || 0 },
+    { name: "Активные", count: activeMeetings?.length || 0 },
+    { name: "Завершенные", count: completedMeetings?.length || 0 },
     { name: "Приглашения", count: invitesWithInfo?.length || 0 },
     { name: "Заявки", count: requestsWithInfo?.length || 0 },
   ];
@@ -112,9 +121,62 @@ function RouteComponent() {
           </button>
         ))}
       </div>
-      {activeFilter === "Мои встречи" && (
+      {activeFilter === "Активные" && (
         <div className="flex flex-col gap-4">
-          {meetingsWithEvents
+          {activeMeetings
+            ?.sort(
+              (a, b) =>
+                new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+            )
+            .map((quest: any) => (
+              <div key={quest?.id}>
+                <div className="px-4">
+                  <MeetCard meet={quest || ({} as Quest)} isNavigable={true} />
+                  <p className="mb-4 text-xs leading-4 text-black">
+                    {(() => {
+                      const description = quest?.isCustom
+                        ? quest?.description
+                        : quest?.meeting?.description;
+                      return description && description.length > 100
+                        ? description.slice(0, 100) + "..."
+                        : description;
+                    })()}
+                  </p>
+                  <div className="mb-6 flex items-center justify-between">
+                    {quest?.meeting?.hasAchievement ? (
+                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                        + Достижение
+                      </span>
+                    ) : (
+                      <div></div>
+                    )}
+                    {(quest?.meeting as any)?.rewards?.find(
+                      (r: any) => r.type === "point",
+                    ) ? (
+                      <div className="ml-auto flex items-center gap-1">
+                        <span className="text-base font-medium text-black">
+                          +
+                          {(quest?.meeting as any)?.rewards
+                            ?.find((r: any) => r.type === "point")
+                            ?.value?.toLocaleString() || 0}
+                        </span>
+
+                        <span className="text-base font-medium text-black">points</span>
+                        <Coin />
+                      </div>
+                    ) : (
+                      <div></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {activeFilter === "Завершенные" && (
+        <div className="flex flex-col gap-4">
+          {completedMeetings
             ?.sort(
               (a, b) =>
                 new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),

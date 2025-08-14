@@ -507,7 +507,7 @@ function RouteComponent() {
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button
                     onClick={() => setIsGiveDrawerOpen(true)}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-[#DEB8FF] px-6 py-3 font-medium text-white shadow-lg"
+                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
                   >
                     <div>Подарить</div>
                   </button>

@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
-import { More } from "~/components/More";
 import { usePlatform } from "~/hooks/usePlatform";
 export const Route = createFileRoute("/calendar")({
   component: RouteComponent,
@@ -134,7 +133,7 @@ function RouteComponent() {
       {/* Month Navigation */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white px-4 data-[mobile=true]:pt-22"
+        className="z-10 flex items-center justify-between bg-white pt-8"
       >
         <button
           onClick={() => navigateMonth("prev")}
@@ -192,7 +191,6 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-      <div className="z-10"> {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}</div>
     </div>
   );
 }

@@ -16,6 +16,7 @@ import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
 import { getImage } from "~/lib/utils/getImage";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/people")({
@@ -361,44 +362,55 @@ function RouteComponent() {
                 );
               })()}
 
-              <div className="flex w-full items-center justify-between px-4 py-4">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="relative flex items-center">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
-                      <span className="text-xl font-bold text-white">1</span>
+              <div
+                onClick={() => {
+                  navigate({
+                    to: "/user-profile/$id",
+                    params: { id: u.id.toString() },
+                  });
+                  saveScrollPosition("people");
+                }}
+                className="w-full cursor-pointer"
+              >
+                <div className="flex w-full items-center justify-between px-4 py-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="relative flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
+                        <span className="text-xl font-bold text-white">1</span>
+                      </div>
+                    </div>
+                    <div className="font-bold text-nowrap">
+                      {u.name} {u.surname}
                     </div>
                   </div>
-                  <div className="font-bold text-nowrap">
-                    {u.name} {u.surname}
-                  </div>
-                </div>
 
-                <button
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToFavorites(u.id);
-                  }}
-                >
-                  <Heart
-                    className={cn(
-                      "h-6 w-6 text-black",
-                      isFavorite(u.id) && "text-red-500",
-                    )}
-                  />
-                </button>
-              </div>
-              <div className="flex w-full items-center justify-between px-4 pb-4">
-                <div className="text-sm text-neutral-500">
-                  г. {u?.city}, {getAge(u?.birthday) || "не указано"}
+                  <button
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToFavorites(u.id);
+                    }}
+                  >
+                    <Heart
+                      className={cn(
+                        "h-6 w-6 text-black",
+                        isFavorite(u.id) && "text-red-500",
+                      )}
+                    />
+                  </button>
                 </div>
-                <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
-              </div>
-              <div className="px-4">
-                <div className="text-sm">
-                  {u.bio?.length && u.bio?.length > 100
-                    ? u.bio?.slice(0, 100) + "..."
-                    : u.bio || "не указано"}
+                <div className="flex w-full items-center justify-between px-4 pb-4">
+                  <div className="text-sm text-neutral-500">
+                    г. {u?.city}, {getAge(u?.birthday) || "не указано"}
+                  </div>
+                  <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
+                </div>
+                <div className="px-4">
+                  <div className="text-sm">
+                    {u.bio?.length && u.bio?.length > 100
+                      ? u.bio?.slice(0, 100) + "..."
+                      : u.bio || "не указано"}
+                  </div>
                 </div>
               </div>
             </div>

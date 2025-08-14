@@ -128,28 +128,32 @@ export const Step2 = ({
   useEffect(() => {
     if (locations.length === 0) {
       setIsDisabled(true);
-    }
-  }, [locations]);
-
-  useEffect(() => {
-    console.log(locations, "locations");
-    if (locations.length > 0) {
-      setIsDisabled(false);
       return;
     }
-    const valid = locations
-      .filter((loc) => !loc.isCustom)
-      .every(
-        (loc) =>
-          loc.location &&
-          loc.starttime &&
-          loc.endtime &&
-          isValidTime(loc.starttime) &&
-          isValidTime(loc.endtime) &&
-          isStartBeforeEnd(loc.starttime, loc.endtime),
+
+    // Проверяем все локации
+    const valid = locations.every((loc, idx) => {
+      // Если локация была выбрана из афиши (есть соответствующий selectedItem), она валидна
+      const hasSelectedItem = selectedItems.some((item) => item.index === idx);
+      if (hasSelectedItem) {
+        return true;
+      }
+
+      // Для кастомных локаций проверяем все поля
+      return (
+        loc.location &&
+        loc.address &&
+        loc.starttime &&
+        loc.endtime &&
+        isValidTime(loc.starttime) &&
+        isValidTime(loc.endtime) &&
+        isStartBeforeEnd(loc.starttime, loc.endtime)
       );
+    });
+
     setIsDisabled(!valid);
-  }, [locations]);
+  }, [locations, selectedItems]);
+
   console.log(selectedItems, "selectedItems");
   console.log(getItems, "getItems");
   console.log(locations, "locations");
@@ -161,7 +165,7 @@ export const Step2 = ({
           <div className="flex flex-col gap-2">
             {Array.from({ length: length }).map((_, index) => (
               <div key={index}>
-                <div className="text-xl font-bold">Этапы вечеринки</div>
+                <div className="text-xl font-bold">Этапы вечеринки *</div>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <input
                     value={locations[index]?.location || ""}
@@ -179,7 +183,7 @@ export const Step2 = ({
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
-                  <div className="text-xl font-bold">Адрес</div>
+                  <div className="mb-2 text-xl font-bold">Адрес *</div>
                   <div
                     className="text-sm text-blue-500"
                     onClick={() => {

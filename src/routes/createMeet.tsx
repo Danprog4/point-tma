@@ -68,7 +68,7 @@ function RouteComponent() {
       index?: number;
       isCustom?: boolean;
     }[]
-  >([]);
+  >([{ location: "", address: "" }]);
   const [reward, setReward] = useState(0);
   const [length, setLength] = useState(1);
   const [tags, setTags] = useState<string[]>([]);
@@ -313,6 +313,7 @@ function RouteComponent() {
           participants={participants}
           tags={tags}
           setTags={setTags}
+          category={type}
         />
       )}
       {step === 3 && (

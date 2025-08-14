@@ -4,6 +4,7 @@ import { openTelegramLink } from "@telegram-apps/sdk";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import ActiveDrawer from "~/components/ActiveDrawer";
+import GiveDrawer from "~/components/GiveDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { BlueTelegram } from "~/components/Icons/BlueTelegram";
 import { Coin } from "~/components/Icons/Coin";
@@ -14,6 +15,7 @@ import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
+import { User } from "~/db/schema";
 import { useActivate } from "~/hooks/useActivate";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getEventData } from "~/lib/utils/getEventData";
@@ -34,11 +36,13 @@ function RouteComponent() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [isGiveDrawerOpen, setIsGiveDrawerOpen] = useState(false);
   const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
   const [page, setPage] = useState("info");
   const { name, id } = Route.useParams();
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
@@ -501,6 +505,13 @@ function RouteComponent() {
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               {event?.category === "Квест" ? (
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+                  <button
+                    onClick={() => setIsGiveDrawerOpen(true)}
+                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-[#DEB8FF] px-6 py-3 font-medium text-white shadow-lg"
+                  >
+                    <div>Подарить</div>
+                  </button>
+
                   <ActiveDrawer
                     id={Number(id)}
                     name={name}
@@ -557,6 +568,15 @@ function RouteComponent() {
           onOpenChange={setIsReviewOpen}
           id={Number(id)}
           name={name}
+        />
+      )}
+
+      {isGiveDrawerOpen && (
+        <GiveDrawer
+          item={ticket as any}
+          open={isGiveDrawerOpen}
+          onOpenChange={setIsGiveDrawerOpen}
+          users={users as User[]}
         />
       )}
     </div>

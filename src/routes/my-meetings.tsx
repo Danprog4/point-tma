@@ -19,7 +19,7 @@ export const Route = createFileRoute("/my-meetings")({
 
 function RouteComponent() {
   useScrollRestoration("my-meetings");
-  const [activeFilter, setActiveFilter] = useState("Мои встречи");
+  const [activeFilter, setActiveFilter] = useState("Активные");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());

@@ -729,6 +729,65 @@ export const router = {
         .set({ notInterestedIds: updatedIds })
         .where(eq(usersTable.id, ctx.userId));
     }),
+
+  sendGift: procedure
+    .input(
+      z.object({
+        userId: z.number(),
+        item: z.object({
+          type: z.string(),
+          eventId: z.number(),
+          isActive: z.boolean().optional(),
+          name: z.string(),
+          id: z.number().optional(),
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const targetUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
+      });
+
+      if (!targetUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Target user not found",
+        });
+      }
+
+      const newUserInventory = user.inventory?.filter(
+        (item) => item.eventId !== input.item.eventId,
+      );
+
+      const newTargetInventory = [...(targetUser.inventory || []), input.item];
+
+      await db
+        .update(usersTable)
+        .set({
+          inventory: newUserInventory,
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      await db
+        .update(usersTable)
+        .set({
+          inventory: newTargetInventory,
+        })
+        .where(eq(usersTable.id, input.userId));
+
+      return user;
+    }),
 };
 
 export type Router = typeof router;

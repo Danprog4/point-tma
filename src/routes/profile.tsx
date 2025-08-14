@@ -1,32 +1,31 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Award,
   BarChart3,
   Calendar,
   Calendar1,
-  Check,
   ChevronLeft,
   ChevronRight,
   Crown,
   History,
   Lock,
   Package,
-  Search,
   Settings,
   Star,
   X as XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Friends } from "~/components/Friends";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
-import { CloseRed } from "~/components/Icons/CloseRed";
 import { FavIcon } from "~/components/Icons/Fav";
 import { MenuItem } from "~/components/MenuItem";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
 import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
+import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -38,18 +37,22 @@ export const Route = createFileRoute("/profile")({
 
 function RouteComponent() {
   useScroll();
+
+  // Use the friends data hook
+  const { users, activeRequests, uniqueFriends, user, acceptRequest, declineRequest } =
+    useFriendsData();
+
   const queryClient = useQueryClient();
   const trpc = useTRPC();
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isFriendsPage, setIsFriendsPage] = useState(false);
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const navigate = useNavigate();
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [page, setPage] = useState<"info" | "friends">("info");
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(
     user?.photo || undefined,
   );
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>(user?.gallery ?? []);
+
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
@@ -76,7 +79,6 @@ function RouteComponent() {
 
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
-  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
 
   const { data: userMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({
@@ -84,36 +86,14 @@ function RouteComponent() {
     }),
   );
 
-  const uniqueFriends = useMemo(() => {
-    if (!friends || !user?.id) return [];
-    const seen = new Set<number>();
-    return friends
-      .filter((r) => r.status === "accepted")
-      .filter((r) => {
-        const counterpartId = r.fromUserId === user.id ? r.toUserId : r.fromUserId;
-        if (counterpartId == null) return false;
-        if (seen.has(counterpartId)) return false;
-        seen.add(counterpartId);
-        return true;
-      });
-  }, [friends, user?.id]);
-
-  const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
-  const activeRequests = requests?.filter((request) => request.status === "pending");
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [search, setSearch] = useState("");
-  console.log(requests, "requests");
 
   const activeQuests = useMemo(() => {
     return activeEvents?.filter((event) => event.type === "Квест") || [];
   }, [activeEvents]);
 
   const userAge = user?.birthday ? getAge(user.birthday) : undefined;
-
-  const acceptRequestMutation = useMutation(trpc.friends.acceptRequest.mutationOptions());
-  const declineRequestMutation = useMutation(
-    trpc.friends.declineRequest.mutationOptions(),
-  );
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
   const QuestsData = filteredEvents?.map((event) => {
@@ -143,24 +123,6 @@ function RouteComponent() {
 
   const pageState = uncompletedQuestsData?.length === 0 ? "completed" : "active";
 
-  const acceptRequest = (userId: number) => {
-    acceptRequestMutation.mutate({ userId });
-    queryClient.setQueryData(trpc.friends.getRequests.queryKey(), (old: any) => {
-      return old.map(
-        (request: any) => request.id === request.id && { ...request, status: "accepted" },
-      );
-    });
-  };
-
-  const declineRequest = (userId: number) => {
-    declineRequestMutation.mutate({ userId });
-    queryClient.setQueryData(trpc.friends.getRequests.queryKey(), (old: any) => {
-      return old.map(
-        (request: any) => request.id === request.id && { ...request, status: "rejected" },
-      );
-    });
-  };
-
   console.log(pageState, "pageState");
 
   const isMobile = usePlatform();
@@ -169,11 +131,13 @@ function RouteComponent() {
       {isSubscribersPage ? (
         <UserSubscribers viewedUser={user} setIsSubscribersPage={setIsSubscribersPage} />
       ) : isFriendsPage ? (
-        <UserFriends
-          viewedUser={user}
-          setIsFriendsPage={setIsFriendsPage}
-          users={users}
-        />
+        <>
+          <UserFriends
+            viewedUser={user}
+            setIsFriendsPage={setIsFriendsPage}
+            users={users}
+          />
+        </>
       ) : (
         <div
           data-mobile={isMobile}
@@ -470,151 +434,7 @@ function RouteComponent() {
             </>
           )}
 
-          {page === "friends" && (
-            <>
-              <div className="relative px-4 py-4">
-                <input
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                  }}
-                  value={search}
-                  type="text"
-                  placeholder="Поиск друзей"
-                  className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                />
-                <div className="absolute top-7 right-7">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-
-                {search && (
-                  <div className="flex flex-col gap-4">
-                    <div className="text-lg font-medium">Пользователи</div>
-                    {users
-                      ?.filter(
-                        (user) =>
-                          user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-                          user?.surname?.toLowerCase().includes(search.toLowerCase()),
-                      )
-                      .map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => {
-                            navigate({
-                              to: "/user-profile/$id",
-                              params: { id: user.id.toString() },
-                            });
-                          }}
-                        >
-                          <div className="flex items-center justify-between pb-4">
-                            <div className="flex items-center justify-start gap-2">
-                              <img
-                                src={getImageUrl(user?.photo || "")}
-                                alt=""
-                                className="h-14 w-14 rounded-lg"
-                              />
-                              <div className="flex flex-col items-start justify-between gap-2">
-                                <div className="text-lg">
-                                  {user?.name} {user?.surname}
-                                </div>
-                                <div>{user?.birthday}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
-                {activeRequests && activeRequests?.length > 0 && (
-                  <div className="flex flex-col gap-4">
-                    <div className="text-lg font-medium">Запросы</div>
-                    {activeRequests.map((request) => {
-                      const requestUser = users?.find((u) => u.id === request.fromUserId);
-                      return (
-                        <div
-                          key={request.id}
-                          onClick={() => {
-                            navigate({
-                              to: "/user-profile/$id",
-                              params: { id: requestUser?.id.toString() || "" },
-                            });
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center justify-start gap-2">
-                              <div
-                                className="mr-4 p-2"
-                                onClick={() => declineRequest(request.fromUserId!)}
-                              >
-                                <CloseRed />
-                              </div>
-                              <img
-                                src={getImageUrl(requestUser?.photo || "")}
-                                alt=""
-                                className="h-14 w-14 rounded-lg"
-                              />
-                              <div className="flex flex-col items-start justify-between gap-2">
-                                <div className="text-lg">
-                                  {requestUser?.name} {requestUser?.surname}
-                                </div>
-                                <div>{requestUser?.birthday}</div>
-                              </div>
-                            </div>
-                            <div
-                              className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                              onClick={() => acceptRequest(request.fromUserId!)}
-                            >
-                              <Check className="h-5 w-5 text-white" />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {uniqueFriends && uniqueFriends.length > 0 && (
-                  <div className="flex flex-col gap-4">
-                    <div className="text-lg font-medium">Друзья</div>
-                    {uniqueFriends.map((request) => {
-                      const requestUser = users?.find(
-                        (u) =>
-                          u.id ===
-                          (request.fromUserId === user?.id
-                            ? request.toUserId
-                            : request.fromUserId),
-                      );
-                      return (
-                        <div
-                          key={request.id}
-                          onClick={() => {
-                            navigate({
-                              to: "/user-profile/$id",
-                              params: { id: requestUser?.id.toString() || "" },
-                            });
-                          }}
-                        >
-                          <div className="flex items-center justify-between pb-4">
-                            <div className="flex items-center justify-start gap-2">
-                              <img
-                                src={getImageUrl(requestUser?.photo || "")}
-                                alt=""
-                                className="h-14 w-14 rounded-lg"
-                              />
-                              <div className="flex flex-col items-start justify-between gap-2">
-                                <div className="text-lg">
-                                  {requestUser?.name} {requestUser?.surname}
-                                </div>
-                                <div>{requestUser?.birthday}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          {page === "friends" && <Friends />}
 
           {isFullScreen && allPhotos.length > 0 && (
             <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">

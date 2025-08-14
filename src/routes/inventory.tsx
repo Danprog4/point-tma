@@ -60,7 +60,7 @@ function RouteComponent() {
                 className="h-[61px] w-[61px] rounded-lg"
               />
 
-              <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
+              <div className="text-center text-xs font-bold text-[#A35700]">
                 {getEventData(ticket.name, ticket.eventId)?.category === "Квест"
                   ? "Билет на квест"
                   : "Ваучер"}
@@ -69,7 +69,7 @@ function RouteComponent() {
           ))}
         </div>
       ) : (
-        <div className="px-4 text-start text-gray-500">Ваш инвентарь пока пуст</div>
+        <div className="text-start text-gray-500">Ваш инвентарь пока пуст</div>
       )}
     </div>
   );

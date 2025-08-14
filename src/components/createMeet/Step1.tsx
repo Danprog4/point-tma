@@ -261,7 +261,7 @@ export const Step1 = ({
             <div className="mb-2 flex h-40 w-[92vw] items-center justify-center rounded-2xl bg-[#F0F0F0]">
               <div className="flex flex-col items-center gap-2">
                 <AddPhoto />
-                <div className="text-sm text-[#9924FF]">Загрузить фото/афишу</div>
+                <div className="text-sm text-[#9924FF]">Загрузить фото/афишу *</div>
               </div>
             </div>
           )}
@@ -313,7 +313,7 @@ export const Step1 = ({
       </div>
 
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
-        <div className="text-xl font-bold">Тип встречи</div>
+        <div className="text-xl font-bold">Тип встречи *</div>
         <div
           onClick={() => {
             setIsDrawerOpen(true);
@@ -325,7 +325,7 @@ export const Step1 = ({
         </div>
       </div>
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
-        <div className="text-xl font-bold">Название</div>
+        <div className="text-xl font-bold">Название *</div>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -335,7 +335,7 @@ export const Step1 = ({
         />
       </div>
       <div className="flex flex-col items-start gap-2 pb-4">
-        <div className="text-xl font-bold">Описание</div>
+        <div className="text-xl font-bold">Описание *</div>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -343,7 +343,10 @@ export const Step1 = ({
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
+      <div className="flex flex-col items-start gap-2 pb-4">
+        <div className="text-xl font-bold">Дата *</div>
+        <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
+      </div>
       {date && !isValidDate(date) && (
         <div className="mt-2 text-sm text-red-500">
           Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)

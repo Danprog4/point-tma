@@ -66,7 +66,7 @@ export default function GiveDrawer({
           <header className="flex items-center justify-between px-4 pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="font-bold">Сделать подарок</div>
-            <button onClick={() => onOpenChange(false)}>
+            <button className="z-[100]" onClick={() => onOpenChange(false)}>
               <X className="h-6 w-6 text-gray-900" />
             </button>
           </header>
@@ -79,7 +79,7 @@ export default function GiveDrawer({
                     alt={event?.title}
                     className="h-10 w-10 rounded-lg"
                   />
-                  <div>{item.type === "ticket" ? "Билет на квест" : "Ваучер"}</div>
+                  <div>{item.name === "Квест" ? "Билет на квест" : "Ваучер"}</div>
                 </div>
               </div>
               <div className="px-4 pt-4 text-xl font-bold text-nowrap">
@@ -98,7 +98,7 @@ export default function GiveDrawer({
                     alt=""
                     className="h-[132px] w-[132px] rounded-lg"
                   />
-                  <div>{item.type === "ticket" ? "Билет на квест" : "Ваучер"}</div>
+                  <div>{item.name === "Квест" ? "Билет на квест" : "Ваучер"}</div>
                 </div>
                 <div className="flex rotate-4 transform flex-col items-center justify-center">
                   <img

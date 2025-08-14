@@ -125,6 +125,8 @@ function RouteComponent() {
 
   console.log(pageState, "pageState");
 
+  console.log(userSubscribers, "userSubscribers");
+
   const isMobile = usePlatform();
   return (
     <>

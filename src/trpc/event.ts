@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { activeEventsTable, usersTable } from "~/db/schema";
+import { activeEventsTable, calendarTable, usersTable } from "~/db/schema";
 import { getEventData } from "~/lib/utils/getEventData";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
@@ -250,4 +250,39 @@ export const eventRouter = createTRPCRouter({
         },
       );
     }),
+
+  addToCalendar: procedure
+    .input(
+      z.object({
+        eventId: z.number().optional(),
+        eventType: z.string().optional(),
+        date: z.string().optional(),
+        meetId: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.eventId) {
+        await db.insert(calendarTable).values({
+          userId: ctx.userId,
+          eventId: input.eventId,
+          eventType: input.eventType,
+          date: input.date ? new Date(input.date) : null,
+        });
+      }
+
+      if (input.meetId) {
+        await db.insert(calendarTable).values({
+          userId: ctx.userId,
+          meetId: input.meetId,
+          date: input.date ? new Date(input.date) : null,
+        });
+      }
+    }),
+
+  getEventCalendar: procedure.query(async ({ ctx }) => {
+    const events = await db.query.calendarTable.findMany({
+      where: eq(calendarTable.userId, ctx.userId),
+    });
+    return events;
+  }),
 });

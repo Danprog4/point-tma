@@ -226,6 +226,8 @@ function RouteComponent() {
     });
   };
 
+  console.log(userSubscribers, "userSubscribers");
+
   const isMobile = usePlatform();
 
   return (

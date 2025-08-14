@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import CalendarDrawer from "~/components/CalendarDrawer";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import { usePlatform } from "~/hooks/usePlatform";
 export const Route = createFileRoute("/calendar")({
@@ -31,6 +32,8 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isCalendarDrawerOpen, setIsCalendarDrawerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -58,6 +61,21 @@ function RouteComponent() {
     setCurrentDate(newDate);
   };
 
+  const handleDateClick = (day: number, type: "prev" | "current" | "next") => {
+    let clickedDate: Date;
+
+    if (type === "prev") {
+      clickedDate = new Date(year, month - 1, day);
+    } else if (type === "next") {
+      clickedDate = new Date(year, month + 1, day);
+    } else {
+      clickedDate = new Date(year, month, day);
+    }
+
+    setSelectedDate(clickedDate.toISOString());
+    setIsCalendarDrawerOpen(true);
+  };
+
   const renderCalendarDay = (
     day: number,
     type: "prev" | "current" | "next",
@@ -69,7 +87,8 @@ function RouteComponent() {
     return (
       <div
         key={`${type}-${day}`}
-        className={`relative flex h-22 items-center justify-center ${opacity}`}
+        className={`relative flex h-22 cursor-pointer items-center justify-center ${opacity}`}
+        onClick={() => handleDateClick(day, type)}
       >
         <div className="relative flex h-full w-full items-center justify-center">
           <span className="z-10 text-base font-medium text-gray-800">{day}</span>
@@ -191,6 +210,14 @@ function RouteComponent() {
           </div>
         </div>
       </div>
+
+      <CalendarDrawer
+        open={isCalendarDrawerOpen}
+        onOpenChange={setIsCalendarDrawerOpen}
+        date={selectedDate}
+      >
+        <div />
+      </CalendarDrawer>
     </div>
   );
 }

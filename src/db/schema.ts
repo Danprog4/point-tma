@@ -49,6 +49,15 @@ export const usersTable = pgTable("users", {
   savedMeetsIds: jsonb("saved_meets_ids").$type<number[]>(),
 });
 
+export const calendarTable = pgTable("calendar", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  eventId: bigint("event_id", { mode: "number" }),
+  meetId: bigint("meet_id", { mode: "number" }),
+  eventType: varchar("event_type", { length: 255 }),
+  date: timestamp("date"),
+});
+
 export const ratingsUserTable = pgTable("ratings_user", {
   id: serial("id").primaryKey(),
   userId: bigint("user_id", { mode: "number" }),

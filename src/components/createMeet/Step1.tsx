@@ -37,8 +37,10 @@ export const Step1 = ({
 
   date,
   setDate,
-
+  time,
+  setTime,
   setIsDisabled,
+  calendarDate,
 }: {
   subType: string;
   setSubType: (subType: string) => void;
@@ -71,9 +73,14 @@ export const Step1 = ({
 
   date: string;
   setDate: (date: string) => void;
+  time: string;
+  setTime: (time: string) => void;
+  calendarDate: string;
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
+
+  console.log(calendarDate, "calendatDate ");
 
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
@@ -108,6 +115,20 @@ export const Step1 = ({
     default:
       data = [];
   }
+
+  console.log(date, "date");
+
+  useEffect(() => {
+    if (calendarDate) {
+      const calendarDateObj = new Date(calendarDate);
+      const formattedDate = calendarDateObj.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      setDate(formattedDate);
+    }
+  }, [calendarDate]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -239,6 +260,20 @@ export const Step1 = ({
     );
   };
 
+  const isValidTime = (timeStr: string): boolean => {
+    const [hours, minutes] = timeStr.split(":");
+    const hoursNum = parseInt(hours, 10);
+    const minutesNum = parseInt(minutes, 10);
+    return (
+      !isNaN(hoursNum) &&
+      !isNaN(minutesNum) &&
+      hoursNum >= 0 &&
+      hoursNum < 24 &&
+      minutesNum >= 0 &&
+      minutesNum < 60
+    );
+  };
+
   return (
     <div className="scrollbar-hidden w-full overflow-y-auto pb-4">
       <div className="mt-8 flex w-full flex-col items-center gap-4">
@@ -312,6 +347,33 @@ export const Step1 = ({
         />
       </div>
 
+      <div className="flex flex-col items-start gap-2 pb-4">
+        <div className="text-xl font-bold">Дата *</div>
+        <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
+      </div>
+      {date && !isValidDate(date) && (
+        <div className="mb-2 text-sm text-red-500">
+          Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)
+        </div>
+      )}
+
+      <div className="flex flex-col items-start gap-2 pb-4">
+        <div className="text-xl font-bold">Время *</div>
+        <input
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          type="text"
+          placeholder={`Введите время 00:00`}
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+      </div>
+
+      {time && !isValidTime(time) && (
+        <div className="text-sm text-red-500">
+          Пожалуйста, введите корректное время (00:00)
+        </div>
+      )}
+
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
         <div className="text-xl font-bold">Тип встречи *</div>
         <div
@@ -343,15 +405,7 @@ export const Step1 = ({
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 pb-4">
-        <div className="text-xl font-bold">Дата *</div>
-        <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
-      </div>
-      {date && !isValidDate(date) && (
-        <div className="mt-2 text-sm text-red-500">
-          Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)
-        </div>
-      )}
+
       <CreateMeetDrawer
         open={isDrawerOpen}
         onOpenChange={setIsDrawerOpen}

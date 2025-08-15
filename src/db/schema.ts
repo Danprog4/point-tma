@@ -101,6 +101,7 @@ export const meetTable = pgTable("meets", {
   gallery: jsonb("gallery").$type<string[]>(),
   subType: varchar("sub_type", { length: 255 }),
   isBig: boolean("is_big").default(false),
+  time: varchar("time", { length: 255 }),
 });
 
 export const reviewsTable = pgTable("reviews", {

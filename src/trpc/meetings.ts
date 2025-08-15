@@ -43,6 +43,7 @@ export const meetingRouter = createTRPCRouter({
         inventory: z.array(z.string()).optional(),
         important: z.string().optional(),
         calendarDate: z.string().optional(),
+        time: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -62,6 +63,7 @@ export const meetingRouter = createTRPCRouter({
         inventory,
         important,
         calendarDate,
+        time,
       } = input;
       const { userId } = ctx;
 
@@ -104,6 +106,7 @@ export const meetingRouter = createTRPCRouter({
           date,
           maxParticipants: participants,
           important,
+          time,
         })
         .returning();
 
@@ -137,11 +140,11 @@ export const meetingRouter = createTRPCRouter({
         isRequest: true,
       });
 
-      if (calendarDate) {
+      if (time && date) {
         await db.insert(calendarTable).values({
           userId: user.id,
           meetId: meet.id,
-          date: new Date(calendarDate),
+          date: new Date(date),
         });
       }
 

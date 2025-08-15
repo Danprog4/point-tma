@@ -54,6 +54,7 @@ function RouteComponent() {
   const [step, setStep] = useState((search as any).step || 0);
   const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
   const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
   const [type, setType] = useState("");
   const [base64, setBase64] = useState("");
   const [gallery, setGallery] = useState<string[]>([]);
@@ -169,6 +170,7 @@ function RouteComponent() {
         gallery: gallery,
         important: important,
         calendarDate: search.calendarDate,
+        time: time,
       },
       {
         onSuccess: (data: any) => {
@@ -282,6 +284,9 @@ function RouteComponent() {
           isExtra={isExtra}
           setIsExtra={setIsExtra}
           typeOfEvent={search.typeOfEvent || ""}
+          time={time}
+          calendarDate={search.calendarDate || ""}
+          setTime={setTime}
         />
       )}
       {step === 1 && (

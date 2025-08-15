@@ -604,6 +604,141 @@ export const meetingRouter = createTRPCRouter({
 
       return messages;
     }),
+
+  updateMeeting: procedure
+    .input(
+      z.object({
+        id: z.number(),
+        date: z.string(),
+        name: z.string(),
+        description: z.string(),
+        type: z.string(),
+        subType: z.string().optional(),
+        isBig: z.boolean().optional(),
+        participants: z.number().optional(),
+        locations: z
+          .array(
+            z.object({
+              location: z.string(),
+              address: z.string(),
+              starttime: z.string().optional(),
+              endtime: z.string().optional(),
+              isCustom: z.boolean().optional(),
+            }),
+          )
+          .optional(),
+        reward: z.number().optional(),
+        image: z.string().optional(),
+        invitedIds: z.array(z.number()).optional(),
+        gallery: z.array(z.string()).optional(),
+        inventory: z.array(z.string()).optional(),
+        important: z.string().optional(),
+        calendarDate: z.string().optional(),
+        time: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const {
+        id,
+        subType,
+        name,
+        description,
+        type,
+        isBig,
+        invitedIds,
+        date,
+        locations,
+        reward,
+        image,
+        participants,
+        gallery,
+        inventory,
+        important,
+        calendarDate,
+        time,
+      } = input;
+      const { userId } = ctx;
+
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      // Check if user owns the meeting
+      const existingMeet = await db.query.meetTable.findFirst({
+        where: and(eq(meetTable.id, id), eq(meetTable.userId, userId)),
+      });
+
+      if (!existingMeet) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can only edit your own meetings",
+        });
+      }
+
+      let imageUrl = existingMeet.image;
+
+      if (image && image !== existingMeet.image) {
+        imageUrl = await uploadBase64Image(image);
+      }
+
+      let itemsWithInfo = null;
+      if (inventory) {
+        itemsWithInfo = user.inventory?.filter((item) =>
+          inventory.includes(item?.id?.toString() ?? ""),
+        );
+      }
+
+      const [meet] = await db
+        .update(meetTable)
+        .set({
+          description,
+          type,
+          name,
+          participantsIds: invitedIds ? [...invitedIds, user.id] : [user.id],
+          gallery,
+          locations,
+          subType,
+          reward,
+          items: itemsWithInfo,
+          image: imageUrl,
+          isBig,
+          date,
+          maxParticipants: participants,
+          important,
+          time,
+        })
+        .where(eq(meetTable.id, id))
+        .returning();
+
+      if (inventory) {
+        const newInventory = user.inventory?.filter(
+          (item) => !inventory.includes(item?.id?.toString() ?? ""),
+        );
+
+        await db
+          .update(usersTable)
+          .set({
+            inventory: newInventory,
+          })
+          .where(eq(usersTable.id, user.id));
+      }
+
+      // Update calendar entry if time and date are provided
+      if (time && date) {
+        await db
+          .update(calendarTable)
+          .set({
+            date: new Date(date.split(".").reverse().join("-")),
+          })
+          .where(and(eq(calendarTable.userId, user.id), eq(calendarTable.meetId, id)));
+      }
+
+      return meet;
+    }),
 });
 
 export type Router = typeof meetingRouter;

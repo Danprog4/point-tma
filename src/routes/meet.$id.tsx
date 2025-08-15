@@ -177,7 +177,14 @@ function RouteComponent() {
             <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
               Встреча
             </h1>
-            {!isOwner && (
+            {isOwner ? (
+              <button
+                onClick={() => navigate({ to: "/meeting-edit", search: { meetId: id } })}
+                className="text-sm text-[#9924FF]"
+              >
+                Редактировать
+              </button>
+            ) : (
               <button
                 onClick={() => {
                   if (isComplaint) {

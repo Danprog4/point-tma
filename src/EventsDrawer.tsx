@@ -49,6 +49,7 @@ export function EventsDrawer({
   const clickHandler = (item: any) => {
     if (handleAddToCalendar) {
       handleAddToCalendar(item);
+      return; // Don't close drawer here, handleAddToCalendar will handle it
     }
     if (setSelectedItems && locationIndex !== undefined) {
       setSelectedItems([

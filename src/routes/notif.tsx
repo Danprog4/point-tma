@@ -136,7 +136,79 @@ function RouteComponent() {
     }
   };
 
+  // Группировка уведомлений по временным периодам
+  const groupNotificationsByTime = () => {
+    if (!notifications) return { today: [], last7Days: [], last30Days: [] };
+
+    const now = dayjs();
+    const today = now.startOf("day");
+    const sevenDaysAgo = now.subtract(7, "day");
+    const thirtyDaysAgo = now.subtract(30, "day");
+
+    const grouped = {
+      today: [] as any[],
+      last7Days: [] as any[],
+      last30Days: [] as any[],
+    };
+
+    notifications.forEach((notification) => {
+      const notificationDate = dayjs(notification.createdAt);
+
+      if (notificationDate.isAfter(today)) {
+        grouped.today.push(notification);
+      } else if (notificationDate.isAfter(sevenDaysAgo)) {
+        grouped.last7Days.push(notification);
+      } else if (notificationDate.isAfter(thirtyDaysAgo)) {
+        grouped.last30Days.push(notification);
+      }
+    });
+
+    return grouped;
+  };
+
+  const renderNotificationItem = (notification: any) => (
+    <div
+      key={notification.id}
+      className="flex w-full cursor-pointer items-center justify-between border-b border-gray-100 py-3"
+      onClick={() => {
+        handleNavigate(notification.type || "", notification);
+        readNotification.mutate({ id: notification.id });
+      }}
+    >
+      <div className="flex flex-col items-start justify-between gap-2">
+        <div className="text-sm font-medium text-gray-800">
+          {getNotificationMessage(notification.type || "")}
+        </div>
+        <div className="text-xs text-neutral-500">
+          {getNotificationDecs(notification.type || "", notification)}
+        </div>
+      </div>
+      <div className="flex items-start justify-center gap-2">
+        <div className="text-xs text-gray-500">
+          {notification.createdAt ? dayjs(notification.createdAt).format("HH:mm") : ""}
+        </div>
+        {getNotificationIcon(notification.type || "", notification)}
+      </div>
+    </div>
+  );
+
+  const renderNotificationSection = (
+    title: string,
+    notifications: any[],
+    showDate: boolean = false,
+  ) => {
+    if (notifications.length === 0) return null;
+
+    return (
+      <div className="w-full">
+        <div className="mb-3 text-sm font-semibold text-gray-600">{title}</div>
+        <div className="w-full">{notifications.map(renderNotificationItem)}</div>
+      </div>
+    );
+  };
+
   const isMobile = usePlatform();
+  const groupedNotifications = groupNotificationsByTime();
 
   return (
     <div
@@ -156,32 +228,20 @@ function RouteComponent() {
         <h1 className="text-base font-bold text-gray-800">Уведомления</h1>
         <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
-      <div className="flex w-full flex-col items-start justify-center gap-4 px-4">
+
+      <div className="flex w-full flex-col items-start justify-center gap-6 px-4">
         {notifications && notifications.length > 0 ? (
-          notifications.map((notification) => (
-            <div
-              className="flex w-full cursor-pointer items-center justify-between"
-              onClick={() => {
-                handleNavigate(notification.type || "", notification);
-                readNotification.mutate({ id: notification.id });
-              }}
-            >
-              <div className="flex flex-col items-start justify-between gap-2">
-                <div>{getNotificationMessage(notification.type || "")}</div>
-                <div className="text-xs text-neutral-500">
-                  {getNotificationDecs(notification.type || "", notification)}
-                </div>
-              </div>
-              <div className="flex items-start justify-center gap-2">
-                <div>
-                  {notification.createdAt
-                    ? dayjs(notification.createdAt).format("HH:mm")
-                    : ""}
-                </div>
-                {getNotificationIcon(notification.type || "", notification)}
-              </div>
-            </div>
-          ))
+          <>
+            {renderNotificationSection("Сегодня", groupedNotifications.today)}
+            {renderNotificationSection(
+              "Последние 7 дней",
+              groupedNotifications.last7Days,
+            )}
+            {renderNotificationSection(
+              "Последние 30 дней",
+              groupedNotifications.last30Days,
+            )}
+          </>
         ) : (
           <div className="px-4 py-4 text-start text-sm text-gray-500">
             Уведомлений пока нет

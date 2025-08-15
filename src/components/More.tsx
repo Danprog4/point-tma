@@ -75,7 +75,7 @@ export const More = ({
 
         <div className="flex cursor-pointer items-center justify-center gap-4">
           <Schedule />
-          <div>Добавить в календарь</div>
+          <div>Хочу пойти</div>
         </div>
       </div>
     </div>

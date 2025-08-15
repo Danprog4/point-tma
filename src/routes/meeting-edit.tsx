@@ -105,12 +105,12 @@ function RouteComponent() {
         queryClient.invalidateQueries({
           queryKey: trpc.meetings.getParticipants.queryKey(),
         });
-        
+
         // Invalidate user data to refresh balance and inventory
         queryClient.invalidateQueries({
           queryKey: trpc.main.getUser.queryKey(),
         });
-        
+
         toast.success("✅ Встреча обновлена!");
         navigate({ to: `/meet/${meetId}` });
       },
@@ -174,6 +174,10 @@ function RouteComponent() {
       };
 
       await updateMeeting.mutateAsync(payload);
+
+      queryClient.invalidateQueries({
+        queryKey: trpc.meetings.getMeetingById.queryKey({ id: Number(meetId) }),
+      });
     } catch (error: any) {
       toast.error(`❌ Ошибка обновления: ${error.message}`);
     }

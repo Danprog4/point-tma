@@ -39,7 +39,12 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const today = currentDate.getDate();
+
+  // Get today's date for comparison
+  const actualToday = new Date();
+  const todayDate = actualToday.getDate();
+  const todayMonth = actualToday.getMonth();
+  const todayYear = actualToday.getFullYear();
 
   const { data: calendarEvents } = useQuery(trpc.main.getCalendarEvents.queryOptions());
 
@@ -93,11 +98,7 @@ function RouteComponent() {
     setIsCalendarDrawerOpen(true);
   };
 
-  const renderCalendarDay = (
-    day: number,
-    type: "prev" | "current" | "next",
-    isToday = false,
-  ) => {
+  const renderCalendarDay = (day: number, type: "prev" | "current" | "next") => {
     // Check if this day has events in the database
     const hasEvent =
       type === "current" &&
@@ -111,6 +112,13 @@ function RouteComponent() {
         );
       });
 
+    // Check if this is today
+    const isToday =
+      type === "current" &&
+      day === todayDate &&
+      month === todayMonth &&
+      year === todayYear;
+
     const opacity = type === "current" ? "opacity-100" : "opacity-30";
 
     return (
@@ -123,9 +131,6 @@ function RouteComponent() {
           className={`relative flex h-12 w-12 items-center justify-center ${hasEvent ? "rounded-lg bg-purple-600 text-white" : "text-black"}`}
         >
           <span className="z-10 text-base font-medium">{day}</span>
-          {isToday && (
-            <div className="absolute bottom-1/2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 transform rounded-full bg-purple-600" />
-          )}
         </div>
       </div>
     );
@@ -141,8 +146,7 @@ function RouteComponent() {
 
     // Current month's days
     for (let day = 1; day <= daysInMonth; day++) {
-      const isToday = day === today;
-      days.push(renderCalendarDay(day, "current", isToday));
+      days.push(renderCalendarDay(day, "current"));
     }
 
     // Next month's leading days to fill the grid

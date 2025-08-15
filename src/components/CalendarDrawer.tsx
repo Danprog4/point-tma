@@ -17,6 +17,7 @@ import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 import { Coin } from "./Icons/Coin";
 import { MeetCard } from "./MeetCard";
+import { MeetsDrawer } from "./MeetsDrawer";
 import { QuestCard } from "./QuestCard";
 
 export default function CalendarDrawer({
@@ -48,6 +49,7 @@ export default function CalendarDrawer({
   const day = formatedDate.getDate();
   const month = formatedDate.getMonth() + 1;
   const year = formatedDate.getFullYear();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   const formattedDate = `${day}.${month}.${year}`;
 
@@ -78,23 +80,42 @@ export default function CalendarDrawer({
     }),
   );
 
-  const handleAddToCalendar = (event: any) => {
-    addToCalendar.mutate({
-      eventId: event.id,
-      eventType: event.category,
-      date: date,
-    });
+  const handleAddToCalendar = (event: any, isMeeting?: boolean) => {
+    if (isMeeting) {
+      addToCalendar.mutate({
+        meetId: event.id,
 
-    queryClient.setQueryData(trpc.main.getCalendarEvents.queryKey(), (old: any) => {
-      return [
-        ...old,
-        {
-          eventId: event.id,
-          eventType: event.category,
-          date: date,
-        },
-      ];
-    });
+        date: date,
+      });
+
+      queryClient.setQueryData(trpc.main.getCalendarEvents.queryKey(), (old: any) => {
+        return [
+          ...old,
+          {
+            meetId: event.id,
+            userId: user.id,
+            date: date,
+          },
+        ];
+      });
+    } else {
+      addToCalendar.mutate({
+        eventId: event.id,
+        eventType: event.category,
+        date: date,
+      });
+
+      queryClient.setQueryData(trpc.main.getCalendarEvents.queryKey(), (old: any) => {
+        return [
+          ...old,
+          {
+            eventId: event.id,
+            eventType: event.category,
+            date: date,
+          },
+        ];
+      });
+    }
 
     toast.success("Событие успешно добавлено в календарь");
     setIsOpen(false);
@@ -188,12 +209,7 @@ export default function CalendarDrawer({
                   Найти событие
                 </button>
                 <button
-                  onClick={() =>
-                    navigate({
-                      to: "/invite",
-                      search: { id: user?.id!.toString()!, calendarDate: date },
-                    })
-                  }
+                  onClick={() => setIsInviteOpen(true)}
                   className="rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-4 py-3 font-medium text-white"
                 >
                   Выбрать встречу
@@ -209,6 +225,16 @@ export default function CalendarDrawer({
               setActiveFilter={setActiveFilter}
               activeFilter={activeFilter}
               handleAddToCalendar={handleAddToCalendar}
+            />
+          )}
+          {isInviteOpen && (
+            <MeetsDrawer
+              open={isInviteOpen}
+              onOpenChange={setIsInviteOpen}
+              meetings={meetings || []}
+              handleAddToCalendar={handleAddToCalendar}
+              userId={user.id.toString()}
+              calendarDate={date}
             />
           )}
         </Drawer.Content>

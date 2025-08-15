@@ -222,8 +222,11 @@ function RouteComponent() {
                       isNavigable={false}
                       isMeeting={true}
                       onClick={() => {
-                        setSelectedItem(quest);
-                        handleInvite();
+                        if (search.calendarDate && search.calendarDate !== "") {
+                        } else {
+                          setSelectedItem(quest);
+                          handleInvite();
+                        }
                       }}
                     />
                     <p className="mb-4 text-xs leading-4 text-black">

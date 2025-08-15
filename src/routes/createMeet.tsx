@@ -165,10 +165,7 @@ function RouteComponent() {
         reward: reward || 0,
         inventory: selectedInventory,
         image: mainPhotoRaw,
-        invitedIds:
-          search.userId !== undefined
-            ? [Number(search.userId), ...selectedIds]
-            : selectedIds,
+        invitedIds: selectedIds,
         gallery: gallery,
         important: important,
         calendarDate: search.calendarDate,

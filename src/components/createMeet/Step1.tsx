@@ -41,6 +41,8 @@ export const Step1 = ({
   setTime,
   setIsDisabled,
   calendarDate,
+  city,
+  setCity,
 }: {
   subType: string;
   setSubType: (subType: string) => void;
@@ -76,6 +78,8 @@ export const Step1 = ({
   time: string;
   setTime: (time: string) => void;
   calendarDate: string;
+  city: string;
+  setCity: (city: string) => void;
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
@@ -403,6 +407,16 @@ export const Step1 = ({
           onChange={(e) => setDescription(e.target.value)}
           placeholder={`Введите описание`}
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
+        />
+      </div>
+      <div className="flex flex-col items-start gap-2 pb-4">
+        <div className="text-xl font-bold">Город *</div>
+        <input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          type="text"
+          placeholder={`Введите город`}
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
         />
       </div>
 

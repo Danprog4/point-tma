@@ -48,7 +48,7 @@ function RouteComponent() {
   const [friendName, setFriendName] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
+  const [city, setCity] = useState("");
   const [isForAll, setIsForAll] = useState(false);
   const navigate = useNavigate();
   const [step, setStep] = useState((search as any).step || 0);
@@ -287,6 +287,8 @@ function RouteComponent() {
           time={time}
           calendarDate={search.calendarDate || ""}
           setTime={setTime}
+          city={city}
+          setCity={setCity}
         />
       )}
       {step === 1 && (

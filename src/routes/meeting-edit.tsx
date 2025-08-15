@@ -46,6 +46,7 @@ function RouteComponent() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [calendarDate, setCalendarDate] = useState("");
+  const [city, setCity] = useState("");
 
   // Step 2 state
   const [locations, setLocations] = useState<
@@ -129,6 +130,7 @@ function RouteComponent() {
       setDescription(meeting.description || "");
       setDate(meeting.date || "");
       setTime(meeting.time || "");
+      setCity(meeting.city || "");
       setParticipants(meeting.maxParticipants || 0);
       setReward(meeting.reward || 0);
       setImportant(meeting.important || "");
@@ -171,6 +173,7 @@ function RouteComponent() {
         inventory: selectedInventory,
         important,
         time,
+        city,
       };
 
       await updateMeeting.mutateAsync(payload);
@@ -370,6 +373,8 @@ function RouteComponent() {
             name=""
             isBasic={false}
             isDisabled={isDisabled}
+            city={city}
+            setCity={setCity}
           />
         )}
 

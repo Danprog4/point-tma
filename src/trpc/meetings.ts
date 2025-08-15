@@ -144,7 +144,7 @@ export const meetingRouter = createTRPCRouter({
         await db.insert(calendarTable).values({
           userId: user.id,
           meetId: meet.id,
-          date: new Date(date),
+          date: new Date(date.split(".").reverse().join("-")),
         });
       }
 

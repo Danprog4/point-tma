@@ -28,6 +28,19 @@ const MONTHS = [
 
 const WEEKDAYS = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
+const EVENT_COLORS = [
+  "bg-purple-600",
+  "bg-blue-600",
+  "bg-green-600",
+  "bg-red-600",
+  "bg-yellow-600",
+  "bg-indigo-600",
+  "bg-pink-600",
+  "bg-teal-600",
+  "bg-orange-600",
+  "bg-cyan-600",
+];
+
 function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -59,6 +72,12 @@ function RouteComponent() {
   // Get previous month's last days
   const prevMonth = new Date(year, month, 0);
   const prevMonthDays = prevMonth.getDate();
+
+  const getRandomColor = (day: number, month: number, year: number) => {
+    // Use day, month, year as seed for consistent color per date
+    const seed = day + month * 31 + year * 365;
+    return EVENT_COLORS[seed % EVENT_COLORS.length];
+  };
 
   const navigateMonth = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
@@ -121,6 +140,25 @@ function RouteComponent() {
 
     const opacity = type === "current" ? "opacity-100" : "opacity-30";
 
+    // Get the appropriate month and year for color calculation
+    let colorMonth = month;
+    let colorYear = year;
+    if (type === "prev") {
+      colorMonth = month - 1;
+      if (colorMonth < 0) {
+        colorMonth = 11;
+        colorYear = year - 1;
+      }
+    } else if (type === "next") {
+      colorMonth = month + 1;
+      if (colorMonth > 11) {
+        colorMonth = 0;
+        colorYear = year + 1;
+      }
+    }
+
+    const eventColor = hasEvent ? getRandomColor(day, colorMonth, colorYear) : "";
+
     return (
       <div
         key={`${type}-${day}`}
@@ -128,7 +166,7 @@ function RouteComponent() {
         onClick={() => handleDateClick(day, type)}
       >
         <div
-          className={`relative flex h-12 w-12 items-center justify-center ${hasEvent ? "rounded-lg bg-purple-600 text-white" : "text-black"}`}
+          className={`relative flex h-12 w-12 items-center justify-center ${hasEvent ? `rounded-lg ${eventColor} text-white` : "text-black"}`}
         >
           <span className="z-10 text-base font-medium">{day}</span>
         </div>

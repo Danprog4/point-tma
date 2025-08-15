@@ -48,7 +48,7 @@ export default function GiveDrawer({
 
       return {
         ...old,
-        inventory: old.inventory?.filter(Boolean).filter((i) => i.id !== item.id) ?? [],
+        inventory: old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
       };
     });
 
@@ -57,7 +57,7 @@ export default function GiveDrawer({
     }
   };
 
-  const isSent = !user?.inventory?.filter(Boolean).some((i) => i.id === item.id);
+  const isSent = !user?.inventory?.filter(Boolean).some((i) => i.id === item?.id);
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>

@@ -3,6 +3,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  calendarTable,
   complaintsTable,
   favoritesTable,
   friendRequestsTable,
@@ -787,6 +788,42 @@ export const router = {
         .where(eq(usersTable.id, input.userId));
 
       return user;
+    }),
+
+  getCalendarEvents: procedure.query(async ({ ctx }) => {
+    const calendar = await db.query.calendarTable.findMany({
+      where: eq(calendarTable.userId, ctx.userId),
+    });
+
+    return calendar;
+  }),
+
+  addToCalendar: procedure
+    .input(
+      z.object({
+        eventId: z.number().optional(),
+        eventType: z.string().optional(),
+        date: z.string().optional(),
+        meetId: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.eventId) {
+        await db.insert(calendarTable).values({
+          userId: ctx.userId,
+          eventId: input.eventId,
+          eventType: input.eventType,
+          date: input.date ? new Date(input.date) : null,
+        });
+      }
+
+      if (input.meetId) {
+        await db.insert(calendarTable).values({
+          userId: ctx.userId,
+          meetId: input.meetId,
+          date: input.date ? new Date(input.date) : null,
+        });
+      }
     }),
 };
 

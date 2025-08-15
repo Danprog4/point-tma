@@ -1,9 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import CalendarDrawer from "~/components/CalendarDrawer";
-import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
+import { User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useTRPC } from "~/trpc/init/react";
+
 export const Route = createFileRoute("/calendar")({
   component: RouteComponent,
 });
@@ -25,19 +28,20 @@ const MONTHS = [
 
 const WEEKDAYS = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
-// Mock event data - dates that have events
-const EVENTS: number[] = [];
-
 function RouteComponent() {
+  const trpc = useTRPC();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isCalendarDrawerOpen, setIsCalendarDrawerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
-
+  const [selectedDateEvents, setSelectedDateEvents] = useState<any[]>([]);
+  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const today = currentDate.getDate();
+
+  const { data: calendarEvents } = useQuery(trpc.main.getCalendarEvents.queryOptions());
 
   // Get first day of month and number of days
   const firstDay = new Date(year, month, 1);
@@ -72,7 +76,20 @@ function RouteComponent() {
       clickedDate = new Date(year, month, day);
     }
 
+    // Find events for the clicked date
+    const eventsOnDate =
+      calendarEvents?.filter((event) => {
+        if (!event.date) return false;
+        const eventDate = new Date(event.date);
+        return (
+          eventDate.getDate() === clickedDate.getDate() &&
+          eventDate.getMonth() === clickedDate.getMonth() &&
+          eventDate.getFullYear() === clickedDate.getFullYear()
+        );
+      }) || [];
+
     setSelectedDate(clickedDate.toISOString());
+    setSelectedDateEvents(eventsOnDate);
     setIsCalendarDrawerOpen(true);
   };
 
@@ -81,7 +98,19 @@ function RouteComponent() {
     type: "prev" | "current" | "next",
     isToday = false,
   ) => {
-    const hasEvent = type === "current" && EVENTS.includes(day);
+    // Check if this day has events in the database
+    const hasEvent =
+      type === "current" &&
+      calendarEvents?.some((event) => {
+        if (!event.date) return false;
+        const eventDate = new Date(event.date);
+        return (
+          eventDate.getDate() === day &&
+          eventDate.getMonth() === month &&
+          eventDate.getFullYear() === year
+        );
+      });
+
     const opacity = type === "current" ? "opacity-100" : "opacity-30";
 
     return (
@@ -90,13 +119,12 @@ function RouteComponent() {
         className={`relative flex h-22 cursor-pointer items-center justify-center ${opacity}`}
         onClick={() => handleDateClick(day, type)}
       >
-        <div className="relative flex h-full w-full items-center justify-center">
-          <span className="z-10 text-base font-medium text-gray-800">{day}</span>
+        <div
+          className={`relative flex h-12 w-12 items-center justify-center ${hasEvent ? "rounded-lg bg-purple-600 text-white" : "text-black"}`}
+        >
+          <span className="z-10 text-base font-medium">{day}</span>
           {isToday && (
             <div className="absolute bottom-1/2 left-1/2 h-1.5 w-1.5 -translate-x-1/2 transform rounded-full bg-purple-600" />
-          )}
-          {hasEvent && (
-            <div className="absolute top-0 right-2 h-3.5 w-3.5 rounded-full bg-green-400" />
           )}
         </div>
       </div>
@@ -189,32 +217,12 @@ function RouteComponent() {
         <div className="grid grid-cols-7">{renderCalendarGrid()}</div>
       </div>
 
-      {/* Add Event Button */}
-      <div className="fixed right-4 bottom-4 left-4">
-        <div className="flex items-center gap-4">
-          <button
-            className="flex-1 bg-purple-600 px-4 py-3 text-base font-medium text-white"
-            style={{ borderRadius: "16px 4px 16px 4px" }}
-            onClick={() => navigate({ to: "/" })}
-          >
-            Добавить событие
-          </button>
-          <div className="flex flex-col items-center">
-            <div
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-              onClick={() => setIsMoreOpen(!isMoreOpen)}
-            >
-              <WhitePlusIcon />
-            </div>
-            <span className="text-xs">Ещё</span>
-          </div>
-        </div>
-      </div>
-
       <CalendarDrawer
+        user={user as User}
         open={isCalendarDrawerOpen}
         onOpenChange={setIsCalendarDrawerOpen}
         date={selectedDate}
+        events={selectedDateEvents}
       >
         <div />
       </CalendarDrawer>

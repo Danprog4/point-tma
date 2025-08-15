@@ -1,18 +1,16 @@
-import { useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { useState } from "react";
 import { Drawer } from "vaul";
 
 interface EventsDrawerProps {
   open: boolean;
-  index: number;
+  index?: number;
   onOpenChange: (open: boolean) => void;
-  setSelectedItems: (items: { id: number; type: string; index: number }[]) => void;
-  selectedItems: { id: number; type: string; index: number }[];
+  setSelectedItems?: (items: { id: number; type: string; index: number }[]) => void;
+  selectedItems?: { id: number; type: string; index: number }[];
   data: any[];
   setActiveFilter: (filter: string) => void;
   activeFilter: string;
-  setLocations: (
+  setLocations?: (
     locations: {
       location: string;
       address: string;
@@ -22,7 +20,7 @@ interface EventsDrawerProps {
       isCustom?: boolean;
     }[],
   ) => void;
-  locations: {
+  locations?: {
     location: string;
     address: string;
     starttime?: string;
@@ -30,6 +28,7 @@ interface EventsDrawerProps {
     index?: number;
     isCustom?: boolean;
   }[];
+  handleAddToCalendar?: (event: any) => void;
 }
 
 export function EventsDrawer({
@@ -43,17 +42,32 @@ export function EventsDrawer({
   activeFilter,
   setLocations,
   locations,
+  handleAddToCalendar,
 }: EventsDrawerProps) {
-  const [search, setSearch] = useState("");
-
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
-  const handleEventTypeSelect = (eventType: string) => {
-    console.log("Selected event type:", eventType);
-    // Here you would navigate to the specific quest creation form
+  const clickHandler = (item: any) => {
+    if (handleAddToCalendar) {
+      handleAddToCalendar(item);
+    }
+    if (setSelectedItems && locationIndex !== undefined) {
+      setSelectedItems([
+        ...(selectedItems || []),
+        { id: item.id, type: item.type, index: locationIndex },
+      ]);
+    }
+    if (setLocations && locationIndex !== undefined) {
+      setLocations([
+        ...(locations || []),
+        {
+          location: item.title,
+          address: item.location,
+          starttime: item.date,
+          isCustom: false,
+          index: locationIndex,
+        },
+      ]);
+    }
     onOpenChange(false);
   };
 
@@ -90,21 +104,7 @@ export function EventsDrawer({
                 <div
                   key={`${item.id}-${dataIdx}`}
                   onClick={() => {
-                    setSelectedItems([
-                      ...selectedItems,
-                      { id: item.id, type: item.type, index: locationIndex },
-                    ]);
-                    setLocations([
-                      ...locations,
-                      {
-                        location: item.title,
-                        address: item.location,
-                        starttime: item.date,
-                        isCustom: false,
-                        index: locationIndex,
-                      },
-                    ]);
-                    onOpenChange(false);
+                    clickHandler(item);
                   }}
                 >
                   <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">

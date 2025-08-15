@@ -32,7 +32,7 @@ function RouteComponent() {
       },
     }),
   );
-  const search = useSearch({ from: "/invite" }) as { id: string };
+  const search = useSearch({ from: "/invite" }) as { id: string; calendarDate: string };
   const navigate = useNavigate();
   const [type, setType] = useState<string>("Готовые");
   const [activeFilter, setActiveFilter] = useState<string>("Все");
@@ -86,6 +86,7 @@ function RouteComponent() {
       data = [];
   }
 
+  console.log(search.calendarDate, "search.calendarDate");
   const isMobile = usePlatform();
 
   return (
@@ -175,6 +176,7 @@ function RouteComponent() {
                         typeOfEvent: item.category,
                         idOfEvent: item.id,
                         userId: search.id,
+                        calendarDate: search.calendarDate,
                       },
                     });
                   }}

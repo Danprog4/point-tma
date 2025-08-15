@@ -24,6 +24,7 @@ function RouteComponent() {
     typeOfEvent?: string;
     idOfEvent?: string;
     userId?: string;
+    calendarDate?: string;
   };
   console.log({ search }, "search");
   const [selectedInventory, setSelectedInventory] = useState<string[]>([]);
@@ -132,6 +133,8 @@ function RouteComponent() {
 
   console.log(locations);
 
+  console.log(search.calendarDate, "search.calendarDate");
+
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
   const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
   const handleInvite = (meetId: number) => {
@@ -168,6 +171,7 @@ function RouteComponent() {
             : selectedIds,
         gallery: gallery,
         important: important,
+        calendarDate: search.calendarDate,
       },
       {
         onSuccess: (data: any) => {

@@ -3,6 +3,7 @@ import { and, asc, eq, gt, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
+  calendarTable,
   meetMessagesTable,
   meetParticipantsTable,
   meetTable,
@@ -41,6 +42,7 @@ export const meetingRouter = createTRPCRouter({
         gallery: z.array(z.string()).optional(),
         inventory: z.array(z.string()).optional(),
         important: z.string().optional(),
+        calendarDate: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,6 +61,7 @@ export const meetingRouter = createTRPCRouter({
         gallery,
         inventory,
         important,
+        calendarDate,
       } = input;
       const { userId } = ctx;
 
@@ -133,6 +136,14 @@ export const meetingRouter = createTRPCRouter({
         status: "accepted",
         isRequest: true,
       });
+
+      if (calendarDate) {
+        await db.insert(calendarTable).values({
+          userId: user.id,
+          meetId: meet.id,
+          date: new Date(calendarDate),
+        });
+      }
 
       return meet;
     }),

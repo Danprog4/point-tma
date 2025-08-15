@@ -6,6 +6,7 @@ import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { EventsDrawer } from "~/EventsDrawer";
+import { getAllEvents } from "~/lib/utils/getAllEvents";
 import { Clocks } from "../Icons/Clocks";
 // Предустановленные тэги, которые будут предлагаться при вводе
 const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
@@ -73,45 +74,14 @@ export const Step2 = ({
     return h1 < h2 || (h1 === h2 && m1 < m2);
   };
 
-  let data: any[] = [];
-
-  switch (activeFilter) {
-    case "Все":
-      data = [
-        ...questsData,
-        ...kinoData,
-        ...conferencesData,
-        ...networkingData,
-        ...partiesData,
-      ];
-      break;
-    case "Квесты":
-      data = questsData;
-      console.log(data);
-      break;
-    case "Кино":
-      data = kinoData;
-      break;
-    case "Конференции":
-      data = conferencesData;
-      break;
-    case "Вечеринки":
-      data = partiesData;
-      break;
-    case "Нетворкинг":
-      data = networkingData;
-      break;
-    default:
-      data = [];
-  }
-
-  const all = [
-    ...questsData,
-    ...kinoData,
-    ...conferencesData,
-    ...networkingData,
-    ...partiesData,
-  ];
+  const { data, all } = getAllEvents(
+    activeFilter,
+    questsData,
+    kinoData,
+    conferencesData,
+    networkingData,
+    partiesData,
+  );
 
   const getItems = useMemo(() => {
     return selectedItems

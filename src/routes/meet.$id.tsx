@@ -179,7 +179,9 @@ function RouteComponent() {
             </h1>
             {isOwner ? (
               <button
-                onClick={() => navigate({ to: "/meeting-edit", search: { meetId: id } })}
+                onClick={() => {
+                  navigate({ to: "/meeting-edit", search: { meetId: id } });
+                }}
                 className="text-sm text-[#9924FF]"
               >
                 Редактировать

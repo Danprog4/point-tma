@@ -113,7 +113,8 @@ function RouteComponent() {
         });
 
         toast.success("✅ Встреча обновлена!");
-        navigate({ to: `/meet/${meetId}` });
+        // Go back to previous page, which should be the meet page
+        window.history.back();
       },
       onError: (error) => {
         toast.error(`❌ Ошибка обновления: ${error.message}`);
@@ -292,7 +293,7 @@ function RouteComponent() {
       <div className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 pt-28">
         <button
           disabled={updateMeeting.isPending}
-          onClick={() => navigate({ to: `/meet/${meetId}` })}
+          onClick={() => window.history.back()}
           className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />

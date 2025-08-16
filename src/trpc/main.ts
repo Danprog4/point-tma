@@ -805,6 +805,7 @@ export const router = {
         eventType: z.string().optional(),
         date: z.string().optional(),
         meetId: z.number().optional(),
+        isPlanned: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -814,6 +815,7 @@ export const router = {
           eventId: input.eventId,
           eventType: input.eventType,
           date: input.date ? new Date(input.date) : null,
+          isPlanned: input.isPlanned ?? false,
         });
       }
 

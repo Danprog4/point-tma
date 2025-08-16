@@ -40,6 +40,8 @@ export default function CalendarDrawer({
     meetId?: bigint | null;
     eventType?: string | null;
     date?: Date | null;
+    isTicket?: boolean;
+    isPlanned?: boolean;
   }>;
 }) {
   const queryClient = useQueryClient();
@@ -84,7 +86,6 @@ export default function CalendarDrawer({
     if (isMeeting) {
       addToCalendar.mutate({
         meetId: event.id,
-
         date: date,
       });
 
@@ -103,6 +104,7 @@ export default function CalendarDrawer({
         eventId: event.id,
         eventType: event.category,
         date: date,
+        isPlanned: true,
       });
 
       queryClient.setQueryData(trpc.main.getCalendarEvents.queryKey(), (old: any) => {
@@ -144,6 +146,8 @@ export default function CalendarDrawer({
                   ? meetings?.find((meeting) => meeting.id === Number(event.meetId))
                   : getEventData(event.eventType!, Number(event.eventId!));
 
+                console.log(event.isPlanned);
+
                 return (
                   <div key={event.id}>
                     {isMeet ? (
@@ -153,7 +157,7 @@ export default function CalendarDrawer({
                     ) : (
                       <>
                         <QuestCard quest={eventData as Quest} />
-                        <p className="mb-4 text-xs leading-4 text-black">
+                        <p className="pt-2 pb-2 text-xs leading-4 text-black">
                           {(() => {
                             const description = eventData?.description;
                             return description && description.length > 100
@@ -161,23 +165,30 @@ export default function CalendarDrawer({
                               : description;
                           })()}
                         </p>
-                        <div className="mb-6 flex items-center justify-between">
-                          {(eventData as Quest)?.hasAchievement ? (
+                        <div className="mb-2 flex items-center justify-start">
+                          {!event.isTicket &&
+                          !event.isPlanned &&
+                          (eventData as Quest)?.hasAchievement ? (
                             <div className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                              + Достижение
+                              Достижение
                             </div>
                           ) : (
                             <div></div>
                           )}
-                          {(eventData as Quest)?.rewards?.find(
+                          {!event.isTicket &&
+                          !event.isPlanned &&
+                          (eventData as Quest)?.rewards?.find(
                             (r: any) => r.type === "point",
                           ) ? (
                             <div className="ml-auto flex items-center gap-1">
                               <span className="text-base font-medium text-black">
                                 +
-                                {(eventData as Quest)?.rewards
-                                  ?.find((r: any) => r.type === "point")
-                                  ?.value?.toLocaleString() || 0}
+                                {(!event.isTicket &&
+                                  !event.isPlanned &&
+                                  (eventData as Quest)?.rewards
+                                    ?.find((r: any) => r.type === "point")
+                                    ?.value?.toLocaleString()) ||
+                                  0}
                               </span>
                               <span className="text-base font-medium text-black">
                                 points
@@ -187,6 +198,18 @@ export default function CalendarDrawer({
                           ) : (
                             <div></div>
                           )}
+                          <div className="flex items-center justify-center gap-2">
+                            {event.isTicket && (
+                              <div className="font-bold text-black">
+                                У вас имеется неактивированный билет на это событие
+                              </div>
+                            )}
+                            {event.isPlanned && (
+                              <div className="font-bold text-black">
+                                Вы запланировали посещение этого события
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </>
                     )}

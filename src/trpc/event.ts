@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { activeEventsTable, usersTable } from "~/db/schema";
+import { activeEventsTable, calendarTable, usersTable } from "~/db/schema";
 import { getEventData } from "~/lib/utils/getEventData";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
@@ -157,6 +157,16 @@ export const eventRouter = createTRPCRouter({
           balance: newBalance,
         })
         .where(eq(usersTable.id, ctx.userId));
+
+      if (eventData.date && eventData.date.includes(".")) {
+        await db.insert(calendarTable).values({
+          eventId: input.id,
+          eventType: eventData.category,
+          date: new Date(eventData.date.split(".").reverse().join("-")),
+          userId: ctx.userId,
+          isTicket: true,
+        });
+      }
     }),
 
   activateEvent: procedure

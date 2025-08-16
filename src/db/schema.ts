@@ -56,6 +56,8 @@ export const calendarTable = pgTable("calendar", {
   meetId: bigint("meet_id", { mode: "number" }),
   eventType: varchar("event_type", { length: 255 }), // квест, кино, конференция, вечеринка, нетворкинг и т.д.
   date: timestamp("date"),
+  isTicket: boolean("is_ticket").default(false),
+  isPlanned: boolean("is_planned").default(false),
 });
 
 export const ratingsUserTable = pgTable("ratings_user", {

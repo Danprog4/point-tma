@@ -4,6 +4,7 @@ interface GeolocationState {
   coordinates: [number, number] | null;
   error: string | null;
   loading: boolean;
+  isSupported: boolean;
 }
 
 interface UseGeolocationOptions {
@@ -21,13 +22,28 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
     autoStart = false,
   } = options;
 
+  // Проверяем, что мы в браузере
+  const isClient = typeof window !== 'undefined';
+  const isGeolocationSupported = isClient && 'geolocation' in navigator;
+
   const [state, setState] = useState<GeolocationState>({
     coordinates: null,
     error: null,
     loading: false,
+    isSupported: isGeolocationSupported,
   });
 
   const getCurrentLocation = () => {
+    // Дополнительная проверка при вызове функции
+    if (!isClient) {
+      setState(prev => ({
+        ...prev,
+        error: "Геолокация недоступна на сервере",
+        loading: false,
+      }));
+      return;
+    }
+
     if (!navigator.geolocation) {
       setState(prev => ({
         ...prev,
@@ -49,6 +65,7 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
           coordinates,
           error: null,
           loading: false,
+          isSupported: isGeolocationSupported,
         });
       },
       (error) => {
@@ -68,6 +85,7 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
           coordinates: null,
           error: errorMessage,
           loading: false,
+          isSupported: isGeolocationSupported,
         });
       },
       {
@@ -79,10 +97,10 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
   };
 
   useEffect(() => {
-    if (autoStart) {
+    if (autoStart && isClient) {
       getCurrentLocation();
     }
-  }, [autoStart]);
+  }, [autoStart, isClient]);
 
   const clearError = () => {
     setState(prev => ({ ...prev, error: null }));
@@ -92,6 +110,5 @@ export const useGeolocation = (options: UseGeolocationOptions = {}) => {
     ...state,
     getCurrentLocation,
     clearError,
-    isSupported: !!navigator.geolocation,
   };
 };

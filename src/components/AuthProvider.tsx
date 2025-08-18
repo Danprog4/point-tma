@@ -6,8 +6,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useLocationSaver } from "~/hooks/useLocationSaver";
 import { OnboardingPage } from "./OnboardingPage";
 import { FullPageSpinner } from "./Spinner";
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+// Компонент-обертка для клиентской геолокации
+const ClientLocationSaver = () => {
   useLocationSaver();
+  return null;
+};
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
   const trpc = useTRPC();
@@ -77,5 +82,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return <FullPageSpinner />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {typeof window !== 'undefined' && <ClientLocationSaver />}
+      {children}
+    </>
+  );
 };

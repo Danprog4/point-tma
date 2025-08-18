@@ -75,6 +75,71 @@ export const Step2 = ({
     autoStart: true,
   });
 
+  // Функция для извлечения координат из результата поиска
+  const extractCoordinatesFromResult = (result: any): [number, number] | null => {
+    try {
+      // Способ 1: Из URI параметра ll
+      if (result.uri) {
+        const coords = result.uri.match(/ll=([^&]+)/)?.[1];
+        if (coords) {
+          const [lng, lat] = coords.split(",").map(Number);
+          if (!isNaN(lng) && !isNaN(lat)) {
+            return [lng, lat];
+          }
+        }
+      }
+
+      // Способ 2: Из поля coordinates
+      if (
+        result.coordinates &&
+        Array.isArray(result.coordinates) &&
+        result.coordinates.length === 2
+      ) {
+        const [lng, lat] = result.coordinates.map(Number);
+        if (!isNaN(lng) && !isNaN(lat)) {
+          return [lng, lat];
+        }
+      }
+
+      // Способ 3: Из geocode ответа
+      const pos =
+        result?.geocode?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject
+          ?.Point?.pos;
+      if (typeof pos === "string") {
+        const parts = pos.split(/\s+/).map(Number);
+        if (parts.length === 2 && parts.every((n) => Number.isFinite(n))) {
+          return [parts[0], parts[1]]; // [longitude, latitude]
+        }
+      }
+
+      // Способ 4: Из geometry
+      if (
+        result.geometry?.coordinates &&
+        Array.isArray(result.geometry.coordinates) &&
+        result.geometry.coordinates.length === 2
+      ) {
+        const [lng, lat] = result.geometry.coordinates.map(Number);
+        if (!isNaN(lng) && !isNaN(lat)) {
+          return [lng, lat];
+        }
+      }
+
+      // Способ 5: Из location
+      if (result.location?.lat && result.location?.lng) {
+        const lat = Number(result.location.lat);
+        const lng = Number(result.location.lng);
+        if (!isNaN(lng) && !isNaN(lat)) {
+          return [lng, lat];
+        }
+      }
+
+      return null;
+    } catch (e) {
+      console.warn("Ошибка при извлечении координат:", e);
+      return null;
+    }
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -284,6 +349,35 @@ export const Step2 = ({
     partiesData,
   );
 
+  // Мемоизированный список результатов поиска с расстояниями
+  const searchResultsWithDistances = useMemo(() => {
+    if (!searchAddress.data?.results || !Array.isArray(searchAddress.data.results)) {
+      return [];
+    }
+
+    return searchAddress.data.results
+      .map((result: any) => {
+        const coords = extractCoordinatesFromResult(result);
+        const distance =
+          userLocation && coords
+            ? calculateDistanceFromCoords(userLocation, coords)
+            : null;
+
+        return {
+          ...result,
+          coordinates: coords,
+          distance,
+        };
+      })
+      .sort((a, b) => {
+        // Сортируем по расстоянию: сначала ближайшие
+        if (a.distance === null && b.distance === null) return 0;
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance;
+      });
+  }, [searchAddress.data, userLocation]);
+
   const getItems = useMemo(() => {
     return selectedItems
       .map((selectedItem) => {
@@ -409,9 +503,12 @@ export const Step2 = ({
                       <div className="mb-2 flex items-center justify-between">
                         <h3 className="text-sm font-medium text-gray-700">
                           Результаты поиска
-                          {Array.isArray(searchAddress.data.results) && (
+                          {searchResultsWithDistances.length > 0 && (
                             <span className="ml-2 text-xs text-gray-500">
-                              ({searchAddress.data.results.length} найдено)
+                              ({searchResultsWithDistances.length} найдено
+                              {userLocation &&
+                                `, ${searchResultsWithDistances.filter((r) => r.distance !== null).length} с расстоянием`}
+                              )
                             </span>
                           )}
                         </h3>
@@ -427,107 +524,103 @@ export const Step2 = ({
                     )}
                     {searchAddress.data ? (
                       <div className="space-y-3">
-                        {Array.isArray(searchAddress.data.results) ? (
-                          searchAddress.data.results.map(
-                            (result: any, resultIndex: number) => (
-                              <div
-                                key={resultIndex}
-                                className="cursor-pointer rounded-lg border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
-                                onClick={() => handleResultSelect(result, index)}
-                              >
-                                <div className="mb-2">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <h4 className="text-base font-semibold text-gray-900">
-                                        {typeof result.title === "string"
-                                          ? result.title
-                                          : result.title?.text || "Название не найдено"}
-                                      </h4>
-                                      {result.subtitle && (
-                                        <p className="text-sm text-gray-600">
-                                          {typeof result.subtitle === "string"
-                                            ? result.subtitle
-                                            : result.subtitle?.text || ""}
-                                        </p>
+                        {searchResultsWithDistances.length > 0 ? (
+                          <>
+                            {userLocation && (
+                              <div className="mb-3 border-b pb-2 text-xs text-gray-500">
+                                📍 Результаты отсортированы по расстоянию от вас
+                              </div>
+                            )}
+                            {searchResultsWithDistances.map(
+                              (result: any, resultIndex: number) => (
+                                <div
+                                  key={resultIndex}
+                                  className={`cursor-pointer rounded-lg border p-4 shadow-sm transition-colors hover:bg-gray-50 ${
+                                    resultIndex === 0 && result.distance !== null
+                                      ? "border-green-200 bg-green-50"
+                                      : "bg-white"
+                                  }`}
+                                  onClick={() => handleResultSelect(result, index)}
+                                >
+                                  <div className="mb-2">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1">
+                                        <h4 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                                          {typeof result.title === "string"
+                                            ? result.title
+                                            : result.title?.text || "Название не найдено"}
+                                          {resultIndex === 0 &&
+                                            result.distance !== null && (
+                                              <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
+                                                🎯 Ближайший
+                                              </span>
+                                            )}
+                                        </h4>
+                                        {result.subtitle && (
+                                          <p className="text-sm text-gray-600">
+                                            {typeof result.subtitle === "string"
+                                              ? result.subtitle
+                                              : result.subtitle?.text || ""}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="ml-2 flex-shrink-0">
+                                        {result.distance !== null ? (
+                                          <span className="rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600">
+                                            📍 {formatDistance(result.distance)}
+                                          </span>
+                                        ) : (
+                                          <span className="text-xs text-gray-400">
+                                            📍 н/д
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Теги */}
+                                  {result.tags && result.tags.length > 0 && (
+                                    <div className="mb-3 flex flex-wrap gap-1">
+                                      {result.tags.map(
+                                        (tag: string, tagIndex: number) => (
+                                          <span
+                                            key={tagIndex}
+                                            className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800"
+                                          >
+                                            {tag}
+                                          </span>
+                                        ),
                                       )}
                                     </div>
-                                    {userLocation && result.uri && (
-                                      <div className="ml-2 flex-shrink-0">
-                                        {(() => {
-                                          try {
-                                            // Извлекаем координаты из URI
-                                            const coords =
-                                              result.uri.match(/ll=([^&]+)/)?.[1];
-                                            if (coords) {
-                                              const [lng, lat] = coords
-                                                .split(",")
-                                                .map(Number);
-                                              if (!isNaN(lng) && !isNaN(lat)) {
-                                                const distance =
-                                                  calculateDistanceFromCoords(
-                                                    userLocation,
-                                                    [lng, lat],
-                                                  );
-                                                return (
-                                                  <span className="text-xs font-medium text-blue-600">
-                                                    {formatDistance(distance)}
-                                                  </span>
-                                                );
-                                              }
-                                            }
-                                          } catch (e) {
-                                            console.warn(
-                                              "Ошибка при расчете расстояния:",
-                                              e,
-                                            );
-                                          }
-                                          return null;
-                                        })()}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
+                                  )}
 
-                                {/* Теги */}
-                                {result.tags && result.tags.length > 0 && (
-                                  <div className="mb-3 flex flex-wrap gap-1">
-                                    {result.tags.map((tag: string, tagIndex: number) => (
-                                      <span
-                                        key={tagIndex}
-                                        className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800"
-                                      >
-                                        {tag}
+                                  {/* Адрес */}
+                                  {result.address?.formatted_address && (
+                                    <div className="mb-2">
+                                      <p className="mb-1 text-xs text-gray-500">
+                                        📍 Адрес:
+                                      </p>
+                                      <p className="text-sm text-gray-700">
+                                        {result.address.formatted_address}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {/* Расстояние */}
+                                  {result.distance?.text && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-gray-500">
+                                        📏 Расстояние:
                                       </span>
-                                    ))}
-                                  </div>
-                                )}
-
-                                {/* Адрес */}
-                                {result.address?.formatted_address && (
-                                  <div className="mb-2">
-                                    <p className="mb-1 text-xs text-gray-500">
-                                      📍 Адрес:
-                                    </p>
-                                    <p className="text-sm text-gray-700">
-                                      {result.address.formatted_address}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {/* Расстояние */}
-                                {result.distance?.text && (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500">
-                                      📏 Расстояние:
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-700">
-                                      {result.distance.text}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            ),
-                          )
+                                      <span className="text-sm font-medium text-gray-700">
+                                        {result.distance.text}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              ),
+                            )}
+                          </>
                         ) : (
                           <div className="rounded-lg border bg-white p-4 shadow-sm">
                             <p className="text-sm text-gray-500">

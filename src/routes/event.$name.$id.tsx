@@ -18,6 +18,7 @@ import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { User } from "~/db/schema";
 import { useActivate } from "~/hooks/useActivate";
 import { usePlatform } from "~/hooks/usePlatform";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
@@ -516,7 +517,14 @@ function RouteComponent() {
                     id={Number(id)}
                     name={name}
                     open={isActiveDrawerOpen}
-                    onOpenChange={setIsActiveDrawerOpen}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        lockBodyScroll();
+                      } else {
+                        unlockBodyScroll();
+                      }
+                      setIsActiveDrawerOpen(open);
+                    }}
                   >
                     <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
                       <div>Активировать</div>

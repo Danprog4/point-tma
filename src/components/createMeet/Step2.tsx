@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
 import { Map } from "~/components/Icons/Map";
 import { YandexMap } from "~/components/YandexMap";
@@ -17,7 +17,7 @@ import {
 } from "~/lib/utils/calculateDistance";
 import { getAllEvents } from "~/lib/utils/getAllEvents";
 import { useTRPC } from "~/trpc/init/react";
-import { Clocks } from "../Icons/Clocks";
+import TimePicker from "../TimePicker";
 // Предустановленные тэги, которые будут предлагаться при вводе
 const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
 
@@ -62,7 +62,9 @@ export const Step2 = ({
   length: number;
   setLength: (length: number) => void;
   user: User;
-  setSelectedItems: (items: { id: number; type: string; index: number }[]) => void;
+  setSelectedItems: React.Dispatch<
+    React.SetStateAction<{ id: number; type: string; index: number }[]>
+  >;
   setIsDisabled: (isDisabled: boolean) => void;
   selectedItems: { id: number; type: string; index: number }[];
   city: string;
@@ -280,7 +282,19 @@ export const Step2 = ({
           const address = data?.text || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
           newLocations[locationIndex].location = title;
           newLocations[locationIndex].address = address;
+          // Mark as custom location (not from афиша)
+          newLocations[locationIndex].isCustom = true;
+
           setLocations(newLocations);
+
+          // Clear selectedItems for this index if it was from афиша
+          setSelectedItems((prev: { id: number; type: string; index: number }[]) =>
+            prev.filter(
+              (item: { id: number; type: string; index: number }) =>
+                item.index !== locationIndex,
+            ),
+          );
+
           setShowYandexResults((prev) => ({ ...prev, [locationIndex]: false }));
           setGeocodeLoading((prev) => ({ ...prev, [locationIndex]: false }));
         },
@@ -294,7 +308,19 @@ export const Step2 = ({
             newLocations[locationIndex].location = "Точка на карте";
           }
           newLocations[locationIndex].address = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          // Mark as custom location (not from афиша)
+          newLocations[locationIndex].isCustom = true;
+
           setLocations(newLocations);
+
+          // Clear selectedItems for this index if it was from афиша
+          setSelectedItems((prev: { id: number; type: string; index: number }[]) =>
+            prev.filter(
+              (item: { id: number; type: string; index: number }) =>
+                item.index !== locationIndex,
+            ),
+          );
+
           setGeocodeError((prev) => ({
             ...prev,
             [locationIndex]: "Не удалось определить адрес, использованы координаты",
@@ -322,7 +348,19 @@ export const Step2 = ({
     // Fill адрес with result address
     newLocations[locationIndex].address = result.address?.formatted_address || "";
 
+    // Mark as custom location (not from афиша)
+    newLocations[locationIndex].isCustom = true;
+
     setLocations(newLocations);
+
+    // Clear selectedItems for this index if it was from афиша
+    setSelectedItems((prev: { id: number; type: string; index: number }[]) =>
+      prev.filter(
+        (item: { id: number; type: string; index: number }) =>
+          item.index !== locationIndex,
+      ),
+    );
+
     setShowYandexResults((prev) => ({ ...prev, [locationIndex]: false }));
   };
 
@@ -331,6 +369,23 @@ export const Step2 = ({
     if (!time) return false;
     const t = time.trim();
     return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(t);
+  };
+
+  // Helper function to safely parse time string to Date
+  const parseTimeToDate = (timeString?: string): Date | null => {
+    if (!timeString) return null;
+
+    // If it's already in HH:MM format
+    if (/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(timeString.trim())) {
+      const today = new Date().toISOString().split("T")[0];
+      const dateTimeString = `${today}T${timeString.trim()}:00`;
+      const date = new Date(dateTimeString);
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    // If it contains date information, try to parse it
+    const date = new Date(timeString);
+    return isNaN(date.getTime()) ? null : date;
   };
 
   const isStartBeforeEnd = (start?: string, end?: string): boolean => {
@@ -396,32 +451,75 @@ export const Step2 = ({
       return;
     }
 
+    // Проверяем город
+    if (!city.trim()) {
+      setIsDisabled(true);
+      return;
+    }
+
     // Проверяем все локации
     const valid = locations.every((loc, idx) => {
-      // Если локация была выбрана из афиши (есть соответствующий selectedItem), она валидна
-      const hasSelectedItem = selectedItems.some((item) => item.index === idx);
-      if (hasSelectedItem) {
-        return true;
+      // Проверяем основные поля (обязательны для всех)
+      const hasBasicInfo = loc.location?.trim() && loc.address?.trim();
+      if (!hasBasicInfo) {
+        console.log(`❌ Location ${idx}: Missing basic info`, loc);
+        return false;
       }
 
-      // Для кастомных локаций проверяем все поля
-      return (
-        loc.location &&
-        loc.address &&
-        loc.starttime &&
-        loc.endtime &&
-        isValidTime(loc.starttime) &&
-        isValidTime(loc.endtime) &&
-        isStartBeforeEnd(loc.starttime, loc.endtime)
-      );
+      // Проверяем обязательность времени в зависимости от источника
+      const hasSelectedItem = selectedItems.some((item) => item.index === idx);
+      const hasStartTime = loc.starttime?.trim();
+      const hasEndTime = loc.endtime?.trim();
+
+      console.log(`🔍 Location ${idx}:`, {
+        hasSelectedItem,
+        hasStartTime: !!hasStartTime,
+        hasEndTime: !!hasEndTime,
+        location: loc,
+      });
+
+      if (hasSelectedItem) {
+        // Для мест из афиши: время не обязательно, но если указано - должно быть валидным
+
+        // Если время указано, проверяем его валидность
+        if (hasStartTime && !isValidTime(loc.starttime)) {
+          return false;
+        }
+
+        if (hasEndTime && !isValidTime(loc.endtime)) {
+          return false;
+        }
+
+        // Если указаны оба времени, проверяем порядок
+        if (hasStartTime && hasEndTime) {
+          return isStartBeforeEnd(loc.starttime, loc.endtime);
+        }
+
+        // Место из афиши всегда валидно (время опционально)
+        return true;
+      } else {
+        // Для кастомных мест: и starttime и endtime обязательны
+        if (!hasStartTime || !hasEndTime) {
+          return false;
+        }
+
+        return (
+          isValidTime(loc.starttime) &&
+          isValidTime(loc.endtime) &&
+          isStartBeforeEnd(loc.starttime, loc.endtime)
+        );
+      }
     });
 
     setIsDisabled(!valid);
-  }, [locations, selectedItems]);
+  }, [locations, selectedItems, city]);
 
-  console.log(selectedItems, "selectedItems");
-  console.log(getItems, "getItems");
-  console.log(locations, "locations");
+  console.log("🔍 Step2 Debug:", {
+    selectedItems,
+    locations,
+    isDisabled,
+    city,
+  });
 
   return (
     <>
@@ -453,7 +551,23 @@ export const Step2 = ({
                         newLocations[index] = { location: "", address: "" };
                       }
                       newLocations[index].location = e.target.value;
+                      // Mark as custom when user manually edits
+                      newLocations[index].isCustom = true;
                       setLocations(newLocations);
+
+                      // Clear selectedItems for this index if user starts manual input
+                      if (
+                        e.target.value.trim() &&
+                        selectedItems.some((item) => item.index === index)
+                      ) {
+                        setSelectedItems(
+                          (prev: { id: number; type: string; index: number }[]) =>
+                            prev.filter(
+                              (item: { id: number; type: string; index: number }) =>
+                                item.index !== index,
+                            ),
+                        );
+                      }
                     }}
                   />
                   <button
@@ -642,17 +756,32 @@ export const Step2 = ({
                 <div className="mt-2 flex items-center justify-between">
                   <div className="mb-2 text-xl font-bold">Адрес *</div>
                   <div
-                    className="text-sm text-blue-500"
+                    className="cursor-pointer text-sm text-blue-500"
                     onClick={() => {
                       if (
                         selectedItems.length > 0 &&
                         selectedItems.map((item) => item.index).includes(index)
                       ) {
+                        // Переключаемся на ручной ввод
                         setSelectedItems(
                           selectedItems.filter((item) => item.index !== index),
                         );
-                        setLocations(locations.filter((item) => item.index !== index));
+                        // Очищаем данные локации для ручного ввода
+                        const newLocations = [...locations];
+                        if (!newLocations[index]) {
+                          newLocations[index] = { location: "", address: "" };
+                        } else {
+                          newLocations[index] = {
+                            location: "",
+                            address: "",
+                            starttime: "",
+                            endtime: "",
+                            isCustom: true,
+                          };
+                        }
+                        setLocations(newLocations);
                       } else {
+                        // Переключаемся на выбор из афиши
                         setIsOpen(true);
                         setIndex(index);
                       }
@@ -719,7 +848,23 @@ export const Step2 = ({
                             newLocations[index] = { location: "", address: "" };
                           }
                           newLocations[index].address = e.target.value;
+                          // Mark as custom when user manually edits
+                          newLocations[index].isCustom = true;
                           setLocations(newLocations);
+
+                          // Clear selectedItems for this index if user starts manual input
+                          if (
+                            e.target.value.trim() &&
+                            selectedItems.some((item) => item.index === index)
+                          ) {
+                            setSelectedItems(
+                              (prev: { id: number; type: string; index: number }[]) =>
+                                prev.filter(
+                                  (item: { id: number; type: string; index: number }) =>
+                                    item.index !== index,
+                                ),
+                            );
+                          }
                         }}
                         className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
                       />
@@ -728,45 +873,89 @@ export const Step2 = ({
                     <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
                       <div
                         className=""
-                        onClick={() => setLength(length > 2 ? length - 1 : length)}
+                        onClick={() => setLength(length > 1 ? length - 1 : length)}
                       >
                         <Bin />
                       </div>
                       <div className="flex w-full flex-1 gap-2">
-                        <div className="relative">
-                          <input
-                            type="text"
-                            placeholder="Начало"
-                            value={locations[index]?.starttime}
-                            onChange={(e) => {
+                        <div className="flex-1">
+                          <TimePicker
+                            value={parseTimeToDate(locations[index]?.starttime)}
+                            setTime={(time) => {
+                              const timeString = time.toTimeString().slice(0, 5);
+
+                              // Only update if the time actually changed
+                              if (locations[index]?.starttime === timeString) {
+                                return;
+                              }
+
                               const newLocations = [...locations];
-                              newLocations[index].starttime = e.target.value;
+                              if (!newLocations[index]) {
+                                newLocations[index] = {
+                                  location: "",
+                                  address: "",
+                                  starttime: "",
+                                  endtime: "",
+                                };
+                              }
+                              newLocations[index].starttime = timeString;
+                              // Don't mark as custom when editing time in afisha location
                               setLocations(newLocations);
                             }}
-                            className="placeholder:pl- h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white pr-4 pl-10 text-sm text-black placeholder:text-black/50"
+                            placeholder={
+                              selectedItems.some((item) => item.index === index)
+                                ? "Начало"
+                                : "Начало *"
+                            }
                           />
-                          <div className="absolute top-1/2 left-3 -translate-y-1/2">
-                            <Clocks />
-                          </div>
                         </div>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            placeholder="Завершение"
-                            value={locations[index]?.endtime}
-                            onChange={(e) => {
+                        <div className="flex-1">
+                          <TimePicker
+                            value={parseTimeToDate(locations[index]?.endtime)}
+                            setTime={(time) => {
+                              const timeString = time.toTimeString().slice(0, 5);
+
+                              // Only update if the time actually changed
+                              if (locations[index]?.endtime === timeString) {
+                                return;
+                              }
+
                               const newLocations = [...locations];
-                              newLocations[index].endtime = e.target.value;
+                              if (!newLocations[index]) {
+                                newLocations[index] = {
+                                  location: "",
+                                  address: "",
+                                  starttime: "",
+                                  endtime: "",
+                                };
+                              }
+                              newLocations[index].endtime = timeString;
+                              // Don't mark as custom when editing time in afisha location
                               setLocations(newLocations);
                             }}
-                            className="placeholder:pl- h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white pr-4 pl-10 text-sm text-black placeholder:text-black/50"
+                            placeholder={
+                              selectedItems.some((item) => item.index === index)
+                                ? "Завершение"
+                                : "Завершение *"
+                            }
                           />
-                          <div className="absolute top-1/2 left-3 -translate-y-1/2">
-                            <Clocks />
-                          </div>
                         </div>
                       </div>
                     </div>
+                    {/* Показываем ошибки валидации времени */}
+                    {!selectedItems.some((item) => item.index === index) &&
+                      !locations[index]?.starttime && (
+                        <div className="mt-1 text-sm text-red-500">
+                          Время начала обязательно для кастомных мест
+                        </div>
+                      )}
+                    {!selectedItems.some((item) => item.index === index) &&
+                      !locations[index]?.endtime &&
+                      locations[index]?.starttime && (
+                        <div className="mt-1 text-sm text-red-500">
+                          Время завершения обязательно для кастомных мест
+                        </div>
+                      )}
                     {locations[index]?.starttime &&
                       !isValidTime(locations[index].starttime) && (
                         <div className="mt-1 text-sm text-red-500">

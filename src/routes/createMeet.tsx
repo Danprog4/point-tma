@@ -55,8 +55,8 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [step, setStep] = useState((search as any).step || 0);
   const [isExtra, setIsExtra] = useState((search as any).isExtra || false);
-  const [date, setDate] = useState<string>("");
-  const [time, setTime] = useState<string>("");
+  const [date, setDate] = useState<Date | null>(null);
+  const [time, setTime] = useState<Date | null>(null);
   const [type, setType] = useState("");
   const [base64, setBase64] = useState("");
   const [gallery, setGallery] = useState<string[]>([]);
@@ -112,7 +112,8 @@ function RouteComponent() {
         {
           location: event?.title || "",
           address: event?.location || "",
-          starttime: event?.date,
+          starttime: "", // Don't set starttime from date field - user should set it manually
+          endtime: "", // Don't set endtime - user should set it manually
           isCustom: false,
           index: 0,
         },
@@ -155,6 +156,31 @@ function RouteComponent() {
       eventTypes.find((event) => event.subtypes.includes(typeOfEvent))?.isBig ??
       false;
 
+    // Валидируем обязательные поля перед отправкой
+    if (!title.trim()) {
+      console.error("Title is required");
+      return;
+    }
+
+    if (!date || isNaN(date.getTime())) {
+      console.error("Valid date is required");
+      return;
+    }
+
+    // Валидируем locations
+    const validatedLocations = locations.filter(
+      (loc) => loc.location?.trim() && loc.address?.trim(),
+    );
+
+    // Логируем данные перед отправкой
+    console.log("📤 Creating meeting with data:", {
+      title,
+      date: date.toLocaleDateString("ru-RU"),
+      time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "",
+      locations: validatedLocations,
+      selectedItems,
+    });
+
     await createMeeting.mutateAsync(
       {
         name: title,
@@ -163,8 +189,8 @@ function RouteComponent() {
         subType,
         isBig,
         participants: participants || 0,
-        locations,
-        date,
+        locations: validatedLocations,
+        date: date.toLocaleDateString("ru-RU"), // Format as dd.mm.yyyy
         reward: reward || 0,
         inventory: selectedInventory,
         image: mainPhotoRaw,
@@ -172,7 +198,7 @@ function RouteComponent() {
         gallery: gallery,
         important: important,
         calendarDate: search.calendarDate,
-        time: time,
+        time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "",
       },
       {
         onSuccess: (data: any) => {

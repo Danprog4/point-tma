@@ -11,9 +11,10 @@ import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
-import { DatePicker } from "../DatePicker";
+import DatePicker2 from "../DatePicker2";
 import { AddPhoto } from "../Icons/AddPhoto";
 import { PlusIcon } from "../Icons/Plus";
+import TimePicker from "../TimePicker";
 
 export const Step1 = ({
   type,
@@ -73,10 +74,10 @@ export const Step1 = ({
   setIsExtra: (isExtra: boolean) => void;
   typeOfEvent: string;
 
-  date: string;
-  setDate: (date: string) => void;
-  time: string;
-  setTime: (time: string) => void;
+  date: Date | null;
+  setDate: (date: Date) => void;
+  time: Date | null;
+  setTime: (time: Date) => void;
   calendarDate: string;
   city: string;
   setCity: (city: string) => void;
@@ -130,7 +131,7 @@ export const Step1 = ({
         month: "2-digit",
         year: "numeric",
       });
-      setDate(formattedDate);
+      setDate(new Date(formattedDate));
     }
   }, [calendarDate]);
 
@@ -236,7 +237,7 @@ export const Step1 = ({
   };
   console.log(gallery, "gallery");
   useEffect(() => {
-    if (title && description && type && base64 && date && isValidDate(date)) {
+    if (title && description && type && base64 && date) {
       setIsDisabled(false);
     } else {
       setIsDisabled(true);
@@ -244,39 +245,6 @@ export const Step1 = ({
   }, [title, description, type, base64, date]);
 
   console.log(isExtra, "isExtra");
-
-  const monthValue = date.split(".")[1] || "";
-
-  const isValidDate = (dateStr: string): boolean => {
-    const [day, month, year] = dateStr.split(".");
-    const dayNum = parseInt(day, 10);
-    const monthNum = parseInt(month, 10);
-    const yearNum = parseInt(year, 10);
-    if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) return false;
-    if (monthNum < 1 || monthNum > 12) return false;
-    const dateObj = new Date(yearNum, monthNum - 1, dayNum);
-    const currentYear = new Date().getFullYear();
-    if (yearNum < currentYear || yearNum > currentYear + 1) return false;
-    return (
-      dateObj.getFullYear() === yearNum &&
-      dateObj.getMonth() === monthNum - 1 &&
-      dateObj.getDate() === dayNum
-    );
-  };
-
-  const isValidTime = (timeStr: string): boolean => {
-    const [hours, minutes] = timeStr.split(":");
-    const hoursNum = parseInt(hours, 10);
-    const minutesNum = parseInt(minutes, 10);
-    return (
-      !isNaN(hoursNum) &&
-      !isNaN(minutesNum) &&
-      hoursNum >= 0 &&
-      hoursNum < 24 &&
-      minutesNum >= 0 &&
-      minutesNum < 60
-    );
-  };
 
   return (
     <div className="scrollbar-hidden w-full overflow-y-auto pb-4">
@@ -351,32 +319,19 @@ export const Step1 = ({
         />
       </div>
 
-      <div className="flex flex-col items-start gap-2 pb-4">
+      <div className="flex w-full flex-col items-start gap-2 pb-4">
         <div className="text-xl font-bold">Дата *</div>
-        <DatePicker birthday={date} setBirthday={setDate} monthValue={monthValue} />
-      </div>
-      {date && !isValidDate(date) && (
-        <div className="mb-2 text-sm text-red-500">
-          Пожалуйста, введите корректную дату (ДД.ММ.ГГГГ)
+        <div className="w-full">
+          <DatePicker2 value={date} setDate={setDate} />
         </div>
-      )}
+      </div>
 
-      <div className="flex flex-col items-start gap-2 pb-4">
+      <div className="flex w-full flex-col items-start gap-2 pb-4">
         <div className="text-xl font-bold">Время *</div>
-        <input
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          type="text"
-          placeholder={`Введите время 00:00`}
-          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-        />
-      </div>
-
-      {time && !isValidTime(time) && (
-        <div className="text-sm text-red-500">
-          Пожалуйста, введите корректное время (00:00)
+        <div className="w-full">
+          <TimePicker value={time} setTime={setTime} placeholder="Выберите время" />
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
         <div className="text-xl font-bold">Тип встречи *</div>

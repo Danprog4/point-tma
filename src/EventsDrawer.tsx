@@ -52,22 +52,32 @@ export function EventsDrawer({
       return; // Don't close drawer here, handleAddToCalendar will handle it
     }
     if (setSelectedItems && locationIndex !== undefined) {
+      // Remove any existing selected item for this index first
+      const filteredItems = (selectedItems || []).filter(
+        (si) => si.index !== locationIndex,
+      );
       setSelectedItems([
-        ...(selectedItems || []),
+        ...filteredItems,
         { id: item.id, type: item.type, index: locationIndex },
       ]);
     }
-    if (setLocations && locationIndex !== undefined) {
-      setLocations([
-        ...(locations || []),
-        {
-          location: item.title,
-          address: item.location,
-          starttime: item.date,
-          isCustom: false,
-          index: locationIndex,
-        },
-      ]);
+    if (setLocations && locationIndex !== undefined && locations) {
+      // Update the specific location at locationIndex
+      const newLocations = [...locations];
+      // Ensure the array is large enough
+      while (newLocations.length <= locationIndex) {
+        newLocations.push({ location: "", address: "" });
+      }
+      // Replace the location at the specific index
+      newLocations[locationIndex] = {
+        location: item.title,
+        address: item.location,
+        starttime: "", // Don't set starttime from date field - user should set it manually
+        endtime: "", // Don't set endtime from date field - user should set it manually
+        isCustom: false,
+        index: locationIndex,
+      };
+      setLocations(newLocations);
     }
     onOpenChange(false);
   };

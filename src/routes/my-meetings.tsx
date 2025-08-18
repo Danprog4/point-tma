@@ -254,11 +254,13 @@ function RouteComponent() {
               <div className="px-4">
                 <div className="flex items-center gap-2 pb-2">
                   <img
-                    src={getImageUrl(request.user?.photo || request.user?.photoUrl || "")}
+                    src={getImageUrl(
+                      request.fromUser?.photo || request.fromUser?.photoUrl,
+                    )}
                     alt=""
                     className="h-10 w-10 rounded-full"
                   />
-                  {request.user?.name} {request.user?.surname} приглашает
+                  {request.fromUser?.name} {request.fromUser?.surname} приглашает
                 </div>
                 <MeetCard meet={request.meeting || ({} as Quest)} isNavigable={true} />
                 <p className="my-2 text-xs leading-4 text-black">

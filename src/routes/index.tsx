@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { Header } from "~/components/Header";
 import { Selecter } from "~/components/Selecter";
-import { YandexMap } from "~/components/YandexMap";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -78,35 +77,6 @@ function Home() {
 
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Афиша</h1>
-      </div>
-
-      {/* Debug: Yandex Map test block */}
-      <div className="px-4">
-        <button
-          onClick={() => setShowMapTest((v) => !v)}
-          className="rounded-[12px] border border-gray-300 px-3 py-2 text-sm"
-        >
-          {showMapTest ? "Скрыть тестовую карту" : "Показать тестовую карту"}
-        </button>
-        {showMapTest && (
-          <div className="mt-3">
-            <YandexMap
-              zoom={10}
-              className="h-60 w-full rounded-lg border"
-              enableGeolocation={true}
-              autoGeolocation={true}
-              onLocationSelect={(coords) => {
-                console.log("🗺️ Home Test Map: click", coords);
-                setClickedCoords(coords);
-              }}
-            />
-            {clickedCoords && (
-              <div className="mt-2 text-xs text-gray-600">
-                Выбрано: {clickedCoords[0].toFixed(6)}, {clickedCoords[1].toFixed(6)}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="mb-4 flex items-center justify-center gap-6 px-4">

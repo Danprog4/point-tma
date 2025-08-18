@@ -47,6 +47,8 @@ export const usersTable = pgTable("users", {
     }>
   >(),
   savedMeetsIds: jsonb("saved_meets_ids").$type<number[]>(),
+  coordinates: jsonb("coordinates").$type<[number, number]>(),
+  lastLocationUpdate: timestamp("last_location_update"),
 });
 
 export const calendarTable = pgTable("calendar", {

@@ -13,6 +13,10 @@ import PeopleDrawer from "~/components/PeopleDrawer";
 import { User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
+import {
+  calculateDistanceFromCoords,
+  formatDistance,
+} from "~/lib/utils/calculateDistance";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getAge } from "~/lib/utils/getAge";
 import { getImage } from "~/lib/utils/getImage";
@@ -108,6 +112,34 @@ function RouteComponent() {
       );
     });
   }, [users, user, search]);
+
+  const usersWithDistances = useMemo(() => {
+    if (!user?.coordinates || !filteredUsers) {
+      return filteredUsers?.map((u) => ({ ...u, distance: null })) || [];
+    }
+
+    return filteredUsers.map((u) => {
+      if (!u.coordinates) {
+        return { ...u, distance: null };
+      }
+
+      const distance = calculateDistanceFromCoords(
+        user.coordinates as [number, number],
+        u.coordinates,
+      );
+      return { ...u, distance };
+    });
+  }, [filteredUsers, user?.coordinates]);
+
+  // Сортируем по расстоянию (ближайшие первыми)
+  const sortedUsers = useMemo(() => {
+    return [...usersWithDistances].sort((a, b) => {
+      if (a.distance === null && b.distance === null) return 0;
+      if (a.distance === null) return 1;
+      if (b.distance === null) return -1;
+      return a.distance - b.distance;
+    });
+  }, [usersWithDistances]);
 
   const hideUser = useMutation(trpc.main.hideUser.mutationOptions());
 
@@ -269,7 +301,7 @@ function RouteComponent() {
       </div>
 
       <div className="flex flex-col gap-8">
-        {filteredUsers?.map((u) => (
+        {sortedUsers?.map((u) => (
           <div key={u.id}>
             <div className="flex flex-col items-start justify-center">
               {(() => {
@@ -403,7 +435,16 @@ function RouteComponent() {
                   <div className="text-sm text-neutral-500">
                     г. {u?.city}, {getAge(u?.birthday) || "не указано"}
                   </div>
-                  <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
+                  <div className="flex items-center gap-2">
+                    {u.distance !== null && (
+                      <span className="text-sm font-medium text-blue-600">
+                        {formatDistance(u.distance)}
+                      </span>
+                    )}
+                    <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">
+                      Рейтинг 4.5
+                    </div>
+                  </div>
                 </div>
                 <div className="px-4">
                   <div className="text-sm">

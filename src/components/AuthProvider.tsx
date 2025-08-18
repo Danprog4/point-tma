@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 
 import { useNavigate } from "@tanstack/react-router";
+import { useLocationSaver } from "~/hooks/useLocationSaver";
 import { OnboardingPage } from "./OnboardingPage";
 import { FullPageSpinner } from "./Spinner";
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  useLocationSaver();
   const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
   const trpc = useTRPC();
@@ -25,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       onSuccess: (data) => {
         setLoggedIn(true);
         // Сразу устанавливаем данные пользователя в кэш
+
         queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),

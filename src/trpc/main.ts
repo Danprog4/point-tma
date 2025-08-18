@@ -827,6 +827,35 @@ export const router = {
         });
       }
     }),
+
+  updateLocation: procedure
+    .input(
+      z.object({
+        coordinates: z.tuple([z.number(), z.number()]), // [longitude, latitude]
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      await db
+        .update(usersTable)
+        .set({
+          coordinates: input.coordinates,
+          lastLocationUpdate: new Date(),
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      return { success: true };
+    }),
 };
 
 export type Router = typeof router;

@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
 import { Map } from "~/components/Icons/Map";
+import { YandexMap } from "~/components/YandexMap";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
@@ -68,9 +69,35 @@ export const Step2 = ({
   const [showYandexResults, setShowYandexResults] = useState<{ [key: number]: boolean }>(
     {},
   );
+  const [geocodeLoading, setGeocodeLoading] = useState<{ [key: number]: boolean }>({});
+  const [geocodeError, setGeocodeError] = useState<{ [key: number]: string | null }>({});
 
   const trpc = useTRPC();
   const searchAddress = useMutation(trpc.yandex.suggest.mutationOptions());
+  const reverseGeocode = useMutation(trpc.yandex.reverseGeocode.mutationOptions());
+
+  const extractMarkersFromSuggest = (): Array<[number, number]> => {
+    try {
+      if (!searchAddress.data || !Array.isArray(searchAddress.data.results)) return [];
+      const coords: Array<[number, number]> = [];
+      for (const r of searchAddress.data.results) {
+        const pos =
+          r?.geocode?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject?.Point
+            ?.pos;
+        if (typeof pos === "string") {
+          const parts = pos.split(/\s+/).map((x: string) => parseFloat(x));
+          if (parts.length === 2 && parts.every((n: number) => Number.isFinite(n))) {
+            // Yandex returns "lon lat" string; keep [lon, lat]
+            coords.push([parts[0], parts[1]]);
+          }
+        }
+      }
+      return coords;
+    } catch (e) {
+      console.warn("extractMarkersFromSuggest error", e);
+      return [];
+    }
+  };
 
   // Handle Yandex search
   const handleYandexSearch = (locationIndex: number) => {
@@ -84,6 +111,52 @@ export const Step2 = ({
         results: 10,
       });
     }
+  };
+
+  // Handle map click selection
+  const handleMapLocationSelect = (
+    locationIndex: number,
+    coordinates: [number, number],
+  ) => {
+    const [lng, lat] = coordinates;
+    setGeocodeLoading((prev) => ({ ...prev, [locationIndex]: true }));
+    setGeocodeError((prev) => ({ ...prev, [locationIndex]: null }));
+
+    reverseGeocode.mutate(
+      { lat, lon: lng },
+      {
+        onSuccess: (data) => {
+          const newLocations = [...locations];
+          if (!newLocations[locationIndex]) {
+            newLocations[locationIndex] = { location: "", address: "" };
+          }
+          const title = data?.name || "Выбранное место на карте";
+          const address = data?.text || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          newLocations[locationIndex].location = title;
+          newLocations[locationIndex].address = address;
+          setLocations(newLocations);
+          setShowYandexResults((prev) => ({ ...prev, [locationIndex]: false }));
+          setGeocodeLoading((prev) => ({ ...prev, [locationIndex]: false }));
+        },
+        onError: (err) => {
+          console.error("reverseGeocode error", err);
+          const newLocations = [...locations];
+          if (!newLocations[locationIndex]) {
+            newLocations[locationIndex] = { location: "", address: "" };
+          }
+          if (!newLocations[locationIndex].location) {
+            newLocations[locationIndex].location = "Точка на карте";
+          }
+          newLocations[locationIndex].address = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          setLocations(newLocations);
+          setGeocodeError((prev) => ({
+            ...prev,
+            [locationIndex]: "Не удалось определить адрес, использованы координаты",
+          }));
+          setGeocodeLoading((prev) => ({ ...prev, [locationIndex]: false }));
+        },
+      },
+    );
   };
 
   // Handle result selection
@@ -218,28 +291,40 @@ export const Step2 = ({
                   </button>
                 </div>
 
-                {/* Search results */}
-                {showYandexResults[index] && searchAddress.data && (
+                {/* Map + Search results */}
+                {showYandexResults[index] && (
                   <div className="mt-3 rounded-lg bg-gray-50 p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-700">
-                        Результаты поиска
-                        {Array.isArray(searchAddress.data.results) && (
-                          <span className="ml-2 text-xs text-gray-500">
-                            ({searchAddress.data.results.length} найдено)
-                          </span>
-                        )}
-                      </h3>
-                      <button
-                        onClick={() =>
-                          setShowYandexResults((prev) => ({ ...prev, [index]: false }))
+                    <div className="mb-3">
+                      <YandexMap
+                        center={[37.618423, 55.751244]}
+                        zoom={10}
+                        className="h-60 w-full overflow-hidden rounded-lg"
+                        onLocationSelect={(coords) =>
+                          handleMapLocationSelect(index, coords)
                         }
-                        className="text-xs text-gray-500 hover:text-gray-700"
-                      >
-                        ✕
-                      </button>
+                        markers={extractMarkersFromSuggest()}
+                      />
                     </div>
-
+                    {searchAddress.data && (
+                      <div className="mb-2 flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-gray-700">
+                          Результаты поиска
+                          {Array.isArray(searchAddress.data.results) && (
+                            <span className="ml-2 text-xs text-gray-500">
+                              ({searchAddress.data.results.length} найдено)
+                            </span>
+                          )}
+                        </h3>
+                        <button
+                          onClick={() =>
+                            setShowYandexResults((prev) => ({ ...prev, [index]: false }))
+                          }
+                          className="text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                     {searchAddress.data ? (
                       <div className="space-y-3">
                         {Array.isArray(searchAddress.data.results) ? (

@@ -76,6 +76,52 @@ export const yandexRouter = createTRPCRouter({
         });
       }
     }),
+  reverseGeocode: procedure
+    .input(
+      z.object({
+        lat: z.number(),
+        lon: z.number(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const { lat, lon } = input;
+        const url = new URL("https://geocode-maps.yandex.ru/1.x/");
+        url.searchParams.set("apikey", process.env.GEOCODER_API_KEY!);
+        url.searchParams.set("format", "json");
+        url.searchParams.set("lang", "ru_RU");
+        // Yandex expects lon,lat
+        url.searchParams.set("geocode", `${lon},${lat}`);
+
+        const res = await fetch(url.toString());
+        if (!res.ok) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to reverse geocode",
+          });
+        }
+
+        const data = await res.json();
+        const members = data?.response?.GeoObjectCollection?.featureMember || [];
+        const first = members[0]?.GeoObject;
+        const text = first?.metaDataProperty?.GeocoderMetaData?.text || null;
+        const name = first?.name || null;
+        const description = first?.description || null;
+
+        return {
+          text,
+          name,
+          description,
+          raw: data,
+        };
+      } catch (error) {
+        console.error("Error in reverseGeocode:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to process reverse geocode request",
+        });
+      }
+    }),
 });
 
 export type YandexRouter = typeof yandexRouter;

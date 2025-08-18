@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-router";
 import {
   backButton,
-  hapticFeedback,
   init,
   mockTelegramEnv,
   requestFullscreen,
@@ -20,6 +19,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "~/components/AuthProvider";
 import { Navbar } from "~/components/Navbar";
 import appCss from "~/lib/styles/app.css?url";
+import { loadYMapsScript } from "~/lib/ymaps";
 import { useTRPC } from "~/trpc/init/react";
 import { TRPCRouter } from "~/trpc/init/router";
 
@@ -42,12 +42,38 @@ export const Route = createRootRouteWithContext<{
       },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      {
+        src: `https://api-maps.yandex.ru/v3/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`,
+        async: true,
+      },
+    ],
   }),
   component: RootComponent,
 });
 
 function RootComponent() {
   useEffect(() => {
+    try {
+      console.log("🗺️ Root: calling loadYMapsScript()");
+      loadYMapsScript();
+      const existing = document.getElementById(
+        "ymaps3-script",
+      ) as HTMLScriptElement | null;
+      console.log("🗺️ Root: script in DOM after call?", {
+        exists: !!existing,
+        src: existing?.src,
+      });
+      const allYandexScripts = Array.from(
+        document.querySelectorAll('script[src*="api-maps.yandex.ru"]'),
+      ) as HTMLScriptElement[];
+      console.log(
+        "🗺️ Root: yandex scripts in DOM",
+        allYandexScripts.map((s) => ({ id: s.id, src: s.src })),
+      );
+    } catch (e) {
+      console.error("🗺️ Root: loadYMapsScript error", e);
+    }
     const themeParams = {
       accent_text_color: "#6ab2f2",
       bg_color: "#17212b",
@@ -136,6 +162,9 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
     <html suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          src={`https://api-maps.yandex.ru/v3/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`}
+        ></script>
       </head>
       <body>
         {children}

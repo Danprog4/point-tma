@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Plus } from "lucide-react";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import { useTRPC } from "~/trpc/init/react";
 import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { partiesData } from "~/config/party";
@@ -25,7 +26,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   useScrollRestoration("home");
+
   const [selectedFilter, setSelectedFilter] = useState("Все");
+
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
@@ -62,6 +65,8 @@ function Home() {
   }
 
   const isMobile = usePlatform();
+
+  const searchAdress = useMutation(trpc.yandex.suggest.mutationOptions());
 
   return (
     <div

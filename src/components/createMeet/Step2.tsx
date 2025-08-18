@@ -1,5 +1,7 @@
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
+import { Map } from "~/components/Icons/Map";
 import { conferencesData } from "~/config/conf";
 import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
@@ -7,6 +9,7 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { EventsDrawer } from "~/EventsDrawer";
 import { getAllEvents } from "~/lib/utils/getAllEvents";
+import { useTRPC } from "~/trpc/init/react";
 import { Clocks } from "../Icons/Clocks";
 // Предустановленные тэги, которые будут предлагаться при вводе
 const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
@@ -60,6 +63,50 @@ export const Step2 = ({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [activeFilter, setActiveFilter] = useState("Все");
+
+  // Yandex search states
+  const [showYandexResults, setShowYandexResults] = useState<{ [key: number]: boolean }>(
+    {},
+  );
+
+  const trpc = useTRPC();
+  const searchAddress = useMutation(trpc.yandex.suggest.mutationOptions());
+
+  // Handle Yandex search
+  const handleYandexSearch = (locationIndex: number) => {
+    const searchValue = locations[locationIndex]?.location;
+    if (searchValue?.trim()) {
+      setShowYandexResults((prev) => ({ ...prev, [locationIndex]: true }));
+      searchAddress.mutate({
+        query: searchValue,
+        city: "Москва",
+        types: "biz,geo",
+        results: 10,
+      });
+    }
+  };
+
+  // Handle result selection
+  const handleResultSelect = (result: any, locationIndex: number) => {
+    const newLocations = [...locations];
+    if (!newLocations[locationIndex]) {
+      newLocations[locationIndex] = { location: "", address: "" };
+    }
+
+    // Fill название with result title
+    const title =
+      typeof result.title === "string"
+        ? result.title
+        : result.title?.text || "Название не найдено";
+    newLocations[locationIndex].location = title;
+
+    // Fill адрес with result address
+    newLocations[locationIndex].address = result.address?.formatted_address || "";
+
+    setLocations(newLocations);
+    setShowYandexResults((prev) => ({ ...prev, [locationIndex]: false }));
+  };
+
   // Helper functions for time validation
   const isValidTime = (time?: string): boolean => {
     if (!time) return false;
@@ -151,7 +198,131 @@ export const Step2 = ({
                       setLocations(newLocations);
                     }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleYandexSearch(index)}
+                    disabled={
+                      !locations[index]?.location?.trim() || searchAddress.isPending
+                    }
+                    className="flex h-11 items-center gap-2 rounded-[14px] bg-blue-500 px-3 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+                    title="Поиск в Яндекс картах"
+                  >
+                    {searchAddress.isPending ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <Map />
+                    )}
+                    <span className="text-sm">
+                      {searchAddress.isPending ? "Поиск..." : "Maps"}
+                    </span>
+                  </button>
                 </div>
+
+                {/* Search results */}
+                {showYandexResults[index] && searchAddress.data && (
+                  <div className="mt-3 rounded-lg bg-gray-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Результаты поиска
+                        {Array.isArray(searchAddress.data.results) && (
+                          <span className="ml-2 text-xs text-gray-500">
+                            ({searchAddress.data.results.length} найдено)
+                          </span>
+                        )}
+                      </h3>
+                      <button
+                        onClick={() =>
+                          setShowYandexResults((prev) => ({ ...prev, [index]: false }))
+                        }
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {searchAddress.data ? (
+                      <div className="space-y-3">
+                        {Array.isArray(searchAddress.data.results) ? (
+                          searchAddress.data.results.map(
+                            (result: any, resultIndex: number) => (
+                              <div
+                                key={resultIndex}
+                                className="cursor-pointer rounded-lg border bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
+                                onClick={() => handleResultSelect(result, index)}
+                              >
+                                <div className="mb-2">
+                                  <h4 className="text-base font-semibold text-gray-900">
+                                    {typeof result.title === "string"
+                                      ? result.title
+                                      : result.title?.text || "Название не найдено"}
+                                  </h4>
+                                  {result.subtitle && (
+                                    <p className="text-sm text-gray-600">
+                                      {typeof result.subtitle === "string"
+                                        ? result.subtitle
+                                        : result.subtitle?.text || ""}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Теги */}
+                                {result.tags && result.tags.length > 0 && (
+                                  <div className="mb-3 flex flex-wrap gap-1">
+                                    {result.tags.map((tag: string, tagIndex: number) => (
+                                      <span
+                                        key={tagIndex}
+                                        className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Адрес */}
+                                {result.address?.formatted_address && (
+                                  <div className="mb-2">
+                                    <p className="mb-1 text-xs text-gray-500">
+                                      📍 Адрес:
+                                    </p>
+                                    <p className="text-sm text-gray-700">
+                                      {result.address.formatted_address}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Расстояние */}
+                                {result.distance?.text && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500">
+                                      📏 Расстояние:
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {result.distance.text}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            ),
+                          )
+                        ) : (
+                          <div className="rounded-lg border bg-white p-4 shadow-sm">
+                            <p className="text-sm text-gray-500">
+                              Структура ответа неожиданная
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border bg-white p-4 text-center">
+                        <p className="text-sm text-gray-500">Ничего не найдено</p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Попробуйте изменить запрос
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="mb-2 text-xl font-bold">Адрес *</div>
                   <div

@@ -14,6 +14,14 @@ export const yandexRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       try {
+        console.log("🗺️ Yandex suggest: starting", {
+          input,
+          apiKey: process.env.API_KEY ? "***" + process.env.API_KEY.slice(-4) : "NOT_SET",
+          geocoderApiKey: process.env.GEOCODER_API_KEY
+            ? "***" + process.env.GEOCODER_API_KEY.slice(-4)
+            : "NOT_SET",
+        });
+
         const url = new URL("https://suggest-maps.yandex.ru/v1/suggest");
         url.searchParams.set("apikey", process.env.API_KEY!);
         url.searchParams.set("text", `${input.city}, ${input.query}`);
@@ -23,34 +31,61 @@ export const yandexRouter = createTRPCRouter({
         url.searchParams.set("lang", "ru_RU");
         url.searchParams.set("types", input.types);
 
+        console.log(
+          "🗺️ Yandex suggest: request URL",
+          url.toString().replace(process.env.API_KEY!, "***"),
+        );
+
         const suggestResponse = await fetch(url.toString());
 
         if (!suggestResponse.ok) {
+          console.error("🗺️ Yandex suggest: response not ok", {
+            status: suggestResponse.status,
+            statusText: suggestResponse.statusText,
+            headers: Object.fromEntries(suggestResponse.headers.entries()),
+          });
+          const errorText = await suggestResponse.text();
+          console.error("🗺️ Yandex suggest: error response", errorText);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to fetch suggestions from Yandex API",
+            message: `Failed to fetch suggestions from Yandex API: ${suggestResponse.status} ${errorText}`,
           });
         }
 
         const suggestData = await suggestResponse.json();
+        console.log("🗺️ Yandex suggest: got results", suggestData.results?.length || 0);
 
         // Возвращаем все результаты поиска
         if (suggestData.results && suggestData.results.length > 0) {
           const resultsWithGeocode = await Promise.all(
-            suggestData.results.map(async (result: any) => {
+            suggestData.results.map(async (result: any, index: number) => {
               let geocodeData = null;
               if (result?.uri) {
                 try {
-                  const geocodeResponse = await fetch(
-                    `https://geocode-maps.yandex.ru/1.x/?apikey=${process.env.GEOCODER_API_KEY}&lang=ru_RU&sco=latlong&uri=${encodeURIComponent(result.uri)}&format=json`,
-                  );
+                  const geocodeUrl = `https://geocode-maps.yandex.ru/1.x/?apikey=${process.env.GEOCODER_API_KEY}&lang=ru_RU&sco=latlong&uri=${encodeURIComponent(result.uri)}&format=json`;
+                  console.log(`🗺️ Geocode ${index}: fetching`, {
+                    uri: result.uri,
+                    url: geocodeUrl.replace(process.env.GEOCODER_API_KEY!, "***"),
+                  });
+
+                  const geocodeResponse = await fetch(geocodeUrl);
 
                   if (geocodeResponse.ok) {
                     geocodeData = await geocodeResponse.json();
+                    console.log(`🗺️ Geocode ${index}: success`, geocodeData);
+                  } else {
+                    console.error(`🗺️ Geocode ${index}: failed`, {
+                      status: geocodeResponse.status,
+                      statusText: geocodeResponse.statusText,
+                    });
+                    const errorText = await geocodeResponse.text();
+                    console.error(`🗺️ Geocode ${index}: error response`, errorText);
                   }
                 } catch (error) {
-                  console.error("Error fetching geocode for result:", error);
+                  console.error(`🗺️ Geocode ${index}: exception`, error);
                 }
+              } else {
+                console.log(`🗺️ Geocode ${index}: no URI, skipping geocode`);
               }
 
               return {

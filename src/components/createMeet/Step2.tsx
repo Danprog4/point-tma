@@ -8,6 +8,7 @@ import { kinoData } from "~/config/kino";
 import { networkingData } from "~/config/networking";
 import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
+import { User } from "~/db/schema";
 import { EventsDrawer } from "~/EventsDrawer";
 import { getAllEvents } from "~/lib/utils/getAllEvents";
 import { useTRPC } from "~/trpc/init/react";
@@ -23,10 +24,12 @@ export const Step2 = ({
   locations,
   length,
   setLength,
-
+  user,
   setSelectedItems,
   setIsDisabled,
   selectedItems,
+  city,
+  setCity,
 }: {
   index: number;
   setIndex: (index: number) => void;
@@ -53,10 +56,12 @@ export const Step2 = ({
   }[];
   length: number;
   setLength: (length: number) => void;
-
+  user: User;
   setSelectedItems: (items: { id: number; type: string; index: number }[]) => void;
   setIsDisabled: (isDisabled: boolean) => void;
   selectedItems: { id: number; type: string; index: number }[];
+  city: string;
+  setCity: (city: string) => void;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
 
@@ -71,27 +76,65 @@ export const Step2 = ({
   );
   const [geocodeLoading, setGeocodeLoading] = useState<{ [key: number]: boolean }>({});
   const [geocodeError, setGeocodeError] = useState<{ [key: number]: string | null }>({});
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
 
   const trpc = useTRPC();
   const searchAddress = useMutation(trpc.yandex.suggest.mutationOptions());
   const reverseGeocode = useMutation(trpc.yandex.reverseGeocode.mutationOptions());
 
+  useEffect(() => {
+    if (user.city) {
+      setCity(user.city);
+    }
+  }, [user.city]);
+
   const extractMarkersFromSuggest = (): Array<[number, number]> => {
     try {
-      if (!searchAddress.data || !Array.isArray(searchAddress.data.results)) return [];
+      console.log("🗺️ Step2: extracting markers from", searchAddress.data);
+      if (!searchAddress.data || !Array.isArray(searchAddress.data.results)) {
+        console.log("🗺️ Step2: no search data or results");
+        return [];
+      }
+
       const coords: Array<[number, number]> = [];
       for (const r of searchAddress.data.results) {
-        const pos =
+        console.log("🗺️ Step2: full result structure", JSON.stringify(r, null, 2));
+
+        // Try different possible paths for coordinates
+        let pos =
           r?.geocode?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject?.Point
             ?.pos;
+
+        if (!pos) {
+          // Alternative path - sometimes coordinates are in different structure
+          const featureMember =
+            r?.geocode?.response?.GeoObjectCollection?.featureMember?.[0];
+          if (featureMember) {
+            console.log("🗺️ Step2: featureMember", featureMember);
+            pos = featureMember?.GeoObject?.Point?.pos;
+          }
+        }
+
+        if (!pos && r?.coordinates) {
+          // Maybe coordinates are directly in result
+          console.log("🗺️ Step2: using direct coordinates", r.coordinates);
+          if (Array.isArray(r.coordinates) && r.coordinates.length === 2) {
+            coords.push([r.coordinates[0], r.coordinates[1]]);
+            continue;
+          }
+        }
+
+        console.log("🗺️ Step2: found pos", pos);
         if (typeof pos === "string") {
           const parts = pos.split(/\s+/).map((x: string) => parseFloat(x));
           if (parts.length === 2 && parts.every((n: number) => Number.isFinite(n))) {
             // Yandex returns "lon lat" string; keep [lon, lat]
             coords.push([parts[0], parts[1]]);
+            console.log("🗺️ Step2: added coordinate", [parts[0], parts[1]]);
           }
         }
       }
+      console.log("🗺️ Step2: final extracted markers", coords);
       return coords;
     } catch (e) {
       console.warn("extractMarkersFromSuggest error", e);
@@ -99,14 +142,42 @@ export const Step2 = ({
     }
   };
 
+  // Calculate center of found markers
+  const calculateMarkersCenter = (
+    markers: Array<[number, number]>,
+  ): [number, number] | null => {
+    if (markers.length === 0) return null;
+    if (markers.length === 1) return markers[0];
+
+    const avgLon = markers.reduce((sum, [lon]) => sum + lon, 0) / markers.length;
+    const avgLat = markers.reduce((sum, [, lat]) => sum + lat, 0) / markers.length;
+
+    console.log("🗺️ Step2: calculated center", [avgLon, avgLat]);
+    return [avgLon, avgLat];
+  };
+
+  // When new results arrive, center map to markers
+  useEffect(() => {
+    console.log("🗺️ Step2: search data changed", searchAddress.data);
+    const ms = extractMarkersFromSuggest();
+    const center = calculateMarkersCenter(ms);
+    if (center) {
+      console.log("🗺️ Step2: setting map center to", center);
+      setMapCenter(center);
+    } else {
+      console.log("🗺️ Step2: no center calculated, markers:", ms);
+    }
+  }, [searchAddress.data]);
+
   // Handle Yandex search
   const handleYandexSearch = (locationIndex: number) => {
     const searchValue = locations[locationIndex]?.location;
     if (searchValue?.trim()) {
+      console.log("🗺️ Step2: searching with", { query: searchValue, city: city });
       setShowYandexResults((prev) => ({ ...prev, [locationIndex]: true }));
       searchAddress.mutate({
         query: searchValue,
-        city: "Москва",
+        city: city,
         types: "biz,geo",
         results: 10,
       });
@@ -252,6 +323,16 @@ export const Step2 = ({
     <>
       <div className="scrollbar-hidden flex flex-col overflow-y-auto pb-20">
         <div className="flex flex-col">
+          <div className="flex flex-col items-start gap-2 pb-4">
+            <div className="text-xl font-bold">Город *</div>
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              type="text"
+              placeholder={`Введите город`}
+              className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            />
+          </div>
           <div className="flex flex-col gap-2">
             {Array.from({ length: length }).map((_, index) => (
               <div key={index}>
@@ -296,7 +377,7 @@ export const Step2 = ({
                   <div className="mt-3 rounded-lg bg-gray-50 p-3">
                     <div className="mb-3">
                       <YandexMap
-                        center={[37.618423, 55.751244]}
+                        center={mapCenter || [37.618423, 55.751244]}
                         zoom={10}
                         className="h-60 w-full overflow-hidden rounded-lg"
                         onLocationSelect={(coords) =>

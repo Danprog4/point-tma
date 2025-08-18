@@ -409,16 +409,6 @@ export const Step1 = ({
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 pb-4">
-        <div className="text-xl font-bold">Город *</div>
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          type="text"
-          placeholder={`Введите город`}
-          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-        />
-      </div>
 
       <CreateMeetDrawer
         open={isDrawerOpen}

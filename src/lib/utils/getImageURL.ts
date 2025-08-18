@@ -1,3 +1,5 @@
 export function getImageUrl(imageId: string) {
-  return `${import.meta.env.VITE_BUCKET_PUBLIC_URL}/${imageId}`;
+  const bucketUrl = import.meta.env.VITE_BUCKET_PUBLIC_URL;
+  const result = `${bucketUrl}/${imageId}`;
+  return result;
 }

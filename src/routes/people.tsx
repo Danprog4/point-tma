@@ -311,6 +311,12 @@ function RouteComponent() {
                 ].filter(Boolean);
                 const currentIndex = currentIndexByUserId[u.id] ?? 0;
                 const currentPhoto = allPhotos[currentIndex] ?? "";
+
+                // If no photos are available, we still need to show something
+                const shouldShowImage = allPhotos.length > 0;
+                const imageToShow = shouldShowImage ? currentPhoto : "";
+
+                // Debug info removed for cleaner console
                 const handleSwipe = (direction: "left" | "right") => {
                   if (allPhotos.length <= 1) return;
                   const len = allPhotos.length;
@@ -347,8 +353,9 @@ function RouteComponent() {
                     }}
                     onClick={() => {
                       if (didSwipeRef.current[u.id]) return;
-                      if (allPhotos.length === 0) return;
-                      setFullScreenPhotos(allPhotos);
+                      // Always allow fullscreen, even if no custom photos - will show default image
+                      const photosToShow = allPhotos.length > 0 ? allPhotos : [""]; // Empty string will trigger default image
+                      setFullScreenPhotos(photosToShow);
                       setFullScreenIndex(currentIndex);
                       setIsFullScreen(true);
                     }}
@@ -357,13 +364,40 @@ function RouteComponent() {
                       <AnimatePresence initial={false}>
                         <motion.img
                           key={currentIndex}
-                          src={getImage(u as any, currentPhoto)}
+                          src={getImage(u as any, imageToShow)}
                           alt={u.name || ""}
                           className="h-60 w-full object-cover"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.18, ease: "easeOut" }}
+                          onError={(e) => {
+                            console.log(`Image failed to load for user ${u.id}:`, {
+                              src: getImage(u as any, imageToShow),
+                              originalSrc: e.currentTarget.src,
+                            });
+                            // First try Telegram avatar, then default image
+                            if (
+                              u?.photoUrl &&
+                              u.photoUrl.trim() !== "" &&
+                              e.currentTarget.src !== u.photoUrl
+                            ) {
+                              console.log(
+                                `Falling back to Telegram avatar for user ${u.id}`,
+                              );
+                              e.currentTarget.src = u.photoUrl.trim();
+                            } else {
+                              console.log(`Using default image for user ${u.id}`);
+                              e.currentTarget.src =
+                                u?.sex === "male" ? "/men.jpeg" : "/women.jpeg";
+                            }
+                          }}
+                          onLoad={() => {
+                            console.log(
+                              `Image loaded successfully for user ${u.id}:`,
+                              getImage(u as any, imageToShow),
+                            );
+                          }}
                         />
                       </AnimatePresence>
                     </div>

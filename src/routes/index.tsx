@@ -26,9 +26,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   useScrollRestoration("home");
-
   const [selectedFilter, setSelectedFilter] = useState("Все");
-
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());

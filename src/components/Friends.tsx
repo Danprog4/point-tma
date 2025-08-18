@@ -21,7 +21,7 @@ export const Friends = ({
   useScrollRestoration("friends-list");
 
   return (
-    <div className="relative px-4 py-4">
+    <div className="relative px-4 pb-4">
       <input
         onChange={(e) => {
           setSearch(e.target.value);
@@ -31,7 +31,7 @@ export const Friends = ({
         placeholder="Поиск друзей"
         className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
       />
-      <div className="absolute top-7 right-7">
+      <div className="absolute top-3 right-7">
         <Search className="h-5 w-5 text-gray-400" />
       </div>
 

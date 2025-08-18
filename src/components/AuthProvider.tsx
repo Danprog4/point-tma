@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {typeof window !== 'undefined' && <ClientLocationSaver />}
+      {typeof window !== "undefined" && <ClientLocationSaver />}
       {children}
     </>
   );

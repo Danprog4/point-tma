@@ -63,13 +63,10 @@ function RouteComponent() {
       setGallery(user.gallery);
     }
     if (user?.birthday) {
-      try {
-        // Parse birthday string "dd.mm.yyyy" to Date
-        const [day, month, year] = user.birthday.split(".");
-        setBirthday(new Date(Number(year), Number(month) - 1, Number(day)));
-      } catch {
-        setBirthday(null);
-      }
+      // Parse birthday from "dd.mm.yyyy" format to Date object
+      const [day, month, year] = user.birthday.split(".");
+      const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+      setBirthday(parsedDate);
     }
     if (user?.city) {
       setCity(user.city);
@@ -82,6 +79,8 @@ function RouteComponent() {
     user?.bio,
     user?.photo,
     user?.gallery,
+    user?.birthday,
+    user?.city,
   ]);
 
   const isDisabled =
@@ -389,7 +388,6 @@ function RouteComponent() {
           </div>
         </div>
         <div className="w-full">
-          <div className="mb-2 text-sm text-[#ABABAB]">Дата рождения</div>
           <DatePicker2 value={birthday} setDate={setBirthday} />
         </div>
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">

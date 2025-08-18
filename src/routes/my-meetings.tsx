@@ -105,20 +105,6 @@ function RouteComponent() {
 
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
-      <div className="px-4">
-        <input
-          onChange={(e) => {
-            setSearch(e.target.value);
-          }}
-          value={search}
-          type="text"
-          placeholder="Поиск событий"
-          className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-        />
-        <div className="absolute top-7 right-7">
-          <Search className="h-5 w-5 text-gray-400" />
-        </div>
-      </div>
 
       <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-10 overflow-x-auto px-4">
         {filters.map((filter) => (
@@ -134,6 +120,20 @@ function RouteComponent() {
             {filter.name} ({filter.count})
           </button>
         ))}
+      </div>
+      <div className="px-4">
+        <input
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+          value={search}
+          type="text"
+          placeholder="Поиск событий"
+          className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+        />
+        <div className="absolute top-7 right-7">
+          <Search className="h-5 w-5 text-gray-400" />
+        </div>
       </div>
       {activeFilter === "Активные" && (
         <div className="flex flex-col gap-4">

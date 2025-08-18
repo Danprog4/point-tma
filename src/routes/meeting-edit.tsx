@@ -43,9 +43,11 @@ function RouteComponent() {
   const [base64, setBase64] = useState("");
   const [gallery, setGallery] = useState<string[]>([]);
   const [mainPhotoRaw, setMainPhotoRaw] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
+  const [time, setTime] = useState<Date | null>(null);
   const [calendarDate, setCalendarDate] = useState("");
+  const [birthday, setBirthday] = useState(""); // For DatePicker component
+  const [monthValue, setMonthValue] = useState(""); // For DatePicker component
   const [city, setCity] = useState("");
 
   // Step 2 state
@@ -87,29 +89,8 @@ function RouteComponent() {
   const updateMeeting = useMutation(
     trpc.meetings.updateMeeting.mutationOptions({
       onSuccess: () => {
-        // Invalidate all meeting-related queries
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getMeetingById.queryKey({ id: Number(meetId) }),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getMeetingsWithEvents.queryKey(),
-        });
         queryClient.invalidateQueries({
           queryKey: trpc.meetings.getMeetings.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getInvites.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getRequests.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getParticipants.queryKey(),
-        });
-
-        // Invalidate user data to refresh balance and inventory
-        queryClient.invalidateQueries({
-          queryKey: trpc.main.getUser.queryKey(),
         });
 
         toast.success("✅ Встреча обновлена!");
@@ -129,8 +110,31 @@ function RouteComponent() {
       setSubType(meeting.subType || "");
       setTitle(meeting.name || "");
       setDescription(meeting.description || "");
-      setDate(meeting.date || "");
-      setTime(meeting.time || "");
+      // Parse date string to Date object
+      if (meeting.date) {
+        try {
+          // Assuming date is in format "dd.mm.yyyy"
+          const [day, month, year] = meeting.date.split(".");
+          setDate(new Date(Number(year), Number(month) - 1, Number(day)));
+          setBirthday(meeting.date); // For DatePicker display
+          setMonthValue(month || ""); // Set month value for DatePicker
+        } catch {
+          setDate(null);
+        }
+      }
+
+      // Parse time string to Date object
+      if (meeting.time) {
+        try {
+          // Assuming time is in format "HH:mm"
+          const [hours, minutes] = meeting.time.split(":");
+          const timeDate = new Date();
+          timeDate.setHours(Number(hours), Number(minutes), 0, 0);
+          setTime(timeDate);
+        } catch {
+          setTime(null);
+        }
+      }
       setCity(meeting.city || "");
       setParticipants(meeting.maxParticipants || 0);
       setReward(meeting.reward || 0);
@@ -160,7 +164,7 @@ function RouteComponent() {
     try {
       const payload = {
         id: Number(meetId),
-        date,
+        date: date ? date.toLocaleDateString("ru-RU") : "", // Convert Date to dd.mm.yyyy
         name: title,
         description,
         type,
@@ -173,15 +177,11 @@ function RouteComponent() {
         gallery,
         inventory: selectedInventory,
         important,
-        time,
+        time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "", // Convert Date to HH:mm
         city,
       };
 
       await updateMeeting.mutateAsync(payload);
-
-      queryClient.invalidateQueries({
-        queryKey: trpc.meetings.getMeetingById.queryKey({ id: Number(meetId) }),
-      });
     } catch (error: any) {
       toast.error(`❌ Ошибка обновления: ${error.message}`);
     }
@@ -365,7 +365,10 @@ function RouteComponent() {
             typeOfEvent={typeOfEvent}
             setTypeOfEvent={setTypeOfEvent}
             date={date}
-            setDate={setDate}
+            setDate={(newDate: Date) => {
+              setDate(newDate);
+              setBirthday(newDate.toLocaleDateString("ru-RU"));
+            }}
             time={time}
             setTime={setTime}
             setIsDisabled={setIsDisabled}
@@ -391,6 +394,9 @@ function RouteComponent() {
             setSelectedItems={setSelectedItems}
             setIsDisabled={setIsDisabled}
             selectedItems={selectedItems}
+            city={city}
+            setCity={setCity}
+            user={user!}
           />
         )}
 

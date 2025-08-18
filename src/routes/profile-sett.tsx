@@ -4,6 +4,7 @@ import imageCompression from "browser-image-compression";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import DatePicker2 from "~/components/DatePicker2";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { PlusIcon } from "~/components/Icons/Plus";
 import { steps } from "~/config/steps";
@@ -26,7 +27,7 @@ function RouteComponent() {
   const [name, setName] = useState("");
 
   const [email, setEmail] = useState<string>("");
-  const [birthday, setBirthday] = useState<string>("");
+  const [birthday, setBirthday] = useState<Date | null>(null);
   const [city, setCity] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [base64, setBase64] = useState<string | null>(null);
@@ -62,25 +63,13 @@ function RouteComponent() {
       setGallery(user.gallery);
     }
     if (user?.birthday) {
-      // при загрузке конвертируем числовой месяц в название
-      const [day, monthStr, year] = user.birthday.split(".");
-      const monthNames = [
-        "Январь",
-        "Февраль",
-        "Март",
-        "Апрель",
-        "Май",
-        "Июнь",
-        "Июль",
-        "Август",
-        "Сентябрь",
-        "Октябрь",
-        "Ноябрь",
-        "Декабрь",
-      ];
-      const monthIndex = parseInt(monthStr, 10) - 1;
-      const monthName = monthNames[monthIndex] || monthStr || "";
-      setBirthday(`${day}.${monthName}.${year}`);
+      try {
+        // Parse birthday string "dd.mm.yyyy" to Date
+        const [day, month, year] = user.birthday.split(".");
+        setBirthday(new Date(Number(year), Number(month) - 1, Number(day)));
+      } catch {
+        setBirthday(null);
+      }
     }
     if (user?.city) {
       setCity(user.city);
@@ -102,29 +91,11 @@ function RouteComponent() {
     phone === (user?.phone ?? "") &&
     bio === (user?.bio ?? "") &&
     (() => {
-      if (!user?.birthday) return birthday === "";
-
-      // Convert user's numeric birthday to month name format for comparison with current state
-      const [userDay, userMonthStr, userYear] = user.birthday.split(".");
-      const monthNames = [
-        "Январь",
-        "Февраль",
-        "Март",
-        "Апрель",
-        "Май",
-        "Июнь",
-        "Июль",
-        "Август",
-        "Сентябрь",
-        "Октябрь",
-        "Ноябрь",
-        "Декабрь",
-      ];
-      const userMonthIndex = parseInt(userMonthStr, 10) - 1;
-      const userMonthName = monthNames[userMonthIndex] || userMonthStr || "";
-      const userBirthdayWithMonthName = `${userDay}.${userMonthName}.${userYear}`;
-
-      return birthday === userBirthdayWithMonthName;
+      if (!user?.birthday && !birthday) return true;
+      if (!user?.birthday || !birthday) return false;
+      const [day, month, year] = user.birthday.split(".");
+      const userDate = new Date(Number(year), Number(month) - 1, Number(day));
+      return birthday.getTime() === userDate.getTime();
     })() &&
     city === (user?.city ?? "") &&
     !selectedFile &&
@@ -153,28 +124,6 @@ function RouteComponent() {
     }),
   );
 
-  // month dropdown data and placeholder control
-  const monthOptions = [
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
-  ];
-  const monthValue = birthday.split(".")[1] || "";
-  const filteredMonths =
-    monthValue.length > 0
-      ? monthOptions.filter((m) => m.toLowerCase().includes(monthValue.toLowerCase()))
-      : [];
-  const isBirthdayEmpty = birthday.split(".").every((p) => !p);
-
   const handleUpdateProfile = async () => {
     try {
       const filteredGallery = gallery.filter(
@@ -182,26 +131,13 @@ function RouteComponent() {
       );
       const photoToSend = mainPhotoRaw;
 
-      // Format birthday as dd.MM.yyyy
-      const parts = birthday.split(".");
-      const dayStr = parts[0]?.padStart(2, "0") || "";
-      const monthInput = parts[1] || "";
-      let monthNumber;
-      if (/^\d+$/.test(monthInput)) {
-        monthNumber = monthInput.padStart(2, "0");
-      } else {
-        const idx = monthOptions.indexOf(monthInput);
-        monthNumber = idx >= 0 ? String(idx + 1).padStart(2, "0") : monthInput;
-      }
-      const yearStr = parts[2] || "";
-
-      // Проверка правильности формата даты
-      if (!dayStr || !monthNumber || !yearStr) {
-        toast.error("Некорректная дата рождения");
+      // Convert birthday Date to string format dd.mm.yyyy
+      if (!birthday) {
+        toast.error("Введите дату рождения");
         return;
       }
 
-      const formattedBirthday = `${dayStr}.${monthNumber}.${yearStr}`;
+      const formattedBirthday = birthday.toLocaleDateString("ru-RU");
       const payload = {
         email: email || "",
         phone: phone || "",
@@ -452,74 +388,9 @@ function RouteComponent() {
             />
           </div>
         </div>
-        <div className="relative flex w-full gap-2">
-          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-            <div className="flex w-full flex-col items-start text-sm">
-              <div className="text-[#ABABAB]">День</div>
-              <input
-                type="number"
-                value={birthday ? birthday.split(".")[0] || "" : ""}
-                onChange={(e) => {
-                  const day = e.target.value;
-                  const parts = birthday ? birthday.split(".") : ["", "", ""];
-                  setBirthday(`${day}.${parts[1] || ""}.${parts[2] || ""}`);
-                }}
-                className="w-full border-none bg-transparent text-black outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-            <div className="relative w-full">
-              <div className="text-[#ABABAB]">Месяц</div>
-              <input
-                type="text"
-                value={monthValue}
-                onClick={() => {
-                  if (monthValue) {
-                    const [d, , y] = birthday.split(".");
-                    setBirthday(`${d || ""}.${""}.${y || ""}`);
-                  }
-                }}
-                onChange={(e) => {
-                  const m = e.target.value;
-                  const [d, , y] = birthday.split(".");
-                  setBirthday(`${d || ""}.${m}.${y || ""}`);
-                }}
-                className="w-full border-none bg-transparent text-black outline-none"
-              />
-              {filteredMonths.length > 0 && !monthOptions.includes(monthValue) && (
-                <ul className="absolute top-full right-0 z-10 mt-1 max-h-40 w-[100px] overflow-auto rounded-lg border bg-white shadow-lg">
-                  {filteredMonths.map((m) => (
-                    <li
-                      key={m}
-                      onClick={() => {
-                        const [d, , y] = birthday.split(".");
-                        setBirthday(`${d || ""}.${m}.${y || ""}`);
-                      }}
-                      className="cursor-pointer px-2 py-1 hover:bg-gray-100"
-                    >
-                      {m}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-1 items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-            <div className="flex w-full flex-col items-start text-sm">
-              <div className="text-[#ABABAB]">Год</div>
-              <input
-                type="number"
-                value={birthday ? birthday.split(".")[2] || "" : ""}
-                onChange={(e) => {
-                  const year = e.target.value;
-                  const parts = birthday ? birthday.split(".") : ["", "", ""];
-                  setBirthday(`${parts[0] || ""}.${parts[1] || ""}.${year}`);
-                }}
-                className="w-full border-none bg-transparent text-black outline-none"
-              />
-            </div>
-          </div>
+        <div className="w-full">
+          <div className="mb-2 text-sm text-[#ABABAB]">Дата рождения</div>
+          <DatePicker2 value={birthday} setDate={setBirthday} />
         </div>
         <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
           <div className="flex w-full flex-col items-start text-sm">

@@ -127,7 +127,8 @@ export const getYMapsReactComponents = async () => {
   // Add controls if available
   if (ymaps3Controls) {
     components.YMapControls = reactify.module(ymaps3Controls).YMapControls;
-    components.YMapGeolocationControl = reactify.module(ymaps3Controls).YMapGeolocationControl;
+    components.YMapGeolocationControl =
+      reactify.module(ymaps3Controls).YMapGeolocationControl;
   }
 
   return components;

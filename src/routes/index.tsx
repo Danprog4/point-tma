@@ -91,9 +91,10 @@ function Home() {
         {showMapTest && (
           <div className="mt-3">
             <YandexMap
-              center={[37.618423, 55.751244]}
               zoom={10}
               className="h-60 w-full rounded-lg border"
+              enableGeolocation={true}
+              autoGeolocation={true}
               onLocationSelect={(coords) => {
                 console.log("🗺️ Home Test Map: click", coords);
                 setClickedCoords(coords);

@@ -105,19 +105,30 @@ export const getYMapsReactComponents = async () => {
   const ymaps3 = await initYMaps();
   await ymaps3.ready;
 
-  const [ymaps3React] = await Promise.all([
+  const [ymaps3React, ymaps3Controls] = await Promise.all([
     ymaps3.import("@yandex/ymaps3-reactify"),
+    ymaps3.import("@yandex/ymaps3-controls").catch(() => null), // Fallback if controls not available
     ymaps3.ready,
   ]);
 
   const reactify = ymaps3React.reactify.bindTo(React, ReactDOM);
 
-  return {
+  const components = {
     YMap: reactify.module(ymaps3).YMap,
     YMapDefaultSchemeLayer: reactify.module(ymaps3).YMapDefaultSchemeLayer,
     YMapDefaultFeaturesLayer: reactify.module(ymaps3).YMapDefaultFeaturesLayer,
     YMapListener: reactify.module(ymaps3).YMapListener,
     YMapMarker: reactify.module(ymaps3).YMapMarker,
+    YMapControls: null,
+    YMapGeolocationControl: null,
     reactify,
   };
+
+  // Add controls if available
+  if (ymaps3Controls) {
+    components.YMapControls = reactify.module(ymaps3Controls).YMapControls;
+    components.YMapGeolocationControl = reactify.module(ymaps3Controls).YMapGeolocationControl;
+  }
+
+  return components;
 };

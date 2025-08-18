@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
-import { memo } from "react";
 import { Clock, MapPin } from "lucide-react";
+import { memo } from "react";
+import { formatDistance } from "~/lib/utils/calculateDistance";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { getTypeColor } from "~/routes/quests";
@@ -9,13 +10,13 @@ export const MeetCard = memo(function MeetCard({
   meet,
   isNavigable = true,
   id,
-
+  distance,
   onClick,
 }: {
   meet?: any;
   isNavigable?: boolean;
   id?: number;
-
+  distance?: number; // Расстояние в километрах
   onClick?: () => void;
 }) {
   const navigate = useNavigate();
@@ -75,6 +76,13 @@ export const MeetCard = memo(function MeetCard({
               <span className="text-xs text-black">{meet.location || "Москва"}</span>
             </div>
           </div>
+          {distance !== undefined && (
+            <div className="flex items-center gap-1">
+              <span className="text-xs font-medium text-blue-600">
+                {formatDistance(distance)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

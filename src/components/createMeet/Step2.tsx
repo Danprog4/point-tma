@@ -10,6 +10,11 @@ import { partiesData } from "~/config/party";
 import { questsData } from "~/config/quests";
 import { User } from "~/db/schema";
 import { EventsDrawer } from "~/EventsDrawer";
+import { useGeolocation } from "~/hooks/useGeolocation";
+import {
+  calculateDistanceFromCoords,
+  formatDistance,
+} from "~/lib/utils/calculateDistance";
 import { getAllEvents } from "~/lib/utils/getAllEvents";
 import { useTRPC } from "~/trpc/init/react";
 import { Clocks } from "../Icons/Clocks";
@@ -64,6 +69,11 @@ export const Step2 = ({
   setCity: (city: string) => void;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
+
+  // Геолокация для расчета расстояний
+  const { coordinates: userLocation } = useGeolocation({
+    autoStart: true,
+  });
 
   const [isOpen, setIsOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
@@ -377,12 +387,21 @@ export const Step2 = ({
                   <div className="mt-3 rounded-lg bg-gray-50 p-3">
                     <div className="mb-3">
                       <YandexMap
-                        center={mapCenter || [37.618423, 55.751244]}
+                        center={mapCenter || undefined}
                         zoom={10}
                         className="h-60 w-full overflow-hidden rounded-lg"
+                        enableGeolocation={true}
+                        autoGeolocation={!mapCenter} // Только если центр не задан
+                        preventClickSelection={true} // Отключаем автовыбор при клике
+                        showSelectButton={true} // Показываем кнопку выбора
                         onLocationSelect={(coords) =>
                           handleMapLocationSelect(index, coords)
                         }
+                        onGeolocationSuccess={(coords) => {
+                          // При успешной геолокации просто центрируем карту, но не выбираем адрес
+                          console.log("🗺️ Step2: геолокация получена", coords);
+                          // Можно добавить логику для центрирования карты или другие действия
+                        }}
                         markers={extractMarkersFromSuggest()}
                       />
                     </div>
@@ -417,18 +436,56 @@ export const Step2 = ({
                                 onClick={() => handleResultSelect(result, index)}
                               >
                                 <div className="mb-2">
-                                  <h4 className="text-base font-semibold text-gray-900">
-                                    {typeof result.title === "string"
-                                      ? result.title
-                                      : result.title?.text || "Название не найдено"}
-                                  </h4>
-                                  {result.subtitle && (
-                                    <p className="text-sm text-gray-600">
-                                      {typeof result.subtitle === "string"
-                                        ? result.subtitle
-                                        : result.subtitle?.text || ""}
-                                    </p>
-                                  )}
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h4 className="text-base font-semibold text-gray-900">
+                                        {typeof result.title === "string"
+                                          ? result.title
+                                          : result.title?.text || "Название не найдено"}
+                                      </h4>
+                                      {result.subtitle && (
+                                        <p className="text-sm text-gray-600">
+                                          {typeof result.subtitle === "string"
+                                            ? result.subtitle
+                                            : result.subtitle?.text || ""}
+                                        </p>
+                                      )}
+                                    </div>
+                                    {userLocation && result.uri && (
+                                      <div className="ml-2 flex-shrink-0">
+                                        {(() => {
+                                          try {
+                                            // Извлекаем координаты из URI
+                                            const coords =
+                                              result.uri.match(/ll=([^&]+)/)?.[1];
+                                            if (coords) {
+                                              const [lng, lat] = coords
+                                                .split(",")
+                                                .map(Number);
+                                              if (!isNaN(lng) && !isNaN(lat)) {
+                                                const distance =
+                                                  calculateDistanceFromCoords(
+                                                    userLocation,
+                                                    [lng, lat],
+                                                  );
+                                                return (
+                                                  <span className="text-xs font-medium text-blue-600">
+                                                    {formatDistance(distance)}
+                                                  </span>
+                                                );
+                                              }
+                                            }
+                                          } catch (e) {
+                                            console.warn(
+                                              "Ошибка при расчете расстояния:",
+                                              e,
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
 
                                 {/* Теги */}

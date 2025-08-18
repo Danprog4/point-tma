@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { useState } from "react";
 import { Drawer } from "vaul";
 
 interface EventsDrawerProps {
@@ -45,7 +46,7 @@ export function EventsDrawer({
   handleAddToCalendar,
 }: EventsDrawerProps) {
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
-
+  const [search, setSearch] = useState<string>("");
   const clickHandler = (item: any) => {
     if (handleAddToCalendar) {
       handleAddToCalendar(item);
@@ -110,36 +111,52 @@ export function EventsDrawer({
                 </button>
               ))}
             </div>
+            <input
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+              value={search}
+              type="text"
+              placeholder="Поиск событий"
+              className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            />
+            <div className="absolute top-33 right-7">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
             <div className="grid grid-cols-2 gap-2">
-              {data.map((item, dataIdx) => (
-                <div
-                  key={`${item.id}-${dataIdx}`}
-                  onClick={() => {
-                    clickHandler(item);
-                  }}
-                >
-                  <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute bottom-2 left-2 flex gap-1 text-black">
-                      <div className="rounded-full bg-white p-1 text-sm">{item.date}</div>
-                      <div className="rounded-full bg-white p-1 text-sm">
-                        {item.price}
+              {data
+                .filter((item) => item.title.toLowerCase().includes(search.toLowerCase()))
+                .map((item, dataIdx) => (
+                  <div
+                    key={`${item.id}-${dataIdx}`}
+                    onClick={() => {
+                      clickHandler(item);
+                    }}
+                  >
+                    <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute bottom-2 left-2 flex gap-1 text-black">
+                        <div className="rounded-full bg-white p-1 text-sm">
+                          {item.date}
+                        </div>
+                        <div className="rounded-full bg-white p-1 text-sm">
+                          {item.price}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col p-2">
+                      <div className="flex text-start">{item.title}</div>
+                      <div className="text-sm text-gray-500">
+                        {item.description?.slice(0, 10) +
+                          (item.description?.length > 10 ? "..." : "")}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col p-2">
-                    <div className="flex text-start">{item.title}</div>
-                    <div className="text-sm text-gray-500">
-                      {item.description?.slice(0, 10) +
-                        (item.description?.length > 10 ? "..." : "")}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </Drawer.Content>

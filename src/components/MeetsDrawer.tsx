@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
 import { Coin } from "~/components/Icons/Coin";
@@ -31,7 +31,7 @@ export function MeetsDrawer({
   const [type, setType] = useState<string>("pt-38");
   const [activeFilter, setActiveFilter] = useState<string>("Все");
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
-
+  const [search, setSearch] = useState<string>("");
   let data: any[] = [];
 
   switch (activeFilter) {
@@ -107,13 +107,18 @@ export function MeetsDrawer({
                 className="absolute h-6 w-6 cursor-pointer"
                 onClick={() => onOpenChange(false)}
               />
-              <div className="mx-auto text-lg font-bold">Куда вы хотите пригласить?</div>
+              <div className="mx-auto text-lg font-bold">
+                {calendarDate ? "Выберите встречу" : "Куда вы хотите пригласить?"}
+              </div>
             </div>
 
             <div className="pt-12">
               <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto">
                 <button
-                  onClick={() => setType("pt-38")}
+                  onClick={() => {
+                    setType("pt-38");
+                    setSearch("");
+                  }}
                   className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
                     type === "pt-38"
                       ? "bg-black text-white"
@@ -133,7 +138,10 @@ export function MeetsDrawer({
                   Создать свою встречу
                 </button>
                 <button
-                  onClick={() => setType("Мои встречи")}
+                  onClick={() => {
+                    setType("Мои встречи");
+                    setSearch("");
+                  }}
                   className={`flex-1 rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
                     type === "Мои встречи"
                       ? "bg-black text-white"
@@ -146,6 +154,18 @@ export function MeetsDrawer({
 
               {type === "pt-38" && (
                 <>
+                  <input
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                    }}
+                    value={search}
+                    type="text"
+                    placeholder="Поиск событий"
+                    className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  />
+                  <div className="absolute top-33 right-7">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
                   <div className="scrollbar-hidden mb-4 flex w-full items-center gap-6 overflow-x-auto">
                     {filters.map((filter) => (
                       <button
@@ -162,49 +182,69 @@ export function MeetsDrawer({
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    {data.map((item, index) => (
-                      <div
-                        key={index}
-                        onClick={() => handleReadyEventClick(item)}
-                        className="cursor-pointer"
-                      >
-                        <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="h-full w-full object-cover"
-                          />
-                          <div className="absolute bottom-2 left-2 flex gap-1 text-black">
-                            <div className="rounded-full bg-white p-1 text-xs">
-                              {item.date}
+                    {data
+                      .filter((item) =>
+                        item.title.toLowerCase().includes(search.toLowerCase()),
+                      )
+                      .map((item, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleReadyEventClick(item)}
+                          className="cursor-pointer"
+                        >
+                          <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="absolute bottom-2 left-2 flex gap-1 text-black">
+                              <div className="rounded-full bg-white p-1 text-xs">
+                                {item.date}
+                              </div>
+                              <div className="rounded-full bg-white p-1 text-xs">
+                                {item.price}
+                              </div>
                             </div>
-                            <div className="rounded-full bg-white p-1 text-xs">
-                              {item.price}
+                          </div>
+                          <div className="flex flex-col p-2">
+                            <div className="flex text-start">{item.title}</div>
+                            <div className="text-sm text-gray-500">
+                              {item.description?.slice(0, 10) +
+                                (item.description?.length > 10 ? "..." : "")}
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col p-2">
-                          <div className="flex text-start">{item.title}</div>
-                          <div className="text-sm text-gray-500">
-                            {item.description?.slice(0, 10) +
-                              (item.description?.length > 10 ? "..." : "")}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </>
               )}
 
               {type === "Мои встречи" && (
                 <div className="flex flex-col gap-4">
+                  <input
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                    }}
+                    value={search}
+                    type="text"
+                    placeholder="Поиск встреч"
+                    className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+                  />
+                  <div className="absolute top-33 right-7">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
                   {meetings && meetings.length > 0 ? (
                     meetings
+                      .filter((meeting: any) =>
+                        meeting?.name?.toLowerCase().includes(search.toLowerCase()),
+                      )
                       ?.sort(
                         (a, b) =>
                           new Date(b.createdAt!).getTime() -
                           new Date(a.createdAt!).getTime(),
                       )
+
                       .map((meeting: any) => (
                         <div key={meeting?.id}>
                           <div

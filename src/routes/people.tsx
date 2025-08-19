@@ -4,10 +4,15 @@ import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
-import PeopleDrawer from "~/components/PeopleDrawer";
 import { PeopleHeader, UsersList, ViewToggle } from "~/components/people";
+import PeopleDrawer from "~/components/PeopleDrawer";
 import { User } from "~/db/schema";
-import { usePeopleActions, usePeopleComplaints, usePeopleData, usePeopleGallery } from "~/hooks";
+import {
+  usePeopleActions,
+  usePeopleComplaints,
+  usePeopleData,
+  usePeopleGallery,
+} from "~/hooks";
 import { usePlatform } from "~/hooks/usePlatform";
 
 export const Route = createFileRoute("/people")({
@@ -18,7 +23,7 @@ function RouteComponent() {
   // Restore saved scroll position (if any) when returning to the list
   useScrollRestoration("people");
   const isMobile = usePlatform();
-  
+
   // State
   const [search, setSearch] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -49,7 +54,10 @@ function RouteComponent() {
   } = usePeopleComplaints(user);
 
   // Computed data
-  const filteredUsers = useMemo(() => getFilteredUsers(search), [getFilteredUsers, search]);
+  const filteredUsers = useMemo(
+    () => getFilteredUsers(search),
+    [getFilteredUsers, search],
+  );
   const usersWithDistances = useMemo(
     () => getUsersWithDistances(filteredUsers || [], user?.coordinates || null),
     [getUsersWithDistances, filteredUsers, user?.coordinates],
@@ -117,7 +125,7 @@ function RouteComponent() {
         user={user as User}
         isComplained={selectedUser ? isComplained(selectedUser) : false}
       />
-      
+
       {galleryData.isFullScreen && galleryData.fullScreenPhotos.length > 0 && (
         <FullScreenPhoto
           allPhotos={galleryData.fullScreenPhotos}
@@ -126,7 +134,7 @@ function RouteComponent() {
           setIsFullScreen={galleryData.setIsFullScreen}
         />
       )}
-      
+
       {isComplaintOpen && (
         <ComplaintDrawer
           handleSendComplaint={() => {

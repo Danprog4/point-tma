@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { calculateDistanceFromCoords } from "~/lib/utils/calculateDistance";
 import { useTRPC } from "~/trpc/init/react";
@@ -25,7 +25,10 @@ export const usePeopleData = () => {
     });
   };
 
-  const getUsersWithDistances = (filteredUsers: any[], userCoordinates?: [number, number] | null) => {
+  const getUsersWithDistances = (
+    filteredUsers: any[],
+    userCoordinates?: [number, number] | null,
+  ) => {
     if (!userCoordinates || !filteredUsers) {
       return filteredUsers?.map((u) => ({ ...u, distance: null })) || [];
     }
@@ -50,12 +53,14 @@ export const usePeopleData = () => {
   };
 
   const isFavorite = useMemo(
-    () => (favUserId: number) => Boolean(userFavorites?.some((f) => f.toUserId === favUserId)),
+    () => (favUserId: number) =>
+      Boolean(userFavorites?.some((f) => f.toUserId === favUserId)),
     [userFavorites],
   );
 
   const isComplained = useMemo(() => {
-    return (userId: number) => Boolean(complaints?.some((c) => c.type === "user" && c.toUserId === userId));
+    return (userId: number) =>
+      Boolean(complaints?.some((c) => c.type === "user" && c.toUserId === userId));
   }, [complaints]);
 
   return {

@@ -1,6 +1,6 @@
 import { ArrowLeft, Calendar, Clock, MapPin, Tag, User, X } from "lucide-react";
 import { Drawer } from "vaul";
-import { FastMeet } from "~/db/schema";
+import { FastMeet, User as UserType } from "~/db/schema";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { eventTypes } from "~/types/events";
 
@@ -8,10 +8,12 @@ export default function FastMeetDrawer({
   open,
   onOpenChange,
   meet,
+  currentUser,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meet: FastMeet | null;
+  currentUser: UserType | null;
 }) {
   // Don't render anything if meet is null
   if (!meet) {
@@ -45,11 +47,13 @@ export default function FastMeetDrawer({
 
   const eventTypeInfo = meet.type ? getEventTypeInfo(meet.type) : null;
 
+  const isUsersMeet = meet.userId === currentUser?.id;
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit max-h-[85vh] flex-col rounded-t-[20px] bg-white">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit max-h-[85vh] flex-col rounded-t-[20px] bg-white pb-20">
           {/* Header */}
           <div className="flex items-center justify-between p-4 pb-2">
             <ArrowLeft className="h-6 w-6 text-transparent" />
@@ -63,7 +67,7 @@ export default function FastMeetDrawer({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 pb-6">
+          <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-6">
             {/* Title and Description */}
             <div className="mb-6">
               <h2 className="mb-2 text-xl font-bold text-gray-900">{meet.name}</h2>
@@ -220,9 +224,9 @@ export default function FastMeetDrawer({
             </div>
 
             {/* Action Button */}
-            <div className="mt-6">
+            <div className="fixed right-4 bottom-6 left-4">
               <button className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700">
-                Присоединиться к встрече
+                {!isUsersMeet ? "Присоединиться к встрече" : "О встрече"}
               </button>
             </div>
           </div>

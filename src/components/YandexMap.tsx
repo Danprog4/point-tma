@@ -11,6 +11,7 @@ interface MarkerWithDistance {
   label?: string;
   onClick?: () => void;
   meetData?: any;
+  color?: string; // Custom color for the marker
 }
 
 interface YandexMapProps {
@@ -396,14 +397,14 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                 onClick={(e) => {
                   e.stopPropagation(); // Предотвращаем всплытие события к карте
                   if (marker.onClick) {
-                    console.log("🟣 YandexMap: маркер кликнут", marker);
+                    console.log("📍 YandexMap: маркер кликнут", marker);
                     marker.onClick();
                   }
                 }}
                 style={{
                   width: 12,
                   height: 12,
-                  background: "#9924FF",
+                  background: marker.color || "#9924FF", // Use custom color or default purple
                   borderRadius: "50%",
                   border: "2px solid white",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.3)",

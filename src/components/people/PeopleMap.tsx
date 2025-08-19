@@ -27,7 +27,8 @@ export const PeopleMap = ({
   const handleFastMeetClick = (meet: any) => {
     setIsOpen(true);
     setMeet(meet);
-    console.log("🟣 Клик на быструю встречу:", {
+    const isUsersMeet = meet.userId === currentUser?.id;
+    console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
       id: meet.id,
       name: meet.name,
       description: meet.description,
@@ -35,19 +36,24 @@ export const PeopleMap = ({
       author: meet.author,
       createdAt: meet.createdAt,
       locations: meet.locations,
+      isUsersMeet,
     });
   };
 
-  // Prepare fast meet markers (purple dots) - ONLY show fast meets, not users
+  // Prepare fast meet markers - Green for user's own meets, purple for others
   const fastMeetMarkers =
     fastMeets
       ?.filter((meet) => meet?.coordinates)
-      .map((meet) => ({
-        coordinates: meet.coordinates as [number, number],
-        label: meet.name || "Быстрая встреча",
-        onClick: () => handleFastMeetClick(meet),
-        meetData: meet, // Сохраняем данные встречи для обработки клика
-      })) || [];
+      .map((meet) => {
+        const isUsersMeet = meet.userId === currentUser?.id;
+        return {
+          coordinates: meet.coordinates as [number, number],
+          label: meet.name || "Быстрая встреча",
+          onClick: () => handleFastMeetClick(meet),
+          meetData: meet, // Сохраняем данные встречи для обработки клика
+          color: isUsersMeet ? "#10B981" : "#9924FF", // Green for user's meets, purple for others
+        };
+      }) || [];
 
   // Combine all markers
   const allMarkers = [...userMarkers, ...fastMeetMarkers];
@@ -89,7 +95,12 @@ export const PeopleMap = ({
           Check-In
         </button>
       </div>
-      <FastMeetDrawer open={isOpen} onOpenChange={setIsOpen} meet={meet} />
+      <FastMeetDrawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        meet={meet}
+        currentUser={currentUser}
+      />
     </div>
   );
 };

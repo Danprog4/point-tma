@@ -251,6 +251,11 @@ export const meetingRouter = createTRPCRouter({
     return meetingsWithEvents;
   }),
 
+  getFastMeets: procedure.query(async ({ ctx }) => {
+    const fastMeets = await db.query.fastMeetTable.findMany({});
+    return fastMeets;
+  }),
+
   getMeetingById: procedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {

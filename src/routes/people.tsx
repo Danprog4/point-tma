@@ -4,7 +4,7 @@ import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
-import { PeopleHeader, UsersList, ViewToggle } from "~/components/people";
+import { PeopleHeader, PeopleMap, UsersList, ViewToggle } from "~/components/people";
 import PeopleDrawer from "~/components/PeopleDrawer";
 import { User } from "~/db/schema";
 import {
@@ -35,6 +35,7 @@ function RouteComponent() {
   const {
     users,
     user,
+    fastMeets,
     getFilteredUsers,
     getUsersWithDistances,
     getSortedUsers,
@@ -112,6 +113,15 @@ function RouteComponent() {
           isFavorite={isFavorite}
           onFavoriteClick={(userId) => handleToFavorites(userId, isFavorite(userId))}
           onMoreClick={handleUserMoreClick}
+        />
+      )}
+
+      {!isList && (
+        <PeopleMap
+          users={sortedUsers || []}
+          currentUser={user}
+          fastMeets={fastMeets || []}
+          className="px-4"
         />
       )}
 

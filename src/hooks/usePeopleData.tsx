@@ -12,6 +12,14 @@ export const usePeopleData = () => {
   const { data: userFavorites } = useQuery(trpc.main.getUserFavorites.queryOptions());
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
 
+  // Fast meets for map display
+  const { data: fastMeets } = useQuery(
+    trpc.meetings.getFastMeets?.queryOptions() ?? {
+      queryKey: ["fastMeets"],
+      queryFn: () => Promise.resolve([]),
+    },
+  );
+
   const getFilteredUsers = (search: string) => {
     return users?.filter((u) => {
       if (user?.notInterestedIds?.includes(u.id)) {
@@ -68,6 +76,7 @@ export const usePeopleData = () => {
     user,
     userFavorites,
     complaints,
+    fastMeets,
     queryClient,
     trpc,
     getFilteredUsers,

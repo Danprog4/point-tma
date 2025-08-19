@@ -489,13 +489,37 @@ export const Step2 = ({
         return false;
       }
 
-      // Для isFastMeet: обязательно должен быть выбран адрес из карты (isCustom=true)
+      // Для isFastMeet: обязательно должен быть выбран адрес из карты (isCustom=true) И время
       if (isFastMeet) {
         if (!loc.isCustom) {
           console.log(`❌ FastMeet Location ${idx}: Must be selected from map`, loc);
           return false;
         }
-        // Для FastMeet время не обязательно
+
+        // Для FastMeet время обязательно
+        const hasStartTime = loc.starttime?.trim();
+        const hasEndTime = loc.endtime?.trim();
+
+        if (!hasStartTime || !hasEndTime) {
+          console.log(`❌ FastMeet Location ${idx}: Missing time`, {
+            hasStartTime: !!hasStartTime,
+            hasEndTime: !!hasEndTime,
+          });
+          return false;
+        }
+
+        // Проверяем валидность времени
+        if (!isValidTime(loc.starttime) || !isValidTime(loc.endtime)) {
+          console.log(`❌ FastMeet Location ${idx}: Invalid time format`);
+          return false;
+        }
+
+        // Проверяем порядок времени
+        if (!isStartBeforeEnd(loc.starttime, loc.endtime)) {
+          console.log(`❌ FastMeet Location ${idx}: Start time must be before end time`);
+          return false;
+        }
+
         return true;
       }
 
@@ -966,8 +990,9 @@ export const Step2 = ({
                               setLocations(newLocations);
                             }}
                             placeholder={
-                              selectedItems.some((item) => item.index === index)
-                                ? "Начало"
+                              selectedItems.some((item) => item.index === index) ||
+                              isFastMeet
+                                ? "Начало *"
                                 : "Начало *"
                             }
                           />
@@ -997,8 +1022,9 @@ export const Step2 = ({
                               setLocations(newLocations);
                             }}
                             placeholder={
-                              selectedItems.some((item) => item.index === index)
-                                ? "Завершение"
+                              selectedItems.some((item) => item.index === index) ||
+                              isFastMeet
+                                ? "Завершение *"
                                 : "Завершение *"
                             }
                           />
@@ -1006,33 +1032,7 @@ export const Step2 = ({
                       </div>
                     </div>
                     {/* Показываем ошибки валидации времени */}
-                    {!selectedItems.some((item) => item.index === index) &&
-                      !locations[index]?.starttime &&
-                      !isFastMeet && (
-                        <div className="mt-1 text-sm text-red-500">
-                          Время начала обязательно для кастомных мест
-                        </div>
-                      )}
-                    {!selectedItems.some((item) => item.index === index) &&
-                      !locations[index]?.endtime &&
-                      locations[index]?.starttime &&
-                      !isFastMeet && (
-                        <div className="mt-1 text-sm text-red-500">
-                          Время завершения обязательно для кастомных мест
-                        </div>
-                      )}
-                    {locations[index]?.starttime &&
-                      !isValidTime(locations[index].starttime) && (
-                        <div className="mt-1 text-sm text-red-500">
-                          Неверный формат времени начала (ЧЧ:ММ)
-                        </div>
-                      )}
-                    {locations[index]?.endtime &&
-                      !isValidTime(locations[index].endtime) && (
-                        <div className="mt-1 text-sm text-red-500">
-                          Неверный формат времени завершения (ЧЧ:ММ)
-                        </div>
-                      )}
+
                     {locations[index]?.starttime &&
                       locations[index]?.endtime &&
                       isValidTime(locations[index].starttime) &&

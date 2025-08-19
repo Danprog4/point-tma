@@ -15,6 +15,7 @@ export const PeopleMap = ({
   className,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
+
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
 

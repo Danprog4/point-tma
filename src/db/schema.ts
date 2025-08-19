@@ -66,6 +66,9 @@ export const fastMeetTable = pgTable("fast_meets", {
       coordinates: [number, number];
     }>
   >(),
+  type: varchar("type", { length: 255 }),
+  subType: varchar("sub_type", { length: 255 }),
+  tags: jsonb("tags").$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -242,3 +245,6 @@ export type NewHistory = typeof historyTable.$inferInsert;
 
 export type MeetMessage = typeof meetMessagesTable.$inferSelect;
 export type NewMeetMessage = typeof meetMessagesTable.$inferInsert;
+
+export type FastMeet = typeof fastMeetTable.$inferSelect;
+export type NewFastMeet = typeof fastMeetTable.$inferInsert;

@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Step2 } from "~/components/createMeet/Step2";
+import { CreateMeetDrawer } from "~/components/CreateMeetDrawer";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
+import { TagsDrawer } from "~/components/TagsDrawer";
 import { User } from "~/db/schema";
 import { usePeopleData } from "~/hooks";
 import { useTRPC } from "~/trpc/init/react";
@@ -43,7 +45,11 @@ function RouteComponent() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isTagsDrawerOpen, setIsTagsDrawerOpen] = useState(false);
+  const [type, setType] = useState("");
+  const [subType, setSubType] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const createFastMeet = useMutation(
     trpc.meetings.createFastMeet.mutationOptions({
       onSuccess: () => {
@@ -161,7 +167,14 @@ function RouteComponent() {
       name: title,
       description,
       locations,
+      type,
+      subType,
+      tags: tags,
     });
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter((t) => t !== tag));
   };
   return (
     <div className="px-4">
@@ -173,6 +186,18 @@ function RouteComponent() {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div className="font-bold">Создать быструю встречу</div>
+      </div>
+      <div className="flex flex-col items-start gap-2 py-4 pb-4">
+        <div className="text-xl font-bold">Тип встречи *</div>
+        <div
+          onClick={() => {
+            setIsDrawerOpen(true);
+          }}
+          className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
+        >
+          <div>{subType || type || "Выберите тип"}</div>
+          <ChevronDown className="h-4 w-4" />
+        </div>
       </div>
       <div className="flex flex-col items-start gap-2 py-4 pb-4">
         <div className="text-xl font-bold">Название *</div>
@@ -193,6 +218,47 @@ function RouteComponent() {
           className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
         />
       </div>
+
+      {/* Tags Section */}
+      <div className="flex flex-col items-start gap-2 pb-4">
+        <div className="text-xl font-bold">Тэги</div>
+        <div className="mb-4 w-full">
+          {/* Selected Tags */}
+          {tags.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <div
+                  key={tag}
+                  className="flex items-center gap-1 rounded-full bg-[#F1F1F1] px-3 py-1 text-sm text-black"
+                >
+                  {tag}
+                  <span
+                    className="cursor-pointer text-xs text-gray-500"
+                    onClick={() => removeTag(tag)}
+                  >
+                    ×
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tags Selector */}
+          <div
+            onClick={() => {
+              setIsTagsDrawerOpen(true);
+            }}
+            className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
+          >
+            <div>
+              {tags.length > 0
+                ? `Выбрано тэгов: ${tags.length}`
+                : "Выберите тэги (необязательно)"}
+            </div>
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
       <Step2
         user={user as User}
         setLocations={setLocations}
@@ -209,6 +275,7 @@ function RouteComponent() {
         setCity={setCity}
         isFastMeet={true}
       />
+
       <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
         <button
           onClick={() => {
@@ -222,6 +289,22 @@ function RouteComponent() {
           {createFastMeet.isPending ? "Создаем..." : "Создать встречу"}
         </button>
       </div>
+      <CreateMeetDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        setType={setType}
+        type={type}
+        subType={subType}
+        setSubType={setSubType}
+      />
+      <TagsDrawer
+        open={isTagsDrawerOpen}
+        onOpenChange={setIsTagsDrawerOpen}
+        category="fastMeets"
+        setTags={setTags}
+        tags={tags}
+        isFastMeet={true}
+      />
     </div>
   );
 }

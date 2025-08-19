@@ -266,10 +266,13 @@ export const meetingRouter = createTRPCRouter({
             coordinates: z.tuple([z.number(), z.number()]).optional(),
           }),
         ),
+        type: z.string(),
+        subType: z.string(),
+        tags: z.array(z.string()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { name, description, locations } = input;
+      const { name, description, locations, type, subType, tags } = input;
 
       if (!locations[0]?.coordinates) {
         throw new TRPCError({
@@ -288,6 +291,9 @@ export const meetingRouter = createTRPCRouter({
         coordinates: locations[0]?.coordinates as [number, number],
         userId: ctx.userId,
         createdAt: new Date(),
+        type,
+        subType,
+        tags,
       });
 
       return fastMeet;

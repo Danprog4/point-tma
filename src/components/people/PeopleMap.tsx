@@ -1,5 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { YandexMap } from "~/components/YandexMap";
+import { FastMeet } from "~/db/schema";
+import FastMeetDrawer from "../FastMeetDrawer";
 
 interface PeopleMapProps {
   users: any[]; // Not used for markers, only for potential future features
@@ -15,12 +18,15 @@ export const PeopleMap = ({
   className,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [meet, setMeet] = useState<FastMeet | null>(null);
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
 
   // Handle marker click for fast meets
   const handleFastMeetClick = (meet: any) => {
+    setIsOpen(true);
+    setMeet(meet);
     console.log("🟣 Клик на быструю встречу:", {
       id: meet.id,
       name: meet.name,
@@ -80,9 +86,10 @@ export const PeopleMap = ({
           }}
           className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
         >
-          Откликнуться
+          Check-In
         </button>
       </div>
+      <FastMeetDrawer open={isOpen} onOpenChange={setIsOpen} meet={meet} />
     </div>
   );
 };

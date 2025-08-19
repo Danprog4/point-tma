@@ -45,12 +45,16 @@ export function CreateMeetDrawer({
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80%] flex-col rounded-t-[16px] bg-white lg:h-[320px]">
           <div className="scrollbar-hidden overflow-y-auto p-4" ref={scrollRef}>
             <div className="fixed inset-x-0 top-0 z-10 mb-6 flex w-full items-center justify-between bg-white px-4 py-4">
-              <button
-                className="flex items-center justify-center"
-                onClick={() => setType("")}
-              >
-                <ArrowLeft className="h-6 w-6 text-gray-900" />
-              </button>
+              {type ? (
+                <button
+                  className="flex items-center justify-center"
+                  onClick={() => setType("")}
+                >
+                  <ArrowLeft className="h-6 w-6 text-gray-900" />
+                </button>
+              ) : (
+                <div className="h-6 w-6"></div>
+              )}
               <h2 className="flex-1 text-center text-base font-bold text-gray-900">
                 Создание встречи
               </h2>

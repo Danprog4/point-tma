@@ -51,6 +51,22 @@ export const usersTable = pgTable("users", {
   lastLocationUpdate: timestamp("last_location_update"),
 });
 
+export const fastMeetTable = pgTable("fast_meets", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }),
+  userId: bigint("user_id", { mode: "number" }),
+  coordinates: jsonb("coordinates").$type<[number, number]>(),
+  locations: jsonb("locations").$type<
+    Array<{
+      location: string;
+      address: string;
+      starttime?: string;
+      endtime?: string;
+    }>
+  >(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const calendarTable = pgTable("calendar", {
   id: serial("id").primaryKey(),
   userId: bigint("user_id", { mode: "number" }),

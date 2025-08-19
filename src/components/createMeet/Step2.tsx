@@ -35,6 +35,7 @@ export const Step2 = ({
   selectedItems,
   city,
   setCity,
+  isFastMeet,
 }: {
   index: number;
   setIndex: (index: number) => void;
@@ -47,6 +48,7 @@ export const Step2 = ({
       endtime?: string;
       index?: number;
       isCustom?: boolean;
+      coordinates?: [number, number];
     }[],
   ) => void;
 
@@ -58,6 +60,7 @@ export const Step2 = ({
     endtime?: string;
     index?: number;
     isCustom?: boolean;
+    coordinates?: [number, number];
   }[];
   length: number;
   setLength: (length: number) => void;
@@ -69,6 +72,7 @@ export const Step2 = ({
   selectedItems: { id: number; type: string; index: number }[];
   city: string;
   setCity: (city: string) => void;
+  isFastMeet?: boolean;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
 
@@ -284,6 +288,10 @@ export const Step2 = ({
           newLocations[locationIndex].address = address;
           // Mark as custom location (not from афиша)
           newLocations[locationIndex].isCustom = true;
+          // Сохраняем координаты для isFastMeet
+          if (isFastMeet) {
+            newLocations[locationIndex].coordinates = [lng, lat];
+          }
 
           setLocations(newLocations);
 
@@ -310,6 +318,10 @@ export const Step2 = ({
           newLocations[locationIndex].address = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
           // Mark as custom location (not from афиша)
           newLocations[locationIndex].isCustom = true;
+          // Сохраняем координаты для isFastMeet
+          if (isFastMeet) {
+            newLocations[locationIndex].coordinates = [lng, lat];
+          }
 
           setLocations(newLocations);
 
@@ -350,6 +362,17 @@ export const Step2 = ({
 
     // Mark as custom location (not from афиша)
     newLocations[locationIndex].isCustom = true;
+
+    // Сохраняем координаты для isFastMeet
+    if (isFastMeet && result.coordinates) {
+      newLocations[locationIndex].coordinates = result.coordinates;
+      console.log(
+        "🗺️ FastMeet: сохранили координаты",
+        result.coordinates,
+        "для места",
+        title,
+      );
+    }
 
     setLocations(newLocations);
 
@@ -466,6 +489,16 @@ export const Step2 = ({
         return false;
       }
 
+      // Для isFastMeet: обязательно должен быть выбран адрес из карты (isCustom=true)
+      if (isFastMeet) {
+        if (!loc.isCustom) {
+          console.log(`❌ FastMeet Location ${idx}: Must be selected from map`, loc);
+          return false;
+        }
+        // Для FastMeet время не обязательно
+        return true;
+      }
+
       // Проверяем обязательность времени в зависимости от источника
       const hasSelectedItem = selectedItems.some((item) => item.index === idx);
       const hasStartTime = loc.starttime?.trim();
@@ -512,7 +545,7 @@ export const Step2 = ({
     });
 
     setIsDisabled(!valid);
-  }, [locations, selectedItems, city]);
+  }, [locations, selectedItems, city, isFastMeet]);
 
   console.log("🔍 Step2 Debug:", {
     selectedItems,
@@ -755,43 +788,47 @@ export const Step2 = ({
                 )}
                 <div className="mt-2 flex items-center justify-between">
                   <div className="mb-2 text-xl font-bold">Адрес *</div>
-                  <div
-                    className="cursor-pointer text-sm text-blue-500"
-                    onClick={() => {
-                      if (
-                        selectedItems.length > 0 &&
+                  {!isFastMeet && (
+                    <>
+                      <div
+                        className="cursor-pointer text-sm text-blue-500"
+                        onClick={() => {
+                          if (
+                            selectedItems.length > 0 &&
+                            selectedItems.map((item) => item.index).includes(index)
+                          ) {
+                            // Переключаемся на ручной ввод
+                            setSelectedItems(
+                              selectedItems.filter((item) => item.index !== index),
+                            );
+                            // Очищаем данные локации для ручного ввода
+                            const newLocations = [...locations];
+                            if (!newLocations[index]) {
+                              newLocations[index] = { location: "", address: "" };
+                            } else {
+                              newLocations[index] = {
+                                location: "",
+                                address: "",
+                                starttime: "",
+                                endtime: "",
+                                isCustom: true,
+                              };
+                            }
+                            setLocations(newLocations);
+                          } else {
+                            // Переключаемся на выбор из афиши
+                            setIsOpen(true);
+                            setIndex(index);
+                          }
+                        }}
+                      >
+                        {selectedItems.length > 0 &&
                         selectedItems.map((item) => item.index).includes(index)
-                      ) {
-                        // Переключаемся на ручной ввод
-                        setSelectedItems(
-                          selectedItems.filter((item) => item.index !== index),
-                        );
-                        // Очищаем данные локации для ручного ввода
-                        const newLocations = [...locations];
-                        if (!newLocations[index]) {
-                          newLocations[index] = { location: "", address: "" };
-                        } else {
-                          newLocations[index] = {
-                            location: "",
-                            address: "",
-                            starttime: "",
-                            endtime: "",
-                            isCustom: true,
-                          };
-                        }
-                        setLocations(newLocations);
-                      } else {
-                        // Переключаемся на выбор из афиши
-                        setIsOpen(true);
-                        setIndex(index);
-                      }
-                    }}
-                  >
-                    {selectedItems.length > 0 &&
-                    selectedItems.map((item) => item.index).includes(index)
-                      ? "Указать свою локацию"
-                      : "Выбрать из афишы"}
-                  </div>
+                          ? "Указать свою локацию"
+                          : "Выбрать из афишы"}
+                      </div>
+                    </>
+                  )}
                 </div>
                 {selectedItems.length > 0 &&
                 selectedItems.map((item) => item.index).includes(index) ? (
@@ -836,39 +873,65 @@ export const Step2 = ({
                     key={index}
                     className="items-between flex flex-col justify-between gap-2"
                   >
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
-                      <input
-                        type="text"
-                        value={locations[index]?.address || ""}
-                        placeholder="Адрес"
-                        onChange={(e) => {
-                          const newLocations = [...locations];
-                          if (!newLocations[index]) {
-                            newLocations[index] = { location: "", address: "" };
-                          }
-                          newLocations[index].address = e.target.value;
-                          // Mark as custom when user manually edits
-                          newLocations[index].isCustom = true;
-                          setLocations(newLocations);
+                    {/* Показываем поле адреса только если это не FastMeet */}
+                    {!isFastMeet && (
+                      <div className="flex flex-wrap items-center gap-4">
+                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
+                        <input
+                          type="text"
+                          value={locations[index]?.address || ""}
+                          placeholder="Адрес"
+                          onChange={(e) => {
+                            const newLocations = [...locations];
+                            if (!newLocations[index]) {
+                              newLocations[index] = { location: "", address: "" };
+                            }
+                            newLocations[index].address = e.target.value;
+                            // Mark as custom when user manually edits
+                            newLocations[index].isCustom = true;
+                            setLocations(newLocations);
 
-                          // Clear selectedItems for this index if user starts manual input
-                          if (
-                            e.target.value.trim() &&
-                            selectedItems.some((item) => item.index === index)
-                          ) {
-                            setSelectedItems(
-                              (prev: { id: number; type: string; index: number }[]) =>
-                                prev.filter(
-                                  (item: { id: number; type: string; index: number }) =>
-                                    item.index !== index,
-                                ),
-                            );
-                          }
-                        }}
-                        className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
-                      />
-                    </div>
+                            // Clear selectedItems for this index if user starts manual input
+                            if (
+                              e.target.value.trim() &&
+                              selectedItems.some((item) => item.index === index)
+                            ) {
+                              setSelectedItems(
+                                (prev: { id: number; type: string; index: number }[]) =>
+                                  prev.filter(
+                                    (item: { id: number; type: string; index: number }) =>
+                                      item.index !== index,
+                                  ),
+                              );
+                            }
+                          }}
+                          className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Для FastMeet показываем только выбранный адрес (если есть) */}
+                    {isFastMeet && locations[index]?.address && (
+                      <div className="flex flex-wrap items-center gap-4">
+                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
+                        <div className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-gray-100 px-4 py-3 text-sm text-gray-700 md:min-w-[300px]">
+                          📍{" "}
+                          {locations[index]?.address?.length > 30
+                            ? `${locations[index]?.address.slice(0, 30)}...`
+                            : locations[index]?.address}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Сообщение для FastMeet когда адрес не выбран */}
+                    {isFastMeet && !locations[index]?.address && (
+                      <div className="flex flex-wrap items-center gap-4">
+                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
+                        <div className="h-11 w-full flex-1 rounded-[14px] border border-dashed border-[#DBDBDB] bg-yellow-50 px-4 py-3 text-sm text-gray-600 md:min-w-[300px]">
+                          🔍 Введите название места выше
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
                       <div
@@ -944,14 +1007,16 @@ export const Step2 = ({
                     </div>
                     {/* Показываем ошибки валидации времени */}
                     {!selectedItems.some((item) => item.index === index) &&
-                      !locations[index]?.starttime && (
+                      !locations[index]?.starttime &&
+                      !isFastMeet && (
                         <div className="mt-1 text-sm text-red-500">
                           Время начала обязательно для кастомных мест
                         </div>
                       )}
                     {!selectedItems.some((item) => item.index === index) &&
                       !locations[index]?.endtime &&
-                      locations[index]?.starttime && (
+                      locations[index]?.starttime &&
+                      !isFastMeet && (
                         <div className="mt-1 text-sm text-red-500">
                           Время завершения обязательно для кастомных мест
                         </div>

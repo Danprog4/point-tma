@@ -9,6 +9,8 @@ interface MarkerWithDistance {
   coordinates: [number, number];
   distance?: number;
   label?: string;
+  onClick?: () => void;
+  meetData?: any;
 }
 
 interface YandexMapProps {
@@ -198,6 +200,13 @@ export const YandexMap: React.FC<YandexMapProps> = ({
   const handleMapClick = async (event: any) => {
     try {
       console.log("🗺️ YandexMap: Клик по карте. keys:", Object.keys(event || {}));
+
+      // Если это клик по маркеру, игнорируем
+      if (event?.type === "marker") {
+        console.log("🗺️ YandexMap: игнорируем клик по маркеру");
+        return;
+      }
+
       const coords = (event &&
         (event.coordinates || event?.coords || event?.position)) as
         | [number, number]
@@ -384,6 +393,13 @@ export const YandexMap: React.FC<YandexMapProps> = ({
           <YMapMarker key={`marker-${idx}`} coordinates={marker.coordinates}>
             <div className="relative">
               <div
+                onClick={(e) => {
+                  e.stopPropagation(); // Предотвращаем всплытие события к карте
+                  if (marker.onClick) {
+                    console.log("🟣 YandexMap: маркер кликнут", marker);
+                    marker.onClick();
+                  }
+                }}
                 style={{
                   width: 12,
                   height: 12,
@@ -391,6 +407,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                   borderRadius: "50%",
                   border: "2px solid white",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  cursor: marker.onClick ? "pointer" : "default",
                 }}
               />
               {marker.distance !== undefined && showDistances && (

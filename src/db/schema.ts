@@ -54,6 +54,7 @@ export const usersTable = pgTable("users", {
 export const fastMeetTable = pgTable("fast_meets", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),
+  description: varchar("description", { length: 1024 }),
   userId: bigint("user_id", { mode: "number" }),
   coordinates: jsonb("coordinates").$type<[number, number]>(),
   locations: jsonb("locations").$type<
@@ -62,6 +63,7 @@ export const fastMeetTable = pgTable("fast_meets", {
       address: string;
       starttime?: string;
       endtime?: string;
+      coordinates: [number, number];
     }>
   >(),
   createdAt: timestamp("created_at").defaultNow(),

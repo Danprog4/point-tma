@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import {
   calendarTable,
+  fastMeetTable,
   meetMessagesTable,
   meetParticipantsTable,
   meetTable,
@@ -250,6 +251,47 @@ export const meetingRouter = createTRPCRouter({
 
     return meetingsWithEvents;
   }),
+
+  createFastMeet: procedure
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        locations: z.array(
+          z.object({
+            location: z.string(),
+            starttime: z.string().optional(),
+            endtime: z.string().optional(),
+            address: z.string(),
+            coordinates: z.tuple([z.number(), z.number()]).optional(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { name, description, locations } = input;
+
+      if (!locations[0]?.coordinates) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Location coordinates are required",
+        });
+      }
+
+      const [fastMeet] = await db.insert(fastMeetTable).values({
+        name,
+        description,
+        locations: locations.map((location) => ({
+          ...location,
+          coordinates: location.coordinates || ([0, 0] as [number, number]),
+        })),
+        coordinates: locations[0]?.coordinates as [number, number],
+        userId: ctx.userId,
+        createdAt: new Date(),
+      });
+
+      return fastMeet;
+    }),
 
   getFastMeets: procedure.query(async ({ ctx }) => {
     const fastMeets = await db.query.fastMeetTable.findMany({});

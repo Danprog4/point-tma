@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { YandexMap } from "~/components/YandexMap";
 
 interface PeopleMapProps {
@@ -13,8 +14,22 @@ export const PeopleMap = ({
   fastMeets = [],
   className,
 }: PeopleMapProps) => {
+  const navigate = useNavigate();
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
+
+  // Handle marker click for fast meets
+  const handleFastMeetClick = (meet: any) => {
+    console.log("🟣 Клик на быструю встречу:", {
+      id: meet.id,
+      name: meet.name,
+      description: meet.description,
+      coordinates: meet.coordinates,
+      author: meet.author,
+      createdAt: meet.createdAt,
+      locations: meet.locations,
+    });
+  };
 
   // Prepare fast meet markers (purple dots) - ONLY show fast meets, not users
   const fastMeetMarkers =
@@ -23,6 +38,8 @@ export const PeopleMap = ({
       .map((meet) => ({
         coordinates: meet.coordinates as [number, number],
         label: meet.name || "Быстрая встреча",
+        onClick: () => handleFastMeetClick(meet),
+        meetData: meet, // Сохраняем данные встречи для обработки клика
       })) || [];
 
   // Combine all markers
@@ -57,7 +74,9 @@ export const PeopleMap = ({
 
       <div className="fixed right-4 bottom-20 left-4">
         <button
-          onClick={() => {}}
+          onClick={() => {
+            navigate({ to: "/create-fastMeet" });
+          }}
           className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
         >
           Откликнуться

@@ -27,6 +27,7 @@ import { Route as HistoryImport } from './routes/history'
 import { Route as FillProfileImport } from './routes/fill-profile'
 import { Route as FavouritesImport } from './routes/favourites'
 import { Route as CreateMeetImport } from './routes/createMeet'
+import { Route as CreateFastMeetImport } from './routes/create-fastMeet'
 import { Route as CalendarImport } from './routes/calendar'
 import { Route as AchievmentsImport } from './routes/achievments'
 import { Route as IndexImport } from './routes/index'
@@ -136,6 +137,12 @@ const CreateMeetRoute = CreateMeetImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CreateFastMeetRoute = CreateFastMeetImport.update({
+  id: '/create-fastMeet',
+  path: '/create-fastMeet',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const CalendarRoute = CalendarImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -219,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarImport
+      parentRoute: typeof rootRoute
+    }
+    '/create-fastMeet': {
+      id: '/create-fastMeet'
+      path: '/create-fastMeet'
+      fullPath: '/create-fastMeet'
+      preLoaderRoute: typeof CreateFastMeetImport
       parentRoute: typeof rootRoute
     }
     '/createMeet': {
@@ -391,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
@@ -420,6 +435,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
@@ -450,6 +466,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/achievments': typeof AchievmentsRoute
   '/calendar': typeof CalendarRoute
+  '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
@@ -481,6 +498,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/create-fastMeet'
     | '/createMeet'
     | '/favourites'
     | '/fill-profile'
@@ -509,6 +527,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/create-fastMeet'
     | '/createMeet'
     | '/favourites'
     | '/fill-profile'
@@ -537,6 +556,7 @@ export interface FileRouteTypes {
     | '/'
     | '/achievments'
     | '/calendar'
+    | '/create-fastMeet'
     | '/createMeet'
     | '/favourites'
     | '/fill-profile'
@@ -567,6 +587,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchievmentsRoute: typeof AchievmentsRoute
   CalendarRoute: typeof CalendarRoute
+  CreateFastMeetRoute: typeof CreateFastMeetRoute
   CreateMeetRoute: typeof CreateMeetRoute
   FavouritesRoute: typeof FavouritesRoute
   FillProfileRoute: typeof FillProfileRoute
@@ -596,6 +617,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchievmentsRoute: AchievmentsRoute,
   CalendarRoute: CalendarRoute,
+  CreateFastMeetRoute: CreateFastMeetRoute,
   CreateMeetRoute: CreateMeetRoute,
   FavouritesRoute: FavouritesRoute,
   FillProfileRoute: FillProfileRoute,
@@ -634,6 +656,7 @@ export const routeTree = rootRoute
         "/",
         "/achievments",
         "/calendar",
+        "/create-fastMeet",
         "/createMeet",
         "/favourites",
         "/fill-profile",
@@ -667,6 +690,9 @@ export const routeTree = rootRoute
     },
     "/calendar": {
       "filePath": "calendar.tsx"
+    },
+    "/create-fastMeet": {
+      "filePath": "create-fastMeet.tsx"
     },
     "/createMeet": {
       "filePath": "createMeet.tsx"

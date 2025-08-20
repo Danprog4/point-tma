@@ -8,6 +8,7 @@ export const Chat = ({
   user,
   navigate,
   chatBottomRef,
+  isFastMeet = false,
 }: any) => {
   return (
     <div className="flex flex-col overflow-y-hidden">
@@ -64,7 +65,10 @@ export const Chat = ({
           );
         })}
         {/* Dummy element to anchor the scroll position at the bottom */}
-    
+        <div
+          ref={chatBottomRef}
+          id={isFastMeet ? "fastmeet-chat-bottom" : "chat-bottom"}
+        />
       </div>
     </div>
   );

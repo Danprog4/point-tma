@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { FastMeet, FastMeetParticipant, User as UserType } from "~/db/schema";
 import { cn } from "~/lib/utils";
 import { getImage } from "~/lib/utils/getImage";
@@ -19,6 +20,7 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [isChat, setIsChat] = useState(false);
+  const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   // Fetch all users to display participant names and photos
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
@@ -29,11 +31,12 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
 
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
 
+  // Scroll to bottom when chat opens or messages change
   useEffect(() => {
     if (isChat) {
       chatBottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
-  }, [chatMessages, isChat]);
+  }, [isChat, chatMessages]);
 
   // Fetch participants for this fast meet
   const { data: participants } = useQuery(
@@ -99,8 +102,15 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
   const sendMessage = useMutation(trpc.meetings.sendMessage.mutationOptions());
 
   const handleSendChatMessage = (msg: string) => {
+    if (!meet?.id) return;
+    const now = Date.now();
+    const recent = chatTimestamps.filter((t) => now - t < 60_000);
+    if (recent.length >= 2) {
+      toast.error("Можно отправлять не более 2 сообщений в минуту");
+      return;
+    }
+    setChatTimestamps([...recent, now]);
     sendMessage.mutate({ fastMeetId: meet.id, message: msg });
-
     queryClient.setQueryData(
       trpc.meetings.getMessages.queryKey({ fastMeetId: meet.id }),
       (old: any) => {
@@ -110,9 +120,9 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
           {
             id: Math.random(),
             message: msg,
-            fastMeetId: meet.id,
             userId: currentUser?.id,
             createdAt: new Date(),
+            fastMeetId: meet.id,
           },
         ];
       },
@@ -273,22 +283,27 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
         </>
       ) : (
         <>
-          <Chat
-            meeting={{ id: meet.id, name: meet.name }}
-            chatMessages={chatMessages}
-            users={users}
-            user={currentUser}
-            navigate={(options: any) => {
-              // For now, we don't navigate to user profiles in fast meets
-              console.log("Navigate to user profile:", options);
-            }}
-            chatBottomRef={chatBottomRef}
-          />
-          <ChatMessages
-            selectedCategory={selectedCategory || null}
-            setSelectedCategory={setSelectedCategory}
-            handleSendChatMessage={handleSendChatMessage}
-          />
+          <div data-chat-container="fastmeet">
+            <Chat
+              meeting={{ id: meet.id, name: meet.name }}
+              chatMessages={chatMessages}
+              users={users}
+              user={currentUser}
+              navigate={(options: any) => {
+                // For now, we don't navigate to user profiles in fast meets
+                console.log("Navigate to user profile:", options);
+              }}
+              chatBottomRef={chatBottomRef}
+              isFastMeet={true}
+            />
+          </div>
+          {selectedCategory && (
+            <ChatMessages
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              handleSendChatMessage={handleSendChatMessage}
+            />
+          )}
 
           <ChatNav
             selectedCategory={selectedCategory}

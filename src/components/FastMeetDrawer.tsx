@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Drawer } from "vaul";
-import { FastMeet, FastMeetParticipant, User as UserType } from "~/db/schema";
+import { FastMeet, User as UserType } from "~/db/schema";
+import { useFastMeet } from "~/hooks/useFastMeet";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
@@ -26,6 +26,15 @@ export default function FastMeetDrawer({
   }
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // Получаем данные из хука для логики кнопок
+  const {
+    isBlocked,
+    isParticipant,
+    isAcceptedParticipant,
+    isAlreadyOwner,
+    handleJoinFastMeet,
+  } = useFastMeet(meet.id);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -57,87 +66,6 @@ export default function FastMeetDrawer({
   const eventTypeInfo = meet.type ? getEventTypeInfo(meet.type) : null;
 
   const isUsersMeet = meet.userId === currentUser?.id;
-
-  const joinFastMeet = useMutation(trpc.meetings.joinFastMeet.mutationOptions());
-  const acceptFastMeet = useMutation(trpc.meetings.acceptFastMeet.mutationOptions());
-  const declineFastMeet = useMutation(trpc.meetings.declineFastMeet.mutationOptions());
-
-  const { data: participants } = useQuery(
-    trpc.meetings.getFastMeetParticipants.queryOptions({ meetId: meet.id }),
-  );
-
-  const { data: allParticipants } = useQuery(
-    trpc.meetings.getFastMeetParticipants.queryOptions({}),
-  );
-
-  const isParticipant = participants?.some(
-    (participant) =>
-      participant.userId === currentUser?.id && participant.status === "pending",
-  );
-
-  const isAcceptedParticipant = participants?.some(
-    (participant) =>
-      participant.userId === currentUser?.id && participant.status === "accepted",
-  );
-
-  const isAlreadyParticipant = allParticipants?.some(
-    (participant) =>
-      participant.userId === currentUser?.id && participant.meetId !== meet.id,
-  );
-
-  const { data: fastMeets } = useQuery(trpc.meetings.getFastMeets.queryOptions());
-
-  // Check if user owns any other fast meet
-  const isAlreadyOwner = fastMeets?.some(
-    (fastMeet) => fastMeet.userId === currentUser?.id && fastMeet.id !== meet.id,
-  );
-
-  // Check if user is blocked from joining (owns another meet, or is participant in another meet)
-  const isBlocked = isAlreadyOwner || isAlreadyParticipant;
-
-  const handleJoinFastMeet = () => {
-    // If user owns this meet, show participants info
-    if (isUsersMeet) {
-      setIsMoreOpen(true);
-      return;
-    }
-
-    // If user is blocked from joining, show error
-    if (isBlocked) {
-      if (isAlreadyOwner) {
-        toast.error("У вас уже есть активная встреча");
-      } else if (isAlreadyParticipant) {
-        toast.error("Сначала покиньте другую встречу");
-      }
-      return;
-    }
-
-    // Join or leave the meet
-    if (!isParticipant && !isUsersMeet) {
-      joinFastMeet.mutate({ meetId: meet.id });
-      queryClient.setQueryData(
-        trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-        (old: FastMeetParticipant[] | undefined) => [
-          ...(old || []),
-          {
-            id: Math.floor(Math.random() * 1000000),
-            userId: currentUser?.id || null,
-            status: "pending",
-            meetId: meet.id,
-            createdAt: new Date(),
-          },
-        ],
-      );
-    } else if (isParticipant && !isUsersMeet) {
-      joinFastMeet.mutate({ meetId: meet.id });
-      queryClient.setQueryData(
-        trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-        (old: FastMeetParticipant[] | undefined) => [
-          ...(old || []).filter((p) => p.userId !== currentUser?.id),
-        ],
-      );
-    }
-  };
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>

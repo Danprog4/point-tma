@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { YandexMap } from "~/components/YandexMap";
 import { FastMeet } from "~/db/schema";
+import { useFastMeet } from "~/hooks/useFastMeet";
 import { useTRPC } from "~/trpc/init/react";
 import FastMeetDrawer from "../FastMeetDrawer";
 
@@ -43,7 +44,7 @@ export const PeopleMap = ({
     });
   };
 
-  const { data: participants } = useQuery(
+  const { data: allParticipants } = useQuery(
     trpc.meetings.getFastMeetParticipants.queryOptions({}),
   );
 
@@ -55,7 +56,7 @@ export const PeopleMap = ({
     }
 
     // Check if user is a participant (accepted or pending)
-    const isParticipant = participants?.some(
+    const isParticipant = allParticipants?.some(
       (p) =>
         p.userId === currentUser?.id &&
         p.meetId === meet.id &&
@@ -76,7 +77,7 @@ export const PeopleMap = ({
     }
 
     const isOrganizer = userFastMeet.userId === currentUser?.id;
-    const userParticipation = participants?.find(
+    const userParticipation = allParticipants?.find(
       (p) => p.userId === currentUser?.id && p.meetId === userFastMeet.id,
     );
 
@@ -108,6 +109,15 @@ export const PeopleMap = ({
     };
   };
 
+  // Хук нужен только для кнопки Check-In, остальное FastMeetDrawer получит сам
+  const {
+    isBlocked,
+    isParticipant,
+    isAcceptedParticipant,
+    isAlreadyOwner,
+    handleJoinFastMeet,
+  } = useFastMeet(meet?.id || 0);
+
   const buttonConfig = getCheckInButtonConfig();
 
   // Prepare fast meet markers - Green for user's own meets, red for pending, purple for others
@@ -116,7 +126,7 @@ export const PeopleMap = ({
       ?.filter((meet) => meet?.coordinates)
       .map((meet) => {
         const isUsersMeet = meet.userId === currentUser?.id;
-        const userParticipation = participants?.find(
+        const userParticipation = allParticipants?.find(
           (p) => p.userId === currentUser?.id && p.meetId === meet.id,
         );
 
@@ -156,7 +166,7 @@ export const PeopleMap = ({
           id: userFastMeet.id,
           name: userFastMeet.name,
           isOrganizer: userFastMeet.userId === currentUser?.id,
-          participationStatus: participants?.find(
+          participationStatus: allParticipants?.find(
             (p) => p.userId === currentUser?.id && p.meetId === userFastMeet.id,
           )?.status,
         }

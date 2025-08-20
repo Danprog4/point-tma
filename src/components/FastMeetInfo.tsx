@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FastMeet, FastMeetParticipant, User as UserType } from "~/db/schema";
+import { FastMeet, User as UserType } from "~/db/schema";
+import { useFastMeet } from "~/hooks/useFastMeet";
 import { cn } from "~/lib/utils";
 import { getImage } from "~/lib/utils/getImage";
 import { useTRPC } from "~/trpc/init/react";
@@ -18,6 +19,17 @@ interface FastMeetInfoProps {
 }
 
 export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoProps) => {
+  // Получаем все данные из хука напрямую
+  const {
+    isOrganizer,
+    organizer,
+    pendingRequests,
+    acceptedParticipants,
+    handleAcceptRequest,
+    handleLeaveFastMeet,
+    handleDeleteFastMeet,
+    handleDeclineRequest,
+  } = useFastMeet(meet.id);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [page, setPage] = useState<"chat" | "settings" | "participants">("participants");
@@ -40,97 +52,6 @@ export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoP
   }, [page, chatMessages]);
 
   // Fetch participants for this fast meet
-  const { data: participants } = useQuery(
-    trpc.meetings.getFastMeetParticipants.queryOptions({ meetId: meet.id }),
-  );
-
-  // Mutations for accepting/declining participants
-  const acceptFastMeet = useMutation(trpc.meetings.acceptFastMeet.mutationOptions());
-  const declineFastMeet = useMutation(trpc.meetings.declineFastMeet.mutationOptions());
-
-  // Check if current user is the organizer
-  const isOrganizer = meet.userId === currentUser?.id;
-
-  // Get organizer info
-  const organizer = users?.find((user) => user.id === meet.userId);
-
-  // Filter pending requests for organizer view
-  const pendingRequests =
-    participants?.filter((participant) => participant.status === "pending") || [];
-
-  // Filter accepted participants
-  const acceptedParticipants =
-    participants?.filter((participant) => participant.status === "accepted") || [];
-
-  // Handle accepting a participant request
-  const handleAcceptRequest = (participant: FastMeetParticipant) => {
-    if (!participant.userId) return;
-
-    acceptFastMeet.mutate({ meetId: meet.id, userId: participant.userId });
-
-    queryClient.setQueryData(
-      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-      (old: FastMeetParticipant[] | undefined) => {
-        if (!old) return [];
-        return old.map((p) =>
-          p.userId === participant.userId ? { ...p, status: "accepted" } : p,
-        );
-      },
-    );
-  };
-
-  const leaveFastMeet = useMutation(
-    trpc.meetings.leaveFastMeet.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-        });
-      },
-    }),
-  );
-
-  const handleLeaveFastMeet = () => {
-    leaveFastMeet.mutate({ meetId: meet.id });
-
-    queryClient.setQueryData(
-      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-      (old: FastMeetParticipant[] | undefined) => {
-        if (!old) return [];
-        return old.filter((p) => p.userId !== currentUser?.id);
-      },
-    );
-
-    setIsMoreOpen(false);
-  };
-
-  const deleteFastMeet = useMutation(trpc.meetings.deleteFastMeet.mutationOptions());
-
-  const handleDeleteFastMeet = () => {
-    deleteFastMeet.mutate({ meetId: meet.id });
-    queryClient.setQueryData(
-      trpc.meetings.getFastMeets.queryKey(),
-      (old: FastMeet[] | undefined) => {
-        if (!old) return [];
-        return old.filter((p) => p.id !== meet.id);
-      },
-    );
-    setIsMoreOpen(false);
-  };
-
-  // Handle declining a participant request
-  const handleDeclineRequest = (participant: FastMeetParticipant) => {
-    if (!participant.userId) return;
-
-    declineFastMeet.mutate({ meetId: meet.id, userId: participant.userId });
-
-    queryClient.setQueryData(
-      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-      (old: FastMeetParticipant[] | undefined) => {
-        if (!old) return [];
-        return old.filter((p) => p.userId !== participant.userId);
-      },
-    );
-  };
 
   // Get user photo with fallback
   const getUserPhoto = (user: UserType | undefined) => {

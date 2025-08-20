@@ -320,13 +320,10 @@ export default function FastMeetDrawer({
                   )}
                 </div>
               </div>
-              
+
               {/* Action Button - Fixed at bottom */}
               <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
-                {isBlocked &&
-                !isUsersMeet &&
-                !isParticipant &&
-                !isAcceptedParticipant ? (
+                {isBlocked && !isUsersMeet && !isParticipant && !isAcceptedParticipant ? (
                   <button
                     disabled
                     className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"

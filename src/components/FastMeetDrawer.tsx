@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
-import { useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
 import { useFastMeet } from "~/hooks/useFastMeet";
@@ -25,8 +24,6 @@ export default function FastMeetDrawer({
     return null;
   }
 
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-
   // Получаем данные из хука для логики кнопок
   const {
     isBlocked,
@@ -34,6 +31,8 @@ export default function FastMeetDrawer({
     isAcceptedParticipant,
     isAlreadyOwner,
     handleJoinFastMeet,
+    isMoreOpen,
+    setIsMoreOpen,
   } = useFastMeet(meet.id);
 
   const trpc = useTRPC();
@@ -96,6 +95,7 @@ export default function FastMeetDrawer({
               meet={meet}
               currentUser={currentUser}
               setIsMoreOpen={setIsMoreOpen}
+              onOpenChange={onOpenChange}
             />
           ) : (
             <>

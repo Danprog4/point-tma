@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FastMeet, FastMeetParticipant } from "~/db/schema";
 import { useTRPC } from "~/trpc/init/react";
 
 export function useFastMeet(meetId: number) {
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data: currentUser } = useQuery(trpc.main.getUser.queryOptions());
@@ -155,6 +156,7 @@ export function useFastMeet(meetId: number) {
         return old.filter((p) => !(p.meetId === meet.id && p.userId === currentUser?.id));
       },
     );
+    setIsMoreOpen(false);
   };
 
   const deleteFastMeet = useMutation(trpc.meetings.deleteFastMeet.mutationOptions());
@@ -185,6 +187,7 @@ export function useFastMeet(meetId: number) {
         return old.filter((p) => p.meetId !== meet.id);
       },
     );
+    setIsMoreOpen(false);
   };
 
   // Handle declining a participant request
@@ -218,6 +221,11 @@ export function useFastMeet(meetId: number) {
 
     // If user is blocked from joining, return early
     if (isBlocked) {
+      return;
+    }
+
+    if (isOrganizer) {
+      setIsMoreOpen(true);
       return;
     }
 
@@ -291,5 +299,7 @@ export function useFastMeet(meetId: number) {
     handleJoinFastMeet,
     leaveFastMeet,
     deleteFastMeet,
+    isMoreOpen,
+    setIsMoreOpen,
   };
 }

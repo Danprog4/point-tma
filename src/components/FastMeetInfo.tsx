@@ -16,9 +16,15 @@ interface FastMeetInfoProps {
   meet: FastMeet;
   currentUser: UserType | null;
   setIsMoreOpen: (isOpen: boolean) => void;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoProps) => {
+export const FastMeetInfo = ({
+  meet,
+  currentUser,
+  setIsMoreOpen,
+  onOpenChange,
+}: FastMeetInfoProps) => {
   // Получаем все данные из хука напрямую
   const {
     isOrganizer,
@@ -287,7 +293,11 @@ export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoP
       {!isOrganizer ? (
         <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
           <button
-            onClick={handleLeaveFastMeet}
+            onClick={() => {
+              handleLeaveFastMeet();
+              onOpenChange(false);
+              setIsMoreOpen(false);
+            }}
             className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
           >
             Покинуть встречу
@@ -296,7 +306,11 @@ export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoP
       ) : (
         <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
           <button
-            onClick={handleDeleteFastMeet}
+            onClick={() => {
+              handleDeleteFastMeet();
+              onOpenChange(false);
+              setIsMoreOpen(false);
+            }}
             className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
           >
             Удалить встречу

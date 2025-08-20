@@ -57,6 +57,7 @@ export const fastMeetTable = pgTable("fast_meets", {
   description: varchar("description", { length: 1024 }),
   userId: bigint("user_id", { mode: "number" }),
   coordinates: jsonb("coordinates").$type<[number, number]>(),
+  city: varchar("city", { length: 255 }),
   locations: jsonb("locations").$type<
     Array<{
       location: string;

@@ -46,7 +46,7 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
   );
 
   const [length, setLength] = useState(Math.max(1, meet.locations?.length || 1));
-  const [city, setCity] = useState(currentUser?.city || "");
+  const [city, setCity] = useState(meet.city || "");
   const [selectedItems, setSelectedItems] = useState<
     { id: number; type: string; index: number }[]
   >([]);
@@ -74,10 +74,11 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
                     name: variables.name,
                     description: variables.description,
                     locations: variables.locations as any,
-                    coordinates: variables.coordinates,
+                    coordinates: variables.coordinates as [number, number],
                     type: variables.type,
                     subType: variables.subType,
                     tags: variables.tags,
+                    city: variables.city,
                   }
                 : m,
             );
@@ -121,6 +122,7 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
       type,
       subType,
       tags,
+      city,
     });
   };
 
@@ -211,15 +213,27 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
         city={city}
         setCity={setCity}
         isFastMeet={true}
-        requireCity={false}
+        requireCity={true}
       />
 
       <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
         <button
           onClick={handleSave}
-          disabled={editFastMeet.isPending}
+          disabled={
+            editFastMeet.isPending ||
+            !title.trim() ||
+            !description.trim() ||
+            !areLocationsValid ||
+            !city.trim()
+          }
           className={`z-[100] mx-auto flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50 ${
-            isDisabled ? "" : ""
+            editFastMeet.isPending ||
+            !title.trim() ||
+            !description.trim() ||
+            !areLocationsValid ||
+            !city.trim()
+              ? ""
+              : ""
           }`}
         >
           {editFastMeet.isPending ? "Сохраняем..." : "Сохранить изменения"}

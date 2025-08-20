@@ -166,10 +166,10 @@ export const Step2 = ({
   const reverseGeocode = useMutation(trpc.yandex.reverseGeocode.mutationOptions());
 
   useEffect(() => {
-    if (user.city) {
+    if (!city && user.city) {
       setCity(user.city);
     }
-  }, [user.city]);
+  }, []);
 
   const extractMarkersFromSuggest = (): Array<[number, number]> => {
     try {

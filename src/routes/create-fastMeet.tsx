@@ -170,6 +170,7 @@ function RouteComponent() {
       type,
       subType,
       tags: tags,
+      city,
     });
   };
 

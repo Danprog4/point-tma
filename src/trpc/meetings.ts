@@ -391,6 +391,7 @@ export const meetingRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         description: z.string(),
+        city: z.string(),
         locations: z.array(
           z.object({
             location: z.string(),
@@ -406,7 +407,7 @@ export const meetingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { name, description, locations, type, subType, tags } = input;
+      const { name, description, locations, type, subType, tags, city } = input;
 
       if (!locations[0]?.coordinates) {
         throw new TRPCError({
@@ -418,6 +419,7 @@ export const meetingRouter = createTRPCRouter({
       const [fastMeet] = await db.insert(fastMeetTable).values({
         name,
         description,
+        city,
         locations: locations.map((location) => ({
           ...location,
           coordinates: location.coordinates || ([0, 0] as [number, number]),
@@ -823,6 +825,7 @@ export const meetingRouter = createTRPCRouter({
         meetId: z.number(),
         name: z.string(),
         description: z.string(),
+        city: z.string(),
         locations: z.array(
           z.object({
             location: z.string(),
@@ -837,8 +840,17 @@ export const meetingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { meetId, name, description, locations, coordinates, type, subType, tags } =
-        input;
+      const {
+        meetId,
+        name,
+        description,
+        locations,
+        coordinates,
+        type,
+        subType,
+        tags,
+        city,
+      } = input;
 
       const meet = await db.query.fastMeetTable.findFirst({
         where: eq(fastMeetTable.id, meetId),
@@ -850,7 +862,20 @@ export const meetingRouter = createTRPCRouter({
 
       await db
         .update(fastMeetTable)
-        .set({ name, description, locations, coordinates, type, subType, tags })
+        .set({
+          name,
+          description,
+          locations: locations.map((l) => ({
+            location: l.location,
+            address: l.address,
+            coordinates: l.coordinates as [number, number],
+          })),
+          coordinates: coordinates as [number, number],
+          type,
+          subType,
+          tags,
+          city,
+        })
         .where(eq(fastMeetTable.id, meetId));
 
       return meet;

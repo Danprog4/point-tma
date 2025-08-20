@@ -164,7 +164,11 @@ export default function FastMeetDrawer({
 
           {/* Content */}
           {isMoreOpen ? (
-            <FastMeetInfo meet={meet} currentUser={currentUser} />
+            <FastMeetInfo
+              meet={meet}
+              currentUser={currentUser}
+              setIsMoreOpen={setIsMoreOpen}
+            />
           ) : (
             <>
               <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-24">

@@ -833,6 +833,67 @@ export const meetingRouter = createTRPCRouter({
       return messages;
     }),
 
+  deleteFastMeet: procedure
+    .input(z.object({ meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meetId } = input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      if (meet.userId !== ctx.userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can't delete this meet",
+        });
+      }
+
+      await db.delete(fastMeetTable).where(eq(fastMeetTable.id, meetId));
+
+      await db
+        .delete(fastMeetParticipantsTable)
+        .where(eq(fastMeetParticipantsTable.meetId, meetId));
+
+      return true;
+    }),
+
+  leaveFastMeet: procedure
+    .input(z.object({ meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meetId } = input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      if (meet.userId === ctx.userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can't leave your own meet",
+        });
+      }
+
+      const request = await db
+        .delete(fastMeetParticipantsTable)
+        .where(
+          and(
+            eq(fastMeetParticipantsTable.meetId, meetId),
+            eq(fastMeetParticipantsTable.userId, ctx.userId),
+          ),
+        );
+
+      return request;
+    }),
+
   updateMeeting: procedure
     .input(
       z.object({

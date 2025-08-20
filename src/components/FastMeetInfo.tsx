@@ -14,12 +14,13 @@ import { CloseRed } from "./Icons/CloseRed";
 interface FastMeetInfoProps {
   meet: FastMeet;
   currentUser: UserType | null;
+  setIsMoreOpen: (isOpen: boolean) => void;
 }
 
-export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
+export const FastMeetInfo = ({ meet, currentUser, setIsMoreOpen }: FastMeetInfoProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [isChat, setIsChat] = useState(false);
+  const [page, setPage] = useState<"chat" | "settings" | "participants">("participants");
   const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   // Fetch all users to display participant names and photos
@@ -33,10 +34,10 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
 
   // Scroll to bottom when chat opens or messages change
   useEffect(() => {
-    if (isChat) {
+    if (page === "chat") {
       chatBottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
-  }, [isChat, chatMessages]);
+  }, [page, chatMessages]);
 
   // Fetch participants for this fast meet
   const { data: participants } = useQuery(
@@ -76,6 +77,44 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
         );
       },
     );
+  };
+
+  const leaveFastMeet = useMutation(
+    trpc.meetings.leaveFastMeet.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
+        });
+      },
+    }),
+  );
+
+  const handleLeaveFastMeet = () => {
+    leaveFastMeet.mutate({ meetId: meet.id });
+
+    queryClient.setQueryData(
+      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
+      (old: FastMeetParticipant[] | undefined) => {
+        if (!old) return [];
+        return old.filter((p) => p.userId !== currentUser?.id);
+      },
+    );
+
+    setIsMoreOpen(false);
+  };
+
+  const deleteFastMeet = useMutation(trpc.meetings.deleteFastMeet.mutationOptions());
+
+  const handleDeleteFastMeet = () => {
+    deleteFastMeet.mutate({ meetId: meet.id });
+    queryClient.setQueryData(
+      trpc.meetings.getFastMeets.queryKey(),
+      (old: FastMeet[] | undefined) => {
+        if (!old) return [];
+        return old.filter((p) => p.id !== meet.id);
+      },
+    );
+    setIsMoreOpen(false);
   };
 
   // Handle declining a participant request
@@ -135,24 +174,35 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
         <button
           className={cn(
             "flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium",
-            !isChat ? "bg-black text-white" : "bg-white text-black",
+            page === "participants" ? "bg-black text-white" : "bg-white text-black",
           )}
-          onClick={() => setIsChat(false)}
+          onClick={() => setPage("participants")}
         >
           Участники
         </button>
         <button
           className={cn(
             "flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium",
-            isChat ? "bg-black text-white" : "bg-white text-black",
+            page === "chat" ? "bg-black text-white" : "bg-white text-black",
           )}
-          onClick={() => setIsChat(true)}
+          onClick={() => setPage("chat")}
         >
           Чат
         </button>
+        {isOrganizer && (
+          <button
+            className={cn(
+              "flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium",
+              page === "settings" ? "bg-black text-white" : "bg-white text-black",
+            )}
+            onClick={() => setPage("settings")}
+          >
+            Настройки
+          </button>
+        )}
       </div>
       {/* Pending Requests Section - Only visible to organizer */}
-      {!isChat ? (
+      {page === "participants" ? (
         <>
           {isOrganizer && (
             <>
@@ -281,7 +331,7 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
             )}
           </div>
         </>
-      ) : (
+      ) : page === "chat" ? (
         <>
           <div data-chat-container="fastmeet">
             <Chat
@@ -310,6 +360,27 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
             setSelectedCategory={setSelectedCategory}
           />
         </>
+      ) : (
+        page === "settings" && <div>Settings</div>
+      )}
+      {!isOrganizer ? (
+        <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+          <button
+            onClick={handleLeaveFastMeet}
+            className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
+          >
+            Покинуть встречу
+          </button>
+        </div>
+      ) : (
+        <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+          <button
+            onClick={handleDeleteFastMeet}
+            className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
+          >
+            Удалить встречу
+          </button>
+        </div>
       )}
     </div>
   );

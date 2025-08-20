@@ -36,6 +36,7 @@ export const Step2 = ({
   city,
   setCity,
   isFastMeet,
+  requireCity = true,
 }: {
   index: number;
   setIndex: (index: number) => void;
@@ -73,6 +74,7 @@ export const Step2 = ({
   city: string;
   setCity: (city: string) => void;
   isFastMeet?: boolean;
+  requireCity?: boolean;
 }) => {
   const [type, setType] = useState<"one" | "multiple">("one");
 
@@ -474,8 +476,8 @@ export const Step2 = ({
       return;
     }
 
-    // Проверяем город
-    if (!city.trim()) {
+    // Проверяем город (опционально)
+    if (requireCity && !city.trim()) {
       setIsDisabled(true);
       return;
     }
@@ -569,7 +571,7 @@ export const Step2 = ({
     });
 
     setIsDisabled(!valid);
-  }, [locations, selectedItems, city, isFastMeet]);
+  }, [locations, selectedItems, city, isFastMeet, requireCity]);
 
   console.log("🔍 Step2 Debug:", {
     selectedItems,

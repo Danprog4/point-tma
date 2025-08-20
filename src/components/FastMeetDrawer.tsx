@@ -26,6 +26,7 @@ export default function FastMeetDrawer({
 
   // Получаем данные из хука для логики кнопок
   const {
+    meet: liveMeet,
     isBlocked,
     isParticipant,
     isAcceptedParticipant,
@@ -62,9 +63,10 @@ export default function FastMeetDrawer({
     return eventTypes.find((type) => type.name === typeName);
   };
 
-  const eventTypeInfo = meet.type ? getEventTypeInfo(meet.type) : null;
+  const currentMeet = (liveMeet ?? meet) as FastMeet;
+  const eventTypeInfo = currentMeet.type ? getEventTypeInfo(currentMeet.type) : null;
 
-  const isUsersMeet = meet.userId === currentUser?.id;
+  const isUsersMeet = currentMeet.userId === currentUser?.id;
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
@@ -92,7 +94,7 @@ export default function FastMeetDrawer({
           {/* Content */}
           {isMoreOpen ? (
             <FastMeetInfo
-              meet={meet}
+              meet={currentMeet}
               currentUser={currentUser}
               setIsMoreOpen={setIsMoreOpen}
               onOpenChange={onOpenChange}
@@ -102,9 +104,13 @@ export default function FastMeetDrawer({
               <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-24">
                 {/* Title and Description */}
                 <div className="mb-6">
-                  <h2 className="mb-2 text-xl font-bold text-gray-900">{meet.name}</h2>
-                  {meet.description && (
-                    <p className="leading-relaxed text-gray-600">{meet.description}</p>
+                  <h2 className="mb-2 text-xl font-bold text-gray-900">
+                    {currentMeet.name}
+                  </h2>
+                  {currentMeet.description && (
+                    <p className="leading-relaxed text-gray-600">
+                      {currentMeet.description}
+                    </p>
                   )}
                 </div>
 
@@ -118,7 +124,7 @@ export default function FastMeetDrawer({
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">Создана</div>
                       <div className="text-sm text-gray-600">
-                        {formatDate(meet.createdAt)}
+                        {formatDate(currentMeet.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -130,12 +136,14 @@ export default function FastMeetDrawer({
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">Организатор</div>
-                      <div className="text-sm text-gray-600">ID: {meet.userId}</div>
+                      <div className="text-sm text-gray-600">
+                        ID: {currentMeet.userId}
+                      </div>
                     </div>
                   </div>
 
                   {/* Event Type */}
-                  {(meet.type || meet.subType) && (
+                  {(currentMeet.type || currentMeet.subType) && (
                     <div
                       className={`flex items-start gap-3 rounded-xl p-4 ${
                         eventTypeInfo?.bgColor || "bg-gray-50"
@@ -157,11 +165,11 @@ export default function FastMeetDrawer({
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">Тип встречи</div>
                         <div className="text-sm text-gray-600">
-                          {meet.subType || meet.type}
+                          {currentMeet.subType || currentMeet.type}
                         </div>
-                        {meet.subType && meet.type && (
+                        {currentMeet.subType && currentMeet.type && (
                           <div className="mt-1 text-xs text-gray-500">
-                            Категория: {meet.type}
+                            Категория: {currentMeet.type}
                           </div>
                         )}
                         {eventTypeInfo?.description && (
@@ -174,7 +182,7 @@ export default function FastMeetDrawer({
                   )}
 
                   {/* Tags */}
-                  {meet.tags && meet.tags.length > 0 && (
+                  {currentMeet.tags && currentMeet.tags.length > 0 && (
                     <div className="flex items-start gap-3 rounded-xl bg-amber-50 p-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
                         <Tag className="h-5 w-5 text-amber-600" />
@@ -182,7 +190,7 @@ export default function FastMeetDrawer({
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">Тэги</div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {meet.tags.map((tag, index) => (
+                          {currentMeet.tags.map((tag, index) => (
                             <span
                               key={index}
                               className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700"
@@ -196,17 +204,17 @@ export default function FastMeetDrawer({
                   )}
 
                   {/* Locations */}
-                  {meet.locations && meet.locations.length > 0 && (
+                  {currentMeet.locations && currentMeet.locations.length > 0 && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-5 w-5 text-gray-600" />
                         <span className="font-medium text-gray-900">
-                          Места встречи ({meet.locations.length})
+                          Места встречи ({currentMeet.locations.length})
                         </span>
                       </div>
 
                       <div className="space-y-3">
-                        {meet.locations.map((location, index) => (
+                        {currentMeet.locations.map((location, index) => (
                           <div
                             key={index}
                             onClick={() =>
@@ -257,11 +265,11 @@ export default function FastMeetDrawer({
               </div>
 
               {/* Action Button - Fixed at bottom */}
-              <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+              <div className="absolute right-4 bottom-0 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-4">
                 {isBlocked && !isUsersMeet && !isParticipant && !isAcceptedParticipant ? (
                   <button
                     disabled
-                    className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
+                    className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-3 font-medium text-white opacity-50"
                   >
                     {isAlreadyOwner ? "У вас уже есть встреча" : "Заблокировано"}
                     <LockIcon className="ml-2 h-4 w-4" />
@@ -271,21 +279,21 @@ export default function FastMeetDrawer({
                     onClick={() => {
                       setIsMoreOpen(true);
                     }}
-                    className="flex w-full items-center justify-center rounded-xl bg-purple-600 py-4 font-medium text-white"
+                    className="flex w-full items-center justify-center rounded-xl bg-purple-600 py-3 font-medium text-white"
                   >
                     О встрече
                   </button>
                 ) : isParticipant && !isUsersMeet ? (
                   <button
                     onClick={handleJoinFastMeet}
-                    className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                    className="w-full rounded-xl bg-purple-600 py-3 font-medium text-white transition-colors hover:bg-purple-700"
                   >
                     Отменить заявку
                   </button>
                 ) : (
                   <button
                     onClick={handleJoinFastMeet}
-                    className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                    className="w-full rounded-xl bg-purple-600 py-3 font-medium text-white transition-colors hover:bg-purple-700"
                   >
                     {isUsersMeet ? "О встрече" : "Присоединиться к встрече"}
                   </button>

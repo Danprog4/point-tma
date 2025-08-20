@@ -10,6 +10,7 @@ import { useTRPC } from "~/trpc/init/react";
 import { Chat } from "./Chat";
 import { ChatMessages } from "./ChatMessages";
 import { ChatNav } from "./ChatNav";
+import FastMeetSettings from "./FastMeetSettings";
 import { CloseRed } from "./Icons/CloseRed";
 
 interface FastMeetInfoProps {
@@ -96,7 +97,7 @@ export const FastMeetInfo = ({
   };
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex h-full flex-col space-y-6">
       <div className="flex gap-4 px-4">
         <button
           className={cn(
@@ -288,34 +289,42 @@ export const FastMeetInfo = ({
           />
         </>
       ) : (
-        page === "settings" && <div>Settings</div>
+        page === "settings" && (
+          <FastMeetSettings
+            meet={meet}
+            currentUser={currentUser}
+            onSaved={() => setPage("participants")}
+          />
+        )
       )}
       {!isOrganizer ? (
-        <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+        <div className="absolute right-4 bottom-0 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
           <button
             onClick={() => {
               handleLeaveFastMeet();
               onOpenChange(false);
               setIsMoreOpen(false);
             }}
-            className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
+            className="flex w-full items-center justify-center rounded-xl bg-red-500 py-3 font-medium text-white"
           >
             Покинуть встречу
           </button>
         </div>
       ) : (
-        <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
-          <button
-            onClick={() => {
-              handleDeleteFastMeet();
-              onOpenChange(false);
-              setIsMoreOpen(false);
-            }}
-            className="flex w-full items-center justify-center rounded-xl bg-red-500 py-4 font-medium text-white"
-          >
-            Удалить встречу
-          </button>
-        </div>
+        page !== "settings" && (
+          <div className="absolute right-4 bottom-0 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-4">
+            <button
+              onClick={() => {
+                handleDeleteFastMeet();
+                onOpenChange(false);
+                setIsMoreOpen(false);
+              }}
+              className="flex w-full items-center justify-center rounded-xl bg-red-500 py-3 font-medium text-white"
+            >
+              Удалить встречу
+            </button>
+          </div>
+        )
       )}
     </div>
   );

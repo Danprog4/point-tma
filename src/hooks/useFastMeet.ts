@@ -280,6 +280,8 @@ export function useFastMeet(meetId: number) {
     }
   };
 
+  const editFastMeet = useMutation(trpc.meetings.editFastMeet.mutationOptions());
+
   return {
     meet,
     participants,

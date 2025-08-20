@@ -817,6 +817,45 @@ export const meetingRouter = createTRPCRouter({
       }
     }),
 
+  editFastMeet: procedure
+    .input(
+      z.object({
+        meetId: z.number(),
+        name: z.string(),
+        description: z.string(),
+        locations: z.array(
+          z.object({
+            location: z.string(),
+            address: z.string(),
+            coordinates: z.tuple([z.number(), z.number()]),
+          }),
+        ),
+        coordinates: z.tuple([z.number(), z.number()]),
+        type: z.string(),
+        subType: z.string(),
+        tags: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, name, description, locations, coordinates, type, subType, tags } =
+        input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      await db
+        .update(fastMeetTable)
+        .set({ name, description, locations, coordinates, type, subType, tags })
+        .where(eq(fastMeetTable.id, meetId));
+
+      return meet;
+    }),
+
   getMessages: procedure
     .input(z.object({ meetId: z.number().optional(), fastMeetId: z.number().optional() }))
     .query(async ({ input }) => {

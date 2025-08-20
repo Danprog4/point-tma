@@ -150,8 +150,11 @@ export default function FastMeetDrawer({
             <div className="text-lg font-bold text-gray-900">Быстрая встреча</div>
             <button
               onClick={() => {
-                onOpenChange(false);
-                setIsMoreOpen(false);
+                if (isMoreOpen) {
+                  setIsMoreOpen(false);
+                } else {
+                  onOpenChange(false);
+                }
               }}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 transition-colors hover:bg-gray-200"
             >
@@ -332,8 +335,13 @@ export default function FastMeetDrawer({
                     <LockIcon className="ml-2 h-4 w-4" />
                   </button>
                 ) : isAcceptedParticipant && !isUsersMeet ? (
-                  <button className="flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white">
-                    В карты
+                  <button
+                    onClick={() => {
+                      setIsMoreOpen(true);
+                    }}
+                    className="flex w-full items-center justify-center rounded-xl bg-purple-600 py-4 font-medium text-white"
+                  >
+                    О встрече
                   </button>
                 ) : isParticipant && !isUsersMeet ? (
                   <button

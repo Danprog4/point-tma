@@ -64,7 +64,7 @@ export const Chat = ({
           );
         })}
         {/* Dummy element to anchor the scroll position at the bottom */}
-        <div ref={chatBottomRef} />
+    
       </div>
     </div>
   );

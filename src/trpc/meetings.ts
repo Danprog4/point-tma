@@ -744,23 +744,44 @@ export const meetingRouter = createTRPCRouter({
   sendMessage: procedure
     .input(
       z.object({
-        meetId: z.number(),
+        meetId: z.number().optional(),
+        fastMeetId: z.number().optional(),
         message: z.string().max(255),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { meetId, message } = input;
+      const { meetId, fastMeetId, message } = input;
+
+      // Ensure at least one ID is provided
+      if (!meetId && !fastMeetId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Either meetId or fastMeetId must be provided",
+        });
+      }
 
       // Rate limit: max 2 messages per minute per user
       const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
 
-      const recentMessages = await db.query.meetMessagesTable.findMany({
-        where: and(
-          eq(meetMessagesTable.meetId, meetId),
-          eq(meetMessagesTable.userId, ctx.userId),
-          gt(meetMessagesTable.createdAt, oneMinuteAgo),
-        ),
-      });
+      let recentMessages = [];
+
+      if (meetId) {
+        recentMessages = await db.query.meetMessagesTable.findMany({
+          where: and(
+            eq(meetMessagesTable.meetId, meetId),
+            eq(meetMessagesTable.userId, ctx.userId),
+            gt(meetMessagesTable.createdAt, oneMinuteAgo),
+          ),
+        });
+      } else if (fastMeetId) {
+        recentMessages = await db.query.meetMessagesTable.findMany({
+          where: and(
+            eq(meetMessagesTable.fastMeetId, fastMeetId),
+            eq(meetMessagesTable.userId, ctx.userId),
+            gt(meetMessagesTable.createdAt, oneMinuteAgo),
+          ),
+        });
+      }
 
       if (recentMessages.length >= 2) {
         throw new TRPCError({
@@ -769,23 +790,43 @@ export const meetingRouter = createTRPCRouter({
         });
       }
 
-      const [msg] = await db
-        .insert(meetMessagesTable)
-        .values({
-          meetId,
-          userId: ctx.userId,
-          message,
-        })
-        .returning();
+      if (meetId) {
+        const [msg] = await db
+          .insert(meetMessagesTable)
+          .values({
+            meetId,
+            userId: ctx.userId,
+            message,
+          })
+          .returning();
 
-      return msg;
+        return msg;
+      }
+
+      if (fastMeetId) {
+        const [fastMeetMsg] = await db
+          .insert(meetMessagesTable)
+          .values({
+            fastMeetId,
+            userId: ctx.userId,
+            message,
+          })
+          .returning();
+
+        return fastMeetMsg;
+      }
     }),
 
   getMessages: procedure
-    .input(z.object({ meetId: z.number() }))
+    .input(z.object({ meetId: z.number().optional(), fastMeetId: z.number().optional() }))
     .query(async ({ input }) => {
       const messages = await db.query.meetMessagesTable.findMany({
-        where: eq(meetMessagesTable.meetId, input.meetId),
+        where: and(
+          or(
+            eq(meetMessagesTable.meetId, input.meetId ?? 0),
+            eq(meetMessagesTable.fastMeetId, input.fastMeetId ?? 0),
+          ),
+        ),
         orderBy: asc(meetMessagesTable.createdAt),
       });
 

@@ -70,6 +70,11 @@ export default function FastMeetDrawer({
       participant.userId === currentUser?.id && participant.status === "pending",
   );
 
+  const isAcceptedParticipant = participants?.some(
+    (participant) =>
+      participant.userId === currentUser?.id && participant.status === "accepted",
+  );
+
   const handleJoinFastMeet = () => {
     if (!isParticipant && !isUsersMeet) {
       joinFastMeet.mutate({ meetId: meet.id });
@@ -289,13 +294,13 @@ export default function FastMeetDrawer({
                     }}
                     className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
                   >
-                    {!isUsersMeet && !isParticipant
-                      ? "Присоединиться к встрече"
-                      : isParticipant
-                        ? "Отменить заявку"
-                        : isUsersMeet
-                          ? "О встрече"
-                          : "В карты"}
+                    {isUsersMeet
+                      ? "О встрече"
+                      : isAcceptedParticipant
+                        ? "В карты"
+                        : isParticipant
+                          ? "Отменить заявку"
+                          : "Присоединиться к встрече"}
                   </button>
                 </div>
               </div>

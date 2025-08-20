@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckIcon } from "lucide-react";
 import { FastMeet, FastMeetParticipant, User as UserType } from "~/db/schema";
 import { getImage } from "~/lib/utils/getImage";
 import { useTRPC } from "~/trpc/init/react";
-import { Check } from "./Icons/Check";
 import { CloseRed } from "./Icons/CloseRed";
 
 interface FastMeetInfoProps {
@@ -118,7 +118,7 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
                         className="flex cursor-pointer items-center justify-center rounded-lg bg-green-500 p-2 text-white"
                         onClick={() => handleAcceptRequest(participant)}
                       >
-                        <Check />
+                        <CheckIcon className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </div>
@@ -126,9 +126,7 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
               })}
             </div>
           ) : (
-            <div className="px-4 py-4 text-sm text-gray-500">
-              Заявок на встречу пока нет
-            </div>
+            <div className="px-4 text-sm text-gray-500">Заявок на встречу пока нет</div>
           )}
         </>
       )}
@@ -187,9 +185,7 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
 
       {/* No participants message */}
       {acceptedParticipants.length === 0 && (
-        <div className="px-4 py-4 text-sm text-gray-500">
-          Пока нет принятых участников
-        </div>
+        <div className="px-4 text-sm text-gray-500">Пока нет принятых участников</div>
       )}
 
       {/* Participants count info */}

@@ -47,24 +47,95 @@ export const PeopleMap = ({
     trpc.meetings.getFastMeetParticipants.queryOptions({}),
   );
 
-  // Prepare fast meet markers - Green for user's own meets, purple for others
+  // Find user's own fast meet (as organizer, accepted participant, or pending)
+  const userFastMeet = fastMeets?.find((meet) => {
+    // Check if user is the organizer
+    if (meet.userId === currentUser?.id) {
+      return true;
+    }
+
+    // Check if user is a participant (accepted or pending)
+    const isParticipant = participants?.some(
+      (p) =>
+        p.userId === currentUser?.id &&
+        p.meetId === meet.id &&
+        (p.status === "accepted" || p.status === "pending"),
+    );
+
+    return isParticipant;
+  });
+
+  // Determine button text and action based on user's meet status
+  const getCheckInButtonConfig = () => {
+    if (!userFastMeet) {
+      return {
+        text: "Check-In",
+        action: () => navigate({ to: "/create-fastMeet" }),
+        className: "bg-purple-600",
+      };
+    }
+
+    const isOrganizer = userFastMeet.userId === currentUser?.id;
+    const userParticipation = participants?.find(
+      (p) => p.userId === currentUser?.id && p.meetId === userFastMeet.id,
+    );
+
+    if (isOrganizer) {
+      return {
+        text: "Моя встреча",
+        action: () => handleFastMeetClick(userFastMeet),
+        className: "bg-green-500",
+      };
+    } else if (userParticipation?.status === "accepted") {
+      return {
+        text: "Моя встреча",
+        action: () => handleFastMeetClick(userFastMeet),
+        className: "bg-green-500",
+      };
+    } else if (userParticipation?.status === "pending") {
+      return {
+        text: "Моя встреча",
+        action: () => handleFastMeetClick(userFastMeet),
+        className: "bg-orange-600",
+      };
+    }
+
+    // Fallback
+    return {
+      text: "Check-In",
+      action: () => navigate({ to: "/create-fastMeet" }),
+      className: "bg-purple-600",
+    };
+  };
+
+  const buttonConfig = getCheckInButtonConfig();
+
+  // Prepare fast meet markers - Green for user's own meets, red for pending, purple for others
   const fastMeetMarkers =
     fastMeets
       ?.filter((meet) => meet?.coordinates)
       .map((meet) => {
         const isUsersMeet = meet.userId === currentUser?.id;
-        const isParticipant = participants?.some(
-          (p) =>
-            p.userId === currentUser?.id &&
-            p.meetId === meet.id &&
-            p.status === "pending",
+        const userParticipation = participants?.find(
+          (p) => p.userId === currentUser?.id && p.meetId === meet.id,
         );
+
+        let color = "#9924FF"; // Default purple for other meets
+
+        if (isUsersMeet) {
+          color = "#10B981"; // Green for user's own meets
+        } else if (userParticipation?.status === "accepted") {
+          color = "#10B981"; // Green for accepted participation
+        } else if (userParticipation?.status === "pending") {
+          color = "#FF6B35"; // Orange for pending requests
+        }
+
         return {
           coordinates: meet.coordinates as [number, number],
           label: meet.name || "Быстрая встреча",
           onClick: () => handleFastMeetClick(meet),
           meetData: meet, // Сохраняем данные встречи для обработки клика
-          color: isUsersMeet ? "#10B981" : isParticipant ? "#FF0000" : "#9924FF", // Green for user's meets, purple for others
+          color,
         };
       }) || [];
 
@@ -80,6 +151,20 @@ export const PeopleMap = ({
     currentLocation,
     fastMeetsWithCoords: fastMeets?.filter((m) => m?.coordinates).length,
     totalMarkers: allMarkers.length,
+    userFastMeet: userFastMeet
+      ? {
+          id: userFastMeet.id,
+          name: userFastMeet.name,
+          isOrganizer: userFastMeet.userId === currentUser?.id,
+          participationStatus: participants?.find(
+            (p) => p.userId === currentUser?.id && p.meetId === userFastMeet.id,
+          )?.status,
+        }
+      : null,
+    buttonConfig: {
+      text: buttonConfig.text,
+      className: buttonConfig.className,
+    },
   });
 
   return (
@@ -100,12 +185,10 @@ export const PeopleMap = ({
 
       <div className="fixed right-4 bottom-20 left-4">
         <button
-          onClick={() => {
-            navigate({ to: "/create-fastMeet" });
-          }}
-          className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+          onClick={buttonConfig.action}
+          className={`w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md ${buttonConfig.className} px-6 py-3 font-medium text-white shadow-lg transition-colors`}
         >
-          Check-In
+          {buttonConfig.text}
         </button>
       </div>
       <FastMeetDrawer

@@ -328,30 +328,26 @@ export default function FastMeetDrawer({
                   !isAcceptedParticipant ? (
                     <button
                       disabled
-                      className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
+                      className="z-[100] flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
                     >
                       {isAlreadyOwner ? "У вас уже есть встреча" : "Заблокировано"}
                       <LockIcon className="ml-2 h-4 w-4" />
                     </button>
                   ) : isAcceptedParticipant && !isUsersMeet ? (
-                    <button
-                      disabled
-                      className="flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white opacity-75"
-                    >
-                      Вы участвуете в встрече
-                      <LockIcon className="ml-2 h-4 w-4" />
+                    <button className="z-[100] flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white">
+                      В карты
                     </button>
                   ) : isParticipant && !isUsersMeet ? (
                     <button
                       onClick={handleJoinFastMeet}
-                      className="w-full rounded-xl bg-orange-500 py-4 font-medium text-white transition-colors hover:bg-orange-600"
+                      className="z-[100] w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
                     >
                       Отменить заявку
                     </button>
                   ) : (
                     <button
                       onClick={handleJoinFastMeet}
-                      className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                      className="z-[100] w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
                     >
                       {isUsersMeet ? "О встрече" : "Присоединиться к встрече"}
                     </button>

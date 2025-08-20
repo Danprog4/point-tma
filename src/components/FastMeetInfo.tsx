@@ -44,14 +44,15 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
   const handleAcceptRequest = (participant: FastMeetParticipant) => {
     if (!participant.userId) return;
 
-    acceptFastMeet.mutate(
-      { meetId: meet.id, userId: participant.userId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-          });
-        },
+    acceptFastMeet.mutate({ meetId: meet.id, userId: participant.userId });
+
+    queryClient.setQueryData(
+      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
+      (old: FastMeetParticipant[] | undefined) => {
+        if (!old) return [];
+        return old.map((p) =>
+          p.userId === participant.userId ? { ...p, status: "accepted" } : p,
+        );
       },
     );
   };
@@ -60,14 +61,13 @@ export const FastMeetInfo = ({ meet, currentUser }: FastMeetInfoProps) => {
   const handleDeclineRequest = (participant: FastMeetParticipant) => {
     if (!participant.userId) return;
 
-    declineFastMeet.mutate(
-      { meetId: meet.id, userId: participant.userId },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
-          });
-        },
+    declineFastMeet.mutate({ meetId: meet.id, userId: participant.userId });
+
+    queryClient.setQueryData(
+      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
+      (old: FastMeetParticipant[] | undefined) => {
+        if (!old) return [];
+        return old.filter((p) => p.userId !== participant.userId);
       },
     );
   };

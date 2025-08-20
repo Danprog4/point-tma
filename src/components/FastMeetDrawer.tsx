@@ -143,7 +143,7 @@ export default function FastMeetDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[85vh] flex-col rounded-t-[20px] bg-white pb-20">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[85vh] flex-col rounded-t-[20px] bg-white">
           {/* Header */}
           <div className="flex items-center justify-between p-4 pb-2">
             <ArrowLeft className="h-6 w-6 text-transparent" />
@@ -164,7 +164,7 @@ export default function FastMeetDrawer({
             <FastMeetInfo meet={meet} currentUser={currentUser} />
           ) : (
             <>
-              <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-6">
+              <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-24">
                 {/* Title and Description */}
                 <div className="mb-6">
                   <h2 className="mb-2 text-xl font-bold text-gray-900">{meet.name}</h2>
@@ -319,40 +319,40 @@ export default function FastMeetDrawer({
                     </div>
                   )}
                 </div>
-
-                {/* Action Button */}
-                <div className="fixed right-4 bottom-6 left-4">
-                  {isBlocked &&
-                  !isUsersMeet &&
-                  !isParticipant &&
-                  !isAcceptedParticipant ? (
-                    <button
-                      disabled
-                      className="z-[100] flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
-                    >
-                      {isAlreadyOwner ? "У вас уже есть встреча" : "Заблокировано"}
-                      <LockIcon className="ml-2 h-4 w-4" />
-                    </button>
-                  ) : isAcceptedParticipant && !isUsersMeet ? (
-                    <button className="z-[100] flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white">
-                      В карты
-                    </button>
-                  ) : isParticipant && !isUsersMeet ? (
-                    <button
-                      onClick={handleJoinFastMeet}
-                      className="z-[100] w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
-                    >
-                      Отменить заявку
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleJoinFastMeet}
-                      className="z-[100] w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
-                    >
-                      {isUsersMeet ? "О встрече" : "Присоединиться к встрече"}
-                    </button>
-                  )}
-                </div>
+              </div>
+              
+              {/* Action Button - Fixed at bottom */}
+              <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+                {isBlocked &&
+                !isUsersMeet &&
+                !isParticipant &&
+                !isAcceptedParticipant ? (
+                  <button
+                    disabled
+                    className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
+                  >
+                    {isAlreadyOwner ? "У вас уже есть встреча" : "Заблокировано"}
+                    <LockIcon className="ml-2 h-4 w-4" />
+                  </button>
+                ) : isAcceptedParticipant && !isUsersMeet ? (
+                  <button className="flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white">
+                    В карты
+                  </button>
+                ) : isParticipant && !isUsersMeet ? (
+                  <button
+                    onClick={handleJoinFastMeet}
+                    className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                  >
+                    Отменить заявку
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleJoinFastMeet}
+                    className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                  >
+                    {isUsersMeet ? "О встрече" : "Присоединиться к встрече"}
+                  </button>
+                )}
               </div>
             </>
           )}

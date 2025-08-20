@@ -129,7 +129,7 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-24">
+    <div className="min-h-[100dvh] overflow-y-auto px-4 pb-[calc(env(safe-area-inset-bottom)+120px)]">
       <div className="flex flex-col items-start gap-2 pb-4">
         <div className="text-xl font-bold">Тип встречи *</div>
         <div
@@ -148,7 +148,7 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
           onChange={(e) => setTitle(e.target.value)}
           type="text"
           placeholder={`Введите название`}
-          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
         />
       </div>
 
@@ -158,7 +158,7 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={`Введите описание`}
-          className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
+          className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-base text-black placeholder:text-black/50"
         />
       </div>
 
@@ -216,25 +216,10 @@ export function FastMeetSettings({ meet, currentUser, onSaved }: FastMeetSetting
         requireCity={true}
       />
 
-      <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
+      <div className="fixed inset-x-0 bottom-0 z-[100] flex w-full items-center justify-between px-4 pb-[env(safe-area-inset-bottom)]">
         <button
           onClick={handleSave}
-          disabled={
-            editFastMeet.isPending ||
-            !title.trim() ||
-            !description.trim() ||
-            !areLocationsValid ||
-            !city.trim()
-          }
-          className={`z-[100] mx-auto flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50 ${
-            editFastMeet.isPending ||
-            !title.trim() ||
-            !description.trim() ||
-            !areLocationsValid ||
-            !city.trim()
-              ? ""
-              : ""
-          }`}
+          className={`z-[100] mx-auto mb-4 flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50`}
         >
           {editFastMeet.isPending ? "Сохраняем..." : "Сохранить изменения"}
         </button>

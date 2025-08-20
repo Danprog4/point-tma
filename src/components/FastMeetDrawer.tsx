@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, Clock, MapPin, Tag, User, X } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { FastMeet, FastMeetParticipant, User as UserType } from "~/db/schema";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
@@ -65,6 +66,10 @@ export default function FastMeetDrawer({
     trpc.meetings.getFastMeetParticipants.queryOptions({ meetId: meet.id }),
   );
 
+  const { data: allParticipants } = useQuery(
+    trpc.meetings.getFastMeetParticipants.queryOptions({}),
+  );
+
   const isParticipant = participants?.some(
     (participant) =>
       participant.userId === currentUser?.id && participant.status === "pending",
@@ -75,7 +80,39 @@ export default function FastMeetDrawer({
       participant.userId === currentUser?.id && participant.status === "accepted",
   );
 
+  const isAlreadyParticipant = allParticipants?.some(
+    (participant) =>
+      participant.userId === currentUser?.id && participant.meetId !== meet.id,
+  );
+
+  const { data: fastMeets } = useQuery(trpc.meetings.getFastMeets.queryOptions());
+
+  // Check if user owns any other fast meet
+  const isAlreadyOwner = fastMeets?.some(
+    (fastMeet) => fastMeet.userId === currentUser?.id && fastMeet.id !== meet.id,
+  );
+
+  // Check if user is blocked from joining (owns another meet, or is participant in another meet)
+  const isBlocked = isAlreadyOwner || isAlreadyParticipant;
+
   const handleJoinFastMeet = () => {
+    // If user owns this meet, show participants info
+    if (isUsersMeet) {
+      setIsMoreOpen(true);
+      return;
+    }
+
+    // If user is blocked from joining, show error
+    if (isBlocked) {
+      if (isAlreadyOwner) {
+        toast.error("У вас уже есть активная встреча");
+      } else if (isAlreadyParticipant) {
+        toast.error("Сначала покиньте другую встречу");
+      }
+      return;
+    }
+
+    // Join or leave the meet
     if (!isParticipant && !isUsersMeet) {
       joinFastMeet.mutate({ meetId: meet.id });
       queryClient.setQueryData(
@@ -99,9 +136,6 @@ export default function FastMeetDrawer({
           ...(old || []).filter((p) => p.userId !== currentUser?.id),
         ],
       );
-    }
-    if (isUsersMeet) {
-      setIsMoreOpen(true);
     }
   };
 
@@ -288,20 +322,40 @@ export default function FastMeetDrawer({
 
                 {/* Action Button */}
                 <div className="fixed right-4 bottom-6 left-4">
-                  <button
-                    onClick={() => {
-                      handleJoinFastMeet();
-                    }}
-                    className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
-                  >
-                    {isUsersMeet
-                      ? "О встрече"
-                      : isAcceptedParticipant
-                        ? "В карты"
-                        : isParticipant
-                          ? "Отменить заявку"
-                          : "Присоединиться к встрече"}
-                  </button>
+                  {isBlocked &&
+                  !isUsersMeet &&
+                  !isParticipant &&
+                  !isAcceptedParticipant ? (
+                    <button
+                      disabled
+                      className="flex w-full items-center justify-center rounded-xl bg-gray-400 py-4 font-medium text-white opacity-50"
+                    >
+                      {isAlreadyOwner ? "У вас уже есть встреча" : "Заблокировано"}
+                      <LockIcon className="ml-2 h-4 w-4" />
+                    </button>
+                  ) : isAcceptedParticipant && !isUsersMeet ? (
+                    <button
+                      disabled
+                      className="flex w-full items-center justify-center rounded-xl bg-green-500 py-4 font-medium text-white opacity-75"
+                    >
+                      Вы участвуете в встрече
+                      <LockIcon className="ml-2 h-4 w-4" />
+                    </button>
+                  ) : isParticipant && !isUsersMeet ? (
+                    <button
+                      onClick={handleJoinFastMeet}
+                      className="w-full rounded-xl bg-orange-500 py-4 font-medium text-white transition-colors hover:bg-orange-600"
+                    >
+                      Отменить заявку
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleJoinFastMeet}
+                      className="w-full rounded-xl bg-purple-600 py-4 font-medium text-white transition-colors hover:bg-purple-700"
+                    >
+                      {isUsersMeet ? "О встрече" : "Присоединиться к встрече"}
+                    </button>
+                  )}
                 </div>
               </div>
             </>

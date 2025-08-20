@@ -177,10 +177,10 @@ function RouteComponent() {
     setTags(tags.filter((t) => t !== tag));
   };
   return (
-    <div className="px-4">
+    <div className="px-4 pt-24">
       <div className="flex items-center justify-center py-4">
         <button
-          className="absolute top-4.5 left-4 flex items-center justify-center"
+          className="absolute top-28.5 left-4 flex items-center justify-center"
           onClick={() => navigate({ to: "/people" })}
         >
           <ArrowLeftIcon className="h-5 w-5" />

@@ -1,7 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { YandexMap } from "~/components/YandexMap";
 import { FastMeet } from "~/db/schema";
+import { useTRPC } from "~/trpc/init/react";
 import FastMeetDrawer from "../FastMeetDrawer";
 
 interface PeopleMapProps {
@@ -20,6 +22,7 @@ export const PeopleMap = ({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [meet, setMeet] = useState<FastMeet | null>(null);
+  const trpc = useTRPC();
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
 
@@ -40,18 +43,28 @@ export const PeopleMap = ({
     });
   };
 
+  const { data: participants } = useQuery(
+    trpc.meetings.getFastMeetParticipants.queryOptions({}),
+  );
+
   // Prepare fast meet markers - Green for user's own meets, purple for others
   const fastMeetMarkers =
     fastMeets
       ?.filter((meet) => meet?.coordinates)
       .map((meet) => {
         const isUsersMeet = meet.userId === currentUser?.id;
+        const isParticipant = participants?.some(
+          (p) =>
+            p.userId === currentUser?.id &&
+            p.meetId === meet.id &&
+            p.status === "pending",
+        );
         return {
           coordinates: meet.coordinates as [number, number],
           label: meet.name || "Быстрая встреча",
           onClick: () => handleFastMeetClick(meet),
           meetData: meet, // Сохраняем данные встречи для обработки клика
-          color: isUsersMeet ? "#10B981" : "#9924FF", // Green for user's meets, purple for others
+          color: isUsersMeet ? "#10B981" : isParticipant ? "#FF0000" : "#9924FF", // Green for user's meets, purple for others
         };
       }) || [];
 

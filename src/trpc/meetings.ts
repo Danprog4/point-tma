@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import {
   calendarTable,
+  fastMeetParticipantsTable,
   fastMeetTable,
   meetMessagesTable,
   meetParticipantsTable,
@@ -251,6 +252,139 @@ export const meetingRouter = createTRPCRouter({
 
     return meetingsWithEvents;
   }),
+
+  joinFastMeet: procedure
+    .input(z.object({ meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meetId } = input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const existingParticipant = await db.query.fastMeetParticipantsTable.findFirst({
+        where: and(
+          eq(fastMeetParticipantsTable.meetId, meetId),
+          eq(fastMeetParticipantsTable.userId, ctx.userId),
+        ),
+      });
+
+      if (existingParticipant) {
+        await db
+          .delete(fastMeetParticipantsTable)
+          .where(
+            and(
+              eq(fastMeetParticipantsTable.meetId, meetId),
+              eq(fastMeetParticipantsTable.userId, ctx.userId),
+            ),
+          );
+
+        return;
+      }
+
+      const participant = await db.insert(fastMeetParticipantsTable).values({
+        meetId,
+        userId: ctx.userId,
+        status: "pending",
+      });
+
+      return participant;
+    }),
+
+  acceptFastMeet: procedure
+    .input(z.object({ meetId: z.number(), userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, userId } = input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const participant = await db.query.fastMeetParticipantsTable.findFirst({
+        where: and(
+          eq(fastMeetParticipantsTable.meetId, meetId),
+          eq(fastMeetParticipantsTable.userId, userId),
+        ),
+      });
+
+      if (!participant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Participant not found" });
+      }
+
+      await db
+        .update(fastMeetParticipantsTable)
+        .set({ status: "accepted" })
+        .where(eq(fastMeetParticipantsTable.id, participant.id));
+
+      return participant;
+    }),
+
+  declineFastMeet: procedure
+
+    .input(z.object({ meetId: z.number(), userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, userId } = input;
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const participant = await db.query.fastMeetParticipantsTable.findFirst({
+        where: and(
+          eq(fastMeetParticipantsTable.meetId, meetId),
+          eq(fastMeetParticipantsTable.userId, userId),
+        ),
+      });
+
+      if (!participant) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Participant not found" });
+      }
+
+      await db
+        .update(fastMeetParticipantsTable)
+        .set({ status: "rejected" })
+        .where(eq(fastMeetParticipantsTable.id, participant.id));
+
+      return participant;
+    }),
+
+  getFastMeetParticipants: procedure
+    .input(z.object({ meetId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const meetId = input?.meetId;
+
+      if (meetId) {
+        const participants = await db.query.fastMeetParticipantsTable.findMany({
+          where: eq(fastMeetParticipantsTable.meetId, meetId),
+        });
+
+        return participants;
+      } else {
+        const participants = await db.query.fastMeetParticipantsTable.findMany({});
+
+        return participants;
+      }
+    }),
 
   createFastMeet: procedure
     .input(

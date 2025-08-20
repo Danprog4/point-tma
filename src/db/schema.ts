@@ -72,6 +72,14 @@ export const fastMeetTable = pgTable("fast_meets", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const fastMeetParticipantsTable = pgTable("fast_meet_participants", {
+  id: serial("id").primaryKey(),
+  meetId: bigint("meet_id", { mode: "number" }),
+  userId: bigint("user_id", { mode: "number" }),
+  status: varchar("status", { length: 32 }).default("pending"), // pending, accepted, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const calendarTable = pgTable("calendar", {
   id: serial("id").primaryKey(),
   userId: bigint("user_id", { mode: "number" }),
@@ -248,3 +256,4 @@ export type NewMeetMessage = typeof meetMessagesTable.$inferInsert;
 
 export type FastMeet = typeof fastMeetTable.$inferSelect;
 export type NewFastMeet = typeof fastMeetTable.$inferInsert;
+export type FastMeetParticipant = typeof fastMeetParticipantsTable.$inferSelect;

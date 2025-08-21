@@ -1,3 +1,4 @@
+import { MapPin as PinIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import {
   calculateDistanceFromCoords,
@@ -392,32 +393,37 @@ export const YandexMap: React.FC<YandexMapProps> = ({
         {/* Markers with distances */}
         {markersToRender.map((marker, idx) => (
           <YMapMarker key={`marker-${idx}`} coordinates={marker.coordinates}>
-            <div className="relative">
+            <div
+              className="relative"
+              onClick={(e) => {
+                e.stopPropagation();
+                marker.onClick?.();
+              }}
+              style={{ width: 0, height: 0 }}
+            >
               <div
-                onClick={(e) => {
-                  e.stopPropagation(); // Предотвращаем всплытие события к карте
-                  if (marker.onClick) {
-                    console.log("📍 YandexMap: маркер кликнут", marker);
-                    marker.onClick();
-                  }
-                }}
                 style={{
-                  width: 12,
-                  height: 12,
-                  background: marker.color || "#9924FF", // Use custom color or default purple
-                  borderRadius: "50%",
-                  border: "2px solid white",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  transform: "translate(-50%, -100%)",
+                  position: "relative",
+                  left: 0,
+                  top: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   cursor: marker.onClick ? "pointer" : "default",
                 }}
-              />
+              >
+                <PinIcon size={28} strokeWidth={2.25} color={marker.color || "#9924FF"} />
+              </div>
               {marker.distance !== undefined && showDistances && (
                 <div
-                  className="absolute top-4 left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
+                  className="absolute left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
                   style={{
                     fontSize: "11px",
                     color: "#333",
                     border: "1px solid #e0e0e0",
+                    top: 4,
+                    pointerEvents: "none",
                   }}
                 >
                   {formatDistance(marker.distance)}

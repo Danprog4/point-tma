@@ -768,7 +768,12 @@ export const router = {
       }
 
       const newUserInventory = user.inventory?.filter(
-        (item) => item.eventId !== input.item.eventId,
+        (item) =>
+          !(
+            item.eventId === input.item.eventId &&
+            item.name === input.item.name &&
+            item.id === input.item.id
+          ),
       );
 
       const newTargetInventory = [...(targetUser.inventory || []), input.item];

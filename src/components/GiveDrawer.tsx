@@ -36,28 +36,39 @@ export default function GiveDrawer({
   }, [item]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const trpc = useTRPC();
-  const sendGift = useMutation(trpc.main.sendGift.mutationOptions({}));
+  const sendGift = useMutation(
+    trpc.main.sendGift.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+      onError: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
+  const [isSent, setIsSent] = useState(false);
   const handleSendGift = () => {
     console.log(selectedUser, "selectedUser");
     console.log(item, "item");
 
-    queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {
-      if (!old) return old;
-
-      return {
-        ...old,
-        inventory: old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
-      };
-    });
-
     if (selectedUser && item) {
+      // Оптимистично обновляем кэш - удаляем только конкретный билет
+      queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          inventory:
+            old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
+        };
+      });
+
       sendGift.mutate({ userId: selectedUser.id, item });
+      setIsSent(true);
     }
   };
 
-  const isSent = !user?.inventory?.filter(Boolean).some((i) => i.id === item?.id);
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>

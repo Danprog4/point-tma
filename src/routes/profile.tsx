@@ -16,7 +16,6 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Friends } from "~/components/Friends";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { FavIcon } from "~/components/Icons/Fav";
@@ -157,7 +156,7 @@ function RouteComponent() {
             />
           </div>
 
-          <div className="flex gap-4 px-4 pb-4">
+          {/* <div className="flex gap-4 px-4 pb-4">
             <button
               className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
                 page === "info" ? "bg-black text-white" : "bg-white text-black"
@@ -174,7 +173,7 @@ function RouteComponent() {
             >
               Друзья
             </button>
-          </div>
+          </div> */}
 
           {page === "info" && (
             <>
@@ -436,7 +435,7 @@ function RouteComponent() {
             </>
           )}
 
-          {page === "friends" && <Friends />}
+          {/* {page === "friends" && <Friends />} */}
 
           {isFullScreen && allPhotos.length > 0 && (
             <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">

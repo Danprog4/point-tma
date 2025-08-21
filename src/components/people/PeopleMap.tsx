@@ -37,11 +37,13 @@ export const PeopleMap = ({
   // Handle marker click for fast meets
   const handleFastMeetClick = (meet: any) => {
     // Check if there are multiple meetings at this location
-    const meetingsAtSameLocation = fastMeets?.filter(
-      (m) => m.coordinates && 
-      m.coordinates[0] === meet.coordinates[0] && 
-      m.coordinates[1] === meet.coordinates[1]
-    ) || [];
+    const meetingsAtSameLocation =
+      fastMeets?.filter(
+        (m) =>
+          m.coordinates &&
+          m.coordinates[0] === meet.coordinates[0] &&
+          m.coordinates[1] === meet.coordinates[1],
+      ) || [];
 
     if (meetingsAtSameLocation.length > 1) {
       // Show list of meetings
@@ -152,7 +154,7 @@ export const PeopleMap = ({
 
   // Group meetings by coordinates to handle multiple meetings at the same location
   const meetingsByLocation = new Map<string, FastMeet[]>();
-  
+
   fastMeets?.forEach((meet) => {
     if (meet.coordinates) {
       const coordKey = `${meet.coordinates[0]},${meet.coordinates[1]}`;
@@ -164,38 +166,43 @@ export const PeopleMap = ({
   });
 
   // Prepare fast meet markers - Green for user's own meets, red for pending, purple for others
-  const fastMeetMarkers = Array.from(meetingsByLocation.entries()).map(([coordKey, meetings]) => {
-    // Use the first meeting for color determination and click handling
-    const firstMeet = meetings[0];
-    const isUsersMeet = firstMeet.userId === currentUser?.id;
-    const userParticipation = allParticipants?.find(
-      (p) => p.userId === currentUser?.id && p.meetId === firstMeet.id,
-    );
+  const fastMeetMarkers = Array.from(meetingsByLocation.entries()).map(
+    ([coordKey, meetings]) => {
+      // Use the first meeting for color determination and click handling
+      const firstMeet = meetings[0];
+      const isUsersMeet = firstMeet.userId === currentUser?.id;
+      const userParticipation = allParticipants?.find(
+        (p) => p.userId === currentUser?.id && p.meetId === firstMeet.id,
+      );
 
-    let color = "#9924FF"; // Default purple for other meets
+      let color = "#9924FF"; // Default purple for other meets
 
-    if (isUsersMeet) {
-      color = "#10B981"; // Green for user's own meets
-    } else if (userParticipation?.status === "accepted") {
-      color = "#10B981"; // Green for accepted participation
-    } else if (userParticipation?.status === "pending") {
-      color = "#FF6B35"; // Orange for pending requests
-    }
+      if (isUsersMeet) {
+        color = "#10B981"; // Green for user's own meets
+      } else if (userParticipation?.status === "accepted") {
+        color = "#10B981"; // Green for accepted participation
+      } else if (userParticipation?.status === "pending") {
+        color = "#FF6B35"; // Orange for pending requests
+      }
 
-    // Show number of meetings at this location instead of participants count
-    const meetingsCount = meetings.length;
+      // Show number of meetings at this location instead of participants count
+      const meetingsCount = meetings.length;
 
-    console.log("🗺️ PeopleMap: meetingsCount", meetingsCount, "at", coordKey);
+      console.log("🗺️ PeopleMap: meetingsCount", meetingsCount, "at", coordKey);
 
-    return {
-      coordinates: firstMeet.coordinates as [number, number],
-      label: meetings.length > 1 ? `${meetings.length} встреч` : (firstMeet.name || "Быстрая встреча"),
-      onClick: () => handleFastMeetClick(firstMeet),
-      meetData: firstMeet, // Сохраняем данные первой встречи для обработки клика
-      color,
-      participantsCount: meetingsCount > 1 ? meetingsCount : undefined, // Only show count if multiple meetings
-    };
-  });
+      return {
+        coordinates: firstMeet.coordinates as [number, number],
+        label:
+          meetings.length > 1
+            ? `${meetings.length} встреч`
+            : firstMeet.name || "Быстрая встреча",
+        onClick: () => handleFastMeetClick(firstMeet),
+        meetData: firstMeet, // Сохраняем данные первой встречи для обработки клика
+        color,
+        participantsCount: meetingsCount > 1 ? meetingsCount : undefined, // Only show count if multiple meetings
+      };
+    },
+  );
 
   // Combine all markers
   const allMarkers = [...userMarkers, ...fastMeetMarkers];

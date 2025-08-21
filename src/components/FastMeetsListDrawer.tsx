@@ -63,7 +63,9 @@ export default function FastMeetsListDrawer({
           <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-24">
             <div className="space-y-4">
               {meetings.map((meeting, index) => {
-                const eventTypeInfo = meeting.type ? getEventTypeInfo(meeting.type) : null;
+                const eventTypeInfo = meeting.type
+                  ? getEventTypeInfo(meeting.type)
+                  : null;
                 const isUsersMeet = meeting.userId === currentUser?.id;
 
                 return (
@@ -78,7 +80,7 @@ export default function FastMeetsListDrawer({
                         {meeting.name}
                       </h3>
                       {meeting.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
+                        <p className="line-clamp-2 text-sm text-gray-600">
                           {meeting.description}
                         </p>
                       )}
@@ -160,7 +162,7 @@ export default function FastMeetsListDrawer({
                     {isUsersMeet && (
                       <div className="mt-3 flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                        <span className="text-xs text-green-600 font-medium">
+                        <span className="text-xs font-medium text-green-600">
                           Ваша встреча
                         </span>
                       </div>

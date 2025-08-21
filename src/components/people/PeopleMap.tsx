@@ -6,6 +6,7 @@ import { FastMeet } from "~/db/schema";
 import { useFastMeet } from "~/hooks/useFastMeet";
 import { useTRPC } from "~/trpc/init/react";
 import FastMeetDrawer from "../FastMeetDrawer";
+import FastMeetsListDrawer from "../FastMeetsListDrawer";
 
 interface PeopleMapProps {
   users: any[]; // Not used for markers, only for potential future features
@@ -27,14 +28,31 @@ export const PeopleMap = ({
   const [meet, setMeet] = useState<FastMeet | null>(
     preOpenFastMeetId ? fastMeets?.find((m) => m.id === preOpenFastMeetId) || null : null,
   );
+  const [isMeetsListOpen, setIsMeetsListOpen] = useState(false);
+  const [meetingsAtLocation, setMeetingsAtLocation] = useState<FastMeet[]>([]);
   const trpc = useTRPC();
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
 
   // Handle marker click for fast meets
   const handleFastMeetClick = (meet: any) => {
-    setIsOpen(true);
-    setMeet(meet);
+    // Check if there are multiple meetings at this location
+    const meetingsAtSameLocation = fastMeets?.filter(
+      (m) => m.coordinates && 
+      m.coordinates[0] === meet.coordinates[0] && 
+      m.coordinates[1] === meet.coordinates[1]
+    ) || [];
+
+    if (meetingsAtSameLocation.length > 1) {
+      // Show list of meetings
+      setMeetingsAtLocation(meetingsAtSameLocation);
+      setIsMeetsListOpen(true);
+    } else {
+      // Show single meeting
+      setIsOpen(true);
+      setMeet(meet);
+    }
+
     const isUsersMeet = meet.userId === currentUser?.id;
     console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
       id: meet.id,
@@ -45,7 +63,15 @@ export const PeopleMap = ({
       createdAt: meet.createdAt,
       locations: meet.locations,
       isUsersMeet,
+      meetingsAtSameLocation: meetingsAtSameLocation.length,
     });
+  };
+
+  // Handle meeting selection from list
+  const handleMeetingSelect = (selectedMeet: FastMeet) => {
+    setIsMeetsListOpen(false);
+    setIsOpen(true);
+    setMeet(selectedMeet);
   };
 
   const { data: allParticipants } = useQuery(
@@ -124,41 +150,52 @@ export const PeopleMap = ({
 
   const buttonConfig = getCheckInButtonConfig();
 
+  // Group meetings by coordinates to handle multiple meetings at the same location
+  const meetingsByLocation = new Map<string, FastMeet[]>();
+  
+  fastMeets?.forEach((meet) => {
+    if (meet.coordinates) {
+      const coordKey = `${meet.coordinates[0]},${meet.coordinates[1]}`;
+      if (!meetingsByLocation.has(coordKey)) {
+        meetingsByLocation.set(coordKey, []);
+      }
+      meetingsByLocation.get(coordKey)!.push(meet);
+    }
+  });
+
   // Prepare fast meet markers - Green for user's own meets, red for pending, purple for others
-  const fastMeetMarkers =
-    fastMeets
-      ?.filter((meet) => meet?.coordinates)
-      .map((meet) => {
-        const isUsersMeet = meet.userId === currentUser?.id;
-        const userParticipation = allParticipants?.find(
-          (p) => p.userId === currentUser?.id && p.meetId === meet.id,
-        );
+  const fastMeetMarkers = Array.from(meetingsByLocation.entries()).map(([coordKey, meetings]) => {
+    // Use the first meeting for color determination and click handling
+    const firstMeet = meetings[0];
+    const isUsersMeet = firstMeet.userId === currentUser?.id;
+    const userParticipation = allParticipants?.find(
+      (p) => p.userId === currentUser?.id && p.meetId === firstMeet.id,
+    );
 
-        let color = "#9924FF"; // Default purple for other meets
+    let color = "#9924FF"; // Default purple for other meets
 
-        if (isUsersMeet) {
-          color = "#10B981"; // Green for user's own meets
-        } else if (userParticipation?.status === "accepted") {
-          color = "#10B981"; // Green for accepted participation
-        } else if (userParticipation?.status === "pending") {
-          color = "#FF6B35"; // Orange for pending requests
-        }
+    if (isUsersMeet) {
+      color = "#10B981"; // Green for user's own meets
+    } else if (userParticipation?.status === "accepted") {
+      color = "#10B981"; // Green for accepted participation
+    } else if (userParticipation?.status === "pending") {
+      color = "#FF6B35"; // Orange for pending requests
+    }
 
-        const participantsCount = allParticipants?.filter(
-          (p) => p.meetId === meet.id && p.status === "accepted",
-        ).length;
+    // Show number of meetings at this location instead of participants count
+    const meetingsCount = meetings.length;
 
-        console.log("🗺️ PeopleMap: participantsCount", participantsCount);
+    console.log("🗺️ PeopleMap: meetingsCount", meetingsCount, "at", coordKey);
 
-        return {
-          coordinates: meet.coordinates as [number, number],
-          label: meet.name || "Быстрая встреча",
-          onClick: () => handleFastMeetClick(meet),
-          meetData: meet, // Сохраняем данные встречи для обработки клика
-          color,
-          participantsCount,
-        };
-      }) || [];
+    return {
+      coordinates: firstMeet.coordinates as [number, number],
+      label: meetings.length > 1 ? `${meetings.length} встреч` : (firstMeet.name || "Быстрая встреча"),
+      onClick: () => handleFastMeetClick(firstMeet),
+      meetData: firstMeet, // Сохраняем данные первой встречи для обработки клика
+      color,
+      participantsCount: meetingsCount > 1 ? meetingsCount : undefined, // Only show count if multiple meetings
+    };
+  });
 
   // Combine all markers
   const allMarkers = [...userMarkers, ...fastMeetMarkers];
@@ -218,6 +255,13 @@ export const PeopleMap = ({
         meet={meet}
         currentUser={currentUser}
         preOpenFastMeetId={preOpenFastMeetId}
+      />
+      <FastMeetsListDrawer
+        open={isMeetsListOpen}
+        onOpenChange={setIsMeetsListOpen}
+        meetings={meetingsAtLocation}
+        currentUser={currentUser}
+        onMeetingSelect={handleMeetingSelect}
       />
     </div>
   );

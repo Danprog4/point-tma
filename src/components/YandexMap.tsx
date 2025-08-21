@@ -13,7 +13,7 @@ interface MarkerWithDistance {
   onClick?: () => void;
   meetData?: any;
   color?: string; // Custom color for the marker
-  participantsCount?: number; // Количество участников для условного рендера
+  participantsCount?: number; // Количество встреч в этом месте (для множественных встреч)
 }
 
 interface YandexMapProps {
@@ -415,7 +415,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                 }}
               >
                 <PinIcon size={28} strokeWidth={2.25} color={marker.color || "#9924FF"} />
-                {marker.participantsCount && marker.participantsCount > 0 ? (
+                {marker.participantsCount && marker.participantsCount > 1 ? (
                   <div
                     style={{
                       position: "absolute",
@@ -436,7 +436,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                       pointerEvents: "none",
                     }}
                   >
-                    {marker.participantsCount + 1}
+                    {marker.participantsCount}
                   </div>
                 ) : null}
               </div>

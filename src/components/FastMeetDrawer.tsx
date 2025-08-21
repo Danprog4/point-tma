@@ -40,7 +40,7 @@ export default function FastMeetDrawer({
   } = useFastMeet(meet.id);
 
   useEffect(() => {
-    if (preOpenFastMeetId) {
+    if (preOpenFastMeetId !== undefined && preOpenFastMeetId) {
       setIsMoreOpen(true);
     }
   }, [setIsMoreOpen]);

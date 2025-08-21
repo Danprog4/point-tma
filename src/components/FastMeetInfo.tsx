@@ -302,7 +302,7 @@ export const FastMeetInfo = ({
         )
       )}
       {!isOrganizer ? (
-        <div className="absolute right-4 bottom-0 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-2">
+        <div className="absolute right-4 bottom-4 left-4 z-10 bg-gradient-to-t from-white via-white to-transparent pt-6">
           <button
             onClick={() => {
               handleLeaveFastMeet();

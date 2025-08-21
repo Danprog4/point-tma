@@ -402,51 +402,44 @@ export const YandexMap: React.FC<YandexMapProps> = ({
               }}
               style={{ width: 0, height: 0 }}
             >
-              {marker.participantsCount && marker.participantsCount >= 1 ? (
-                <div
-                  style={{
-                    transform: "translate(-50%, -100%)",
-                    position: "relative",
-                    left: 0,
-                    top: 0,
-                    width: 28,
-                    height: 28,
-                    borderRadius: 9999,
-                    background: marker.color || "#9924FF",
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "2px solid white",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                    cursor: marker.onClick ? "pointer" : "default",
-                  }}
-                >
-                  {/* +1 because of the current user */}
-                  {marker.participantsCount + 1}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    transform: "translate(-50%, -100%)",
-                    position: "relative",
-                    left: 0,
-                    top: 0,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: marker.onClick ? "pointer" : "default",
-                  }}
-                >
-                  <PinIcon
-                    size={28}
-                    strokeWidth={2.25}
-                    color={marker.color || "#9924FF"}
-                  />
-                </div>
-              )}
+              <div
+                style={{
+                  transform: "translate(-50%, -100%)",
+                  position: "relative",
+                  left: 0,
+                  top: 0,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: marker.onClick ? "pointer" : "default",
+                }}
+              >
+                <PinIcon size={28} strokeWidth={2.25} color={marker.color || "#9924FF"} />
+                {marker.participantsCount && marker.participantsCount >= 1 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: -4,
+                      bottom: -4,
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9999,
+                      background: marker.color || "#9924FF",
+                      color: "#fff",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {marker.participantsCount + 1}
+                  </div>
+                )}
+              </div>
               {marker.distance !== undefined && showDistances && (
                 <div
                   className="absolute left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"

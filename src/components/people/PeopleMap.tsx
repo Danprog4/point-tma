@@ -145,7 +145,7 @@ export const PeopleMap = ({
         }
 
         const participantsCount = allParticipants?.filter(
-          (p) => p.meetId === meet.id,
+          (p) => p.meetId === meet.id && p.status === "accepted",
         ).length;
 
         console.log("🗺️ PeopleMap: participantsCount", participantsCount);

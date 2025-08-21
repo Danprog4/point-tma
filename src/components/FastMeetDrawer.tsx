@@ -286,7 +286,7 @@ export default function FastMeetDrawer({
                 ) : isAcceptedParticipant && !isUsersMeet ? (
                   <button
                     onClick={() => {
-                      setIsMoreOpen(true);
+                      onOpenChange(true);
                     }}
                     className="flex w-full items-center justify-center rounded-xl bg-purple-600 py-3 font-medium text-white"
                   >

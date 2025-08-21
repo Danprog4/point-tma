@@ -82,9 +82,9 @@ export const eventRouter = createTRPCRouter({
       z.object({
         id: z.number(),
         name: z.string(),
+        count: z.number(),
       }),
     )
-
     .mutation(async ({ ctx, input }) => {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
@@ -106,7 +106,7 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      if (user.balance! < eventData.price) {
+      if (user.balance! < eventData.price * input.count) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Not enough balance",
@@ -137,16 +137,16 @@ export const eventRouter = createTRPCRouter({
 
       const newInventory = [
         ...(user.inventory || []),
-        {
+        ...Array.from({ length: input.count }, (_, index) => ({
           type: "ticket",
           eventId: input.id,
           name: input.name,
           isActive: false,
-          id: Date.now(),
-        },
+          id: Date.now() + index,
+        })),
       ];
 
-      const newBalance = user.balance! - eventData.price;
+      const newBalance = user.balance! - eventData.price * input.count;
 
       console.log(newInventory, newBalance);
 

@@ -201,7 +201,7 @@ function RouteComponent() {
 
     return (
       <div className="w-full">
-        <div className="mb-3 text-sm font-semibold text-gray-600">{title}</div>
+        <div className="font-semibold text-black">{title}</div>
         <div className="w-full">{notifications.map(renderNotificationItem)}</div>
       </div>
     );

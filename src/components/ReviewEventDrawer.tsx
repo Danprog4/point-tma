@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -28,7 +28,15 @@ export function ReviewEventDrawer({
   const [step, setStep] = useState<number>(1);
   const [review, setReview] = useState<string>("");
   const [complaint, setComplaint] = useState<string>("");
-  const endQuest = useMutation(trpc.event.endQuest.mutationOptions());
+  const queryClient = useQueryClient();
+  const endQuest = useMutation(
+    trpc.event.endQuest.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.event.getMyEvents.queryKey() });
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
   const sendComplaint = useMutation(trpc.main.sendComplaint.mutationOptions());
   const handleSendReview = () => {
     setStep(3);
@@ -52,6 +60,7 @@ export function ReviewEventDrawer({
     });
 
     sendComplaint.mutate({
+      type: "event",
       eventId: id,
       complaint,
       name,

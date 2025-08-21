@@ -82,11 +82,9 @@ function RouteComponent() {
     (ticket) => ticket.eventId === Number(id) && ticket.name === name,
   );
   const ticketsForEvent =
-    queryClient
-      .getQueryData(trpc.main.getUser.queryKey())
-      ?.inventory?.filter(
-        (ticket) => ticket.eventId === Number(id) && ticket.name === name,
-      ) ?? [];
+    user?.inventory?.filter(
+      (ticket) => ticket.eventId === Number(id) && ticket.name === name,
+    ) ?? [];
 
   const hasActiveTicket = ticketsForEvent.some((t) => t.isActive);
   const hasInactiveTicket = ticketsForEvent.some((t) => !t.isActive);
@@ -106,6 +104,7 @@ function RouteComponent() {
       {
         id: Number(id),
         name,
+        count,
       },
       {
         onSuccess: () => {

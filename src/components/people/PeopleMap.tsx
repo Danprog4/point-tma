@@ -12,6 +12,7 @@ interface PeopleMapProps {
   currentUser: any; // Used for centering map and blue dot
   fastMeets?: any[]; // Used for purple markers
   className?: string;
+  preOpenFastMeetId?: number;
 }
 
 export const PeopleMap = ({
@@ -19,10 +20,13 @@ export const PeopleMap = ({
   currentUser,
   fastMeets = [],
   className,
+  preOpenFastMeetId,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  const [meet, setMeet] = useState<FastMeet | null>(null);
+  const [isOpen, setIsOpen] = useState(preOpenFastMeetId ? true : false);
+  const [meet, setMeet] = useState<FastMeet | null>(
+    preOpenFastMeetId ? fastMeets?.find((m) => m.id === preOpenFastMeetId) || null : null,
+  );
   const trpc = useTRPC();
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
@@ -206,6 +210,7 @@ export const PeopleMap = ({
         onOpenChange={setIsOpen}
         meet={meet}
         currentUser={currentUser}
+        preOpenFastMeetId={preOpenFastMeetId}
       />
     </div>
   );

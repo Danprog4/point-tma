@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
+import { useEffect } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
 import { useFastMeet } from "~/hooks/useFastMeet";
@@ -13,11 +14,13 @@ export default function FastMeetDrawer({
   onOpenChange,
   meet,
   currentUser,
+  preOpenFastMeetId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meet: FastMeet | null;
   currentUser: UserType | null;
+  preOpenFastMeetId?: number;
 }) {
   // Don't render anything if meet is null
   if (!meet) {
@@ -35,6 +38,12 @@ export default function FastMeetDrawer({
     isMoreOpen,
     setIsMoreOpen,
   } = useFastMeet(meet.id);
+
+  useEffect(() => {
+    if (preOpenFastMeetId) {
+      setIsMoreOpen(true);
+    }
+  }, [setIsMoreOpen]);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();

@@ -26,6 +26,7 @@ import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
 import { Route as FillProfileImport } from './routes/fill-profile'
 import { Route as FavouritesImport } from './routes/favourites'
+import { Route as FastMeetSettImport } from './routes/fastMeet-sett'
 import { Route as CreateMeetImport } from './routes/createMeet'
 import { Route as CreateFastMeetImport } from './routes/create-fastMeet'
 import { Route as CalendarImport } from './routes/calendar'
@@ -128,6 +129,12 @@ const FillProfileRoute = FillProfileImport.update({
 const FavouritesRoute = FavouritesImport.update({
   id: '/favourites',
   path: '/favourites',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const FastMeetSettRoute = FastMeetSettImport.update({
+  id: '/fastMeet-sett',
+  path: '/fastMeet-sett',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -240,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/createMeet'
       fullPath: '/createMeet'
       preLoaderRoute: typeof CreateMeetImport
+      parentRoute: typeof rootRoute
+    }
+    '/fastMeet-sett': {
+      id: '/fastMeet-sett'
+      path: '/fastMeet-sett'
+      fullPath: '/fastMeet-sett'
+      preLoaderRoute: typeof FastMeetSettImport
       parentRoute: typeof rootRoute
     }
     '/favourites': {
@@ -407,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
+  '/fastMeet-sett': typeof FastMeetSettRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
@@ -437,6 +452,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
+  '/fastMeet-sett': typeof FastMeetSettRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
@@ -468,6 +484,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/create-fastMeet': typeof CreateFastMeetRoute
   '/createMeet': typeof CreateMeetRoute
+  '/fastMeet-sett': typeof FastMeetSettRoute
   '/favourites': typeof FavouritesRoute
   '/fill-profile': typeof FillProfileRoute
   '/history': typeof HistoryRoute
@@ -500,6 +517,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-fastMeet'
     | '/createMeet'
+    | '/fastMeet-sett'
     | '/favourites'
     | '/fill-profile'
     | '/history'
@@ -529,6 +547,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-fastMeet'
     | '/createMeet'
+    | '/fastMeet-sett'
     | '/favourites'
     | '/fill-profile'
     | '/history'
@@ -558,6 +577,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/create-fastMeet'
     | '/createMeet'
+    | '/fastMeet-sett'
     | '/favourites'
     | '/fill-profile'
     | '/history'
@@ -589,6 +609,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CreateFastMeetRoute: typeof CreateFastMeetRoute
   CreateMeetRoute: typeof CreateMeetRoute
+  FastMeetSettRoute: typeof FastMeetSettRoute
   FavouritesRoute: typeof FavouritesRoute
   FillProfileRoute: typeof FillProfileRoute
   HistoryRoute: typeof HistoryRoute
@@ -619,6 +640,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CreateFastMeetRoute: CreateFastMeetRoute,
   CreateMeetRoute: CreateMeetRoute,
+  FastMeetSettRoute: FastMeetSettRoute,
   FavouritesRoute: FavouritesRoute,
   FillProfileRoute: FillProfileRoute,
   HistoryRoute: HistoryRoute,
@@ -658,6 +680,7 @@ export const routeTree = rootRoute
         "/calendar",
         "/create-fastMeet",
         "/createMeet",
+        "/fastMeet-sett",
         "/favourites",
         "/fill-profile",
         "/history",
@@ -696,6 +719,9 @@ export const routeTree = rootRoute
     },
     "/createMeet": {
       "filePath": "createMeet.tsx"
+    },
+    "/fastMeet-sett": {
+      "filePath": "fastMeet-sett.tsx"
     },
     "/favourites": {
       "filePath": "favourites.tsx"

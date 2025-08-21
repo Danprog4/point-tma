@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { CheckIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ export const FastMeetInfo = ({
     handleDeclineRequest,
   } = useFastMeet(meet.id);
   const trpc = useTRPC();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState<"chat" | "settings" | "participants">("participants");
   const [chatTimestamps, setChatTimestamps] = useState<number[]>([]);
@@ -123,7 +125,9 @@ export const FastMeetInfo = ({
               "flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium",
               page === "settings" ? "bg-black text-white" : "bg-white text-black",
             )}
-            onClick={() => setPage("settings")}
+            onClick={() =>
+              navigate({ to: "/fastMeet-sett", search: { meetId: meet.id } })
+            }
           >
             Настройки
           </button>

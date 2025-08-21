@@ -30,6 +30,7 @@ export const PeopleMap = ({
   );
   const [isMeetsListOpen, setIsMeetsListOpen] = useState(false);
   const [meetingsAtLocation, setMeetingsAtLocation] = useState<FastMeet[]>([]);
+  const [cameFromList, setCameFromList] = useState(false);
   const trpc = useTRPC();
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
@@ -53,6 +54,7 @@ export const PeopleMap = ({
       // Show single meeting
       setIsOpen(true);
       setMeet(meet);
+      setCameFromList(false); // Reset flag when coming from direct marker click
     }
 
     const isUsersMeet = meet.userId === currentUser?.id;
@@ -72,6 +74,7 @@ export const PeopleMap = ({
   const handleButtonClick = (meet: FastMeet) => {
     setIsOpen(true);
     setMeet(meet);
+    setCameFromList(false); // Reset flag when coming from button
 
     const isUsersMeet = meet?.userId === currentUser?.id;
     console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
@@ -90,6 +93,7 @@ export const PeopleMap = ({
     setIsMeetsListOpen(false);
     setIsOpen(true);
     setMeet(selectedMeet);
+    setCameFromList(true);
   };
 
   const { data: allParticipants } = useQuery(
@@ -274,7 +278,14 @@ export const PeopleMap = ({
       </div>
       <FastMeetDrawer
         open={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          // If closing the drawer and we came from list, show the list again
+          if (!open && cameFromList) {
+            setCameFromList(false);
+            setIsMeetsListOpen(true);
+          }
+        }}
         meet={meet}
         currentUser={currentUser}
         preOpenFastMeetId={preOpenFastMeetId}

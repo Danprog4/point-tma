@@ -415,7 +415,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                 }}
               >
                 <PinIcon size={28} strokeWidth={2.25} color={marker.color || "#9924FF"} />
-                {marker.participantsCount && marker.participantsCount >= 1 && (
+                {marker.participantsCount && marker.participantsCount > 0 ? (
                   <div
                     style={{
                       position: "absolute",
@@ -438,7 +438,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                   >
                     {marker.participantsCount + 1}
                   </div>
-                )}
+                ) : null}
               </div>
               {marker.distance !== undefined && showDistances && (
                 <div

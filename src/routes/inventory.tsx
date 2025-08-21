@@ -9,6 +9,15 @@ export const Route = createFileRoute("/inventory")({
   component: RouteComponent,
 });
 
+// Тип для сгруппированного билета
+type GroupedTicket = {
+  eventId: number;
+  name: string;
+  type: string;
+  count: number;
+  isActive: boolean;
+};
+
 function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -17,6 +26,32 @@ function RouteComponent() {
   const tickets = user?.inventory?.filter((item) => item.type === "ticket") ?? [];
 
   const inactiveTickets = tickets.filter((ticket) => !ticket.isActive);
+
+  // Функция для группировки билетов
+  const groupTickets = (tickets: typeof inactiveTickets): GroupedTicket[] => {
+    const groupedMap = new Map<string, GroupedTicket>();
+
+    tickets.forEach((ticket) => {
+      const key = `${ticket.eventId}-${ticket.name}`;
+
+      if (groupedMap.has(key)) {
+        const existing = groupedMap.get(key)!;
+        existing.count += 1;
+      } else {
+        groupedMap.set(key, {
+          eventId: ticket.eventId,
+          name: ticket.name,
+          type: ticket.type,
+          count: 1,
+          isActive: ticket.isActive || false,
+        });
+      }
+    });
+
+    return Array.from(groupedMap.values());
+  };
+
+  const groupedTickets = groupTickets(inactiveTickets);
 
   const getEvent = (eventId: number, name: string) => {
     return getEventData(name, eventId);
@@ -44,16 +79,23 @@ function RouteComponent() {
 
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
-      {inactiveTickets.length > 0 ? (
+      {groupedTickets.length > 0 ? (
         <div className="grid grid-cols-3 gap-4 px-4">
-          {inactiveTickets.map((ticket) => (
+          {groupedTickets.map((ticket) => (
             <div
-              key={ticket.eventId}
-              className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+              key={`${ticket.eventId}-${ticket.name}`}
+              className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
               onClick={() => {
                 navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
               }}
             >
+              {/* Бейдж с количеством билетов */}
+              {ticket.count > 1 && (
+                <div className="absolute top-0 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                  {ticket.count}
+                </div>
+              )}
+
               <img
                 src={getEvent(ticket.eventId, ticket.name)?.image}
                 alt={getEvent(ticket.eventId, ticket.name)?.title}

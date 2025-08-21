@@ -62,7 +62,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-39"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -80,7 +80,7 @@ function RouteComponent() {
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
       {groupedTickets.length > 0 ? (
-        <div className="grid grid-cols-3 gap-4 px-4">
+        <div className="grid grid-cols-3 gap-4">
           {groupedTickets.map((ticket) => (
             <div
               key={`${ticket.eventId}-${ticket.name}`}
@@ -91,7 +91,7 @@ function RouteComponent() {
             >
               {/* Бейдж с количеством билетов */}
               {ticket.count > 1 && (
-                <div className="absolute top-0 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                   {ticket.count}
                 </div>
               )}

@@ -144,12 +144,19 @@ export const PeopleMap = ({
           color = "#FF6B35"; // Orange for pending requests
         }
 
+        const participantsCount = allParticipants?.filter(
+          (p) => p.meetId === meet.id,
+        ).length;
+
+        console.log("🗺️ PeopleMap: participantsCount", participantsCount);
+
         return {
           coordinates: meet.coordinates as [number, number],
           label: meet.name || "Быстрая встреча",
           onClick: () => handleFastMeetClick(meet),
           meetData: meet, // Сохраняем данные встречи для обработки клика
           color,
+          participantsCount,
         };
       }) || [];
 

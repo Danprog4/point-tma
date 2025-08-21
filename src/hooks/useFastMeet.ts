@@ -63,6 +63,13 @@ export function useFastMeet(meetId: number) {
       participant.userId === currentUser?.id && participant.meetId !== meet?.id,
   );
 
+  const meetParticipantsCount = useMemo(() => {
+    return (
+      allParticipants?.filter((participant) => participant.meetId === meet?.id).length ||
+      0
+    );
+  }, [allParticipants, meet]);
+
   // Check if user owns any other fast meet
   const isAlreadyOwner = fastMeets?.some(
     (fastMeet) => fastMeet.userId === currentUser?.id && fastMeet.id !== meet?.id,
@@ -303,5 +310,6 @@ export function useFastMeet(meetId: number) {
     deleteFastMeet,
     isMoreOpen,
     setIsMoreOpen,
+    meetParticipantsCount,
   };
 }

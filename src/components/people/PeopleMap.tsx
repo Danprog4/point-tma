@@ -69,6 +69,22 @@ export const PeopleMap = ({
     });
   };
 
+  const handleButtonClick = (meet: FastMeet) => {
+    setIsOpen(true);
+    setMeet(meet);
+
+    const isUsersMeet = meet?.userId === currentUser?.id;
+    console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
+      id: meet.id,
+      name: meet.name,
+      description: meet.description,
+      coordinates: meet.coordinates,
+      createdAt: meet.createdAt,
+      locations: meet.locations,
+      isUsersMeet,
+    });
+  };
+
   // Handle meeting selection from list
   const handleMeetingSelect = (selectedMeet: FastMeet) => {
     setIsMeetsListOpen(false);
@@ -116,19 +132,19 @@ export const PeopleMap = ({
     if (isOrganizer) {
       return {
         text: "Моя встреча",
-        action: () => handleFastMeetClick(userFastMeet),
+        action: () => handleButtonClick(userFastMeet),
         className: "bg-green-500",
       };
     } else if (userParticipation?.status === "accepted") {
       return {
         text: "Моя встреча",
-        action: () => handleFastMeetClick(userFastMeet),
+        action: () => handleButtonClick(userFastMeet),
         className: "bg-green-500",
       };
     } else if (userParticipation?.status === "pending") {
       return {
         text: "Моя встреча",
-        action: () => handleFastMeetClick(userFastMeet),
+        action: () => handleButtonClick(userFastMeet),
         className: "bg-orange-600",
       };
     }

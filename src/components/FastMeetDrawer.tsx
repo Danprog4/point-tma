@@ -227,11 +227,11 @@ export default function FastMeetDrawer({
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-1">
                           <div className="text-sm text-gray-600">
-                            {meetParticipantsCount || 0} участников
+                            {meetParticipantsCount + 1} чел.
                           </div>
                           {pendingRequests && pendingRequests.length > 0 && (
                             <div className="text-xs text-orange-600">
-                              {pendingRequests.length} ожидают подтверждения
+                              {pendingRequests.length} ожидае(-ют) подтверждение
                             </div>
                           )}
                         </div>
@@ -354,14 +354,14 @@ export default function FastMeetDrawer({
                 className="fixed inset-0 z-[200] bg-black/40"
                 onClick={(e) => e.preventDefault()}
               />
-              <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[300] mt-24 flex h-[300px] max-h-[94%] flex-col rounded-t-[10px] bg-gray-100 lg:h-[327px]">
+              <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[300] mt-24 flex h-fit max-h-[45%] flex-col rounded-t-[10px] bg-gray-100 lg:h-[327px]">
                 <div className="flex flex-col px-4">
                   <header className="flex items-center justify-center py-3">
                     <div className="flex justify-center text-xl font-bold">
                       Участники встречи
                     </div>
                   </header>
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto pb-4">
                     <FastMeetParticipantsList
                       meetId={currentMeet.id}
                       currentUser={currentUser}

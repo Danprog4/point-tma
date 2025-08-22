@@ -357,9 +357,7 @@ export default function FastMeetDrawer({
               <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[300] mt-24 flex h-fit max-h-[45%] flex-col rounded-t-[10px] bg-gray-100 lg:h-[327px]">
                 <div className="flex flex-col px-4">
                   <header className="flex items-center justify-center py-3">
-                    <div className="flex justify-center text-xl font-bold">
-                      Участники встречи
-                    </div>
+                    <div className="flex justify-center font-bold">Участники встречи</div>
                   </header>
                   <div className="flex-1 overflow-y-auto pb-4">
                     <FastMeetParticipantsList

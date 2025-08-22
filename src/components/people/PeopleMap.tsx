@@ -214,27 +214,43 @@ export const PeopleMap = ({
   // Prepare fast meet markers - Green for user's own meets, red for pending, purple for others
   const fastMeetMarkers = Array.from(meetingsByLocation.entries()).map(
     ([coordKey, meetings]) => {
-      // Use the first meeting for color determination and click handling
+      // Use the first meeting for click handling
       const firstMeet = meetings[0];
-      const isUsersMeet = firstMeet.userId === currentUser?.id;
-      const userParticipation = allParticipants?.find(
-        (p) => p.userId === currentUser?.id && p.meetId === firstMeet.id,
-      );
 
+      // Check if user has any involvement with any meeting at this location
       let color = "#9924FF"; // Default purple for other meets
+      let hasUserInvolvement = false;
+      let hasUserOwnMeet = false;
+      let hasPendingRequest = false;
 
-      if (isUsersMeet) {
-        color = "#10B981"; // Green for user's own meets
-      } else if (userParticipation?.status === "accepted") {
+      // Check all meetings at this location for user involvement
+      meetings.forEach((meet) => {
+        const isUsersMeet = meet.userId === currentUser?.id;
+        const userParticipation = allParticipants?.find(
+          (p) => p.userId === currentUser?.id && p.meetId === meet.id,
+        );
+
+        if (isUsersMeet) {
+          hasUserOwnMeet = true;
+          hasUserInvolvement = true;
+        } else if (userParticipation?.status === "accepted") {
+          hasUserInvolvement = true;
+        } else if (userParticipation?.status === "pending") {
+          hasPendingRequest = true;
+        }
+      });
+
+      // Determine color based on user involvement
+      if (hasUserOwnMeet) {
+        color = "#10B981"; // Green for user's own meets (highest priority)
+      } else if (hasUserInvolvement) {
         color = "#10B981"; // Green for accepted participation
-      } else if (userParticipation?.status === "pending") {
+      } else if (hasPendingRequest) {
         color = "#FF6B35"; // Orange for pending requests
       }
 
       // Show number of meetings at this location instead of participants count
       const meetingsCount = meetings.length;
-
-      console.log("🗺️ PeopleMap: meetingsCount", meetingsCount, "at", coordKey);
 
       return {
         coordinates: firstMeet.coordinates as [number, number],

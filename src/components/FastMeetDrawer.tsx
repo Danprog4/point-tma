@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
 import { useFastMeet } from "~/hooks/useFastMeet";
@@ -8,6 +8,7 @@ import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 import { FastMeetInfo } from "./FastMeetInfo";
+import { FastMeetParticipantsList } from "./FastMeetParticipantsList";
 
 export default function FastMeetDrawer({
   open,
@@ -37,7 +38,11 @@ export default function FastMeetDrawer({
     handleJoinFastMeet,
     isMoreOpen,
     setIsMoreOpen,
+    meetParticipantsCount,
+    pendingRequests,
   } = useFastMeet(meet.id);
+
+  const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
 
   useEffect(() => {
     if (preOpenFastMeetId !== undefined && preOpenFastMeetId) {
@@ -212,6 +217,34 @@ export default function FastMeetDrawer({
                     </div>
                   )}
 
+                  {/* Participants */}
+                  <div className="flex items-start gap-3 rounded-xl bg-indigo-50 p-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                      <User className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Участники</div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-sm text-gray-600">
+                            {meetParticipantsCount || 0} участников
+                          </div>
+                          {pendingRequests && pendingRequests.length > 0 && (
+                            <div className="text-xs text-orange-600">
+                              {pendingRequests.length} ожидают подтверждения
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setIsParticipantsOpen(true)}
+                          className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
+                        >
+                          Показать список
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Locations */}
                   {currentMeet.locations && currentMeet.locations.length > 0 && (
                     <div className="space-y-3">
@@ -310,6 +343,34 @@ export default function FastMeetDrawer({
               </div>
             </>
           )}
+
+          {/* Nested Participants Drawer */}
+          <Drawer.NestedRoot
+            open={isParticipantsOpen}
+            onOpenChange={setIsParticipantsOpen}
+          >
+            <Drawer.Portal>
+              <Drawer.Overlay
+                className="fixed inset-0 z-[200] bg-black/40"
+                onClick={(e) => e.preventDefault()}
+              />
+              <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[300] mt-24 flex h-[300px] max-h-[94%] flex-col rounded-t-[10px] bg-gray-100 lg:h-[327px]">
+                <div className="flex flex-col px-4">
+                  <header className="flex items-center justify-center py-3">
+                    <div className="flex justify-center text-xl font-bold">
+                      Участники встречи
+                    </div>
+                  </header>
+                  <div className="flex-1 overflow-y-auto">
+                    <FastMeetParticipantsList
+                      meetId={currentMeet.id}
+                      currentUser={currentUser}
+                    />
+                  </div>
+                </div>
+              </Drawer.Content>
+            </Drawer.Portal>
+          </Drawer.NestedRoot>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

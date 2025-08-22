@@ -19,6 +19,7 @@ interface FastMeetInfoProps {
   currentUser: UserType | null;
   setIsMoreOpen: (isOpen: boolean) => void;
   onOpenChange: (open: boolean) => void;
+  cameFromList?: boolean;
 }
 
 export const FastMeetInfo = ({
@@ -26,6 +27,7 @@ export const FastMeetInfo = ({
   currentUser,
   setIsMoreOpen,
   onOpenChange,
+  cameFromList,
 }: FastMeetInfoProps) => {
   // Получаем все данные из хука напрямую
   const {
@@ -126,7 +128,10 @@ export const FastMeetInfo = ({
               page === "settings" ? "bg-black text-white" : "bg-white text-black",
             )}
             onClick={() =>
-              navigate({ to: "/fastMeet-sett", search: { meetId: meet.id } })
+              navigate({
+                to: "/fastMeet-sett",
+                search: { meetId: meet.id, cameFromList: cameFromList || false },
+              })
             }
           >
             Настройки

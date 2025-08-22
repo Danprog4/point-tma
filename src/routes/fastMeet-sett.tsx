@@ -20,7 +20,10 @@ export const Route = createFileRoute("/fastMeet-sett")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { meetId } = Route.useSearch() as { meetId?: number };
+  const { meetId, cameFromList } = Route.useSearch() as {
+    meetId?: number;
+    cameFromList?: boolean;
+  };
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -115,7 +118,10 @@ function RouteComponent() {
         }
       },
       onSuccess: () => {
-        navigate({ to: "/people", search: { openFastMeetId: meet.id } });
+        navigate({
+          to: "/people",
+          search: { openFastMeetId: meet.id, cameFromList: cameFromList || false },
+        });
       },
       onSettled: () => {
         queryClient.invalidateQueries({
@@ -151,7 +157,12 @@ function RouteComponent() {
       <div className="sticky top-0 z-10 flex items-center justify-center bg-white px-4 py-4 pt-28">
         <button
           className="absolute left-4 flex items-center justify-center"
-          onClick={() => navigate({ to: "/people", search: { openFastMeetId: meet.id } })}
+          onClick={() =>
+            navigate({
+              to: "/people",
+              search: { openFastMeetId: meet.id, cameFromList: cameFromList || false },
+            })
+          }
         >
           ←
         </button>

@@ -16,12 +16,14 @@ export default function FastMeetDrawer({
   meet,
   currentUser,
   preOpenFastMeetId,
+  cameFromList,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   meet: FastMeet | null;
   currentUser: UserType | null;
   preOpenFastMeetId?: number;
+  cameFromList?: boolean;
 }) {
   // Don't render anything if meet is null
   if (!meet) {
@@ -112,6 +114,7 @@ export default function FastMeetDrawer({
               currentUser={currentUser}
               setIsMoreOpen={setIsMoreOpen}
               onOpenChange={onOpenChange}
+              cameFromList={cameFromList}
             />
           ) : (
             <>

@@ -20,7 +20,11 @@ export const Route = createFileRoute("/people")({
 });
 
 function RouteComponent() {
-  const { openFastMeetId } = Route.useSearch() as { openFastMeetId?: number };
+  const { openFastMeetId, cameFromList } = Route.useSearch() as {
+    openFastMeetId?: number;
+    cameFromList?: boolean;
+  };
+
   // Restore saved scroll position (if any) when returning to the list
   useScrollRestoration("people");
   const isMobile = usePlatform();
@@ -127,6 +131,7 @@ function RouteComponent() {
           fastMeets={fastMeets || []}
           className="px-4"
           preOpenFastMeetId={preOpenFastMeetId ?? undefined}
+          preOpenCameFromList={cameFromList ?? false}
         />
       )}
 

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { YandexMap } from "~/components/YandexMap";
 import { FastMeet } from "~/db/schema";
 import { useFastMeet } from "~/hooks/useFastMeet";
@@ -14,6 +14,7 @@ interface PeopleMapProps {
   fastMeets?: any[]; // Used for purple markers
   className?: string;
   preOpenFastMeetId?: number;
+  preOpenCameFromList?: boolean;
 }
 
 export const PeopleMap = ({
@@ -22,6 +23,7 @@ export const PeopleMap = ({
   fastMeets = [],
   className,
   preOpenFastMeetId,
+  preOpenCameFromList,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(preOpenFastMeetId ? true : false);
@@ -32,6 +34,30 @@ export const PeopleMap = ({
   const [meetingsAtLocation, setMeetingsAtLocation] = useState<FastMeet[]>([]);
   const [cameFromList, setCameFromList] = useState(false);
   const trpc = useTRPC();
+
+  // Prepare data for list restoration when returning from settings
+  useEffect(() => {
+    if (preOpenCameFromList && preOpenFastMeetId && fastMeets?.length > 0) {
+      const targetMeet = fastMeets.find((m) => m.id === preOpenFastMeetId);
+
+      if (targetMeet?.coordinates) {
+        const meetingsAtSameLocation = fastMeets.filter(
+          (m) =>
+            m.coordinates &&
+            m.coordinates[0] === targetMeet.coordinates[0] &&
+            m.coordinates[1] === targetMeet.coordinates[1],
+        );
+
+        if (meetingsAtSameLocation.length > 1) {
+          setMeetingsAtLocation(meetingsAtSameLocation);
+          setCameFromList(true);
+        } else {
+          setIsOpen(true);
+          setMeet(targetMeet);
+        }
+      }
+    }
+  }, [preOpenCameFromList, preOpenFastMeetId, fastMeets]);
   // Don't show other users as markers - only current user will be shown as blue dot by YandexMap
   const userMarkers: any[] = [];
 
@@ -280,7 +306,6 @@ export const PeopleMap = ({
         open={isOpen}
         onOpenChange={(open) => {
           setIsOpen(open);
-          // If closing the drawer and we came from list, show the list again
           if (!open && cameFromList) {
             setCameFromList(false);
             setIsMeetsListOpen(true);
@@ -289,6 +314,7 @@ export const PeopleMap = ({
         meet={meet}
         currentUser={currentUser}
         preOpenFastMeetId={preOpenFastMeetId}
+        cameFromList={cameFromList}
       />
       <FastMeetsListDrawer
         open={isMeetsListOpen}

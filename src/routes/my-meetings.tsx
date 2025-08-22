@@ -270,11 +270,11 @@ function RouteComponent() {
                     : request.meeting?.description}
                 </p>
                 <div className="mb-6 flex items-center justify-between px-4">
-                  {request.meeting?.reward && (
+                  {request.meeting?.reward ? (
                     <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
                       + Достижение
                     </span>
-                  )}
+                  ) : null}
                   <div className="ml-auto flex items-center gap-1">
                     <span className="text-base font-medium text-black">
                       +
@@ -332,15 +332,15 @@ function RouteComponent() {
                     <CloseRed />
                   </div>
                   <img
-                    src={getImageUrl(request.user?.photo || "")}
+                    src={getImageUrl(request.fromUser?.photo || "")}
                     alt=""
                     className="h-14 w-14 rounded-lg"
                   />
                   <div className="flex flex-col items-start justify-between gap-2">
                     <div className="text-lg">
-                      {request.user?.name} {request.user?.surname}
+                      {request.fromUser?.name} {request.fromUser?.surname}
                     </div>
-                    <div>{request.user?.birthday}</div>
+                    <div>{request.fromUser?.birthday}</div>
                   </div>
                 </div>
                 <div

@@ -105,21 +105,11 @@ export const getYMapsReactComponents = async () => {
   const ymaps3 = await initYMaps();
   await ymaps3.ready;
 
-  console.log("🗺️ ymaps.ts: Начинаем загрузку компонентов", {
-    hasYmaps3: !!ymaps3,
-    ymaps3Keys: Object.keys(ymaps3),
-  });
-
   const [ymaps3React, ymaps3Controls] = await Promise.all([
     ymaps3.import("@yandex/ymaps3-reactify"),
     ymaps3.import("@yandex/ymaps3-controls").catch(() => null), // Fallback if controls not available
     ymaps3.ready,
   ]);
-
-  console.log("🗺️ ymaps.ts: Импорты завершены", {
-    hasYmaps3React: !!ymaps3React,
-    hasYmaps3Controls: !!ymaps3Controls,
-  });
 
   const reactify = ymaps3React.reactify.bindTo(React, ReactDOM);
 
@@ -145,39 +135,17 @@ export const getYMapsReactComponents = async () => {
 
   // Load clusterer exactly as in the documentation example
   try {
-    console.log("🗺️ ymaps.ts: Загружаем кластеризацию через динамический ES импорт");
-
     // Load the package with the cluster using dynamic ES import (like in the example)
     const ymaps3Clusterer = await import("@yandex/ymaps3-clusterer");
 
-    console.log("🗺️ ymaps.ts: Кластеризация загружена через ES импорт", {
-      hasYMapClusterer: !!ymaps3Clusterer.YMapClusterer,
-      hasClusterByGrid: !!ymaps3Clusterer.clusterByGrid,
-      YMapClustererType: typeof ymaps3Clusterer.YMapClusterer,
-      clusterByGridType: typeof ymaps3Clusterer.clusterByGrid,
-      clustererKeys: Object.keys(ymaps3Clusterer),
-    });
-
     // Apply reactify to clusterer components (exactly like in the example)
     const { YMapClusterer, clusterByGrid } = reactify.module(ymaps3Clusterer);
-
-    console.log("🗺️ ymaps.ts: Компоненты кластеризации добавлены", {
-      hasYMapClusterer: !!components.YMapClusterer,
-      hasClusterByGrid: !!components.clusterByGrid,
-    });
 
     components.YMapClusterer = YMapClusterer;
     components.clusterByGrid = clusterByGrid;
   } catch (error) {
     console.error("🗺️ ymaps.ts: Ошибка загрузки кластеризации:", error);
-    console.warn("🗺️ ymaps.ts: Кластеризация НЕ найдена!");
   }
-
-  console.log("🗺️ ymaps.ts: Финальные компоненты", {
-    finalKeys: Object.keys(components),
-    hasYMapClusterer: !!components.YMapClusterer,
-    hasClusterByGrid: !!components.clusterByGrid,
-  });
 
   return components;
 };

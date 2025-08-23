@@ -383,7 +383,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                 style={{
                   width: 40,
                   height: 40,
-                  borderRadius: "50%",
+                  borderRadius: "10%",
                   border: "3px solid white",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                   objectFit: "cover",
@@ -721,7 +721,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
                           style={{
                             width: 40,
                             height: 40,
-                            borderRadius: "50%",
+                            borderRadius: "10%",
                             border: "3px solid white",
                             boxShadow: "0 4px 8px rgba(0,0,0,0.4)",
                             display: "block",

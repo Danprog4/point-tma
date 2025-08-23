@@ -4,6 +4,7 @@ import {
   calculateDistanceFromCoords,
   formatDistance,
 } from "~/lib/utils/calculateDistance";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getYMapsReactComponents, loadYMapsScript } from "~/lib/ymaps";
 
 interface MarkerWithDistance {
@@ -12,6 +13,7 @@ interface MarkerWithDistance {
   label?: string;
   onClick?: () => void;
   meetData?: any;
+  userPhoto?: string;
   color?: string; // Custom color for the marker
   participantsCount?: number; // Количество встреч в этом месте (для множественных встреч)
 }
@@ -29,6 +31,9 @@ interface YandexMapProps {
   preventClickSelection?: boolean; // Предотвращать автоматический выбор при клике
   showSelectButton?: boolean; // Показывать кнопку "Выбрать это место" при клике
   showDistances?: boolean; // Показывать расстояния от текущего местоположения
+  enableClustering?: boolean; // Включить кластеризацию маркеров
+  clusterGridSize?: number; // Размер сетки для кластеризации в пикселях
+  userPhoto?: string;
 }
 
 export const YandexMap: React.FC<YandexMapProps> = ({
@@ -44,6 +49,8 @@ export const YandexMap: React.FC<YandexMapProps> = ({
   preventClickSelection = false,
   showSelectButton = false,
   showDistances = true,
+  enableClustering = false,
+  clusterGridSize = 60,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapComponents, setMapComponents] = useState<any>(null);
@@ -55,6 +62,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     center || [37.618423, 55.751244],
   ); // Default Moscow center
   const [clickedLocation, setClickedLocation] = useState<[number, number] | null>(null);
+  const [clusterComponents, setClusterComponents] = useState<any>(null);
   const mapRef = useRef<any>(null);
 
   useEffect(() => {
@@ -200,6 +208,67 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     }
   }, [markers]);
 
+  // Загружаем компоненты кластеризации если включена
+  useEffect(() => {
+    console.log("🗺️ YandexMap: useEffect для кластеризации", {
+      enableClustering,
+      isLoaded,
+      hasMapComponents: !!mapComponents,
+      mapComponentsKeys: mapComponents ? Object.keys(mapComponents) : null,
+      // Детальное логирование содержимого
+      mapComponentsDetails: mapComponents
+        ? {
+            hasYMap: !!mapComponents.YMap,
+            hasYMapClusterer: !!mapComponents.YMapClusterer,
+            hasClusterByGrid: !!mapComponents.clusterByGrid,
+            YMapClustererType: typeof mapComponents.YMapClusterer,
+            clusterByGridType: typeof mapComponents.clusterByGrid,
+          }
+        : null,
+    });
+
+    if (enableClustering && isLoaded && mapComponents) {
+      const loadClusterComponents = async () => {
+        try {
+          console.log("🗺️ YandexMap: Загружаем компоненты кластеризации", {
+            hasYMapClusterer: !!mapComponents.YMapClusterer,
+            hasClusterByGrid: !!mapComponents.clusterByGrid,
+            clusterByGridType: typeof mapComponents.clusterByGrid,
+            // Проверим все ключи
+            allKeys: Object.keys(mapComponents),
+            // Проверим конкретные компоненты
+            YMapClusterer: mapComponents.YMapClusterer,
+            clusterByGrid: mapComponents.clusterByGrid,
+          });
+
+          // Проверяем, есть ли уже компоненты кластеризации в mapComponents
+          if (mapComponents.YMapClusterer && mapComponents.clusterByGrid) {
+            setClusterComponents({
+              YMapClusterer: mapComponents.YMapClusterer,
+              clusterByGrid: mapComponents.clusterByGrid,
+            });
+            console.log("🗺️ YandexMap: Компоненты кластеризации установлены");
+          } else {
+            console.warn(
+              "🗺️ YandexMap: Компоненты кластеризации НЕ найдены в mapComponents",
+            );
+            console.log(
+              "🗺️ YandexMap: Доступные компоненты:",
+              Object.keys(mapComponents),
+            );
+          }
+        } catch (error) {
+          console.error("🗺️ YandexMap: Ошибка загрузки кластеризации:", error);
+        }
+      };
+      loadClusterComponents();
+    } else if (!enableClustering) {
+      // Сбрасываем компоненты кластеризации если она отключена
+      setClusterComponents(null);
+      console.log("🗺️ YandexMap: Кластеризация отключена, сбрасываем компоненты");
+    }
+  }, [enableClustering, isLoaded, mapComponents]);
+
   const handleMapClick = async (event: any) => {
     try {
       console.log("🗺️ YandexMap: Клик по карте. keys:", Object.keys(event || {}));
@@ -265,28 +334,182 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     return allMarkers;
   };
 
-  const markersToRender = prepareMarkersWithDistances();
+  // Функция для рендеринга отдельного маркера (для кластеризации) - точно как в примере
+  const marker = (feature: any) => {
+    const markerData = feature.properties.marker;
+    const idx = feature.properties.idx;
 
-  console.log("🗺️ YandexMap: Рендер", {
-    isLoaded,
-    hasComponents: !!mapComponents,
-    error,
-  });
-
-  if (error) {
     return (
+      <YMapMarker key={`marker-${idx}`} coordinates={markerData.coordinates}>
+        <div
+          className="relative"
+          onClick={(e) => {
+            e.stopPropagation();
+            markerData.onClick?.();
+          }}
+          style={{
+            width: markerData.userPhoto ? 40 : 0,
+            height: markerData.userPhoto ? 40 : 0,
+            minWidth: markerData.userPhoto ? 40 : 0,
+            minHeight: markerData.userPhoto ? 40 : 0,
+          }}
+        >
+          <div
+            style={{
+              transform: "translate(-50%, -100%)",
+              position: "relative",
+              left: 0,
+              top: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: markerData.onClick ? "pointer" : "default",
+              width: markerData.userPhoto ? 40 : "auto",
+              height: markerData.userPhoto ? 40 : "auto",
+            }}
+          >
+            {markerData.userPhoto ? (
+              <div style={{ position: "relative" }}>
+                <img
+                  src={getImageUrl(markerData.userPhoto)}
+                  alt="User"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    border: "3px solid white",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.4)",
+                    display: "block",
+                    objectFit: "cover",
+                    zIndex: 1000,
+                  }}
+                  onLoad={() => {
+                    console.log(
+                      `✅ Image loaded for marker ${idx}:`,
+                      markerData.userPhoto,
+                    );
+                  }}
+                  onError={(e) =>
+                    console.error(
+                      `❌ Image failed to load for marker ${idx}:`,
+                      markerData.userPhoto,
+                      e,
+                    )
+                  }
+                />
+                {markerData.participantsCount && markerData.participantsCount > 1 ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: -6,
+                      bottom: -6,
+                      width: 20,
+                      height: 20,
+                      borderRadius: 9999,
+                      background: markerData.color || "#9924FF",
+                      color: "#fff",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {markerData.participantsCount}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <>
+                <PinIcon
+                  size={28}
+                  strokeWidth={2.25}
+                  color={markerData.color || "#9924FF"}
+                />
+                {markerData.participantsCount && markerData.participantsCount > 1 ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: -4,
+                      bottom: -4,
+                      width: 18,
+                      height: 18,
+                      borderRadius: 9999,
+                      background: markerData.color || "#9924FF",
+                      color: "#fff",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "2px solid white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {markerData.participantsCount}
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
+          {markerData.distance !== undefined && showDistances && (
+            <div
+              className="absolute left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
+              style={{
+                fontSize: "11px",
+                color: "#333",
+                border: "1px solid #e0e0e0",
+                top: 4,
+                pointerEvents: "none",
+              }}
+            >
+              {formatDistance(markerData.distance)}
+              {markerData.label && (
+                <div className="mt-1 text-xs text-gray-500">{markerData.label}</div>
+              )}
+            </div>
+          )}
+        </div>
+      </YMapMarker>
+    );
+  };
+
+  // Функция для рендеринга кластера - точно как в примере
+  const cluster = (coordinates: [number, number], features: any[]) => (
+    <YMapMarker coordinates={coordinates}>
       <div
-        className={`${className} flex flex-col items-center justify-center border border-red-200 bg-red-50`}
+        className="circle"
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "3px solid white",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "bold",
+          zIndex: 1000,
+        }}
       >
-        <div className="text-center text-red-600">
-          <div className="font-medium">Ошибка загрузки карты</div>
-          <div className="mt-1 text-sm">{error}</div>
-          <div className="mt-2 text-xs text-gray-500">{loadingStep}</div>
+        <div className="circle-content">
+          <span className="circle-text">{features.length}</span>
         </div>
       </div>
-    );
-  }
+    </YMapMarker>
+  );
 
+  const markersToRender = prepareMarkersWithDistances();
+
+  // Проверяем, что компоненты загружены перед деструктуризацией
   if (!isLoaded || !mapComponents) {
     return (
       <div
@@ -308,19 +531,39 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     YMapMarker,
     YMapControls,
     YMapGeolocationControl,
+    YMapClusterer,
     reactify,
   } = mapComponents;
 
+  // Подготавливаем location для карты
+  const mapLocation = reactify.useDefault({
+    center: mapCenter,
+    zoom,
+  });
+
+  console.log("🗺️ YandexMap: Рендер", {
+    isLoaded,
+    hasComponents: !!mapComponents,
+    error,
+  });
+
+  if (error) {
+    return (
+      <div
+        className={`${className} flex flex-col items-center justify-center border border-red-200 bg-red-50`}
+      >
+        <div className="text-center text-red-600">
+          <div className="font-medium">Ошибка загрузки карты</div>
+          <div className="mt-1 text-sm">{error}</div>
+          <div className="mt-2 text-xs text-gray-500">{loadingStep}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${className} relative`}>
-      <YMap
-        ref={mapRef}
-        location={reactify.useDefault({
-          center: mapCenter,
-          zoom,
-        })}
-        mode="vector"
-      >
+      <YMap ref={mapRef} location={mapLocation} mode="vector">
         <YMapDefaultSchemeLayer />
         <YMapDefaultFeaturesLayer />
 
@@ -392,74 +635,208 @@ export const YandexMap: React.FC<YandexMapProps> = ({
         )}
 
         {/* Markers with distances */}
-        {markersToRender.map((marker, idx) => (
-          <YMapMarker key={`marker-${idx}`} coordinates={marker.coordinates}>
-            <div
-              className="relative"
-              onClick={(e) => {
-                e.stopPropagation();
-                marker.onClick?.();
-              }}
-              style={{ width: 0, height: 0 }}
-            >
-              <div
-                style={{
-                  transform: "translate(-50%, -100%)",
-                  position: "relative",
-                  left: 0,
-                  top: 0,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: marker.onClick ? "pointer" : "default",
-                }}
-              >
-                <PinIcon size={28} strokeWidth={2.25} color={marker.color || "#9924FF"} />
-                {marker.participantsCount && marker.participantsCount > 1 ? (
+        {(() => {
+          console.log("🗺️ YandexMap: Проверяем условия для кластеризации", {
+            enableClustering,
+            hasClusterComponents: !!clusterComponents,
+            clusterComponentsKeys: clusterComponents
+              ? Object.keys(clusterComponents)
+              : null,
+            markersCount: markersToRender.length,
+          });
+
+          if (enableClustering && clusterComponents) {
+            console.log("🗺️ YandexMap: Рендерим кластеризацию", {
+              hasClusterComponents: !!clusterComponents,
+              YMapClusterer: !!clusterComponents.YMapClusterer,
+              clusterByGrid: !!clusterComponents.clusterByGrid,
+              markersCount: markersToRender.length,
+              features: markersToRender.map((marker, idx) => ({
+                type: "Feature",
+                id: idx,
+                geometry: { coordinates: marker.coordinates },
+                properties: { marker, idx },
+              })),
+            });
+
+            return (
+              <YMapClusterer
+                method={clusterComponents.clusterByGrid({ gridSize: clusterGridSize })}
+                features={markersToRender.map((marker, idx) => ({
+                  type: "Feature",
+                  id: idx,
+                  geometry: { coordinates: marker.coordinates },
+                  properties: { marker, idx },
+                }))}
+                marker={marker}
+                cluster={cluster}
+              />
+            );
+          } else {
+            console.log(
+              "🗺️ YandexMap: Рендерим обычные маркеры (кластеризация отключена или недоступна)",
+            );
+            return markersToRender.map((marker, idx) => {
+              // Debug logging for userPhoto
+              console.log(`🗺️ Rendering marker ${idx}:`, {
+                hasUserPhoto: !!marker.userPhoto,
+                userPhoto: marker.userPhoto,
+                coordinates: marker.coordinates,
+                label: marker.label,
+              });
+
+              return (
+                <YMapMarker key={`marker-${idx}`} coordinates={marker.coordinates}>
                   <div
+                    className="relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      marker.onClick?.();
+                    }}
                     style={{
-                      position: "absolute",
-                      right: -4,
-                      bottom: -4,
-                      width: 18,
-                      height: 18,
-                      borderRadius: 9999,
-                      background: marker.color || "#9924FF",
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: "2px solid white",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                      pointerEvents: "none",
+                      width: marker.userPhoto ? 40 : 28, // Адаптируем размер под содержимое
+                      height: marker.userPhoto ? 40 : 28, // Адаптируем размер под содержимое
+                      minWidth: marker.userPhoto ? 40 : 28, // Минимальная ширина
+                      minHeight: marker.userPhoto ? 40 : 28, // Минимальная высота
                     }}
                   >
-                    {marker.participantsCount}
+                    <div
+                      style={{
+                        transform: "translate(-50%, -100%)",
+                        position: "relative",
+                        left: 0,
+                        top: 0,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: marker.onClick ? "pointer" : "default",
+                        width: marker.userPhoto ? 40 : "auto", // Адаптируем размер
+                        height: marker.userPhoto ? 40 : "auto", // Адаптируем размер
+                      }}
+                    >
+                      {marker.userPhoto ? (
+                        <div style={{ position: "relative" }}>
+                          <img
+                            src={getImageUrl(marker.userPhoto)}
+                            alt="User"
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: "50%",
+                              border: "3px solid white",
+                              boxShadow: "0 4px 8px rgba(0,0,0,0.4)",
+                              display: "block",
+                              objectFit: "cover",
+                              zIndex: 1000,
+                            }}
+                            onLoad={() => {
+                              console.log(
+                                `✅ Image loaded for marker ${idx}:`,
+                                marker.userPhoto,
+                              );
+                              console.log(`🖼️ Image element for marker ${idx}:`, {
+                                src: marker.userPhoto
+                                  ? getImageUrl(marker.userPhoto)
+                                  : "undefined",
+                                width: 40,
+                                height: 40,
+                                style: {
+                                  display: "block",
+                                  objectFit: "cover",
+                                  zIndex: 1000,
+                                },
+                              });
+                            }}
+                            onError={(e) =>
+                              console.error(
+                                `❌ Image failed to load for marker ${idx}:`,
+                                marker.userPhoto,
+                                e,
+                              )
+                            }
+                          />
+                          {marker.participantsCount && marker.participantsCount > 1 ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                right: -6,
+                                bottom: -6,
+                                width: 20,
+                                height: 20,
+                                borderRadius: 9999,
+                                background: marker.color || "#9924FF",
+                                color: "#fff",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                border: "2px solid white",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                                pointerEvents: "none",
+                              }}
+                            >
+                              {marker.participantsCount}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <>
+                          <PinIcon
+                            size={28}
+                            strokeWidth={2.25}
+                            color={marker.color || "#9924FF"}
+                          />
+                          {marker.participantsCount && marker.participantsCount > 1 ? (
+                            <div
+                              style={{
+                                position: "absolute",
+                                right: -4,
+                                bottom: -4,
+                                width: 18,
+                                height: 18,
+                                borderRadius: 9999,
+                                background: marker.color || "#9924FF",
+                                color: "#fff",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                border: "2px solid white",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                                pointerEvents: "none",
+                              }}
+                            >
+                              {marker.participantsCount}
+                            </div>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                    {marker.distance !== undefined && showDistances && (
+                      <div
+                        className="absolute left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
+                        style={{
+                          fontSize: "11px",
+                          color: "#333",
+                          border: "1px solid #e0e0e0",
+                          top: 4,
+                          pointerEvents: "none",
+                        }}
+                      >
+                        {formatDistance(marker.distance)}
+                        {marker.label && (
+                          <div className="mt-1 text-xs text-gray-500">{marker.label}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ) : null}
-              </div>
-              {marker.distance !== undefined && showDistances && (
-                <div
-                  className="absolute left-1/2 z-10 -translate-x-1/2 transform rounded bg-white px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
-                  style={{
-                    fontSize: "11px",
-                    color: "#333",
-                    border: "1px solid #e0e0e0",
-                    top: 4,
-                    pointerEvents: "none",
-                  }}
-                >
-                  {formatDistance(marker.distance)}
-                  {marker.label && (
-                    <div className="mt-1 text-xs text-gray-500">{marker.label}</div>
-                  )}
-                </div>
-              )}
-            </div>
-          </YMapMarker>
-        ))}
+                </YMapMarker>
+              );
+            });
+          }
+        })()}
         <YMapListener onClick={handleMapClick} />
       </YMap>
 

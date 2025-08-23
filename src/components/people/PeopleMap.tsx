@@ -15,6 +15,7 @@ interface PeopleMapProps {
   className?: string;
   preOpenFastMeetId?: number;
   preOpenCameFromList?: boolean;
+  setIsList?: (isList: boolean) => void;
 }
 
 export const PeopleMap = ({
@@ -24,6 +25,7 @@ export const PeopleMap = ({
   className,
   preOpenFastMeetId,
   preOpenCameFromList,
+  setIsList,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(preOpenFastMeetId ? true : false);
@@ -216,6 +218,7 @@ export const PeopleMap = ({
     ([coordKey, meetings]) => {
       // Use the first meeting for click handling
       const firstMeet = meetings[0];
+      const user = users.find((u) => u.id === firstMeet.userId);
 
       // Check if user has any involvement with any meeting at this location
       let color = "#9924FF"; // Default purple for other meets
@@ -227,7 +230,7 @@ export const PeopleMap = ({
       meetings.forEach((meet) => {
         const isUsersMeet = meet.userId === currentUser?.id;
         const userParticipation = allParticipants?.find(
-          (p) => p.userId === currentUser?.id && p.meetId === meet.id,
+          (p) => p.userId === user?.id && p.meetId === meet.id,
         );
 
         if (isUsersMeet) {
@@ -256,11 +259,12 @@ export const PeopleMap = ({
         coordinates: firstMeet.coordinates as [number, number],
         label:
           meetings.length > 1
-            ? `${meetings.length} встреч`
+            ? `${meetings.length} встречи`
             : firstMeet.name || "Быстрая встреча",
         onClick: () => handleFastMeetClick(firstMeet),
         meetData: firstMeet, // Сохраняем данные первой встречи для обработки клика
         color,
+        userPhoto: user?.photo,
         participantsCount: meetingsCount > 1 ? meetingsCount : undefined, // Only show count if multiple meetings
       };
     },
@@ -274,7 +278,8 @@ export const PeopleMap = ({
 
   // Debug info
   console.log("🗺️ PeopleMap Debug:", {
-    currentUser: currentUser?.name,
+    currentUser: currentUser?.photo,
+
     currentLocation,
     fastMeetsWithCoords: fastMeets?.filter((m) => m?.coordinates).length,
     totalMarkers: allMarkers.length,
@@ -294,6 +299,24 @@ export const PeopleMap = ({
     },
   });
 
+  // Debug markers with userPhoto
+  console.log("🗺️ PeopleMap Markers Debug:", {
+    fastMeetMarkers: fastMeetMarkers.map((marker) => ({
+      coordinates: marker.coordinates,
+      label: marker.label,
+      hasUserPhoto: !!marker.userPhoto,
+      userPhoto: marker.userPhoto,
+      color: marker.color,
+    })),
+    allMarkers: allMarkers.map((marker) => ({
+      coordinates: marker.coordinates,
+      label: marker.label,
+      hasUserPhoto: !!marker.userPhoto,
+      userPhoto: marker.userPhoto,
+      color: marker.color,
+    })),
+  });
+
   return (
     <div className={className}>
       <YandexMap
@@ -304,6 +327,8 @@ export const PeopleMap = ({
         enableGeolocation={true}
         autoGeolocation={true} // Always enable auto-detection for blue dot
         showDistances={true}
+        enableClustering={true} // Включаем кластеризацию для лучшей производительности
+        clusterGridSize={80} // Размер сетки кластеризации в пикселях
         onGeolocationSuccess={(coords) => {
           // This could trigger saving user location to backend
           console.log("🔵 User location detected for blue dot:", coords);

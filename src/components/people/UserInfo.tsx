@@ -1,7 +1,7 @@
 import { Heart } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { formatDistance } from "~/lib/utils/calculateDistance";
-import { getAge } from "~/lib/utils/getAge";
+import { getUserAge } from "~/lib/utils/getUserAge";
 
 interface UserInfoProps {
   user: any;
@@ -10,7 +10,12 @@ interface UserInfoProps {
   onClick: () => void;
 }
 
-export const UserInfo = ({ user, isFavorite, onFavoriteClick, onClick }: UserInfoProps) => {
+export const UserInfo = ({
+  user,
+  isFavorite,
+  onFavoriteClick,
+  onClick,
+}: UserInfoProps) => {
   return (
     <div onClick={onClick} className="w-full cursor-pointer">
       <div className="flex w-full items-center justify-between px-4 py-4">
@@ -29,18 +34,13 @@ export const UserInfo = ({ user, isFavorite, onFavoriteClick, onClick }: UserInf
           className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
           onClick={onFavoriteClick}
         >
-          <Heart
-            className={cn(
-              "h-6 w-6 text-black",
-              isFavorite && "text-red-500",
-            )}
-          />
+          <Heart className={cn("h-6 w-6 text-black", isFavorite && "text-red-500")} />
         </button>
       </div>
-      
+
       <div className="flex w-full items-center justify-between px-4 pb-4">
         <div className="text-sm text-neutral-500">
-          г. {user?.city}, {getAge(user?.birthday) || "не указано"}
+          г. {user?.city}, {getUserAge(user?.birthday || "") || "не указано"}
         </div>
         <div className="flex items-center gap-2">
           {user.distance !== null && (
@@ -48,12 +48,10 @@ export const UserInfo = ({ user, isFavorite, onFavoriteClick, onClick }: UserInf
               {formatDistance(user.distance)}
             </span>
           )}
-          <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">
-            Рейтинг 4.5
-          </div>
+          <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
         </div>
       </div>
-      
+
       <div className="px-4">
         <div className="text-sm">
           {user.bio?.length && user.bio?.length > 100

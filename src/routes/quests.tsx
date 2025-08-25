@@ -292,7 +292,11 @@ function RouteComponent() {
           </div>
         </div>
       </div> */}
-      {isMoreOpen && <More setIsMoreOpen={setIsMoreOpen} />}
+
+      {/* TODO: Add handleSaveEventorMeet */}
+      {isMoreOpen && (
+        <More setIsMoreOpen={setIsMoreOpen} handleSaveEventOrMeet={() => {}} />
+      )}
     </div>
   );
 }

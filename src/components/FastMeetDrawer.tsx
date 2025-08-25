@@ -1,10 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
 import { usePeopleGallery } from "~/hooks";
 import { useFastMeet } from "~/hooks/useFastMeet";
+import { getImage } from "~/lib/utils/getImage";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
@@ -34,6 +35,7 @@ export default function FastMeetDrawer({
 
   // Получаем данные из хука для логики кнопок
   const {
+    isOrganizer,
     users,
     organizerUser,
     meet: liveMeet,
@@ -46,6 +48,7 @@ export default function FastMeetDrawer({
     setIsMoreOpen,
     meetParticipantsCount,
     pendingRequests,
+    acceptedParticipants,
   } = useFastMeet(meet.id);
 
   const galleryData = usePeopleGallery(users || []);
@@ -183,6 +186,11 @@ export default function FastMeetDrawer({
                   onMoreClick={() => {}}
                   isFastMeet
                 />
+                <div className="px-4 pt-4">
+                  {organizerUser && organizerUser.bio && (
+                    <div className="text-sm">{organizerUser.bio}</div>
+                  )}
+                </div>
                 {/* Title and Description */}
                 <div className="px-4 py-4">
                   <div className="mb-6">
@@ -190,9 +198,7 @@ export default function FastMeetDrawer({
                       {currentMeet.name}
                     </h2>
                     {currentMeet.description && (
-                      <p className="leading-relaxed text-gray-600">
-                        {currentMeet.description}
-                      </p>
+                      <p className="leading-relaxed">{currentMeet.description}</p>
                     )}
                   </div>
 
@@ -273,31 +279,99 @@ export default function FastMeetDrawer({
                     )}
 
                     {/* Participants */}
-                    <div className="flex items-start gap-3 rounded-xl bg-indigo-50 p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                        <User className="h-5 w-5 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">Участники</div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col gap-1">
-                            <div className="text-sm text-gray-600">
-                              {meetParticipantsCount + 1} чел.
-                            </div>
-                            {pendingRequests && pendingRequests.length > 0 && (
-                              <div className="text-xs text-orange-600">
-                                {pendingRequests.length} ожидае(-ют) подтверждение
+                    <div className="flex flex-col items-start gap-3 rounded-xl bg-indigo-50 p-4">
+                      <div className="flex w-full items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          {/* <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                            <User className="h-5 w-5 text-indigo-600" />
+                          </div> */}
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium text-gray-900">Участники</div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex flex-col gap-1">
+                                <div className="font-bold text-blue-600">
+                                  {meetParticipantsCount + 1}
+                                </div>
                               </div>
-                            )}
+                            </div>
                           </div>
-                          <button
-                            onClick={() => setIsParticipantsOpen(true)}
-                            className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
-                          >
-                            Показать список
-                          </button>
                         </div>
                       </div>
+
+                      {/* Organizer */}
+                      {organizerUser && (
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={getImage(organizerUser, "")}
+                            alt={`${organizerUser.name} ${organizerUser.surname}`}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                          <div className="flex flex-col">
+                            <div className="font-medium text-gray-900">
+                              {organizerUser.name} {organizerUser.surname}
+                            </div>
+                            <div className="text-sm text-gray-500">Организатор</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Accepted Participants */}
+                      {acceptedParticipants.length > 0 && (
+                        <div className="space-y-4">
+                          {acceptedParticipants.map((participant) => {
+                            const user = users?.find((u) => u.id === participant.userId);
+                            if (!user) return null;
+
+                            return (
+                              <div
+                                key={participant.id}
+                                className="flex items-center gap-3"
+                              >
+                                <img
+                                  src={getImage(user, "")}
+                                  alt={`${user.name} ${user.surname}`}
+                                  className="h-10 w-10 rounded-full object-cover"
+                                />
+                                <div className="flex flex-col">
+                                  <div className="font-medium text-gray-900">
+                                    {user.name} {user.surname}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Участник</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {pendingRequests.length > 0 && (
+                        <div className="space-y-4">
+                          {pendingRequests.map((participant) => {
+                            const user = users?.find((u) => u.id === participant.userId);
+                            if (!user) return null;
+
+                            return (
+                              <div
+                                key={participant.id}
+                                className="flex items-center gap-3"
+                              >
+                                <img
+                                  src={getImage(user, "")}
+                                  alt={`${user.name} ${user.surname}`}
+                                  className="h-10 w-10 rounded-full object-cover"
+                                />
+                                <div className="flex flex-col">
+                                  <div className="font-medium text-gray-900">
+                                    {user.name} {user.surname}
+                                  </div>
+                                  <div className="text-sm text-orange-500">
+                                    Ожидает подтверждения
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* Locations */}

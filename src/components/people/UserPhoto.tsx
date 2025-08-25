@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { getImage } from "~/lib/utils/getImage";
+import { getUserAge } from "~/lib/utils/getUserAge";
 
 interface UserPhotoProps {
   user: any;
@@ -73,13 +74,15 @@ export const UserPhoto = ({
             }}
           />
         </AnimatePresence>
-        <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex h-20 items-center justify-start gap-2 bg-gradient-to-t from-black/60 to-transparent px-4">
-          <div className="text-xl font-bold text-white">
-            {user.name} {user.surname}
+        {isFastMeet ? (
+          <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex h-20 items-center justify-start gap-2 bg-gradient-to-t from-black/60 to-transparent px-4">
+            <div className="text-xl font-bold text-white">
+              {user.name} {user.surname}
+            </div>
+            <div className="text-lg text-neutral-300">{getUserAge(user.birthday)}</div>
+            <div></div>
           </div>
-          <div className="text-lg text-neutral-300">{user.birthday}</div>
-          <div></div>
-        </div>
+        ) : null}
       </div>
 
       {/* More button */}
@@ -94,7 +97,7 @@ export const UserPhoto = ({
 
       {/* Photo indicators */}
       {allPhotos.length > 1 && (
-        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+        <div className="absolute bottom-2 left-4 flex items-center gap-1">
           {allPhotos.map((_, idx) => (
             <span
               key={idx}

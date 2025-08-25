@@ -71,32 +71,32 @@ function RouteComponent() {
       );
     });
 
-  const groupMeetings = (meetings: any[]) => {
-    const bigMeetings = meetings.filter((meeting) => meeting.isBig);
-    const smallMeetings = meetings.filter((meeting) => !meeting.isBig);
+  // const groupMeetings = (meetings: any[]) => {
+  //   const bigMeetings = meetings.filter((meeting) => meeting.isBig);
+  //   const smallMeetings = meetings.filter((meeting) => !meeting.isBig);
 
-    const groups = [];
-    let bigIndex = 0;
-    let smallIndex = 0;
+  //   const groups = [];
+  //   let bigIndex = 0;
+  //   let smallIndex = 0;
 
-    while (bigIndex < bigMeetings.length || smallIndex < smallMeetings.length) {
-      if (bigIndex < bigMeetings.length) {
-        const bigGroup = bigMeetings.slice(bigIndex, bigIndex + 2);
-        groups.push({ type: "big", items: bigGroup });
-        bigIndex += 2;
-      }
+  //   while (bigIndex < bigMeetings.length || smallIndex < smallMeetings.length) {
+  //     if (bigIndex < bigMeetings.length) {
+  //       const bigGroup = bigMeetings.slice(bigIndex, bigIndex + 2);
+  //       groups.push({ type: "big", items: bigGroup });
+  //       bigIndex += 2;
+  //     }
 
-      if (smallIndex < smallMeetings.length) {
-        const smallGroup = smallMeetings.slice(smallIndex, smallIndex + 4);
-        groups.push({ type: "small", items: smallGroup });
-        smallIndex += 4;
-      }
-    }
+  //     if (smallIndex < smallMeetings.length) {
+  //       const smallGroup = smallMeetings.slice(smallIndex, smallIndex + 4);
+  //       groups.push({ type: "small", items: smallGroup });
+  //       smallIndex += 4;
+  //     }
+  //   }
 
-    return groups;
-  };
+  //   return groups;
+  // };
 
-  const meetingGroups = groupMeetings(filteredMeetings || []);
+  // const meetingGroups = groupMeetings(filteredMeetings || []);
 
   const isMobile = usePlatform();
 
@@ -177,9 +177,9 @@ function RouteComponent() {
       </div>
 
       {/* Meetings List */}
-      <div className="flex-1 overflow-y-auto px-4">
+      <div className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 mt-4 w-full">
+          <div className="col-span-2 mt-4 w-full px-4">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Актуальные встречи</h2>
               <ArrowRight className="h-5 w-5 text-gray-500" />
@@ -217,109 +217,66 @@ function RouteComponent() {
 
           {/* Featured Meetings List with alternating layout */}
           <div className="col-span-2 space-y-4">
-            {meetingGroups.map((group, groupIndex) => (
+            {filteredMeetings?.map((meeting, groupIndex) => (
               <div key={groupIndex}>
-                {group.type === "big" ? (
-                  // Большие карточки (1 в ряд)
-                  <div className="space-y-4">
-                    {group.items.map((meeting) => (
-                      <div key={meeting.id} className="">
-                        <div
-                          className="overflow-hidden"
-                          onClick={() => {
-                            saveScrollPosition("meetings");
-                            navigate({
-                              to: "/meet/$id",
-                              params: { id: meeting.id.toString() },
-                            });
-                          }}
-                        >
-                          {/* Avatar Section */}
-                          <div className="relative h-[172px]">
+                <div className="space-y-4">
+                  <div key={meeting.id} className="">
+                    <div
+                      className="overflow-hidden rounded-2xl"
+                      onClick={() => {
+                        saveScrollPosition("meetings");
+                        navigate({
+                          to: "/meet/$id",
+                          params: { id: meeting.id?.toString() || "" },
+                        });
+                      }}
+                    >
+                      {/* Avatar Section */}
+                      <div className="relative h-90 w-full rounded-2xl">
+                        <img
+                          src={getImageUrl(meeting.image || "")}
+                          alt={meeting.organizer?.name || ""}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      {/* Text Content */}
+                      <div className="px-4">
+                        <div className="py-2">
+                          <div className="space-y-1">
+                            <h3 className="text-lg leading-tight font-bold text-gray-900">
+                              {meeting?.name}
+                            </h3>
+                            <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                              {meeting.description || "Без названия"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-10 w-10 rounded-full">
                             <img
-                              src={getImageUrl(meeting.image!)}
-                              alt={meeting.organizer?.name!}
-                              className="h-full w-full rounded-3xl object-cover"
+                              src={getImageUrl(meeting.image || "")}
+                              alt=""
+                              className="h-full w-full rounded-full object-cover"
                             />
                           </div>
-                          {/* Text Content */}
-                          <div className="p-2">
-                            <div className="space-y-1">
-                              <h3 className="text-lg leading-tight font-bold text-gray-900">
-                                {meeting?.name}
-                              </h3>
-                              <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                                {meeting.description || "Без названия"}
-                              </p>
-                            </div>
+                          <div className="flex flex-col">
+                            <div className="font-bold">{meeting.organizer?.name}</div>
+                            <div className="text-sm text-neutral-500">Организатор</div>
                           </div>
-                          <div className="flex items-center gap-2 px-2">
-                            <div className="h-10 w-10 rounded-full">
-                              <img
-                                src={getImageUrl(meeting.image!)}
-                                alt=""
-                                className="h-full w-full rounded-full object-cover"
-                              />
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="font-bold">{meeting.organizer?.name}</div>
-                              <div className="text-sm text-neutral-500">Организатор</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between p-2">
-                            <div className="flex items-center">
-                              <LocationIcon />
-                              <div className="text-sm text-neutral-500">
-                                {meeting.location || "Москва"}
-                              </div>
-                            </div>
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <div className="flex items-center">
+                            <LocationIcon />
                             <div className="text-sm text-neutral-500">
-                              Сегодня в 15:30
+                              {meeting.locations?.[0]?.location || "Москва"}
                             </div>
                           </div>
+                          <div className="text-sm text-neutral-500">Сегодня в 15:30</div>
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                ) : (
-                  // Маленькие карточки (2 в ряд)
-                  <div className="grid grid-cols-2 gap-4">
-                    {group.items.map((meeting) => (
-                      <div key={meeting.id} className="">
-                        <div
-                          className="overflow-hidden"
-                          onClick={() => {
-                            saveScrollPosition("meetings");
-                            navigate({
-                              to: "/meet/$id",
-                              params: { id: meeting.id.toString() },
-                            });
-                          }}
-                        >
-                          {/* Avatar Section */}
-                          <div className="relative h-36">
-                            <img
-                              src={getImageUrl(meeting.image!)}
-                              alt={meeting.organizer?.name!}
-                              className="h-full w-full rounded-tl-2xl rounded-tr-4xl rounded-br-2xl rounded-bl-4xl object-cover"
-                            />
-                          </div>
-                          {/* Text Content */}
-                          <div className="p-2">
-                            <div className="space-y-1">
-                              <h3 className="text-sm leading-tight font-medium text-gray-900">
-                                {meeting.organizer?.name}
-                              </h3>
-                              <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                                {meeting.name || "Без названия"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

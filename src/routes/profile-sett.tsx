@@ -270,7 +270,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="h-full overflow-y-auto p-4 pb-24 data-[mobile=true]:pt-32"
+      className="h-full overflow-y-auto pb-24 data-[mobile=true]:pt-32"
     >
       <div
         data-mobile={isMobile}
@@ -292,16 +292,16 @@ function RouteComponent() {
       <div className="mt-8 flex w-full flex-col items-center gap-4">
         <label
           htmlFor="profile-photo-upload"
-          className="flex w-full cursor-pointer flex-col items-center gap-2"
+          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-t-2xl"
         >
           {base64 ? (
-            <div className="relative">
+            <div className="relative w-full rounded-t-2xl">
               <img
                 src={base64}
                 alt="Аватар"
-                className="mb-2 h-60 w-[92vw] rounded-2xl object-cover"
+                className="mb-2 h-90 w-full rounded-t-2xl object-cover"
               />
-              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
+              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 bg-[#12121280] px-4 py-2 text-white">
                 <div className="z-[10000]" onClick={handleDeletePhoto}>
                   Удалить
                 </div>
@@ -309,7 +309,7 @@ function RouteComponent() {
               </div>
             </div>
           ) : (
-            <div className="mb-2 flex h-40 w-[92vw] items-center justify-center rounded-2xl bg-[#F0F0F0]">
+            <div className="mb-2 flex h-90 w-full items-center justify-center rounded-t-2xl bg-[#F0F0F0]">
               <div className="flex flex-col items-center gap-2">
                 <AddPhoto />
                 <div className="text-sm text-[#9924FF]">Загрузить фото профиля</div>

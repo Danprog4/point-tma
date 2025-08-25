@@ -34,13 +34,13 @@ export const UserPhoto = ({
       onTouchEnd={onTouchEnd}
       onClick={onClick}
     >
-      <div className="h-60 w-full overflow-hidden rounded-lg">
+      <div className="h-90 w-full overflow-hidden rounded-t-2xl">
         <AnimatePresence initial={false}>
           <motion.img
             key={currentIndex}
             src={getImage(user as any, imageToShow)}
             alt={user.name || ""}
-            className="h-60 w-full object-cover"
+            className="h-90 w-full object-cover"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -72,7 +72,7 @@ export const UserPhoto = ({
           />
         </AnimatePresence>
       </div>
-      
+
       {/* More button */}
       <div
         onClick={onMoreClick}
@@ -80,7 +80,7 @@ export const UserPhoto = ({
       >
         <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
       </div>
-      
+
       {/* Photo indicators */}
       {allPhotos.length > 1 && (
         <div className="absolute bottom-2 left-2 flex items-center gap-1">

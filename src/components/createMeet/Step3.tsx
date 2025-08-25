@@ -89,7 +89,7 @@ export const Step3 = ({
   console.log(tags, "tags");
 
   return (
-    <>
+    <div className="px-4">
       {isInvite ? (
         <Invite
           friendName={friendName}
@@ -226,6 +226,6 @@ export const Step3 = ({
         setTags={setTags}
         tags={tags}
       />
-    </>
+    </div>
   );
 };

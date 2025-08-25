@@ -233,7 +233,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="relative flex h-screen w-screen flex-col p-4 pb-20 data-[mobile=true]:pt-39"
+      className="relative flex h-screen w-screen flex-col pb-20 data-[mobile=true]:pt-39"
     >
       <div
         data-mobile={isMobile}

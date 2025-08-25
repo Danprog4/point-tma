@@ -41,7 +41,7 @@ export const Step4 = ({
   console.log(selectedInventory, "selectedInventory");
 
   return (
-    <>
+    <div className="px-4">
       {isInventoryOpen ? (
         <Inventory
           setSelectedInventory={setSelectedInventory}
@@ -124,6 +124,6 @@ export const Step4 = ({
           )}
         </>
       )}
-    </>
+    </div>
   );
 };

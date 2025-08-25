@@ -178,7 +178,7 @@ function RouteComponent() {
                 return (
                   <div key={quest.id} className="mb-4 px-4">
                     <QuestCard quest={questData as any} isNavigable={true} />
-                    <p className="mb-4 text-xs leading-4 text-black">
+                    <p className="py-2 text-xs leading-4 text-black">
                       {questData?.description?.slice(0, 100)}
                       {questData?.description && questData.description.length > 100
                         ? "..."
@@ -242,7 +242,7 @@ function RouteComponent() {
               <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
               <div className="px-4">
                 <QuestCard quest={quest as any} isNavigable={true} />
-                <p className="my-2 text-xs leading-4 text-black">
+                <p className="py-2 text-xs leading-4 text-black">
                   {quest.description.slice(0, 100) +
                     (quest.description.length > 100 ? "..." : "")}
                 </p>

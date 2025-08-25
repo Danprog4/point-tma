@@ -27,7 +27,7 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
           <img
             src={quest.image}
             alt={quest.title}
-            className="h-[76px] w-[76px] flex-shrink-0 rounded-lg object-cover"
+            className="h-[98px] w-[88px] flex-shrink-0 rounded-lg object-cover"
           />
           <div className="flex-1 space-y-2">
             <h3 className="text-base leading-6 font-bold text-black">{quest.title}</h3>

@@ -178,7 +178,7 @@ function RouteComponent() {
           {page === "info" && (
             <>
               <div className="relative">
-                <div className="relative h-60">
+                <div className="relative h-90 rounded-t-2xl">
                   <img
                     src={
                       mainPhoto && mainPhoto.startsWith("data:image/")
@@ -186,7 +186,7 @@ function RouteComponent() {
                         : getImageUrl(mainPhoto ?? "")
                     }
                     alt=""
-                    className="absolute inset-0 h-full w-full rounded-2xl object-cover"
+                    className="absolute inset-0 h-full w-full rounded-t-2xl object-cover"
                     onClick={() => {
                       setIsClicked(!isClicked);
                       setCurrentIndex(0);

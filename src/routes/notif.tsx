@@ -1,9 +1,11 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft } from "lucide-react";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/notif")({
@@ -11,8 +13,10 @@ export const Route = createFileRoute("/notif")({
 });
 
 function RouteComponent() {
+  useScrollRestoration("notif");
   const trpc = useTRPC();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: notifications } = useQuery(trpc.main.getNotifications.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const readNotification = useMutation(trpc.main.readNotification.mutationOptions());
@@ -42,38 +46,49 @@ function RouteComponent() {
   };
 
   const getNotificationIcon = (type: string, notification: any) => {
-    switch (type) {
-      case "like":
-        return <img src="/heart.png" alt="" className="h-12 w-12 rounded-xl" />;
-      case "subscribe":
-        return (
-          <img
-            src={getImageUrl(getUser(notification.fromUserId || 0)?.photo || "")}
-            className="h-12 w-12 rounded-xl"
-          />
-        );
-      case "friend request":
-        return (
-          <img
-            src={getImageUrl(getUser(notification.fromUserId || 0)?.photo || "")}
-            className="h-12 w-12 rounded-xl"
-          />
-        );
-      case "meet request":
-        return (
-          <img
-            src={getImageUrl(getMeeting(notification.meetId || 0)?.image || "")}
-            className="h-12 w-12 rounded-xl"
-          />
-        );
-      case "meet invite":
-        return (
-          <img
-            src={getImageUrl(getMeeting(notification.meetId || 0)?.image || "")}
-            className="h-12 w-12 rounded-xl"
-          />
-        );
-    }
+    const iconContent = (() => {
+      switch (type) {
+        case "like":
+          return <img src="/heart.png" alt="" className="h-12 w-12 rounded-xl" />;
+        case "subscribe":
+          return (
+            <img
+              src={getImageUrl(getUser(notification.fromUserId || 0)?.photo || "")}
+              className="h-12 w-12 rounded-xl"
+            />
+          );
+        case "friend request":
+          return (
+            <img
+              src={getImageUrl(getUser(notification.fromUserId || 0)?.photo || "")}
+              className="h-12 w-12 rounded-xl"
+            />
+          );
+        case "meet request":
+          return (
+            <img
+              src={getImageUrl(getUser(notification.fromUserId || 0)?.photo || "")}
+              className="h-12 w-12 rounded-xl"
+            />
+          );
+        case "meet invite":
+          return (
+            <img
+              src={getImageUrl(getMeeting(notification.meetId || 0)?.image || "")}
+              className="h-12 w-12 rounded-xl"
+            />
+          );
+      }
+    })();
+
+    return (
+      <div className="relative">
+        {iconContent}
+        {!notification.isRead && (
+          <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></div>
+        )}
+      </div>
+    );
   };
 
   const getNotificationDecs = (type: string, notification: any) => {
@@ -119,19 +134,24 @@ function RouteComponent() {
   const handleNavigate = (type: string, notification: any) => {
     switch (type) {
       case "meet invite":
-        navigate({ to: "/my-meetings" });
+        navigate({ to: "/meet/$id", params: { id: notification.meetId.toString() } });
+        saveScrollPosition("notif");
         break;
       case "meet request":
-        navigate({ to: "/my-meetings" });
+        navigate({ to: "/meet/$id", params: { id: notification.meetId.toString() } });
+        saveScrollPosition("notif");
         break;
       case "friend request":
         navigate({ to: "/profile" });
+        saveScrollPosition("notif");
         break;
       case "like":
         navigate({ to: "/profile" });
+        saveScrollPosition("notif");
         break;
       case "subscribe":
         navigate({ to: "/profile" });
+        saveScrollPosition("notif");
         break;
     }
   };
@@ -166,13 +186,20 @@ function RouteComponent() {
     return grouped;
   };
 
+  const handleReadNotification = (notification: any) => {
+    readNotification.mutate({ id: notification.id });
+    queryClient.setQueryData(trpc.main.getNotifications.queryKey(), (old: any) => {
+      return old.map((n: any) => (n.id === notification.id ? { ...n, isRead: true } : n));
+    });
+  };
+
   const renderNotificationItem = (notification: any) => (
     <div
       key={notification.id}
       className="flex w-full cursor-pointer items-center justify-between border-b border-gray-100 py-3"
       onClick={() => {
         handleNavigate(notification.type || "", notification);
-        readNotification.mutate({ id: notification.id });
+        handleReadNotification(notification);
       }}
     >
       <div className="flex flex-col items-start justify-between gap-2">

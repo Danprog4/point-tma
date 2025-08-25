@@ -9,9 +9,9 @@ import { QuestCard } from "~/components/QuestCard";
 import { Meet, User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
-import { getAge } from "~/lib/utils/getAge";
 import { getEventData } from "~/lib/utils/getEventData";
 import { getImage } from "~/lib/utils/getImage";
+import { getUserAge } from "~/lib/utils/getUserAge";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
@@ -316,7 +316,8 @@ function RouteComponent() {
                   </div>
                   <div className="flex w-full items-center justify-between px-4 pb-4">
                     <div className="text-sm text-neutral-500">
-                      г. {userData?.city}, {getAge(userData?.birthday) || "не указано"}
+                      г. {userData?.city},{" "}
+                      {getUserAge(userData?.birthday || "") || "не указано"}
                     </div>
                     <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">
                       Рейтинг 4.5

@@ -13,6 +13,7 @@ interface UserPhotoProps {
   onTouchEnd: () => void;
   onClick: () => void;
   onMoreClick: (e: React.MouseEvent) => void;
+  isFastMeet?: boolean;
 }
 
 export const UserPhoto = ({
@@ -23,6 +24,7 @@ export const UserPhoto = ({
   onTouchEnd,
   onClick,
   onMoreClick,
+  isFastMeet,
 }: UserPhotoProps) => {
   const { allPhotos, currentIndex, imageToShow } = photoData;
 
@@ -34,7 +36,7 @@ export const UserPhoto = ({
       onTouchEnd={onTouchEnd}
       onClick={onClick}
     >
-      <div className="h-90 w-full overflow-hidden rounded-t-2xl">
+      <div className="relative h-90 w-full overflow-hidden rounded-t-2xl">
         <AnimatePresence initial={false}>
           <motion.img
             key={currentIndex}
@@ -71,15 +73,24 @@ export const UserPhoto = ({
             }}
           />
         </AnimatePresence>
+        <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex h-20 items-center justify-start gap-2 bg-gradient-to-t from-black/60 to-transparent px-4">
+          <div className="text-xl font-bold text-white">
+            {user.name} {user.surname}
+          </div>
+          <div className="text-lg text-neutral-300">{user.birthday}</div>
+          <div></div>
+        </div>
       </div>
 
       {/* More button */}
-      <div
-        onClick={onMoreClick}
-        className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
-      >
-        <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
-      </div>
+      {!isFastMeet && (
+        <div
+          onClick={onMoreClick}
+          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
+        >
+          <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
+        </div>
+      )}
 
       {/* Photo indicators */}
       {allPhotos.length > 1 && (

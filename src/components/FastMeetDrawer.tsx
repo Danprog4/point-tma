@@ -3,12 +3,14 @@ import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, User, X } from "luci
 import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
+import { usePeopleGallery } from "~/hooks";
 import { useFastMeet } from "~/hooks/useFastMeet";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 import { FastMeetInfo } from "./FastMeetInfo";
 import { FastMeetParticipantsList } from "./FastMeetParticipantsList";
+import { UserPhoto } from "./people";
 
 export default function FastMeetDrawer({
   open,
@@ -32,6 +34,8 @@ export default function FastMeetDrawer({
 
   // Получаем данные из хука для логики кнопок
   const {
+    users,
+    organizerUser,
     meet: liveMeet,
     isBlocked,
     isParticipant,
@@ -43,6 +47,17 @@ export default function FastMeetDrawer({
     meetParticipantsCount,
     pendingRequests,
   } = useFastMeet(meet.id);
+
+  const galleryData = usePeopleGallery(users || []);
+
+  const {
+    touchStartXRef,
+    touchEndXRef,
+    didSwipeRef,
+    handleSwipe,
+    openFullScreen,
+    getUserPhotoData,
+  } = galleryData;
 
   const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
 
@@ -79,8 +94,47 @@ export default function FastMeetDrawer({
     return eventTypes.find((type) => type.name === typeName);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!organizerUser) {
+      console.log("no user in handleTouchStart");
+      return;
+    }
+    touchStartXRef.current[organizerUser.id] = e.touches[0].clientX;
+    touchEndXRef.current[organizerUser.id] = e.touches[0].clientX;
+    didSwipeRef.current[organizerUser.id] = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!organizerUser) {
+      console.log("no user in handleTouchMove");
+      return;
+    }
+    touchEndXRef.current[organizerUser.id] = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!organizerUser) {
+      console.log("no user in handleTouchEnd");
+      return;
+    }
+    const startX = touchStartXRef.current[organizerUser.id] ?? 0;
+    const endX = touchEndXRef.current[organizerUser.id] ?? 0;
+    const deltaX = endX - startX;
+
+    if (Math.abs(deltaX) > 50) {
+      didSwipeRef.current[organizerUser.id] = true;
+      if (deltaX < 0) handleSwipe(organizerUser.id, "left");
+      else handleSwipe(organizerUser.id, "right");
+      // Prevent immediate click after swipe
+      setTimeout(() => {
+        didSwipeRef.current[organizerUser.id] = false;
+      }, 0);
+    }
+  };
+
   const currentMeet = (liveMeet ?? meet) as FastMeet;
   const eventTypeInfo = currentMeet.type ? getEventTypeInfo(currentMeet.type) : null;
+  const photoData = getUserPhotoData(organizerUser?.id!);
 
   const isUsersMeet = currentMeet.userId === currentUser?.id;
 
@@ -118,194 +172,193 @@ export default function FastMeetDrawer({
             />
           ) : (
             <>
-              <div className="scrollbar-hidden flex-1 overflow-y-auto px-4 pb-24">
+              <div className="scrollbar-hidden flex-1 overflow-y-auto pb-24">
+                <UserPhoto
+                  user={organizerUser}
+                  photoData={photoData}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  onClick={() => {}}
+                  onMoreClick={() => {}}
+                  isFastMeet
+                />
                 {/* Title and Description */}
-                <div className="mb-6">
-                  <h2 className="mb-2 text-xl font-bold text-gray-900">
-                    {currentMeet.name}
-                  </h2>
-                  {currentMeet.description && (
-                    <p className="leading-relaxed text-gray-600">
-                      {currentMeet.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Info Cards */}
-                <div className="space-y-4">
-                  {/* Created Date */}
-                  <div className="flex items-start gap-3 rounded-xl bg-purple-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                      <Calendar className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">Создана</div>
-                      <div className="text-sm text-gray-600">
-                        {formatDate(currentMeet.createdAt)}
-                      </div>
-                    </div>
+                <div className="px-4 py-4">
+                  <div className="mb-6">
+                    <h2 className="mb-2 text-xl font-bold text-gray-900">
+                      {currentMeet.name}
+                    </h2>
+                    {currentMeet.description && (
+                      <p className="leading-relaxed text-gray-600">
+                        {currentMeet.description}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Author */}
-                  <div className="flex items-start gap-3 rounded-xl bg-blue-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">Организатор</div>
-                      <div className="text-sm text-gray-600">
-                        ID: {currentMeet.userId}
+                  {/* Info Cards */}
+                  <div className="space-y-4">
+                    {/* Created Date */}
+                    <div className="flex items-start gap-3 rounded-xl bg-purple-50 p-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
+                        <Calendar className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">Создана</div>
+                        <div className="text-sm text-gray-600">
+                          {formatDate(currentMeet.createdAt)}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Event Type */}
-                  {(currentMeet.type || currentMeet.subType) && (
-                    <div
-                      className={`flex items-start gap-3 rounded-xl p-4 ${
-                        eventTypeInfo?.bgColor || "bg-gray-50"
-                      }`}
-                    >
+                    {/* Event Type */}
+                    {(currentMeet.type || currentMeet.subType) && (
                       <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                          eventTypeInfo?.bgColor
-                            ?.replace("bg-", "bg-")
-                            .replace("-100", "-200") || "bg-gray-200"
+                        className={`flex items-start gap-3 rounded-xl p-4 ${
+                          eventTypeInfo?.bgColor || "bg-gray-50"
                         }`}
                       >
-                        {eventTypeInfo?.emoji ? (
-                          <span className="text-lg">{eventTypeInfo.emoji}</span>
-                        ) : (
-                          <Tag className="h-5 w-5 text-gray-600" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">Тип встречи</div>
-                        <div className="text-sm text-gray-600">
-                          {currentMeet.subType || currentMeet.type}
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                            eventTypeInfo?.bgColor
+                              ?.replace("bg-", "bg-")
+                              .replace("-100", "-200") || "bg-gray-200"
+                          }`}
+                        >
+                          {eventTypeInfo?.emoji ? (
+                            <span className="text-lg">{eventTypeInfo.emoji}</span>
+                          ) : (
+                            <Tag className="h-5 w-5 text-gray-600" />
+                          )}
                         </div>
-                        {currentMeet.subType && currentMeet.type && (
-                          <div className="mt-1 text-xs text-gray-500">
-                            Категория: {currentMeet.type}
-                          </div>
-                        )}
-                        {eventTypeInfo?.description && (
-                          <div className="mt-1 text-xs text-gray-500">
-                            {eventTypeInfo.description}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {currentMeet.tags && currentMeet.tags.length > 0 && (
-                    <div className="flex items-start gap-3 rounded-xl bg-amber-50 p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                        <Tag className="h-5 w-5 text-amber-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">Тэги</div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {currentMeet.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Participants */}
-                  <div className="flex items-start gap-3 rounded-xl bg-indigo-50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                      <User className="h-5 w-5 text-indigo-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">Участники</div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">Тип встречи</div>
                           <div className="text-sm text-gray-600">
-                            {meetParticipantsCount + 1} чел.
+                            {currentMeet.subType || currentMeet.type}
                           </div>
-                          {pendingRequests && pendingRequests.length > 0 && (
-                            <div className="text-xs text-orange-600">
-                              {pendingRequests.length} ожидае(-ют) подтверждение
+                          {currentMeet.subType && currentMeet.type && (
+                            <div className="mt-1 text-xs text-gray-500">
+                              Категория: {currentMeet.type}
+                            </div>
+                          )}
+                          {eventTypeInfo?.description && (
+                            <div className="mt-1 text-xs text-gray-500">
+                              {eventTypeInfo.description}
                             </div>
                           )}
                         </div>
-                        <button
-                          onClick={() => setIsParticipantsOpen(true)}
-                          className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
-                        >
-                          Показать список
-                        </button>
                       </div>
-                    </div>
-                  </div>
+                    )}
 
-                  {/* Locations */}
-                  {currentMeet.locations && currentMeet.locations.length > 0 && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-gray-600" />
-                        <span className="font-medium text-gray-900">
-                          Места встречи ({currentMeet.locations.length})
-                        </span>
+                    {/* Tags */}
+                    {currentMeet.tags && currentMeet.tags.length > 0 && (
+                      <div className="flex items-start gap-3 rounded-xl bg-amber-50 p-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                          <Tag className="h-5 w-5 text-amber-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">Тэги</div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {currentMeet.tags.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-700"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
+                    )}
 
-                      <div className="space-y-3">
-                        {currentMeet.locations.map((location, index) => (
-                          <div
-                            key={index}
-                            onClick={() =>
-                              location.coordinates &&
-                              handleLocationClick(location.coordinates)
-                            }
-                            className={`rounded-xl bg-green-50 p-4 transition-all duration-200 ${
-                              location.coordinates
-                                ? "cursor-pointer hover:bg-green-100 hover:shadow-md active:scale-95"
-                                : ""
-                            }`}
-                          >
-                            <div className="mb-2 flex items-start justify-between">
-                              <div className="font-medium text-gray-900">
-                                {location.location}
-                              </div>
+                    {/* Participants */}
+                    <div className="flex items-start gap-3 rounded-xl bg-indigo-50 p-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                        <User className="h-5 w-5 text-indigo-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">Участники</div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col gap-1">
+                            <div className="text-sm text-gray-600">
+                              {meetParticipantsCount + 1} чел.
                             </div>
-
-                            <div className="mb-2 text-sm text-gray-600">
-                              {location.address}
-                            </div>
-
-                            {(location.starttime || location.endtime) && (
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-green-600" />
-                                <span className="text-sm text-green-700">
-                                  {location.starttime && location.endtime
-                                    ? `${location.starttime} - ${location.endtime}`
-                                    : location.starttime
-                                      ? `с ${location.starttime}`
-                                      : `до ${location.endtime}`}
-                                </span>
-                              </div>
-                            )}
-
-                            {location.coordinates && (
-                              <div className="mt-2 flex items-center gap-1 text-xs text-green-600">
-                                <MapPin className="h-3 w-3" />
-                                <span>Нажмите для открытия на карте</span>
+                            {pendingRequests && pendingRequests.length > 0 && (
+                              <div className="text-xs text-orange-600">
+                                {pendingRequests.length} ожидае(-ют) подтверждение
                               </div>
                             )}
                           </div>
-                        ))}
+                          <button
+                            onClick={() => setIsParticipantsOpen(true)}
+                            className="rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
+                          >
+                            Показать список
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  )}
+
+                    {/* Locations */}
+                    {currentMeet.locations && currentMeet.locations.length > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-5 w-5 text-gray-600" />
+                          <span className="font-medium text-gray-900">
+                            Места встречи ({currentMeet.locations.length})
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          {currentMeet.locations.map((location, index) => (
+                            <div
+                              key={index}
+                              onClick={() =>
+                                location.coordinates &&
+                                handleLocationClick(location.coordinates)
+                              }
+                              className={`rounded-xl bg-green-50 p-4 transition-all duration-200 ${
+                                location.coordinates
+                                  ? "cursor-pointer hover:bg-green-100 hover:shadow-md active:scale-95"
+                                  : ""
+                              }`}
+                            >
+                              <div className="mb-2 flex items-start justify-between">
+                                <div className="font-medium text-gray-900">
+                                  {location.location}
+                                </div>
+                              </div>
+
+                              <div className="mb-2 text-sm text-gray-600">
+                                {location.address}
+                              </div>
+
+                              {(location.starttime || location.endtime) && (
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4 text-green-600" />
+                                  <span className="text-sm text-green-700">
+                                    {location.starttime && location.endtime
+                                      ? `${location.starttime} - ${location.endtime}`
+                                      : location.starttime
+                                        ? `с ${location.starttime}`
+                                        : `до ${location.endtime}`}
+                                  </span>
+                                </div>
+                              )}
+
+                              {location.coordinates && (
+                                <div className="mt-2 flex items-center gap-1 text-xs text-green-600">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>Нажмите для открытия на карте</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

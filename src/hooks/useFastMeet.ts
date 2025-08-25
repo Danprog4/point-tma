@@ -197,6 +197,8 @@ export function useFastMeet(meetId: number) {
     setIsMoreOpen(false);
   };
 
+  const organizerUser = users?.find((u) => u.id === meet?.userId);
+
   // Handle declining a participant request
   const handleDeclineRequest = (participant: FastMeetParticipant) => {
     if (!participant.userId || !meet) return;
@@ -292,6 +294,7 @@ export function useFastMeet(meetId: number) {
   return {
     meet,
     participants,
+    organizerUser,
     users,
     isOrganizer,
     organizer,

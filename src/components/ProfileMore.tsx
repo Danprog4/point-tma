@@ -42,7 +42,7 @@ export const ProfileMore = ({
   return (
     <>
       <div className="relative">
-        <div className="relative h-[30vh] rounded-t-2xl">
+        <div className="relative h-90 rounded-t-2xl">
           <div className="absolute top-4 right-4 z-10"></div>
           <img
             src={
@@ -53,7 +53,7 @@ export const ProfileMore = ({
                   : user?.photoUrl || ""
             }
             alt={user?.name || ""}
-            className="h-full w-full rounded-2xl object-cover"
+            className="h-90 w-full rounded-t-2xl object-cover"
             onClick={() => {
               setIsClicked(!isClicked);
               setCurrentIndex(0);

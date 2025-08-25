@@ -291,6 +291,20 @@ export function useFastMeet(meetId: number) {
 
   const editFastMeet = useMutation(trpc.meetings.editFastMeet.mutationOptions());
 
+  const deleteUserFromFastMeet = useMutation(
+    trpc.meetings.deleteUserFromFastMeet.mutationOptions(),
+  );
+
+  const handleDeleteUserFromFastMeet = (userId: number) => {
+    if (!meet) return;
+    deleteUserFromFastMeet.mutate({ meetId: meet.id, userId });
+    queryClient.setQueryData(
+      trpc.meetings.getFastMeetParticipants.queryKey({ meetId: meet.id }),
+      (old: FastMeetParticipant[] | undefined) =>
+        (old || []).filter((p) => p.userId !== userId && p.meetId !== meet.id),
+    );
+  };
+
   return {
     meet,
     participants,
@@ -314,5 +328,6 @@ export function useFastMeet(meetId: number) {
     isMoreOpen,
     setIsMoreOpen,
     meetParticipantsCount,
+    handleDeleteUserFromFastMeet,
   };
 }

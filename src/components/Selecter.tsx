@@ -8,7 +8,7 @@ import {
 } from "./ui/select";
 
 export const Selecter = ({
-  height = "max-h-11 min-h-11",
+  height = "max-h-14 min-h-14",
   width = "w-full",
   children,
 

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FastMeet, User as UserType } from "~/db/schema";
@@ -39,6 +39,7 @@ export const FastMeetInfo = ({
     handleLeaveFastMeet,
     handleDeleteFastMeet,
     handleDeclineRequest,
+    handleDeleteUserFromFastMeet,
   } = useFastMeet(meet.id);
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -226,18 +227,30 @@ export const FastMeetInfo = ({
 
                 return (
                   <div key={participant.id} className="px-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={getUserPhoto(user)}
-                        alt={`${user.name} ${user.surname}`}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                      <div className="flex flex-col">
-                        <div className="text-lg font-bold">
-                          {user.name} {user.surname}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getUserPhoto(user)}
+                          alt={`${user.name} ${user.surname}`}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col">
+                          <div className="text-lg font-bold">
+                            {user.name} {user.surname}
+                          </div>
+                          <div className="text-sm text-gray-500">Участник</div>
                         </div>
-                        <div className="text-sm text-gray-500">Участник</div>
                       </div>
+                      {isOrganizer ? (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleDeleteUserFromFastMeet(user.id)}
+                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-red-500"
+                          >
+                            <TrashIcon className="h-6 w-6" />
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 );

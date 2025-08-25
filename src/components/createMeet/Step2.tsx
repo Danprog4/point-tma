@@ -582,7 +582,7 @@ export const Step2 = ({
 
   return (
     <>
-      <div className="scrollbar-hidden flex flex-col overflow-y-auto px-4 pb-20">
+      <div className="scrollbar-hidden flex flex-col overflow-y-auto pb-20">
         <div className="flex flex-col">
           <div className="flex flex-col items-start gap-2 pb-4">
             <div className="text-xl font-bold">Город *</div>

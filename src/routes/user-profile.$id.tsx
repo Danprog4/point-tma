@@ -16,9 +16,9 @@ import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
-import { getAge } from "~/lib/utils/getAge";
 import { getImage } from "~/lib/utils/getImage";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/user-profile/$id")({
@@ -198,7 +198,7 @@ function RouteComponent() {
     );
   }, [userSubscribers, user?.id]);
 
-  const age = getAge(user?.birthday ?? undefined);
+  const age = getUserAge(user?.birthday || "");
 
   const isOwner = useMemo(() => {
     return me?.id === user?.id;
@@ -278,12 +278,12 @@ function RouteComponent() {
           {!isMore ? (
             <>
               <div className="relative">
-                <div className="relative h-[30vh] rounded-t-2xl">
+                <div className="relative h-90 rounded-t-2xl">
                   <div className="absolute top-4 right-4 z-10"></div>
                   <img
                     src={getImage(user as any, mainPhoto || "")}
                     alt={user?.name || ""}
-                    className="h-full w-full rounded-2xl object-cover"
+                    className="h-90 w-full rounded-t-2xl object-cover"
                     onClick={() => {
                       setIsClicked(!isClicked);
                       setCurrentIndex(0);
@@ -658,7 +658,7 @@ function RouteComponent() {
               user={user}
               mainPhoto={mainPhoto}
               galleryPhotos={galleryPhotos}
-              age={age}
+              age={Number(age)}
               userSubscribersCount={userSubscribers?.length}
               uniqueFriends={uniqueFriends}
               isSubscribed={isSubscribed!}

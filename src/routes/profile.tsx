@@ -26,8 +26,8 @@ import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getAge } from "~/lib/utils/getAge";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
@@ -92,7 +92,7 @@ function RouteComponent() {
     return activeEvents?.filter((event) => event.type === "Квест") || [];
   }, [activeEvents]);
 
-  const userAge = user?.birthday ? getAge(user.birthday) : undefined;
+  const userAge = getUserAge(user?.birthday || "");
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
   const QuestsData = filteredEvents?.map((event) => {

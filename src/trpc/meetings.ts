@@ -432,6 +432,15 @@ export const meetingRouter = createTRPCRouter({
         tags,
       });
 
+      await db
+        .delete(fastMeetParticipantsTable)
+        .where(
+          and(
+            eq(fastMeetParticipantsTable.userId, ctx.userId),
+            eq(fastMeetParticipantsTable.status, "pending"),
+          ),
+        );
+
       return fastMeet;
     }),
 
@@ -439,6 +448,50 @@ export const meetingRouter = createTRPCRouter({
     const fastMeets = await db.query.fastMeetTable.findMany({});
     return fastMeets;
   }),
+
+  deleteUserFromFastMeet: procedure
+    .input(
+      z.object({
+        meetId: z.number(),
+        userId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { meetId, userId } = input;
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const meet = await db.query.fastMeetTable.findFirst({
+        where: eq(fastMeetTable.id, meetId),
+      });
+
+      if (!meet) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      if (meet.userId !== ctx.userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this meet",
+        });
+      }
+
+      const participant = await db
+        .delete(fastMeetParticipantsTable)
+        .where(
+          and(
+            eq(fastMeetParticipantsTable.userId, userId),
+            eq(fastMeetParticipantsTable.meetId, meetId),
+          ),
+        );
+
+      return participant;
+    }),
 
   getMeetingById: procedure
     .input(z.object({ id: z.number() }))

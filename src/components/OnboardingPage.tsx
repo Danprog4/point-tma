@@ -10,7 +10,7 @@ import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { onboardingConfig } from "~/onboardingConfig";
 import { useTRPC } from "~/trpc/init/react";
-import { DatePicker } from "./DatePicker";
+import DatePicker2 from "./DatePicker2";
 
 export const OnboardingPage = () => {
   const trpc = useTRPC();
@@ -22,7 +22,7 @@ export const OnboardingPage = () => {
   const [sex, setSex] = useState<"male" | "female" | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
-  const [birthday, setBirthday] = useState("");
+  const [birthday, setBirthday] = useState<Date | null>(null);
   const [city, setCity] = useState<string>("");
   const [bio, setBio] = useState("");
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ export const OnboardingPage = () => {
       name,
       surname,
       login,
-      birthday,
+      birthday: birthday ? birthday.toLocaleDateString("ru-RU") : "",
       city,
       bio,
       sex: sex || "",
@@ -217,7 +217,7 @@ export const OnboardingPage = () => {
     }
   };
 
-  const monthValue = birthday.split(".")[1] || "";
+  const monthValue = birthday?.toLocaleDateString("ru-RU").split(".")[1] || "";
   const filteredMonths =
     monthValue.length > 0
       ? monthOptions.filter((m) => m.toLowerCase().includes(monthValue.toLowerCase()))
@@ -434,7 +434,7 @@ export const OnboardingPage = () => {
                         <img
                           src={base64}
                           alt="Аватар"
-                          className="mb-2 h-48 w-full rounded-2xl object-cover"
+                          className="mb-2 h-90 w-full rounded-2xl object-cover"
                         />
                         <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 rounded-b-2xl bg-[#12121280] px-4 py-2 text-white">
                           <div
@@ -449,7 +449,7 @@ export const OnboardingPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="mb-2 flex h-48 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
+                      <div className="mb-2 flex h-90 w-full items-center justify-center rounded-2xl bg-[#F0F0F0]">
                         <div className="flex flex-col items-center gap-2">
                           <AddPhoto />
                           <div className="text-sm text-[#9924FF]">
@@ -500,7 +500,7 @@ export const OnboardingPage = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Имя"
-                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
+                  className="mb-4 h-14 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
                 <input
@@ -508,7 +508,7 @@ export const OnboardingPage = () => {
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
                   placeholder="Фамилия"
-                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
+                  className="mb-4 h-14 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
                 <input
@@ -516,7 +516,7 @@ export const OnboardingPage = () => {
                   value={login}
                   onChange={(e) => setLogin(e.target.value)}
                   placeholder="@логин"
-                  className="mb-4 h-12 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
+                  className="mb-4 h-14 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-base text-black placeholder:text-black/50"
                 />
 
                 <div className="relative mb-4 w-full">
@@ -526,11 +526,9 @@ export const OnboardingPage = () => {
                   />
                 </div>
 
-                <DatePicker
-                  birthday={birthday}
-                  setBirthday={setBirthday}
-                  monthValue={monthValue}
-                />
+                <div className="w-full pb-4">
+                  <DatePicker2 value={birthday} setDate={setBirthday} />
+                </div>
 
                 <textarea
                   value={bio}

@@ -49,6 +49,7 @@ export default function FastMeetDrawer({
     meetParticipantsCount,
     pendingRequests,
     acceptedParticipants,
+    handleDeleteUserFromFastMeet,
   } = useFastMeet(meet.id);
 
   const galleryData = usePeopleGallery(users || []);
@@ -449,7 +450,7 @@ export default function FastMeetDrawer({
                 ) : isAcceptedParticipant && !isUsersMeet ? (
                   <button
                     onClick={() => {
-                      onOpenChange(true);
+                      setIsMoreOpen(true);
                     }}
                     className="flex w-full items-center justify-center rounded-xl bg-purple-600 py-3 font-medium text-white"
                   >

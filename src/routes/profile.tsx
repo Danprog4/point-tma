@@ -10,9 +10,11 @@ import {
   Crown,
   History,
   Lock,
+  Mars,
   Package,
   Settings,
   Star,
+  Venus,
   X as XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -235,9 +237,17 @@ function RouteComponent() {
               </div>
 
               <div className="flex items-center justify-between px-4 pb-4">
-                <div className="text-sm text-neutral-500">
+                <div className="flex items-center gap-2 text-sm text-neutral-500">
                   г. {user?.city}, {userAge}
+                  <div>
+                    {user?.sex === "male" ? (
+                      <Mars className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <Venus className="h-4 w-4 text-pink-600" />
+                    )}
+                  </div>
                 </div>
+
                 <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
               </div>
 

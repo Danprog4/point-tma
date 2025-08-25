@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { Mars, Venus } from "lucide-react";
 import { getImage } from "~/lib/utils/getImage";
 import { getUserAge } from "~/lib/utils/getUserAge";
 
@@ -80,7 +81,13 @@ export const UserPhoto = ({
               {user.name} {user.surname}
             </div>
             <div className="text-lg text-neutral-300">{getUserAge(user.birthday)}</div>
-            <div></div>
+            <div>
+              {user.sex === "male" ? (
+                <Mars className="h-6 w-6 text-blue-600" />
+              ) : (
+                <Venus className="h-6 w-6 text-pink-600" />
+              )}
+            </div>
           </div>
         ) : null}
       </div>

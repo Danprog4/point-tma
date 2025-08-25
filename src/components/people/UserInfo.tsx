@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { Heart, Mars, Venus } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { formatDistance } from "~/lib/utils/calculateDistance";
 import { getUserAge } from "~/lib/utils/getUserAge";
@@ -39,9 +39,17 @@ export const UserInfo = ({
       </div>
 
       <div className="flex w-full items-center justify-between px-4 pb-4">
-        <div className="text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-neutral-500">
           г. {user?.city}, {getUserAge(user?.birthday || "") || "не указано"}
+          <div>
+            {user.sex === "male" ? (
+              <Mars className="h-4 w-4 text-blue-600" />
+            ) : (
+              <Venus className="h-4 w-4 text-pink-600" />
+            )}
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
           {user.distance !== null && (
             <span className="text-sm font-medium text-blue-600">

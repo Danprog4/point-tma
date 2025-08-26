@@ -30,6 +30,11 @@ export const UserPhoto = ({
 }: UserPhotoProps) => {
   const { allPhotos, currentIndex, imageToShow } = photoData;
 
+  // Early return if user is undefined
+  if (!user) {
+    return null;
+  }
+
   return (
     <div
       className="relative w-full"
@@ -43,14 +48,14 @@ export const UserPhoto = ({
           <motion.img
             key={currentIndex}
             src={getImage(user as any, imageToShow)}
-            alt={user.name || ""}
+            alt={user?.name || ""}
             className="h-90 w-full object-cover"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             onError={(e) => {
-              console.log(`Image failed to load for user ${user.id}:`, {
+              console.log(`Image failed to load for user ${user?.id}:`, {
                 src: getImage(user as any, imageToShow),
                 originalSrc: e.currentTarget.src,
               });
@@ -60,16 +65,16 @@ export const UserPhoto = ({
                 user.photoUrl.trim() !== "" &&
                 e.currentTarget.src !== user.photoUrl
               ) {
-                console.log(`Falling back to Telegram avatar for user ${user.id}`);
+                console.log(`Falling back to Telegram avatar for user ${user?.id}`);
                 e.currentTarget.src = user.photoUrl.trim();
               } else {
-                console.log(`Using default image for user ${user.id}`);
+                console.log(`Using default image for user ${user?.id}`);
                 e.currentTarget.src = user?.sex === "male" ? "/men.jpeg" : "/women.jpeg";
               }
             }}
             onLoad={() => {
               console.log(
-                `Image loaded successfully for user ${user.id}:`,
+                `Image loaded successfully for user ${user?.id}:`,
                 getImage(user as any, imageToShow),
               );
             }}
@@ -78,11 +83,11 @@ export const UserPhoto = ({
         {isFastMeet ? (
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex h-20 items-center justify-start gap-2 bg-gradient-to-t from-black/60 to-transparent px-4">
             <div className="text-xl font-bold text-white">
-              {user.name} {user.surname}
+              {user?.name} {user?.surname}
             </div>
-            <div className="text-lg text-neutral-300">{getUserAge(user.birthday)}</div>
+            <div className="text-lg text-neutral-300">{getUserAge(user?.birthday)}</div>
             <div>
-              {user.sex === "male" ? (
+              {user?.sex === "male" ? (
                 <Mars className="h-6 w-6 text-blue-600" />
               ) : (
                 <Venus className="h-6 w-6 text-pink-600" />

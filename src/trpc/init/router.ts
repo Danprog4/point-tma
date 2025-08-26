@@ -1,4 +1,5 @@
 import { authRouter } from "../auth";
+import { crmRouter } from "../crm";
 import { eventRouter } from "../event";
 import { friendsRouter } from "../friends";
 import { router } from "../main";
@@ -12,6 +13,7 @@ export const trpcRouter = createTRPCRouter({
   friends: friendsRouter,
   meetings: meetingRouter,
   yandex: yandexRouter,
+  crm: crmRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

@@ -45,7 +45,7 @@ export const Route = createRootRouteWithContext<{
       { rel: "stylesheet", href: appCss },
       {
         rel: "stylesheet",
-        href: "/node_modules/@mobiscroll/react/dist/css/mobiscroll.min.css",
+        href: "/mobiscroll.min.css",
       },
     ],
     scripts: [

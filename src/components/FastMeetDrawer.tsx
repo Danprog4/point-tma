@@ -1,11 +1,22 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, Clock, LockIcon, MapPin, Tag, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  LockIcon,
+  MapPin,
+  Mars,
+  Tag,
+  Venus,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
 import { usePeopleGallery } from "~/hooks";
 import { useFastMeet } from "~/hooks/useFastMeet";
 import { getImage } from "~/lib/utils/getImage";
+import { getUserAge } from "~/lib/utils/getUserAge";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
@@ -187,11 +198,29 @@ export default function FastMeetDrawer({
                   onMoreClick={() => {}}
                   isFastMeet
                 />
-                <div className="px-4 pt-4">
+
+                <div className="flex items-center gap-2 px-4 pt-4">
+                  <div className="text-xl font-bold text-black">
+                    {organizerUser?.name} {organizerUser?.surname}
+                  </div>
+                  <div className="text-lg text-neutral-700">
+                    {getUserAge(organizerUser?.birthday ?? "")}
+                  </div>
+                  <div>
+                    {organizerUser?.sex === "male" ? (
+                      <Mars className="h-6 w-6 text-blue-600" />
+                    ) : (
+                      <Venus className="h-6 w-6 text-pink-600" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="px-4">
                   {organizerUser && organizerUser.bio && (
                     <div className="text-sm">{organizerUser.bio}</div>
                   )}
                 </div>
+
                 {/* Title and Description */}
                 <div className="px-4 py-4">
                   <div className="mb-6">

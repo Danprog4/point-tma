@@ -1,7 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Mars, Venus } from "lucide-react";
 import { getImage } from "~/lib/utils/getImage";
-import { getUserAge } from "~/lib/utils/getUserAge";
 
 interface UserPhotoProps {
   user: any;
@@ -80,21 +78,6 @@ export const UserPhoto = ({
             }}
           />
         </AnimatePresence>
-        {isFastMeet ? (
-          <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex h-20 items-center justify-start gap-2 bg-gradient-to-t from-black/60 to-transparent px-4">
-            <div className="text-xl font-bold text-white">
-              {user?.name} {user?.surname}
-            </div>
-            <div className="text-lg text-neutral-300">{getUserAge(user?.birthday)}</div>
-            <div>
-              {user?.sex === "male" ? (
-                <Mars className="h-6 w-6 text-blue-600" />
-              ) : (
-                <Venus className="h-6 w-6 text-pink-600" />
-              )}
-            </div>
-          </div>
-        ) : null}
       </div>
 
       {/* More button */}

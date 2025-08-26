@@ -41,7 +41,13 @@ export const Route = createRootRouteWithContext<{
         title: "React TanStarter",
       },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      {
+        rel: "stylesheet",
+        href: "/node_modules/@mobiscroll/react/dist/css/mobiscroll.min.css",
+      },
+    ],
     scripts: [
       {
         src: `https://api-maps.yandex.ru/v3/?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY}&lang=ru_RU`,

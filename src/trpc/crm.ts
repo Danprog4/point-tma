@@ -15,12 +15,13 @@ import {
   meetParticipantsTable,
   meetTable,
   notificationsTable,
+  questsTable,
   ratingsUserTable,
   reviewsTable,
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
-import { createTRPCRouter, crmProcedure } from "./init";
+import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
 export const crmRouter = createTRPCRouter({
   // ===== ПОЛЬЗОВАТЕЛИ =====
@@ -759,5 +760,89 @@ export const crmRouter = createTRPCRouter({
           bans: [...currentBans, { userId: Number(input.userId) }],
         })
         .where(eq(usersTable.id, Number(input.userId)));
+    }),
+
+  // ===== КВЕСТЫ =====
+  getQuests: creatorProcedure.query(async () => {
+    return await db.query.questsTable.findMany();
+  }),
+
+  getQuest: creatorProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const quest = await db.query.questsTable.findFirst({
+        where: eq(questsTable.id, Number(input.id)),
+      });
+      if (!quest) throw new TRPCError({ code: "NOT_FOUND", message: "Quest not found" });
+      return quest;
+    }),
+
+  deleteQuest: creatorProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await db.delete(questsTable).where(eq(questsTable.id, Number(input.id)));
+      return { success: true };
+    }),
+
+  createQuest: creatorProcedure
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string(),
+        category: z.string(),
+        type: z.string(),
+        rewards: z.array(z.object({ type: z.string(), value: z.number() })),
+        date: z.string(),
+        city: z.string(),
+        image: z.string(),
+        location: z.string(),
+        price: z.number(),
+        quests: z.array(z.object({ title: z.string(), desc: z.string() })),
+        hasAchievement: z.boolean(),
+        organizer: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const newQuest = await db.insert(questsTable).values(input).returning();
+      return newQuest[0];
+    }),
+
+  updateQuest: crmProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        type: z.string().optional(),
+        rewards: z.array(z.object({ type: z.string(), value: z.number() })).optional(),
+        date: z.string().optional(),
+        city: z.string().optional(),
+        image: z.string().optional(),
+        location: z.string().optional(),
+        price: z.number().optional(),
+        quests: z.array(z.object({ title: z.string(), desc: z.string() })).optional(),
+        hasAchievement: z.boolean().optional(),
+        organizer: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...updateData } = input;
+      const updatedQuest = await db
+        .update(questsTable)
+        .set(updateData)
+        .where(eq(questsTable.id, Number(id)))
+        .returning();
+      return updatedQuest[0];
+    }),
+
+  reviewQuest: crmProcedure
+    .input(z.object({ id: z.string(), isReviewed: z.boolean() }))
+    .mutation(async ({ input }) => {
+      await db
+        .update(questsTable)
+        .set({ isReviewed: input.isReviewed })
+        .where(eq(questsTable.id, Number(input.id)));
+      return { success: true };
     }),
 });

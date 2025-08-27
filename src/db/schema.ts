@@ -150,6 +150,36 @@ export const meetTable = pgTable("meets", {
   city: varchar("city", { length: 255 }),
 });
 
+export const questsTable = pgTable("quests", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }),
+  description: varchar("description", { length: 1024 }),
+  category: varchar("category", { length: 255 }),
+  type: varchar("type", { length: 255 }),
+  rewards: jsonb("rewards").$type<
+    Array<{
+      type: string;
+      value: number;
+    }>
+  >(),
+  date: varchar("date", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  price: integer("price"),
+  quests: jsonb("quests").$type<any[]>(),
+  stages: jsonb("stages").$type<
+    Array<{
+      title: string;
+      desc: string;
+    }>
+  >(),
+  hasAchievement: boolean("has_achievement").default(false),
+  organizer: varchar("organizer", { length: 255 }),
+  city: varchar("city", { length: 255 }),
+  image: varchar("image", { length: 255 }),
+  isReviewed: boolean("is_reviewed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
   eventId: bigint("event_id", { mode: "number" }),

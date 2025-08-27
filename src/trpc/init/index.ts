@@ -65,5 +65,21 @@ const crmMiddleware = middleware(async ({ ctx, next }) => {
   throw new TRPCError({ code: "UNAUTHORIZED" });
 });
 
+const creatorMiddleware = middleware(async ({ ctx, next }) => {
+  const event = getEvent();
+  const adminPassword = event.headers.get("x-admin-password");
+
+  if (
+    adminPassword === process.env.CREATOR_PASSWORD ||
+    adminPassword === process.env.CRM_SUPER_PASSWORD ||
+    adminPassword === process.env.CRM_ADMIN_PASSWORD
+  ) {
+    return next({ ctx: { ...ctx, isCreator: true } });
+  }
+
+  throw new TRPCError({ code: "UNAUTHORIZED" });
+});
+
 export const procedure = t.procedure.use(authMiddleware);
 export const crmProcedure = t.procedure.use(crmMiddleware);
+export const creatorProcedure = t.procedure.use(creatorMiddleware);

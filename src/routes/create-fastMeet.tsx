@@ -163,6 +163,7 @@ function RouteComponent() {
   }, [title, description, city, locations]);
 
   const handleCreateFastMeet = () => {
+    setIsDisabled(true);
     createFastMeet.mutate({
       name: title,
       description,

@@ -10,7 +10,11 @@ interface WarningsBansDrawerProps {
   children: React.ReactNode;
 }
 
-export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBansDrawerProps) => {
+export const WarningsBansDrawer = ({
+  open,
+  onOpenChange,
+  children,
+}: WarningsBansDrawerProps) => {
   const trpc = useTRPC();
   const [activeTab, setActiveTab] = useState<"warnings" | "bans">("warnings");
 
@@ -42,7 +46,7 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
           </header>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-4">
+          <div className="mb-4 flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab("warnings")}
               className={`flex-1 px-4 py-3 text-sm font-medium ${
@@ -51,7 +55,7 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
                   : "text-gray-500"
               }`}
             >
-              <div className="flex items-center text-nowrap justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 text-nowrap">
                 <AlertTriangle className="h-4 w-4" />
                 Предупреждения ({warnings?.length || 0})
               </div>
@@ -72,7 +76,7 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
           </div>
 
           {/* Content */}
-          <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
+          <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
             {activeTab === "warnings" && (
               <div className="space-y-4">
                 {warnings && warnings.length > 0 ? (
@@ -84,7 +88,9 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-5 w-5 text-orange-600" />
-                          <span className="font-medium text-orange-800">Предупреждение</span>
+                          <span className="font-medium text-orange-800">
+                            Предупреждение
+                          </span>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <Clock className="h-3 w-3" />
@@ -97,9 +103,7 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <AlertTriangle className="h-12 w-12 text-gray-300" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      У вас нет предупреждений
-                    </p>
+                    <p className="mt-2 text-sm text-gray-500">У вас нет предупреждений</p>
                   </div>
                 )}
               </div>
@@ -130,9 +134,7 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
                 ) : (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Ban className="h-12 w-12 text-gray-300" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      У вас нет банов
-                    </p>
+                    <p className="mt-2 text-sm text-gray-500">У вас нет банов</p>
                   </div>
                 )}
               </div>
@@ -140,11 +142,11 @@ export const WarningsBansDrawer = ({ open, onOpenChange, children }: WarningsBan
           </div>
 
           {/* Footer */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 border-t border-gray-200 pt-4">
             <div className="rounded-lg bg-gray-50 p-3">
               <p className="text-xs text-gray-600">
-                Если вы считаете, что предупреждение или бан выдан несправедливо, 
-                вы можете оспорить его, написав в поддержку.
+                Если вы считаете, что предупреждение или бан выдан несправедливо, вы
+                можете оспорить его, написав в поддержку.
               </p>
             </div>
           </div>

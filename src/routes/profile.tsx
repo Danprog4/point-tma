@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  Award,
   AlertTriangle,
+  Award,
   BarChart3,
   Calendar,
   Calendar1,
@@ -60,7 +60,7 @@ function RouteComponent() {
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
-  
+
   const { data: warnings } = useQuery(trpc.main.getUserWarnings.queryOptions());
   const { data: bans } = useQuery(trpc.main.getUserBans.queryOptions());
   const userSteps = Object.entries(user?.interests || {}).filter(
@@ -450,16 +450,18 @@ function RouteComponent() {
                     open={isWarningsBansOpen}
                     onOpenChange={setIsWarningsBansOpen}
                   >
-                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0 cursor-pointer">
+                    <div className="flex cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0">
                       <div className="flex items-center gap-3">
-                        <AlertTriangle 
+                        <AlertTriangle
                           className={`h-6 w-6 ${
                             (warnings?.length || 0) + (bans?.length || 0) > 0
                               ? "text-orange-500"
                               : "text-purple-300"
-                          }`} 
+                          }`}
                         />
-                        <span className="text-base font-medium text-black">Модерация</span>
+                        <span className="text-base font-medium text-black">
+                          Модерация
+                        </span>
                       </div>
                       <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
@@ -511,8 +513,6 @@ function RouteComponent() {
           )}
         </div>
       )}
-
-
     </>
   );
 }

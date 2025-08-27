@@ -201,7 +201,7 @@ function RouteComponent() {
         time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "",
       },
       {
-        onSuccess: (data: any) => {
+        onSuccess: async (data: any) => {
           if (search?.userId) {
             inviteUsers.mutate({
               meetId: data.id,
@@ -211,8 +211,22 @@ function RouteComponent() {
 
           handleInvite(data.id);
 
-          queryClient.invalidateQueries({
+          // Принудительно инвалидируем кэш и ждем обновления
+          await queryClient.invalidateQueries({
             queryKey: trpc.meetings.getMeetings.queryKey(),
+          });
+
+          // Дополнительно инвалидируем связанные запросы
+          await queryClient.invalidateQueries({
+            queryKey: trpc.meetings.getParticipants.queryKey(),
+          });
+
+          // Инвалидируем все запросы, связанные с встречами
+          await queryClient.invalidateQueries({
+            predicate: (query) =>
+              query.queryKey[0] === "meetings" ||
+              query.queryKey.includes("getMeetings") ||
+              query.queryKey.includes("getParticipants"),
           });
         },
         onError: (error) => {

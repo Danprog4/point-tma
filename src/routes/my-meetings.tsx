@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Search } from "lucide-react";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CloseRed } from "~/components/Icons/CloseRed";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
@@ -22,8 +22,12 @@ function RouteComponent() {
   const [activeFilter, setActiveFilter] = useState("Активные");
   const trpc = useTRPC();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const { data: meetings, refetch: refetchMeetings } = useQuery({
+    ...trpc.meetings.getMeetings.queryOptions(),
+    staleTime: 0, // Всегда считаем данные устаревшими
+  });
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const [search, setSearch] = useState<string>("");
   // Используем единый hook работы с заявками / приглашениями
@@ -33,7 +37,15 @@ function RouteComponent() {
     accept: handleAcceptRequest,
     decline: handleDeclineRequest,
   } = useRequests(user?.id, meetings || [], users || []);
-  const { data: participants } = useQuery(trpc.meetings.getParticipants.queryOptions());
+  const { data: participants, refetch: refetchParticipants } = useQuery({
+    ...trpc.meetings.getParticipants.queryOptions(),
+    staleTime: 0, // Всегда считаем данные устаревшими
+  });
+
+  // Принудительно обновляем данные при монтировании компонента и при изменении фильтра
+  useEffect(() => {
+    refetchMeetings();
+  }, [refetchMeetings, activeFilter]);
 
   const createdMeetings = useMemo(() => {
     return meetings?.filter((m) => m.userId === user?.id) || [];

@@ -55,7 +55,10 @@ const crmMiddleware = middleware(async ({ ctx, next }) => {
   const event = getEvent();
   const adminPassword = event.headers.get("x-admin-password");
 
-  if (adminPassword === process.env.CRM_PASSWORD) {
+  if (
+    adminPassword === process.env.CRM_SUPER_PASSWORD ||
+    adminPassword === process.env.CRM_ADMIN_PASSWORD
+  ) {
     return next({ ctx: { ...ctx, isAdmin: true } });
   }
 

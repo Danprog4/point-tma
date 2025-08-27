@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { count, desc, eq, sql } from "drizzle-orm";
+import { count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -227,6 +227,13 @@ export const crmRouter = createTRPCRouter({
     return review;
   }),
 
+  deleteReview: crmProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await db.delete(reviewsTable).where(eq(reviewsTable.id, Number(input.id)));
+      return { success: true };
+    }),
+
   // ===== УВЕДОМЛЕНИЯ =====
   getNotifications: crmProcedure.query(async () => {
     return await db.query.notificationsTable.findMany({
@@ -271,6 +278,13 @@ export const crmRouter = createTRPCRouter({
       if (!complaint)
         throw new TRPCError({ code: "NOT_FOUND", message: "Complaint not found" });
       return complaint;
+    }),
+
+  deleteComplaint: crmProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      await db.delete(complaintsTable).where(eq(complaintsTable.id, Number(input.id)));
+      return { success: true };
     }),
 
   // ===== ЗАЯВКИ В ДРУЗЬЯ =====
@@ -677,5 +691,73 @@ export const crmRouter = createTRPCRouter({
       // Здесь можно добавить логику восстановления
       console.log("Restoring from:", input.backupUrl);
       return { success: true };
+    }),
+
+  // ===== ПРЕДУПРЕЖДЕНИЯ =====
+  getWarnings: crmProcedure.query(async () => {
+    return await db.query.usersTable.findMany({
+      where: isNotNull(usersTable.warnings),
+    });
+  }),
+
+  getBans: crmProcedure.query(async () => {
+    return await db.query.usersTable.findMany({
+      where: isNotNull(usersTable.bans),
+    });
+  }),
+
+  getWarningsByUser: crmProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, Number(input.userId)),
+      });
+    }),
+
+  getBansByUser: crmProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, Number(input.userId)),
+      });
+    }),
+
+  addWarning: crmProcedure
+    .input(z.object({ userId: z.string(), reason: z.string() }))
+    .mutation(async ({ input }) => {
+      // First get the current user data
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, Number(input.userId)),
+      });
+
+      const currentWarnings = user?.warnings || [];
+
+      return await db
+        .update(usersTable)
+        .set({
+          warnings: [
+            ...currentWarnings,
+            { reason: input.reason, createdAt: new Date().toISOString() },
+          ],
+        })
+        .where(eq(usersTable.id, Number(input.userId)));
+    }),
+
+  addBan: crmProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input }) => {
+      // First get the current user data
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, Number(input.userId)),
+      });
+
+      const currentBans = user?.bans || [];
+
+      return await db
+        .update(usersTable)
+        .set({
+          bans: [...currentBans, { userId: Number(input.userId) }],
+        })
+        .where(eq(usersTable.id, Number(input.userId)));
     }),
 });

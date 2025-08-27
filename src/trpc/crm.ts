@@ -21,6 +21,7 @@ import {
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
+import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
 export const crmRouter = createTRPCRouter({
@@ -733,7 +734,7 @@ export const crmRouter = createTRPCRouter({
 
       const currentWarnings = user?.warnings || [];
 
-      return await db
+      await db
         .update(usersTable)
         .set({
           warnings: [
@@ -742,10 +743,15 @@ export const crmRouter = createTRPCRouter({
           ],
         })
         .where(eq(usersTable.id, Number(input.userId)));
+
+      await sendTelegram(
+        `Вы получили предупреждение по причине: ${input.reason}\n\nВы можете оспорить его, написав в поддержку`,
+        user!.id,
+      );
     }),
 
   addBan: crmProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string(), reason: z.string(), duration: z.string() }))
     .mutation(async ({ input }) => {
       // First get the current user data
       const user = await db.query.usersTable.findFirst({
@@ -754,12 +760,22 @@ export const crmRouter = createTRPCRouter({
 
       const currentBans = user?.bans || [];
 
-      return await db
+      await db
         .update(usersTable)
         .set({
           bans: [...currentBans, { userId: Number(input.userId) }],
         })
         .where(eq(usersTable.id, Number(input.userId)));
+
+      const date = new Date();
+      const banDate = new Date(
+        date.getTime() + Number(input.duration) * 24 * 60 * 60 * 1000,
+      );
+
+      await sendTelegram(
+        `Вы получили бан до ${banDate.toLocaleDateString()} по причине: ${input.reason}\n\nВы можете оспорить его, написав в поддержку`,
+        user!.id,
+      );
     }),
 
   // ===== КВЕСТЫ =====

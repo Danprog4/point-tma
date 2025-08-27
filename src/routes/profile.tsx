@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Award,
+  AlertTriangle,
   BarChart3,
   Calendar,
   Calendar1,
@@ -24,6 +25,7 @@ import { FavIcon } from "~/components/Icons/Fav";
 import { MenuItem } from "~/components/MenuItem";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
+import { WarningsBansDrawer } from "~/components/WarningsBansDrawer";
 import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
@@ -47,6 +49,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isFriendsPage, setIsFriendsPage] = useState(false);
+  const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
   const navigate = useNavigate();
   const [page, setPage] = useState<"info" | "friends">("info");
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(
@@ -57,6 +60,9 @@ function RouteComponent() {
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
+  
+  const { data: warnings } = useQuery(trpc.main.getUserWarnings.queryOptions());
+  const { data: bans } = useQuery(trpc.main.getUserBans.queryOptions());
   const userSteps = Object.entries(user?.interests || {}).filter(
     ([key, value]) => value,
   ).length;
@@ -440,6 +446,24 @@ function RouteComponent() {
                     icon={<Package className="h-6 w-6 text-purple-300" />}
                     title="Инвентарь"
                   />
+                  <WarningsBansDrawer
+                    open={isWarningsBansOpen}
+                    onOpenChange={setIsWarningsBansOpen}
+                  >
+                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle 
+                          className={`h-6 w-6 ${
+                            (warnings?.length || 0) + (bans?.length || 0) > 0
+                              ? "text-orange-500"
+                              : "text-purple-300"
+                          }`} 
+                        />
+                        <span className="text-base font-medium text-black">Модерация</span>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </WarningsBansDrawer>
                 </div>
               </div>
             </>
@@ -487,6 +511,8 @@ function RouteComponent() {
           )}
         </div>
       )}
+
+
     </>
   );
 }

@@ -861,6 +861,24 @@ export const router = {
 
       return { success: true };
     }),
+
+  // Получить предупреждения пользователя
+  getUserWarnings: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    return user?.warnings || [];
+  }),
+
+  // Получить баны пользователя
+  getUserBans: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    return user?.bans || [];
+  }),
 };
 
 export type Router = typeof router;

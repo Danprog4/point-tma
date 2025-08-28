@@ -232,6 +232,12 @@ export const crmRouter = createTRPCRouter({
   deleteReview: crmProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
+      const review = await db.query.reviewsTable.findFirst({
+        where: eq(reviewsTable.id, Number(input.id)),
+      });
+      if (!review)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Review not found" });
+
       await db.delete(reviewsTable).where(eq(reviewsTable.id, Number(input.id)));
       return { success: true };
     }),
@@ -285,6 +291,12 @@ export const crmRouter = createTRPCRouter({
   deleteComplaint: crmProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
+      const complaint = await db.query.complaintsTable.findFirst({
+        where: eq(complaintsTable.id, Number(input.id)),
+      });
+      if (!complaint)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Complaint not found" });
+
       await db.delete(complaintsTable).where(eq(complaintsTable.id, Number(input.id)));
       return { success: true };
     }),
@@ -580,38 +592,6 @@ export const crmRouter = createTRPCRouter({
       totalRevenue,
       revenueByMonth,
       topEarningUsers,
-    };
-  }),
-
-  // ===== МОДЕРАЦИЯ =====
-  getModerationQueue: crmProcedure.query(async () => {
-    const [pendingMeets, pendingReviews, pendingComplaints, pendingFriendRequests] =
-      await Promise.all([
-        db.query.meetTable.findMany({
-          where: eq(meetTable.isCompleted, false),
-          orderBy: [desc(meetTable.createdAt)],
-          limit: 10,
-        }),
-        db.query.reviewsTable.findMany({
-          orderBy: [desc(reviewsTable.createdAt)],
-          limit: 10,
-        }),
-        db.query.complaintsTable.findMany({
-          orderBy: [desc(complaintsTable.createdAt)],
-          limit: 10,
-        }),
-        db.query.friendRequestsTable.findMany({
-          where: eq(friendRequestsTable.status, "pending"),
-          orderBy: [desc(friendRequestsTable.createdAt)],
-          limit: 10,
-        }),
-      ]);
-
-    return {
-      pendingMeets,
-      pendingReviews,
-      pendingComplaints,
-      pendingFriendRequests,
     };
   }),
 

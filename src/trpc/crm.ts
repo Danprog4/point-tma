@@ -482,7 +482,7 @@ export const crmRouter = createTRPCRouter({
 
     const totalRevenue = await db
       .select({
-        total: sql<number>`COALESCE(SUM(${usersTable.balance}), 0)`,
+        total: sql<number>`COALESCE(SUM(COALESCE(${usersTable.balance}, 0)), 0)`,
       })
       .from(usersTable);
 
@@ -574,7 +574,7 @@ export const crmRouter = createTRPCRouter({
       .slice(0, 10)
       .map((user) => ({
         userId: user.id,
-        revenue: user.balance || 0,
+        revenue: user.balance ?? 0,
         name: `${user.name} ${user.surname || ""}`.trim(),
       }));
 
@@ -591,6 +591,89 @@ export const crmRouter = createTRPCRouter({
       totalRevenue,
       revenueByMonth,
       topEarningUsers,
+    };
+  }),
+
+  // ===== СТАТИСТИКА БЫСТРЫХ ВСТРЕЧ =====
+  getFastMeetsStats: crmProcedure.query(async () => {
+    const fastMeets = await db.query.fastMeetTable.findMany();
+    const participants = await db.query.fastMeetParticipantsTable.findMany();
+
+    const fastMeetsByType = fastMeets.reduce(
+      (acc, meet) => {
+        const type = meet.type || "Не указан";
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const fastMeetsByCity = fastMeets.reduce(
+      (acc, meet) => {
+        const city = meet.city || "Не указан";
+        acc[city] = (acc[city] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const averageParticipants =
+      fastMeets.length > 0 ? participants.length / fastMeets.length : 0;
+
+    const activeFastMeets = fastMeets.filter((meet) => {
+      if (!meet.createdAt) return false;
+      const createdAt = new Date(meet.createdAt);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return createdAt > weekAgo;
+    }).length;
+
+    return {
+      totalFastMeets: fastMeets.length,
+      activeFastMeets,
+      totalParticipants: participants.length,
+      averageParticipants: Math.round(averageParticipants * 100) / 100,
+      fastMeetsByType,
+      fastMeetsByCity,
+    };
+  }),
+
+  // ===== СТАТИСТИКА СОБЫТИЙ В КАЛЕНДАРЕ =====
+  getCalendarStats: crmProcedure.query(async () => {
+    const calendarEvents = await db.query.calendarTable.findMany();
+
+    const eventsByType = calendarEvents.reduce(
+      (acc, event) => {
+        const type = event.eventType || "Не указан";
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const ticketEvents = calendarEvents.filter((event) => event.isTicket).length;
+    const plannedEvents = calendarEvents.filter((event) => event.isPlanned).length;
+
+    const upcomingEvents = calendarEvents.filter((event) => {
+      if (!event.date) return false;
+      const eventDate = new Date(event.date);
+      const now = new Date();
+      return eventDate > now;
+    }).length;
+
+    const pastEvents = calendarEvents.filter((event) => {
+      if (!event.date) return false;
+      const eventDate = new Date(event.date);
+      const now = new Date();
+      return eventDate < now;
+    }).length;
+
+    return {
+      totalEvents: calendarEvents.length,
+      ticketEvents,
+      plannedEvents,
+      upcomingEvents,
+      pastEvents,
+      eventsByType,
     };
   }),
 
@@ -756,6 +839,364 @@ export const crmRouter = createTRPCRouter({
         user!.id,
       );
     }),
+
+  // ===== ПОКУПКИ =====
+  getPurchases: crmProcedure.query(async () => {
+    // Получаем купленные билеты из календаря
+    const ticketPurchases = await db.query.calendarTable.findMany({
+      where: eq(calendarTable.isTicket, true),
+      orderBy: [desc(calendarTable.date)],
+    });
+
+    // Получаем квесты с ценами
+    const quests = await db.query.questsTable.findMany({
+      where: sql`${questsTable.price} > 0`,
+    });
+
+    // Получаем быстрые встречи
+    const fastMeets = await db.query.fastMeetTable.findMany({
+      orderBy: [desc(fastMeetTable.createdAt)],
+    });
+
+    // Получаем события в календаре
+    const calendarEvents = await db.query.calendarTable.findMany({
+      orderBy: [desc(calendarTable.date)],
+    });
+
+    // Получаем пользователей для связи данных
+    const users = await db.query.usersTable.findMany();
+
+    // Формируем список покупок
+    const purchases = ticketPurchases.map((ticket) => {
+      const user = users.find((u) => u.id === ticket.userId);
+      return {
+        id: ticket.id,
+        userId: ticket.userId,
+        userName: user
+          ? `${user.name} ${user.surname || ""}`.trim()
+          : "Неизвестный пользователь",
+        eventId: ticket.eventId,
+        eventType: ticket.eventType,
+        date: ticket.date,
+        isPlanned: ticket.isPlanned,
+        type: "ticket",
+        price: 0, // Цена не хранится в календаре
+      };
+    });
+
+    // Добавляем покупки квестов (если есть данные о покупках)
+    const questPurchases = quests.map((quest) => ({
+      id: quest.id,
+      userId: 0, // Нужно добавить поле userId в questsTable
+      userName: "Неизвестный пользователь",
+      eventId: quest.id,
+      eventType: "quest",
+      date: quest.createdAt,
+      isPlanned: false,
+      type: "quest",
+      price: quest.price,
+      title: quest.title,
+    }));
+
+    // Добавляем быстрые встречи
+    const fastMeetPurchases = fastMeets.map((fastMeet) => {
+      const user = users.find((u) => u.id === fastMeet.userId);
+      return {
+        id: fastMeet.id,
+        userId: fastMeet.userId,
+        userName: user
+          ? `${user.name} ${user.surname || ""}`.trim()
+          : "Неизвестный пользователь",
+        eventId: fastMeet.id,
+        eventType: "fastMeet",
+        date: fastMeet.createdAt,
+        isPlanned: false,
+        type: "fastMeet",
+        price: 0,
+        title: fastMeet.name,
+        description: fastMeet.description,
+        city: fastMeet.city,
+        meetType: fastMeet.type,
+      };
+    });
+
+    // Добавляем события в календаре
+    const calendarEventPurchases = calendarEvents.map((event) => {
+      const user = users.find((u) => u.id === event.userId);
+      return {
+        id: event.id,
+        userId: event.userId,
+        userName: user
+          ? `${user.name} ${user.surname || ""}`.trim()
+          : "Неизвестный пользователь",
+        eventId: event.eventId,
+        eventType: event.eventType,
+        date: event.date,
+        isPlanned: event.isPlanned,
+        type: "calendarEvent",
+        price: 0,
+        title: `${event.eventType} событие`,
+      };
+    });
+
+    return [
+      ...purchases,
+      ...questPurchases,
+      ...fastMeetPurchases,
+      ...calendarEventPurchases,
+    ];
+  }),
+
+  getPurchaseStats: crmProcedure.query(async () => {
+    // Получаем статистику покупок
+    const ticketPurchases = await db.query.calendarTable.findMany({
+      where: eq(calendarTable.isTicket, true),
+    });
+
+    const quests = await db.query.questsTable.findMany({
+      where: sql`${questsTable.price} > 0`,
+    });
+
+    const fastMeets = await db.query.fastMeetTable.findMany();
+    const calendarEvents = await db.query.calendarTable.findMany();
+
+    const totalPurchases =
+      ticketPurchases.length + quests.length + fastMeets.length + calendarEvents.length;
+    const totalRevenue = quests.reduce((sum, quest) => sum + (quest.price || 0), 0);
+
+    // Группировка по месяцам
+    const purchasesByMonth: Record<string, number> = {};
+    const currentDate = new Date();
+
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthKey = date.toISOString().slice(0, 7); // YYYY-MM
+      purchasesByMonth[monthKey] = 0;
+    }
+
+    // Подсчитываем покупки по месяцам
+    ticketPurchases.forEach((ticket) => {
+      if (ticket.date) {
+        const monthKey = new Date(ticket.date).toISOString().slice(0, 7);
+        purchasesByMonth[monthKey] = (purchasesByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    quests.forEach((quest) => {
+      if (quest.createdAt) {
+        const monthKey = new Date(quest.createdAt).toISOString().slice(0, 7);
+        purchasesByMonth[monthKey] = (purchasesByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    fastMeets.forEach((fastMeet) => {
+      if (fastMeet.createdAt) {
+        const monthKey = new Date(fastMeet.createdAt).toISOString().slice(0, 7);
+        purchasesByMonth[monthKey] = (purchasesByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    calendarEvents.forEach((event) => {
+      if (event.date) {
+        const monthKey = new Date(event.date).toISOString().slice(0, 7);
+        purchasesByMonth[monthKey] = (purchasesByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    // Топ продуктов (квесты по популярности)
+    const topProducts = quests
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
+      .slice(0, 10)
+      .map((quest) => ({
+        id: quest.id,
+        name: quest.title,
+        price: quest.price || 0,
+        category: quest.category,
+      }));
+
+    // Статистика по типам событий
+    const eventTypeStats = {
+      tickets: ticketPurchases.length,
+      quests: quests.length,
+      fastMeets: fastMeets.length,
+      calendarEvents: calendarEvents.length,
+    };
+
+    return {
+      totalPurchases,
+      totalRevenue,
+      averagePurchaseValue: totalPurchases > 0 ? totalRevenue / totalPurchases : 0,
+      purchasesByMonth,
+      topProducts,
+      eventTypeStats,
+    };
+  }),
+
+  // ===== БЫСТРЫЕ ВСТРЕЧИ ДЕТАЛЬНО =====
+  getFastMeetsDetailed: crmProcedure.query(async () => {
+    const fastMeets = await db.query.fastMeetTable.findMany({
+      orderBy: [desc(fastMeetTable.createdAt)],
+    });
+
+    const users = await db.query.usersTable.findMany();
+    const participants = await db.query.fastMeetParticipantsTable.findMany();
+
+    return fastMeets.map((fastMeet) => {
+      const creator = users.find((u) => u.id === fastMeet.userId);
+      const meetParticipants = participants.filter((p) => p.meetId === fastMeet.id);
+
+      return {
+        id: fastMeet.id,
+        name: fastMeet.name,
+        description: fastMeet.description,
+        creator: creator
+          ? `${creator.name} ${creator.surname || ""}`.trim()
+          : "Неизвестный пользователь",
+        creatorId: fastMeet.userId,
+        city: fastMeet.city,
+        type: fastMeet.type,
+        subType: fastMeet.subType,
+        tags: fastMeet.tags,
+        locations: fastMeet.locations,
+        coordinates: fastMeet.coordinates,
+        createdAt: fastMeet.createdAt,
+        participantsCount: meetParticipants.length,
+        participants: meetParticipants.map((p) => {
+          const participant = users.find((u) => u.id === p.userId);
+          return {
+            id: p.id,
+            userId: p.userId,
+            userName: participant
+              ? `${participant.name} ${participant.surname || ""}`.trim()
+              : "Неизвестный пользователь",
+            status: p.status,
+            createdAt: p.createdAt,
+          };
+        }),
+      };
+    });
+  }),
+
+  // ===== СОБЫТИЯ В КАЛЕНДАРЕ ДЕТАЛЬНО =====
+  getCalendarEventsDetailed: crmProcedure.query(async () => {
+    const calendarEvents = await db.query.calendarTable.findMany({
+      orderBy: [desc(calendarTable.date)],
+    });
+
+    const users = await db.query.usersTable.findMany();
+
+    return calendarEvents.map((event) => {
+      const user = users.find((u) => u.id === event.userId);
+
+      return {
+        id: event.id,
+        userId: event.userId,
+        userName: user
+          ? `${user.name} ${user.surname || ""}`.trim()
+          : "Неизвестный пользователь",
+        eventId: event.eventId,
+        meetId: event.meetId,
+        eventType: event.eventType,
+        date: event.date,
+        isTicket: event.isTicket,
+        isPlanned: event.isPlanned,
+        createdAt: event.date, // Используем date как createdAt для сортировки
+      };
+    });
+  }),
+
+  // ===== ТРАНЗАКЦИИ =====
+  getTransactions: crmProcedure.query(async () => {
+    // Получаем пользователей с балансом для анализа транзакций
+    const users = await db.query.usersTable.findMany({
+      where: sql`${usersTable.balance} != 0`,
+      orderBy: [desc(usersTable.lastLocationUpdate)],
+    });
+
+    // Получаем квесты с ценами как транзакции
+    const quests = await db.query.questsTable.findMany({
+      where: sql`${questsTable.price} > 0`,
+      orderBy: [desc(questsTable.createdAt)],
+    });
+
+    // Формируем список транзакций
+    const transactions = users.map((user) => ({
+      id: user.id,
+      userId: user.id,
+      userName: `${user.name} ${user.surname || ""}`.trim(),
+      amount: user.balance ?? 0,
+      type: (user.balance ?? 0) > 0 ? "credit" : "debit",
+      date: user.lastLocationUpdate || new Date(),
+      description: "Баланс пользователя",
+    }));
+
+    // Добавляем транзакции покупок квестов
+    const questTransactions = quests.map((quest) => ({
+      id: quest.id,
+      userId: 0, // Нужно добавить поле userId в questsTable
+      userName: "Неизвестный пользователь",
+      amount: quest.price || 0,
+      type: "purchase",
+      date: quest.createdAt,
+      description: `Покупка квеста: ${quest.title}`,
+    }));
+
+    return [...transactions, ...questTransactions];
+  }),
+
+  getTransactionStats: crmProcedure.query(async () => {
+    // Получаем статистику транзакций
+    const users = await db.query.usersTable.findMany();
+    const quests = await db.query.questsTable.findMany({
+      where: sql`${questsTable.price} > 0`,
+    });
+
+    const totalTransactions = users.length + quests.length;
+    const totalAmount =
+      users.reduce((sum, user) => sum + (user.balance ?? 0), 0) +
+      quests.reduce((sum, quest) => sum + (quest.price || 0), 0);
+
+    // Группировка по месяцам
+    const transactionsByMonth: Record<string, number> = {};
+    const currentDate = new Date();
+
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthKey = date.toISOString().slice(0, 7); // YYYY-MM
+      transactionsByMonth[monthKey] = 0;
+    }
+
+    // Подсчитываем транзакции по месяцам
+    users.forEach((user) => {
+      if (user.lastLocationUpdate) {
+        const monthKey = new Date(user.lastLocationUpdate).toISOString().slice(0, 7);
+        transactionsByMonth[monthKey] = (transactionsByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    quests.forEach((quest) => {
+      if (quest.createdAt) {
+        const monthKey = new Date(quest.createdAt).toISOString().slice(0, 7);
+        transactionsByMonth[monthKey] = (transactionsByMonth[monthKey] || 0) + 1;
+      }
+    });
+
+    // Типы транзакций
+    const transactionTypes = {
+      credit: users.filter((user) => (user.balance ?? 0) > 0).length,
+      debit: users.filter((user) => (user.balance ?? 0) < 0).length,
+      purchase: quests.length,
+    };
+
+    return {
+      totalTransactions,
+      totalAmount,
+      averageTransactionValue:
+        totalTransactions > 0 ? totalAmount / totalTransactions : 0,
+      transactionsByMonth,
+      transactionTypes,
+    };
+  }),
 
   // ===== КВЕСТЫ =====
   getQuests: creatorProcedure.query(async () => {

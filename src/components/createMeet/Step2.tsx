@@ -597,7 +597,7 @@ export const Step2 = ({
           <div className="flex flex-col gap-2">
             {Array.from({ length: length }).map((_, index) => (
               <div key={index}>
-                <div className="text-xl font-bold">Этапы вечеринки *</div>
+                <div className="text-xl font-bold">Этапы встречи *</div>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <input
                     value={locations[index]?.location || ""}

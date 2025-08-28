@@ -177,6 +177,7 @@ export const questsTable = pgTable("quests", {
   city: varchar("city", { length: 255 }),
   image: varchar("image", { length: 255 }),
   isReviewed: boolean("is_reviewed").default(false),
+  isApproved: boolean("is_approved").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

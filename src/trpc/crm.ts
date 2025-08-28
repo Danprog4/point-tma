@@ -174,7 +174,6 @@ export const crmRouter = createTRPCRouter({
         city: z.string().optional(),
         reward: z.number().optional(),
         maxParticipants: z.number().optional(),
-        isCompleted: z.boolean().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -833,11 +832,11 @@ export const crmRouter = createTRPCRouter({
     }),
 
   reviewQuest: crmProcedure
-    .input(z.object({ id: z.string(), isReviewed: z.boolean() }))
+    .input(z.object({ id: z.string(), isApproved: z.boolean() }))
     .mutation(async ({ input }) => {
       await db
         .update(questsTable)
-        .set({ isReviewed: input.isReviewed })
+        .set({ isApproved: input.isApproved, isReviewed: true })
         .where(eq(questsTable.id, Number(input.id)));
       return { success: true };
     }),

@@ -29,8 +29,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginMutation = useMutation(
     trpc.auth.login.mutationOptions({
-      onSuccess: async (data) => {
-        await queryClient.prefetchQuery(trpc.meetings.getMeetings.queryOptions());
+      onSuccess: (data) => {
+        queryClient.prefetchQuery(trpc.meetings.getMeetings.queryOptions());
         setLoggedIn(true);
         // Сразу устанавливаем данные пользователя в кэш
 

@@ -169,7 +169,7 @@ function RouteComponent() {
       </div>
 
       {/* Meetings List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="scrollbar-hidden flex-1 overflow-y-auto">
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2 mt-4 w-full px-4">
             <div className="mb-4 flex items-center justify-between">

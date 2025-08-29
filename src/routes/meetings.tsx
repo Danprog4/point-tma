@@ -208,7 +208,7 @@ function RouteComponent() {
           </div>
 
           {/* Featured Meetings List with alternating layout */}
-          <div className="col-span-2 space-y-4">
+          <div className="scrollbar-hidden col-span-2 space-y-4">
             {filteredMeetings?.map((meeting: any, groupIndex: number) => (
               <div key={groupIndex}>
                 <div className="space-y-4">

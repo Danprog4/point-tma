@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, gt, inArray, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -185,7 +185,7 @@ export const meetingRouter = createTRPCRouter({
       const meetings = await db.query.meetTable.findMany({
         where: cursor ? gt(meetTable.id, cursor) : undefined,
         limit: limit + 1,
-        orderBy: [asc(meetTable.id)],
+        orderBy: [desc(meetTable.id)],
       });
 
       let nextCursor: number | undefined = undefined;

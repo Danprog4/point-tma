@@ -26,7 +26,7 @@ function RouteComponent() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
     trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
       {
-        limit: 10,
+        limit: 5,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,

@@ -19,6 +19,7 @@ export const Route = createFileRoute("/meetings")({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   useScrollRestoration("meetings");
   const trpc = useTRPC();
 
@@ -58,7 +59,6 @@ function RouteComponent() {
     };
   });
 
-  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);

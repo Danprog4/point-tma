@@ -171,6 +171,35 @@ export const meetingRouter = createTRPCRouter({
       }
     }),
 
+  getMeetingsPagination: procedure
+
+    .input(
+      z.object({
+        limit: z.number(),
+        cursor: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
+
+      const meetings = await db.query.meetTable.findMany({
+        where: cursor ? gt(meetTable.id, cursor) : undefined,
+        limit: limit + 1,
+        orderBy: [asc(meetTable.id)],
+      });
+
+      let nextCursor: number | undefined = undefined;
+      if (meetings.length > limit) {
+        const nextItem = meetings.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      return {
+        items: meetings,
+        nextCursor,
+      };
+    }),
+
   inviteUsers: procedure
     .input(
       z.object({

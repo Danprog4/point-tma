@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
-import { useScrollRestoration } from "~/components/hooks/useScrollRes";
+import { useInfiniteScroll, useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { LocationIcon } from "~/components/Icons/Location";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -13,6 +13,7 @@ import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
+
 export const Route = createFileRoute("/meetings")({
   component: RouteComponent,
 });
@@ -21,22 +22,42 @@ function RouteComponent() {
   useScrollRestoration("meetings");
   const trpc = useTRPC();
 
-  const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
+    trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
+      {
+        limit: 10,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      },
+    ),
+  );
+
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
   const activeMeetRequests = meetRequests?.filter(
     (request) => request.status === "pending",
   );
 
-  console.log(meetingsData, "meetingsData");
+  // Используем хук для бесконечной прокрутки
+  const loadMoreRef = useInfiniteScroll(
+    () => fetchNextPage(),
+    isFetchingNextPage,
+    hasNextPage || false,
+    200,
+  );
 
-  const meetingsWithEvents = meetingsData?.map((meeting) => {
-    const organizer = users?.find((u) => u.id === meeting.userId);
+  // Объединяем все страницы данных
+  const allMeetings = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const meetingsWithEvents = allMeetings.map((meeting: any) => {
+    const organizer = users?.find((u: any) => u.id === meeting.userId);
     return {
       ...meeting,
       organizer,
     };
   });
+
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Все");
   const [search, setSearch] = useState("");
@@ -53,16 +74,14 @@ function RouteComponent() {
     Нетворкинг: "Нетворкинг",
   };
 
-  console.log(meetingsWithEvents, "meetingsWithEvents");
-
   // Фильтрация встреч
   const filteredMeetings = meetingsWithEvents
-    ?.filter((m) => !m.isCompleted)
-    ?.filter((meeting) => {
+    ?.filter((m: any) => !m.isCompleted)
+    ?.filter((meeting: any) => {
       if (activeFilter === "Все") return true;
       return meeting.type === filterMap[activeFilter as keyof typeof filterMap];
     })
-    .filter((meeting) => {
+    .filter((meeting: any) => {
       const eventTitle = meeting.name || "Без названия";
       const organizerName = meeting.organizer?.name || "Неизвестно";
       return (
@@ -70,33 +89,6 @@ function RouteComponent() {
         organizerName.toLowerCase().includes(search.toLowerCase())
       );
     });
-
-  // const groupMeetings = (meetings: any[]) => {
-  //   const bigMeetings = meetings.filter((meeting) => meeting.isBig);
-  //   const smallMeetings = meetings.filter((meeting) => !meeting.isBig);
-
-  //   const groups = [];
-  //   let bigIndex = 0;
-  //   let smallIndex = 0;
-
-  //   while (bigIndex < bigMeetings.length || smallIndex < smallMeetings.length) {
-  //     if (bigIndex < bigMeetings.length) {
-  //       const bigGroup = bigMeetings.slice(bigIndex, bigIndex + 2);
-  //       groups.push({ type: "big", items: bigGroup });
-  //       bigIndex += 2;
-  //     }
-
-  //     if (smallIndex < smallMeetings.length) {
-  //       const smallGroup = smallMeetings.slice(smallIndex, smallIndex + 4);
-  //       groups.push({ type: "small", items: smallGroup });
-  //       smallIndex += 4;
-  //     }
-  //   }
-
-  //   return groups;
-  // };
-
-  // const meetingGroups = groupMeetings(filteredMeetings || []);
 
   const isMobile = usePlatform();
 
@@ -185,7 +177,7 @@ function RouteComponent() {
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
-              {meetingsWithEvents?.slice(0, 7).map((event, idx) => (
+              {meetingsWithEvents?.slice(0, 7).map((event: any, idx: number) => (
                 <div
                   onClick={() => {
                     saveScrollPosition("meetings");
@@ -217,7 +209,7 @@ function RouteComponent() {
 
           {/* Featured Meetings List with alternating layout */}
           <div className="col-span-2 space-y-4">
-            {filteredMeetings?.map((meeting, groupIndex) => (
+            {filteredMeetings?.map((meeting: any, groupIndex: number) => (
               <div key={groupIndex}>
                 <div className="space-y-4">
                   <div key={meeting.id} className="">
@@ -279,6 +271,16 @@ function RouteComponent() {
                 </div>
               </div>
             ))}
+
+            {/* Лоадер для пагинации */}
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-purple-600"></div>
+                  <span className="text-sm text-gray-500">Загрузка...</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

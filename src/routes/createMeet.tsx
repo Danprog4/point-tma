@@ -96,9 +96,13 @@ function RouteComponent() {
     }
   }, [search.userId]);
 
+  // Валидация idOfEvent перед использованием
+  const eventId = search.idOfEvent ? Number(search.idOfEvent) : 0;
+  const isValidEventId = !isNaN(eventId) && eventId > 0;
+
   const { data: event } = useQuery(
     trpc.event.getEvent.queryOptions({
-      id: Number(search.idOfEvent),
+      id: eventId,
       category: search.typeOfEvent ?? "",
     }),
   );
@@ -107,7 +111,7 @@ function RouteComponent() {
 
   useEffect(() => {
     console.log(search.idOfEvent, "search.idOfEvent");
-    if (search.typeOfEvent) {
+    if (search.typeOfEvent && event && isValidEventId) {
       console.log(event, "event");
       setSelectedItems([
         ...selectedItems,
@@ -125,7 +129,7 @@ function RouteComponent() {
       ]);
       setIndex(0);
     }
-  }, [search.idOfEvent]);
+  }, [search.idOfEvent, event, isValidEventId]);
 
   const handleNext = () => {
     setStep(step + 1);

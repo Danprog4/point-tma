@@ -306,6 +306,14 @@ export const eventRouter = createTRPCRouter({
           eq(eventsTable.isReviewed, true),
         ),
       });
+
+      if (!event) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Event not found",
+        });
+      }
+
       return event;
     }),
 });

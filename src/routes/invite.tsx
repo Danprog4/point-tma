@@ -5,11 +5,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/invite")({
@@ -54,33 +49,29 @@ function RouteComponent() {
     });
   };
 
+  const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
+
   let data: any[] = [];
 
   switch (activeFilter) {
     case "Все":
-      data = [
-        ...questsData,
-        ...kinoData,
-        ...conferencesData,
-        ...networkingData,
-        ...partiesData,
-      ];
+      data = eventsData || [];
       break;
     case "Квесты":
-      data = questsData;
-      console.log(data);
+      data = eventsData?.filter((event) => event.category === "Квест") || [];
+
       break;
     case "Кино":
-      data = kinoData;
+      data = eventsData?.filter((event) => event.category === "Кино") || [];
       break;
     case "Конференции":
-      data = conferencesData;
+      data = eventsData?.filter((event) => event.category === "Конференция") || [];
       break;
     case "Вечеринки":
-      data = partiesData;
+      data = eventsData?.filter((event) => event.category === "Вечеринка") || [];
       break;
     case "Нетворкинг":
-      data = networkingData;
+      data = eventsData?.filter((event) => event.category === "Нетворкинг") || [];
       break;
     default:
       data = [];

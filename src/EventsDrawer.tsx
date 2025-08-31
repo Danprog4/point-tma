@@ -46,6 +46,14 @@ export function EventsDrawer({
   handleAddToCalendar,
 }: EventsDrawerProps) {
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
+  const filtersMap = {
+    Все: "Все",
+    Кино: "Кино",
+    Вечеринки: "Вечеринка",
+    Конференции: "Конференция",
+    Нетворкинг: "Нетворкинг",
+    Квесты: "Квест",
+  };
   const [search, setSearch] = useState<string>("");
   const clickHandler = (item: any) => {
     if (handleAddToCalendar) {

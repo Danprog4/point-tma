@@ -1,4 +1,4 @@
-import { getEventData } from "~/lib/utils/getEventData";
+import { Event } from "~/db/schema";
 import { Coin } from "../Icons/Coin";
 import { Inventory } from "../Inventory";
 export const Step4 = ({
@@ -10,6 +10,7 @@ export const Step4 = ({
   setSelectedInventory,
   selectedInventory,
   user,
+  event,
 }: {
   reward: number;
   setReward: (reward: number) => void;
@@ -21,6 +22,7 @@ export const Step4 = ({
   user: any;
 
   isDisabled: boolean;
+  event: Event;
 }) => {
   const getItem = (id: string) => {
     if (!user?.inventory) {
@@ -32,10 +34,6 @@ export const Step4 = ({
     });
 
     return foundItem;
-  };
-
-  const getEvent = (eventId: number, name: string) => {
-    return getEventData(name, eventId);
   };
 
   console.log(selectedInventory, "selectedInventory");
@@ -91,15 +89,12 @@ export const Step4 = ({
                 <div key={item} className="flex flex-col">
                   <div className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4">
                     <img
-                      src={getEvent(getItem(item)?.eventId, getItem(item)?.name)?.image}
+                      src={event?.image ?? ""}
                       alt="Selected reward"
                       className="h-[61px] w-[61px] rounded-lg"
                     />
                     <div className="text-center text-xs font-bold text-nowrap text-[#A35700]">
-                      {getEventData(getItem(item)?.name, getItem(item)?.eventId)
-                        ?.category === "Квест"
-                        ? "Билет на квест"
-                        : "Ваучер"}
+                      {event?.category === "Квест" ? "Билет на квест" : "Ваучер"}
                     </div>
                   </div>
                   <div

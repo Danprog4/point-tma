@@ -4,7 +4,6 @@ import { ArrowLeft, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import { User } from "~/db/schema";
-import { getEventData } from "~/lib/utils/getEventData";
 import { getImage } from "~/lib/utils/getImage";
 import { useTRPC } from "~/trpc/init/react";
 import { Friends } from "./Friends";
@@ -30,12 +29,17 @@ export default function GiveDrawer({
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const event = useMemo(() => {
-    if (!item) return null;
-    return getEventData(item.name, item.eventId);
-  }, [item]);
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const trpc = useTRPC();
+  const { data: eventData } = useQuery(
+    trpc.event.getEvent.queryOptions({ id: item.eventId, category: item.name }),
+  );
+  const event = useMemo(() => {
+    if (!item) return null;
+    return eventData;
+  }, [item]);
+
   const sendGift = useMutation(
     trpc.main.sendGift.mutationOptions({
       onSuccess: () => {
@@ -86,8 +90,8 @@ export default function GiveDrawer({
               <div className="mx-4 flex items-center rounded-lg bg-[#FCF8FE] px-4 py-2">
                 <div className="flex items-center justify-center gap-2">
                   <img
-                    src={event?.image}
-                    alt={event?.title}
+                    src={event?.image ?? ""}
+                    alt={event?.title ?? ""}
                     className="h-10 w-10 rounded-lg"
                   />
                   <div>{item.name === "Квест" ? "Билет на квест" : "Ваучер"}</div>
@@ -105,7 +109,7 @@ export default function GiveDrawer({
               <div className="flex items-center justify-center gap-8">
                 <div className="flex -rotate-4 transform flex-col items-center justify-center">
                   <img
-                    src={event?.image}
+                    src={event?.image ?? ""}
                     alt=""
                     className="h-[132px] w-[132px] rounded-lg"
                   />

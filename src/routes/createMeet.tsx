@@ -7,9 +7,8 @@ import { Step2 } from "~/components/createMeet/Step2";
 import { Step3 } from "~/components/createMeet/Step3";
 import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
-import { User } from "~/db/schema";
+import { Event, User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 
@@ -97,12 +96,18 @@ function RouteComponent() {
     }
   }, [search.userId]);
 
+  const { data: event } = useQuery(
+    trpc.event.getEvent.queryOptions({
+      id: Number(search.idOfEvent),
+      category: search.typeOfEvent ?? "",
+    }),
+  );
+
   console.log(search, "search");
 
   useEffect(() => {
     console.log(search.idOfEvent, "search.idOfEvent");
     if (search.typeOfEvent) {
-      const event = getEventData(search.typeOfEvent, Number(search.idOfEvent));
       console.log(event, "event");
       setSelectedItems([
         ...selectedItems,
@@ -371,6 +376,7 @@ function RouteComponent() {
       )}
       {step === 3 && (
         <Step4
+          event={event as Event}
           isDisabled={isDisabled}
           reward={reward}
           setReward={setReward}

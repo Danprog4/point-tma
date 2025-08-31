@@ -1,13 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useState } from "react";
 import { Bin } from "~/components/Icons/Bin";
 import { Map } from "~/components/Icons/Map";
 import { YandexMap } from "~/components/YandexMap";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
+
 import { User } from "~/db/schema";
 import { EventsDrawer } from "~/EventsDrawer";
 import { useGeolocation } from "~/hooks/useGeolocation";
@@ -15,7 +11,7 @@ import {
   calculateDistanceFromCoords,
   formatDistance,
 } from "~/lib/utils/calculateDistance";
-import { getAllEvents } from "~/lib/utils/getAllEvents";
+
 import { useTRPC } from "~/trpc/init/react";
 import TimePicker from "../TimePicker";
 // Предустановленные тэги, которые будут предлагаться при вводе
@@ -170,6 +166,25 @@ export const Step2 = ({
       setCity(user.city);
     }
   }, []);
+
+  const filtersMap = {
+    Все: "",
+    Кино: "Кино",
+    Вечеринки: "Вечеринка",
+    Конференции: "Конференция",
+    Нетворкинг: "Нетворкинг",
+    Квесты: "Квест",
+  };
+
+  const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
+
+  const filteredData = (category: string) => {
+    return category === "Все"
+      ? eventsData
+      : eventsData?.filter(
+          (event) => event.category === filtersMap[category as keyof typeof filtersMap],
+        );
+  };
 
   const extractMarkersFromSuggest = (): Array<[number, number]> => {
     try {
@@ -420,15 +435,6 @@ export const Step2 = ({
     return h1 < h2 || (h1 === h2 && m1 < m2);
   };
 
-  const { data, all } = getAllEvents(
-    activeFilter,
-    questsData,
-    kinoData,
-    conferencesData,
-    networkingData,
-    partiesData,
-  );
-
   // Мемоизированный список результатов поиска с расстояниями
   const searchResultsWithDistances = useMemo(() => {
     if (!searchAddress.data?.results || !Array.isArray(searchAddress.data.results)) {
@@ -461,14 +467,17 @@ export const Step2 = ({
   const getItems = useMemo(() => {
     return selectedItems
       .map((selectedItem) => {
-        const matched = all.find(
+        const matched = eventsData?.find(
           (item) => item.id === selectedItem.id && item.type === selectedItem.type,
         );
         if (!matched) return null;
         return { ...matched, index: selectedItem.index };
       })
-      .filter((item): item is (typeof all)[0] & { index: number } => item !== null);
-  }, [selectedItems, all]);
+      .filter(
+        (item): item is NonNullable<typeof eventsData>[0] & { index: number } =>
+          item !== null,
+      );
+  }, [selectedItems, eventsData]);
 
   useEffect(() => {
     if (locations.length === 0) {
@@ -880,7 +889,7 @@ export const Step2 = ({
                           <Bin />
                         </div>
                         <img
-                          src={item.image}
+                          src={item.image ?? ""}
                           alt="image"
                           className="h-16 w-16 rounded-lg"
                         />
@@ -1099,7 +1108,7 @@ export const Step2 = ({
         setLocations={setLocations}
         setSelectedItems={setSelectedItems}
         selectedItems={selectedItems}
-        data={data}
+        data={filteredData(activeFilter) ?? []}
         setActiveFilter={setActiveFilter}
         activeFilter={activeFilter}
         locations={locations}

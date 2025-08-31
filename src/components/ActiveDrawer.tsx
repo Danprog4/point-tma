@@ -3,7 +3,6 @@ import { openTelegramLink } from "@telegram-apps/sdk";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Telegram } from "./Icons/Telegram";
 export default function ActiveDrawer({
@@ -24,6 +23,9 @@ export default function ActiveDrawer({
   const activateQuest = useMutation(trpc.event.activateEvent.mutationOptions());
   const queryClient = useQueryClient();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: event } = useQuery(
+    trpc.event.getEvent.queryOptions({ id: id, category: name }),
+  );
 
   const handleActivateTicket = () => {
     console.log("activateQuest", id, name);
@@ -56,8 +58,6 @@ export default function ActiveDrawer({
       },
     );
   };
-
-  const event = getEventData(name, id);
 
   const handleOpenLink = () => {
     openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");

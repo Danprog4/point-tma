@@ -1,15 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
 import imageCompression from "browser-image-compression";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { useTRPC } from "~/trpc/init/react";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
 import DatePicker2 from "../DatePicker2";
 import { AddPhoto } from "../Icons/AddPhoto";
@@ -82,6 +79,7 @@ export const Step1 = ({
   city: string;
   setCity: (city: string) => void;
 }) => {
+  const trpc = useTRPC();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
 
@@ -89,33 +87,29 @@ export const Step1 = ({
 
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
+  const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
+
   let data: any[] = [];
 
   switch (activeFilter) {
     case "Все":
-      data = [
-        ...questsData,
-        ...kinoData,
-        ...conferencesData,
-        ...networkingData,
-        ...partiesData,
-      ];
+      data = eventsData || [];
       break;
     case "Квесты":
-      data = questsData;
+      data = eventsData?.filter((event) => event.category === "Квест") || [];
       console.log(data);
       break;
     case "Кино":
-      data = kinoData;
+      data = eventsData?.filter((event) => event.category === "Кино") || [];
       break;
     case "Конференции":
-      data = conferencesData;
+      data = eventsData?.filter((event) => event.category === "Конференция") || [];
       break;
     case "Вечеринки":
-      data = partiesData;
+      data = eventsData?.filter((event) => event.category === "Вечеринка") || [];
       break;
     case "Нетворкинг":
-      data = networkingData;
+      data = eventsData?.filter((event) => event.category === "Нетворкинг") || [];
       break;
     default:
       data = [];

@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
-import { getEventData, getEventFromName } from "~/lib/utils/getEventData";
+import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 
 interface Meeting {
@@ -74,6 +75,8 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
   getImageUrl = (photo) => photo,
 }) => {
   const navigate = useNavigate();
+  const trpc = useTRPC();
+  const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
 
   return (
     <div className="flex flex-col pb-20">
@@ -140,7 +143,10 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                 {!location.isCustom ? (
                   <div className="flex items-center justify-start gap-2">
                     <img
-                      src={getEventFromName(location.location)?.image}
+                      src={
+                        events?.find((event) => event.title === location.location)
+                          ?.image ?? ""
+                      }
                       alt="image"
                       className="h-16 w-16 rounded-lg"
                     />
@@ -198,8 +204,18 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                 className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
               >
                 <img
-                  src={getEventData(item.name, item.eventId)?.image}
-                  alt={getEventData("Квест", 2)?.title || "Предмет"}
+                  src={
+                    events?.find(
+                      (event) =>
+                        event.id === item.eventId && event.category === item.name,
+                    )?.image ?? ""
+                  }
+                  alt={
+                    events?.find(
+                      (event) =>
+                        event.id === item.eventId && event.category === item.name,
+                    )?.title ?? "Предмет"
+                  }
                   className="h-[61px] w-[61px] rounded-lg"
                 />
                 <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">

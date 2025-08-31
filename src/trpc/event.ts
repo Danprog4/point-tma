@@ -3,7 +3,6 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
-import { getEventData } from "~/lib/utils/getEventData";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
 
@@ -43,7 +42,9 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      const eventData = getEventData(input.name, input.id);
+      const eventData = await db.query.eventsTable.findFirst({
+        where: and(eq(eventsTable.id, input.id), eq(eventsTable.category, input.name)),
+      });
 
       if (!eventData) {
         throw new TRPCError({

@@ -26,7 +26,6 @@ import { MenuItem } from "~/components/MenuItem";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
 import { WarningsBansDrawer } from "~/components/WarningsBansDrawer";
-import { questsData } from "~/config/quests";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -59,6 +58,10 @@ function RouteComponent() {
 
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
+  );
+
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
   );
 
   const { data: warnings } = useQuery(trpc.main.getUserWarnings.queryOptions());
@@ -104,7 +107,7 @@ function RouteComponent() {
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
   const QuestsData = filteredEvents?.map((event) => {
-    const quest = questsData.find((q) => q.id === event.eventId);
+    const quest = questsData?.find((q) => q.id === event.eventId);
     return quest
       ? {
           ...event,

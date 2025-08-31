@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             limit: 10,
           }),
         );
+        queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
         queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),

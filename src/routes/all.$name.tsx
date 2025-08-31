@@ -1,44 +1,44 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Selecter } from "~/components/Selecter";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
+import { useTRPC } from "~/trpc/init/react";
+
 export const Route = createFileRoute("/all/$name")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   useScrollRestoration("all");
+  const trpc = useTRPC();
   const { name } = Route.useParams();
   const [selectedFilter, setSelectedFilter] = useState(name);
   const navigate = useNavigate();
   console.log(name);
+  const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
 
   let data: any[] = [];
   switch (name) {
     case "Квесты":
-      data = questsData;
+      data = eventsData?.filter((event) => event.category === "Квест") || [];
       console.log(data);
       break;
     case "Кино":
-      data = kinoData;
+      data = eventsData?.filter((event) => event.category === "Кино") || [];
       break;
     case "Конференции":
-      data = conferencesData;
+      data = eventsData?.filter((event) => event.category === "Конференция") || [];
       break;
     case "Вечеринки":
-      data = partiesData;
+      data = eventsData?.filter((event) => event.category === "Вечеринка") || [];
       break;
     case "Нетворкинг":
-      data = networkingData;
+      data = eventsData?.filter((event) => event.category === "Нетворкинг") || [];
       break;
     default:
       data = [];

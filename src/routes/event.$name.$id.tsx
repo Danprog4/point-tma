@@ -19,7 +19,6 @@ import { User } from "~/db/schema";
 import { useActivate } from "~/hooks/useActivate";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -73,7 +72,9 @@ function RouteComponent() {
     }
   }, [name, id, userEvents]);
 
-  const event = getEventData(name, Number(id));
+  const { data: event } = useQuery(
+    trpc.event.getEvent.queryOptions({ id: Number(id), category: name ?? "" }),
+  );
 
   const filteredReviews = reviews?.filter((review) => review.eventId === Number(id));
   console.log(event);
@@ -296,8 +297,8 @@ function RouteComponent() {
           </div>
           <div className="relative">
             <img
-              src={event?.image}
-              alt={event?.title}
+              src={event?.image ?? ""}
+              alt={event?.title ?? ""}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />
             <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
@@ -373,7 +374,7 @@ function RouteComponent() {
                   {event?.quests?.map((quest) => (
                     <>
                       <QuestCard key={quest.id} quest={quest as any} isNavigable={true} />
-                      {event?.description.slice(0, 100)}
+                      {event?.description?.slice(0, 100)}
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
                           + Достижение

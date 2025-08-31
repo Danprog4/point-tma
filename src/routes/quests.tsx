@@ -12,7 +12,6 @@ import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
 import { SeriesQuestCard } from "~/components/SeriesQuestCard";
-import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
@@ -60,13 +59,6 @@ export function getTypeColor(type: string) {
   }
 }
 
-const filters = [
-  "Все",
-  ...Array.from(
-    new Set(questsData.filter((quest) => !quest.isSeries).map((quest) => quest.type)),
-  ),
-];
-
 function RouteComponent() {
   useScrollRestoration("quests");
   const [search, setSearch] = useState("");
@@ -77,28 +69,41 @@ function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
+  );
+  const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
 
   console.log(activeFilter);
 
-  const filteredEvents = data
+  const filters = [
+    "Все",
+    ...Array.from(
+      new Set(
+        questsData?.filter((quest) => !quest.isSeries).map((quest) => quest.type) ?? [],
+      ),
+    ),
+  ];
+
+  const filteredEvents = activeEvents
     ?.filter((event) => event.type === "Квест")
     .filter((q) => !q.isCompleted);
   const userQuestsData = filteredEvents?.map((event) => {
-    const quest = questsData.find((q) => q.id === event.eventId);
+    const quest = questsData?.find((q) => q.id === event.eventId);
     return quest
       ? {
           ...event,
-          description: quest.description,
-          hasAchievement: quest.hasAchievement,
-          reward: quest.rewards?.find((reward) => reward.type === "point")?.value || 0,
-          title: quest.title,
-          date: quest.date,
-          location: quest.location,
-          price: quest.price,
-          type: quest.type,
-          category: quest.category,
-          organizer: quest.organizer,
-          image: quest.image,
+          description: quest?.description,
+          hasAchievement: quest?.hasAchievement,
+          reward: quest?.rewards?.find((reward) => reward.type === "point")?.value || 0,
+          title: quest?.title,
+          date: quest?.date,
+          location: quest?.location,
+          price: quest?.price,
+          type: quest?.type,
+          category: quest?.category,
+          organizer: quest?.organizer,
+          image: quest?.image,
         }
       : event;
   });
@@ -152,7 +157,7 @@ function RouteComponent() {
         {filters.map((filter) => (
           <button
             key={filter}
-            onClick={() => setActiveFilter(filter)}
+            onClick={() => setActiveFilter(filter ?? "")}
             className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
               activeFilter === filter
                 ? "bg-black text-white"
@@ -174,7 +179,7 @@ function RouteComponent() {
                   (activeFilter === "Все" && questsData) || quest.type === activeFilter,
               )
               .map((quest) => {
-                const questData = questsData.find((q) => q.id === quest.eventId);
+                const questData = questsData?.find((q) => q.id === quest.eventId);
                 return (
                   <div key={quest.id} className="mb-4 px-4">
                     <QuestCard quest={questData as any} isNavigable={true} />
@@ -218,23 +223,22 @@ function RouteComponent() {
 
         <div className="mb-6">
           {questsData
+            ?.filter((quest) => quest.isSeries)
             .filter((quest) => quest.isSeries)
 
-            .map((quest) => (
-              <SeriesQuestCard key={quest.id} quest={quest as any} />
-            ))}
+            .map((quest) => <SeriesQuestCard key={quest.id} quest={quest as any} />)}
         </div>
 
         {questsData
-          .filter((quest) => !quest.isSeries)
+          ?.filter((quest) => !quest.isSeries)
           .filter(
             (quest) =>
               (activeFilter === "Все" && questsData) || quest.type === activeFilter,
           )
           .filter((quest) => {
             return (
-              quest.title.toLowerCase().includes(search.toLowerCase()) ||
-              quest.description.toLowerCase().includes(search.toLowerCase())
+              quest.title?.toLowerCase().includes(search.toLowerCase()) ||
+              quest.description?.toLowerCase().includes(search.toLowerCase())
             );
           })
           .map((quest, idx) => (
@@ -243,8 +247,10 @@ function RouteComponent() {
               <div className="px-4">
                 <QuestCard quest={quest as any} isNavigable={true} />
                 <p className="py-2 text-xs leading-4 text-black">
-                  {quest.description.slice(0, 100) +
-                    (quest.description.length > 100 ? "..." : "")}
+                  {quest.description?.slice(0, 100) +
+                    (quest.description?.length && quest.description.length > 100
+                      ? "..."
+                      : "")}
                 </p>
                 <div className="mb-6 flex items-center justify-between">
                   {quest.hasAchievement && (

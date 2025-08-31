@@ -4,7 +4,6 @@ import { ArrowLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
@@ -24,6 +23,9 @@ function RouteComponent() {
   const { data: userEvents } = useQuery(
     trpc.event.getUserEvents.queryOptions({ userId: userId }),
   );
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
+  );
 
   // Find the user we're viewing
   const viewedUser = useMemo(() => {
@@ -35,7 +37,7 @@ function RouteComponent() {
     const questEvents = userEvents?.filter((event) => event.type === "Квест") || [];
 
     return questEvents.map((event) => {
-      const quest = questsData.find((q) => q.id === event.eventId);
+      const quest = questsData?.find((q) => q.id === event.eventId);
       return quest
         ? {
             ...event,
@@ -119,7 +121,7 @@ function RouteComponent() {
             (a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
           )
           .map((quest: any) => {
-            const questData = questsData.find((q) => q.id === quest.eventId);
+            const questData = questsData?.find((q) => q.id === quest.eventId);
             return (
               <div key={quest?.id}>
                 <div className="px-4">

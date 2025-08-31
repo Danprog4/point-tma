@@ -150,36 +150,36 @@ export const meetTable = pgTable("meets", {
   city: varchar("city", { length: 255 }),
 });
 
-export const questsTable = pgTable("quests", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 255 }),
-  description: varchar("description", { length: 1024 }),
-  category: varchar("category", { length: 255 }),
-  type: varchar("type", { length: 255 }),
-  rewards: jsonb("rewards").$type<
-    Array<{
-      type: string;
-      value: number;
-    }>
-  >(),
-  date: varchar("date", { length: 255 }),
-  location: varchar("location", { length: 255 }),
-  price: integer("price"),
-  quests: jsonb("quests").$type<any[]>(),
-  stages: jsonb("stages").$type<
-    Array<{
-      title: string;
-      desc: string;
-    }>
-  >(),
-  hasAchievement: boolean("has_achievement").default(false),
-  organizer: varchar("organizer", { length: 255 }),
-  city: varchar("city", { length: 255 }),
-  image: varchar("image", { length: 255 }),
-  isReviewed: boolean("is_reviewed").default(false),
-  isApproved: boolean("is_approved").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// export const questsTable = pgTable("quests", {
+//   id: serial("id").primaryKey(),
+//   title: varchar("title", { length: 255 }),
+//   description: varchar("description", { length: 1024 }),
+//   category: varchar("category", { length: 255 }),
+//   type: varchar("type", { length: 255 }),
+//   rewards: jsonb("rewards").$type<
+//     Array<{
+//       type: string;
+//       value: number;
+//     }>
+//   >(),
+//   date: varchar("date", { length: 255 }),
+//   location: varchar("location", { length: 255 }),
+//   price: integer("price"),
+//   quests: jsonb("quests").$type<any[]>(),
+//   stages: jsonb("stages").$type<
+//     Array<{
+//       title: string;
+//       desc: string;
+//     }>
+//   >(),
+//   hasAchievement: boolean("has_achievement").default(false),
+//   organizer: varchar("organizer", { length: 255 }),
+//   city: varchar("city", { length: 255 }),
+//   image: varchar("image", { length: 255 }),
+//   isReviewed: boolean("is_reviewed").default(false),
+//   isApproved: boolean("is_approved").default(false),
+//   createdAt: timestamp("created_at").defaultNow(),
+// });
 
 export const reviewsTable = pgTable("reviews", {
   id: serial("id").primaryKey(),
@@ -276,6 +276,27 @@ export const meetMessagesTable = pgTable("meet_messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const eventsTable = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }),
+  description: varchar("description", { length: 2000 }),
+  date: varchar("date", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  price: bigint("price", { mode: "number" }),
+  type: varchar("type", { length: 255 }),
+  category: varchar("category", { length: 255 }),
+  organizer: varchar("organizer", { length: 255 }),
+  image: varchar("image", { length: 255 }),
+  isSeries: boolean("is_series").default(false),
+  hasAchievement: boolean("has_achievement").default(false),
+  stages: jsonb("stages").$type<Array<{ title: string; desc: string }>>(),
+  rewards: jsonb("rewards").$type<Array<{ type: string; value: number }>>(),
+  quests: jsonb("quests").$type<Array<any>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  isReviewed: boolean("is_reviewed").default(false),
+  isApproved: boolean("is_approved").default(false),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -301,3 +322,20 @@ export type NewMeetMessage = typeof meetMessagesTable.$inferInsert;
 export type FastMeet = typeof fastMeetTable.$inferSelect;
 export type NewFastMeet = typeof fastMeetTable.$inferInsert;
 export type FastMeetParticipant = typeof fastMeetParticipantsTable.$inferSelect;
+
+export type Event = typeof eventsTable.$inferSelect;
+export type NewEvent = typeof eventsTable.$inferInsert;
+export type Review = typeof reviewsTable.$inferSelect;
+export type NewReview = typeof reviewsTable.$inferInsert;
+export type Notification = typeof notificationsTable.$inferSelect;
+export type NewNotification = typeof notificationsTable.$inferInsert;
+export type Complaint = typeof complaintsTable.$inferSelect;
+export type NewComplaint = typeof complaintsTable.$inferInsert;
+export type MeetParticipant = typeof meetParticipantsTable.$inferSelect;
+export type NewMeetParticipant = typeof meetParticipantsTable.$inferInsert;
+export type ActiveEvent = typeof activeEventsTable.$inferSelect;
+export type NewActiveEvent = typeof activeEventsTable.$inferInsert;
+export type Calendar = typeof calendarTable.$inferSelect;
+export type NewCalendar = typeof calendarTable.$inferInsert;
+export type RatingUser = typeof ratingsUserTable.$inferSelect;
+export type NewRatingUser = typeof ratingsUserTable.$inferInsert;

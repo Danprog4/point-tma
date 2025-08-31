@@ -6,6 +6,7 @@ import {
   activeEventsTable,
   calendarTable,
   complaintsTable,
+  eventsTable,
   fastMeetParticipantsTable,
   fastMeetTable,
   favoritesTable,
@@ -15,12 +16,12 @@ import {
   meetParticipantsTable,
   meetTable,
   notificationsTable,
-  questsTable,
   ratingsUserTable,
   reviewsTable,
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
+import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
@@ -127,40 +128,108 @@ export const crmRouter = createTRPCRouter({
     return meet;
   }),
 
-  createMeet: crmProcedure
+  createMeeting: crmProcedure
     .input(
       z.object({
+        date: z.string(),
         name: z.string(),
         description: z.string(),
         type: z.string(),
-        date: z.string(),
-        city: z.string().optional(),
+        subType: z.string().optional(),
+        isBig: z.boolean().optional(),
+        participants: z.number().optional(),
+        locations: z
+          .array(
+            z.object({
+              location: z.string(),
+              address: z.string(),
+              starttime: z.string().optional(),
+              endtime: z.string().optional(),
+              isCustom: z.boolean().optional(),
+            }),
+          )
+          .optional(),
         reward: z.number().optional(),
-        maxParticipants: z.number().optional(),
+        image: z.string().optional(),
+
+        gallery: z.array(z.string()).optional(),
+
+        important: z.string().optional(),
+
+        time: z.string().optional(),
         userId: z.number(),
       }),
     )
-    .mutation(async ({ input }) => {
-      const newMeet = await db
+    .mutation(async ({ ctx, input }) => {
+      const {
+        subType,
+        name,
+        description,
+        type,
+
+        date,
+        locations,
+        reward,
+        image,
+        participants,
+        gallery,
+
+        important,
+
+        time,
+      } = input;
+
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      let imageUrl = null;
+
+      if (image) {
+        imageUrl = await uploadBase64Image(image);
+      }
+
+      const [meet] = await db
         .insert(meetTable)
         .values({
-          name: input.name,
-          description: input.description,
-          type: input.type,
-          date: input.date,
-          city: input.city,
-          reward: input.reward,
-          maxParticipants: input.maxParticipants,
-          userId: input.userId,
-          participantsIds: [],
-          locations: [],
-          items: [],
-          gallery: [],
-          isCompleted: false,
-          isBig: false,
+          description,
+          type,
+          name,
+          participantsIds: [user.id],
+          userId: user.id,
+          gallery,
+          locations,
+          subType,
+          reward,
+          image: imageUrl,
+          date,
+          maxParticipants: participants,
+          important,
+          time,
         })
         .returning();
-      return newMeet[0];
+
+      await db.insert(meetParticipantsTable).values({
+        fromUserId: user.id,
+        toUserId: user.id,
+        meetId: meet.id,
+        status: "accepted",
+        isRequest: true,
+      });
+
+      if (time && date) {
+        await db.insert(calendarTable).values({
+          userId: user.id,
+          meetId: meet.id,
+          date: new Date(date.split(".").reverse().join("-")),
+        });
+      }
+
+      return meet;
     }),
 
   updateMeet: crmProcedure
@@ -849,8 +918,8 @@ export const crmRouter = createTRPCRouter({
     });
 
     // Получаем квесты с ценами
-    const quests = await db.query.questsTable.findMany({
-      where: sql`${questsTable.price} > 0`,
+    const quests = await db.query.eventsTable.findMany({
+      where: sql`${eventsTable.price} > 0`,
     });
 
     // Получаем быстрые встречи
@@ -953,8 +1022,8 @@ export const crmRouter = createTRPCRouter({
       where: eq(calendarTable.isTicket, true),
     });
 
-    const quests = await db.query.questsTable.findMany({
-      where: sql`${questsTable.price} > 0`,
+    const quests = await db.query.eventsTable.findMany({
+      where: sql`${eventsTable.price} > 0`,
     });
 
     const fastMeets = await db.query.fastMeetTable.findMany();
@@ -1114,9 +1183,9 @@ export const crmRouter = createTRPCRouter({
     });
 
     // Получаем квесты с ценами как транзакции
-    const quests = await db.query.questsTable.findMany({
-      where: sql`${questsTable.price} > 0`,
-      orderBy: [desc(questsTable.createdAt)],
+    const quests = await db.query.eventsTable.findMany({
+      where: sql`${eventsTable.price} > 0`,
+      orderBy: [desc(eventsTable.createdAt)],
     });
 
     // Формируем список транзакций
@@ -1147,8 +1216,8 @@ export const crmRouter = createTRPCRouter({
   getTransactionStats: crmProcedure.query(async () => {
     // Получаем статистику транзакций
     const users = await db.query.usersTable.findMany();
-    const quests = await db.query.questsTable.findMany({
-      where: sql`${questsTable.price} > 0`,
+    const quests = await db.query.eventsTable.findMany({
+      where: sql`${eventsTable.price} > 0`,
     });
 
     const totalTransactions = users.length + quests.length;
@@ -1200,14 +1269,14 @@ export const crmRouter = createTRPCRouter({
 
   // ===== КВЕСТЫ =====
   getQuests: creatorProcedure.query(async () => {
-    return await db.query.questsTable.findMany();
+    return await db.query.eventsTable.findMany();
   }),
 
   getQuest: creatorProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const quest = await db.query.questsTable.findFirst({
-        where: eq(questsTable.id, Number(input.id)),
+      const quest = await db.query.eventsTable.findFirst({
+        where: eq(eventsTable.id, Number(input.id)),
       });
       if (!quest) throw new TRPCError({ code: "NOT_FOUND", message: "Quest not found" });
       return quest;
@@ -1216,7 +1285,7 @@ export const crmRouter = createTRPCRouter({
   deleteQuest: creatorProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      await db.delete(questsTable).where(eq(questsTable.id, Number(input.id)));
+      await db.delete(eventsTable).where(eq(eventsTable.id, Number(input.id)));
       return { success: true };
     }),
 
@@ -1239,7 +1308,7 @@ export const crmRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const newQuest = await db.insert(questsTable).values(input).returning();
+      const newQuest = await db.insert(eventsTable).values(input).returning();
       return newQuest[0];
     }),
 
@@ -1265,9 +1334,9 @@ export const crmRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { id, ...updateData } = input;
       const updatedQuest = await db
-        .update(questsTable)
+        .update(eventsTable)
         .set(updateData)
-        .where(eq(questsTable.id, Number(id)))
+        .where(eq(eventsTable.id, Number(id)))
         .returning();
       return updatedQuest[0];
     }),
@@ -1276,9 +1345,9 @@ export const crmRouter = createTRPCRouter({
     .input(z.object({ id: z.string(), isApproved: z.boolean() }))
     .mutation(async ({ input }) => {
       await db
-        .update(questsTable)
+        .update(eventsTable)
         .set({ isApproved: input.isApproved, isReviewed: true })
-        .where(eq(questsTable.id, Number(input.id)));
+        .where(eq(eventsTable.id, Number(input.id)));
       return { success: true };
     }),
 });

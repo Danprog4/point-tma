@@ -12,10 +12,6 @@ import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
@@ -36,6 +32,19 @@ function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMapTest, setShowMapTest] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<[number, number] | null>(null);
+
+  const { data: kinoData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Кино" }),
+  );
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
+  );
+  const { data: conferencesData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Конференция" }),
+  );
+  const { data: partiesData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Вечеринка" }),
+  );
 
   function ConferenceCard({ conf }: { conf: any }) {
     return (
@@ -195,7 +204,9 @@ function Home() {
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(kinoData?.slice?.(0, 5) || [])
-              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .filter((event) =>
+                event.title?.toLowerCase().includes(search.toLowerCase()),
+              )
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {
@@ -226,7 +237,9 @@ function Home() {
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(questsData?.slice?.(0, 5) || [])
-              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .filter((event) =>
+                event.title?.toLowerCase().includes(search.toLowerCase()),
+              )
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {
@@ -277,7 +290,7 @@ function Home() {
           </div>
           <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4">
             {(conferencesData?.slice?.(0, 5) || [])
-              .filter((conf) => conf.title.toLowerCase().includes(search.toLowerCase()))
+              .filter((conf) => conf.title?.toLowerCase().includes(search.toLowerCase()))
               .map((conf: any, idx: number) => (
                 <div
                   onClick={() => {
@@ -308,7 +321,9 @@ function Home() {
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(partiesData?.slice?.(0, 5) || [])
-              .filter((event) => event.title.toLowerCase().includes(search.toLowerCase()))
+              .filter((event) =>
+                event.title?.toLowerCase().includes(search.toLowerCase()),
+              )
               .map((event: any, idx: number) => (
                 <div
                   onClick={() => {

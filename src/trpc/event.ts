@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { activeEventsTable, calendarTable, usersTable } from "~/db/schema";
+import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
 import { getEventData } from "~/lib/utils/getEventData";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
@@ -97,7 +97,9 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      const eventData = getEventData(input.name, input.id);
+      const eventData = await db.query.eventsTable.findFirst({
+        where: and(eq(eventsTable.id, input.id), eq(eventsTable.category, input.name)),
+      });
 
       if (!eventData) {
         throw new TRPCError({
@@ -106,7 +108,7 @@ export const eventRouter = createTRPCRouter({
         });
       }
 
-      if (user.balance! < eventData.price * input.count) {
+      if (user.balance! < eventData.price! * input.count) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Not enough balance",
@@ -146,7 +148,7 @@ export const eventRouter = createTRPCRouter({
         })),
       ];
 
-      const newBalance = user.balance! - eventData.price * input.count;
+      const newBalance = user.balance! - eventData.price! * input.count;
 
       console.log(newInventory, newBalance);
 
@@ -218,7 +220,9 @@ export const eventRouter = createTRPCRouter({
 
       console.log(newInventory);
 
-      const eventData = getEventData(input.name, input.id);
+      const eventData = await db.query.eventsTable.findFirst({
+        where: and(eq(eventsTable.id, input.id), eq(eventsTable.category, input.name)),
+      });
 
       if (!eventData) {
         throw new TRPCError({
@@ -259,5 +263,48 @@ export const eventRouter = createTRPCRouter({
           parse_mode: "Markdown",
         },
       );
+    }),
+
+  getEvents: procedure.query(async () => {
+    const events = await db.query.eventsTable.findMany({
+      where: and(eq(eventsTable.isApproved, true), eq(eventsTable.isReviewed, true)),
+    });
+    return events;
+  }),
+
+  getEventByTitle: procedure
+    .input(z.object({ title: z.string() }))
+    .query(async ({ input }) => {
+      const event = await db.query.eventsTable.findFirst({
+        where: and(eq(eventsTable.title, input.title), eq(eventsTable.isApproved, true)),
+      });
+      return event;
+    }),
+
+  getEventsByCategory: procedure
+    .input(z.object({ category: z.string() }))
+    .query(async ({ input }) => {
+      const events = await db.query.eventsTable.findMany({
+        where: and(
+          eq(eventsTable.category, input.category),
+          eq(eventsTable.isApproved, true),
+          eq(eventsTable.isReviewed, true),
+        ),
+      });
+      return events;
+    }),
+
+  getEvent: procedure
+    .input(z.object({ id: z.number(), category: z.string() }))
+    .query(async ({ input }) => {
+      const event = await db.query.eventsTable.findFirst({
+        where: and(
+          eq(eventsTable.id, input.id),
+          eq(eventsTable.category, input.category),
+          eq(eventsTable.isApproved, true),
+          eq(eventsTable.isReviewed, true),
+        ),
+      });
+      return event;
     }),
 });

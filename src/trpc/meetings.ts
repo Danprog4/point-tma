@@ -13,7 +13,6 @@ import {
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
-import { getMeetings } from "~/lib/utils/getMeetings";
 import { createTRPCRouter, procedure } from "./init";
 
 export const meetingRouter = createTRPCRouter({
@@ -270,16 +269,6 @@ export const meetingRouter = createTRPCRouter({
         eq(meetParticipantsTable.status, "pending"),
       ),
     });
-  }),
-
-  getMeetingsWithEvents: procedure.query(async ({ ctx }) => {
-    const { userId } = ctx;
-
-    const meetings = await db.query.meetTable.findMany({});
-
-    const meetingsWithEvents = getMeetings(meetings);
-
-    return meetingsWithEvents;
   }),
 
   joinFastMeet: procedure

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getEventData } from "~/lib/utils/getEventData";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/inventory")({
@@ -22,7 +21,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const navigate = useNavigate();
-
+  const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
   const tickets = user?.inventory?.filter((item) => item.type === "ticket") ?? [];
 
   const inactiveTickets = tickets.filter((ticket) => !ticket.isActive);
@@ -54,7 +53,7 @@ function RouteComponent() {
   const groupedTickets = groupTickets(inactiveTickets);
 
   const getEvent = (eventId: number, name: string) => {
-    return getEventData(name, eventId);
+    return events?.find((event) => event.id === eventId && event.category === name);
   };
 
   const isMobile = usePlatform();
@@ -97,13 +96,13 @@ function RouteComponent() {
               )}
 
               <img
-                src={getEvent(ticket.eventId, ticket.name)?.image}
-                alt={getEvent(ticket.eventId, ticket.name)?.title}
+                src={getEvent(ticket.eventId, ticket.name)?.image ?? ""}
+                alt={getEvent(ticket.eventId, ticket.name)?.title ?? ""}
                 className="h-[61px] w-[61px] rounded-lg"
               />
 
               <div className="text-center text-xs font-bold text-[#A35700]">
-                {getEventData(ticket.name, ticket.eventId)?.category === "Квест"
+                {getEvent(ticket.eventId, ticket.name)?.category === "Квест"
                   ? "Билет на квест"
                   : "Ваучер"}
               </div>

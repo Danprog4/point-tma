@@ -4,15 +4,10 @@ import { ArrowLeft, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
+
 import { Meet, User } from "~/db/schema";
 import { EventsDrawer } from "~/EventsDrawer";
-import { getAllEvents } from "~/lib/utils/getAllEvents";
-import { getEventData } from "~/lib/utils/getEventData";
+
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 import { Coin } from "./Icons/Coin";
@@ -65,14 +60,7 @@ export default function CalendarDrawer({
 
   const [activeFilter, setActiveFilter] = useState("Все");
 
-  const { data, all } = getAllEvents(
-    activeFilter,
-    questsData,
-    kinoData,
-    conferencesData,
-    networkingData,
-    partiesData,
-  );
+  const { data: questsData } = useQuery(trpc.event.getEvents.queryOptions());
 
   const addToCalendar = useMutation(
     trpc.main.addToCalendar.mutationOptions({
@@ -144,7 +132,10 @@ export default function CalendarDrawer({
 
                 const eventData = isMeet
                   ? meetings?.find((meeting) => meeting.id === Number(event.meetId))
-                  : getEventData(event.eventType!, Number(event.eventId!));
+                  : questsData?.find(
+                      (q) =>
+                        q.id === Number(event.eventId) && q.category === event.eventType,
+                    );
 
                 console.log(event.isPlanned);
 
@@ -244,7 +235,7 @@ export default function CalendarDrawer({
             <EventsDrawer
               open={isOpen}
               onOpenChange={setIsOpen}
-              data={data}
+              data={questsData || []}
               setActiveFilter={setActiveFilter}
               activeFilter={activeFilter}
               handleAddToCalendar={handleAddToCalendar}

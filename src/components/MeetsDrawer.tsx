@@ -1,14 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { conferencesData } from "~/config/conf";
-import { kinoData } from "~/config/kino";
-import { networkingData } from "~/config/networking";
-import { partiesData } from "~/config/party";
-import { questsData } from "~/config/quests";
+import { useTRPC } from "~/trpc/init/react";
 
 interface MeetsDrawerProps {
   open: boolean;
@@ -28,36 +25,34 @@ export function MeetsDrawer({
   calendarDate,
 }: MeetsDrawerProps) {
   const navigate = useNavigate();
+  const trpc = useTRPC();
   const [type, setType] = useState<string>("pt-38");
   const [activeFilter, setActiveFilter] = useState<string>("Все");
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
   const [search, setSearch] = useState<string>("");
+
+  const { data: questsData } = useQuery(trpc.event.getEvents.queryOptions());
+
   let data: any[] = [];
 
   switch (activeFilter) {
     case "Все":
-      data = [
-        ...questsData,
-        ...kinoData,
-        ...conferencesData,
-        ...networkingData,
-        ...partiesData,
-      ];
+      data = questsData || [];
       break;
     case "Квесты":
-      data = questsData;
+      data = questsData?.filter((event) => event.category === "Квест") || [];
       break;
     case "Кино":
-      data = kinoData;
+      data = questsData?.filter((event) => event.category === "Кино") || [];
       break;
     case "Конференции":
-      data = conferencesData;
+      data = questsData?.filter((event) => event.category === "Конференция") || [];
       break;
     case "Вечеринки":
-      data = partiesData;
+      data = questsData?.filter((event) => event.category === "Вечеринка") || [];
       break;
     case "Нетворкинг":
-      data = networkingData;
+      data = questsData?.filter((event) => event.category === "Нетворкинг") || [];
       break;
     default:
       data = [];

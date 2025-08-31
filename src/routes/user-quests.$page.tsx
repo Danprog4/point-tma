@@ -4,7 +4,6 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { questsData } from "~/config/quests";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -19,17 +18,20 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [pageState, setPage] = useState(page);
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
+  );
   console.log(data);
 
   const filteredEvents = data?.filter((event) => event.type === "Квест");
   const QuestsData = filteredEvents?.map((event) => {
-    const quest = questsData.find((q) => q.id === event.eventId);
+    const quest = questsData?.find((q) => q.id === event.eventId);
     return quest
       ? {
           ...event,
           description: quest.description,
           hasAchievement: quest.hasAchievement,
-          reward: quest.reward,
+          reward: quest.rewards,
           title: quest.title,
           date: quest.date,
           location: quest.location,
@@ -83,7 +85,7 @@ function RouteComponent() {
       {pageState === "active" ? (
         <>
           {uncompletedQuestsData?.map((quest) => {
-            const questData = questsData.find((q) => q.id === quest.eventId);
+            const questData = questsData?.find((q) => q.id === quest.eventId);
             return (
               <div key={quest.id}>
                 <QuestCard quest={questData as Quest} isNavigable={true} />
@@ -110,7 +112,10 @@ function RouteComponent() {
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {questData?.reward?.toLocaleString() || 0}
+                      +{" "}
+                      {questData?.rewards
+                        ?.find((r) => r.type === "point")
+                        ?.value?.toLocaleString() || 0}
                     </span>
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />
@@ -123,7 +128,7 @@ function RouteComponent() {
       ) : (
         <>
           {completedQuestsData?.map((quest) => {
-            const questData = questsData.find((q) => q.id === quest.eventId);
+            const questData = questsData?.find((q) => q.id === quest.eventId);
             return (
               <div key={quest.id}>
                 <QuestCard quest={questData as Quest} isNavigable={true} />
@@ -149,7 +154,10 @@ function RouteComponent() {
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {questData?.reward?.toLocaleString() || 0}
+                      +{" "}
+                      {questData?.rewards
+                        ?.find((r) => r.type === "point")
+                        ?.value?.toLocaleString() || 0}
                     </span>
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />

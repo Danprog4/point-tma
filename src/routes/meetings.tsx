@@ -34,7 +34,6 @@ function RouteComponent() {
     ),
   );
 
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
   const activeMeetRequests = meetRequests?.filter(
     (request) => request.status === "pending",
@@ -51,18 +50,9 @@ function RouteComponent() {
   // Объединяем все страницы данных
   const allMeetings = data?.pages.flatMap((page) => page.items) ?? [];
 
-  const meetingsWithEvents = allMeetings.map((meeting: any) => {
-    const organizer = users?.find((u: any) => u.id === meeting.userId);
-    return {
-      ...meeting,
-      organizer,
-    };
-  });
-
   const [activeFilter, setActiveFilter] = useState("Все");
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const filters = ["Все", "Конференции", "Вечеринки", "Квесты", "Кино", "Нетворкинг"];
   const filterMap = {
@@ -75,7 +65,7 @@ function RouteComponent() {
   };
 
   // Фильтрация встреч
-  const filteredMeetings = meetingsWithEvents
+  const filteredMeetings = allMeetings
     ?.filter((m: any) => !m.isCompleted)
     ?.filter((meeting: any) => {
       if (activeFilter === "Все") return true;
@@ -83,7 +73,7 @@ function RouteComponent() {
     })
     .filter((meeting: any) => {
       const eventTitle = meeting.name || "Без названия";
-      const organizerName = meeting.organizer?.name || "Неизвестно";
+      const organizerName = meeting.user?.name || "Неизвестно";
       return (
         eventTitle.toLowerCase().includes(search.toLowerCase()) ||
         organizerName.toLowerCase().includes(search.toLowerCase())
@@ -177,7 +167,7 @@ function RouteComponent() {
               <ArrowRight className="h-5 w-5 text-gray-500" />
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
-              {meetingsWithEvents?.slice(0, 7).map((event: any, idx: number) => (
+              {allMeetings?.slice(0, 7).map((event: any, idx: number) => (
                 <div
                   onClick={() => {
                     saveScrollPosition("meetings");

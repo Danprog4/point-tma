@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Coin } from "~/components/Icons/Coin";
 import { QuestCard } from "~/components/QuestCard";
-import { questsData } from "~/config/quests";
+
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/points")({
@@ -16,7 +16,10 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [page, setPage] = useState<"history" | "info">("history");
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const questData = questsData.slice(0, 3);
+  const { data: questsData } = useQuery(
+    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
+  );
+  const questData = questsData?.slice(0, 3) || [];
   return (
     <div className="flex flex-col overflow-y-auto px-4">
       <div className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white">
@@ -85,7 +88,7 @@ function RouteComponent() {
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-base font-medium text-black">
-                      + {quest.rewards.toLocaleString()}
+                      + {quest.rewards?.toLocaleString()}
                     </span>
                     <span className="text-base font-medium text-black">points</span>
                     <Coin />

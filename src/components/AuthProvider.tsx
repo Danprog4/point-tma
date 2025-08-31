@@ -32,7 +32,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       onSuccess: (data) => {
         setLoggedIn(true);
         // Сразу устанавливаем данные пользователя в кэш
-
+        queryClient.prefetchQuery(
+          trpc.meetings.getMeetingsPagination.queryOptions({
+            limit: 10,
+          }),
+        );
         queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),

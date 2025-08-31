@@ -187,6 +187,13 @@ export const meetingRouter = createTRPCRouter({
         orderBy: [desc(meetTable.id)],
       });
 
+      const users = await db.query.usersTable.findMany({
+        where: inArray(
+          usersTable.id,
+          meetings.map((meeting) => meeting.userId ?? 0),
+        ),
+      });
+
       let nextCursor: number | undefined = undefined;
       if (meetings.length > limit) {
         const nextItem = meetings.pop();
@@ -194,7 +201,10 @@ export const meetingRouter = createTRPCRouter({
       }
 
       return {
-        items: meetings,
+        items: meetings.map((meeting) => ({
+          ...meeting,
+          user: users.find((user) => user.id === meeting.userId),
+        })),
         nextCursor,
       };
     }),

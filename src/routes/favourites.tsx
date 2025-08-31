@@ -9,7 +9,6 @@ import { QuestCard } from "~/components/QuestCard";
 import { Meet, User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
-import { getEventData } from "~/lib/utils/getEventData";
 import { getImage } from "~/lib/utils/getImage";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
@@ -158,6 +157,8 @@ function RouteComponent() {
     }
   };
 
+  const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
+
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
 
   const isComplained = useMemo(() => {
@@ -205,7 +206,9 @@ function RouteComponent() {
       {activeFilter === "События" && (
         <div className="flex flex-col gap-4">
           {user?.savedEvents?.map((event: any) => {
-            const eventData = getEventData(event.type, event.eventId);
+            const eventData = events?.find(
+              (e) => e.id === event.eventId && e.category === event.type,
+            );
             return (
               <div className="px-4">
                 <QuestCard quest={eventData as Quest} isNavigable={true} />

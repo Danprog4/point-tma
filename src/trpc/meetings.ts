@@ -201,7 +201,6 @@ export const meetingRouter = createTRPCRouter({
           important: meetTable.important,
           time: meetTable.time,
           createdAt: meetTable.createdAt,
-          // Пользовательские данные
           userName: usersTable.name,
           userPhoto: usersTable.photo,
           userPhotoUrl: usersTable.photoUrl,

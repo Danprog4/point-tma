@@ -176,7 +176,7 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
         </div>
       ) : (
         <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Этапы вечеринки</div>
+          <div className="text-xl font-bold">Этапы встречи</div>
           <div>Этапы не указаны</div>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
@@ -26,10 +26,18 @@ function RouteComponent() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
     trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
       {
-        limit: 5,
+        limit: 8, // Увеличиваем лимит для лучшей производительности
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
+        // Добавляем кэширование
+        staleTime: 2 * 60 * 1000, // 2 минуты
+        gcTime: 5 * 60 * 1000, // 5 минут
+        // Оптимизация для мобильных устройств
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        // Предзагрузка следующей страницы
+        refetchOnReconnect: false,
       },
     ),
   );
@@ -46,6 +54,16 @@ function RouteComponent() {
     hasNextPage || false,
     200,
   );
+
+  // Предзагрузка следующей страницы для улучшения UX
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage && data?.pages.length) {
+      const timer = setTimeout(() => {
+        fetchNextPage();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, data?.pages.length]);
 
   // Объединяем все страницы данных
   const allMeetings = data?.pages.flatMap((page) => page.items) ?? [];
@@ -65,20 +83,22 @@ function RouteComponent() {
   };
 
   // Фильтрация встреч
-  const filteredMeetings = allMeetings
-    ?.filter((m: any) => !m.isCompleted)
-    ?.filter((meeting: any) => {
-      if (activeFilter === "Все") return true;
-      return meeting.type === filterMap[activeFilter as keyof typeof filterMap];
-    })
-    .filter((meeting: any) => {
-      const eventTitle = meeting.name || "Без названия";
-      const organizerName = meeting.user?.name || "Неизвестно";
-      return (
-        eventTitle.toLowerCase().includes(search.toLowerCase()) ||
-        organizerName.toLowerCase().includes(search.toLowerCase())
-      );
-    });
+  const filteredMeetings = useMemo(() => {
+    return allMeetings
+      ?.filter((m: any) => !m.isCompleted)
+      ?.filter((meeting: any) => {
+        if (activeFilter === "Все") return true;
+        return meeting.type === filterMap[activeFilter as keyof typeof filterMap];
+      })
+      .filter((meeting: any) => {
+        const eventTitle = meeting.name || "Без названия";
+        const organizerName = meeting.user?.name || "Неизвестно";
+        return (
+          eventTitle.toLowerCase().includes(search.toLowerCase()) ||
+          organizerName.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+  }, [allMeetings, activeFilter, search]);
 
   const isMobile = usePlatform();
 
@@ -200,62 +220,67 @@ function RouteComponent() {
           {/* Featured Meetings List with alternating layout */}
           <div className="scrollbar-hidden col-span-2 space-y-4">
             {filteredMeetings?.map((meeting: any, groupIndex: number) => (
-              <div key={groupIndex}>
-                <div className="space-y-4">
-                  <div key={meeting.id} className="">
-                    <div
-                      className="overflow-hidden rounded-2xl"
-                      onClick={() => {
-                        saveScrollPosition("meetings");
-                        navigate({
-                          to: "/meet/$id",
-                          params: { id: meeting.id?.toString() || "" },
-                        });
-                      }}
-                    >
-                      {/* Avatar Section */}
-                      <div className="relative h-90 w-full rounded-2xl">
+              <div key={meeting.id || groupIndex}>
+                <div
+                  className="cursor-pointer overflow-hidden rounded-2xl"
+                  onClick={() => {
+                    saveScrollPosition("meetings");
+                    navigate({
+                      to: "/meet/$id",
+                      params: { id: meeting.id?.toString() || "" },
+                    });
+                  }}
+                >
+                  {/* Avatar Section */}
+                  <div className="relative h-90 w-full rounded-2xl">
+                    <img
+                      src={getImageUrl(meeting.image || "")}
+                      alt={meeting.user?.name || ""}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  {/* Text Content */}
+                  <div className="px-4">
+                    <div className="py-2">
+                      <div className="space-y-1">
+                        <h3 className="text-lg leading-tight font-bold text-gray-900">
+                          {meeting?.name}
+                        </h3>
+                        <p className="line-clamp-2 text-xs leading-tight text-gray-600">
+                          {meeting.description || "Без названия"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-10 w-10 rounded-full">
                         <img
-                          src={getImageUrl(meeting.image || "")}
-                          alt={meeting.organizer?.name || ""}
-                          className="h-full w-full object-cover"
+                          src={getImageUrl(
+                            meeting.user?.photo ||
+                              meeting.user?.photoUrl ||
+                              meeting.image ||
+                              "",
+                          )}
+                          alt=""
+                          className="h-full w-full rounded-full object-cover"
+                          loading="lazy"
                         />
                       </div>
-                      {/* Text Content */}
-                      <div className="px-4">
-                        <div className="py-2">
-                          <div className="space-y-1">
-                            <h3 className="text-lg leading-tight font-bold text-gray-900">
-                              {meeting?.name}
-                            </h3>
-                            <p className="line-clamp-2 text-xs leading-tight text-gray-600">
-                              {meeting.description || "Без названия"}
-                            </p>
-                          </div>
+                      <div className="flex flex-col">
+                        <div className="font-bold">
+                          {meeting.user?.name || "Неизвестно"}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-10 w-10 rounded-full">
-                            <img
-                              src={getImageUrl(meeting.image || "")}
-                              alt=""
-                              className="h-full w-full rounded-full object-cover"
-                            />
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="font-bold">{meeting.organizer?.name}</div>
-                            <div className="text-sm text-neutral-500">Организатор</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between py-2">
-                          <div className="flex items-center">
-                            <LocationIcon />
-                            <div className="text-sm text-neutral-500">
-                              {meeting.locations?.[0]?.location || "Москва"}
-                            </div>
-                          </div>
-                          <div className="text-sm text-neutral-500">Сегодня в 15:30</div>
+                        <div className="text-sm text-neutral-500">Организатор</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center">
+                        <LocationIcon />
+                        <div className="text-sm text-neutral-500">
+                          {meeting.locations?.[0]?.location || "Москва"}
                         </div>
                       </div>
+                      <div className="text-sm text-neutral-500">Сегодня в 15:30</div>
                     </div>
                   </div>
                 </div>

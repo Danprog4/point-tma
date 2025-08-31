@@ -171,7 +171,6 @@ export const meetingRouter = createTRPCRouter({
     }),
 
   getMeetingsPagination: procedure
-
     .input(
       z.object({
         limit: z.number(),
@@ -181,29 +180,55 @@ export const meetingRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { limit, cursor } = input;
 
-      const meetings = await db.query.meetTable.findMany({
-        where: cursor ? lt(meetTable.id, cursor) : undefined,
-        limit: limit + 1,
-        orderBy: [desc(meetTable.id)],
-      });
-
-      const users = await db.query.usersTable.findMany({
-        where: inArray(
-          usersTable.id,
-          meetings.map((meeting) => meeting.userId ?? 0),
-        ),
-      });
+      // Используем JOIN для загрузки встреч и пользователей в одном запросе
+      const meetingsWithUsers = await db
+        .select({
+          id: meetTable.id,
+          name: meetTable.name,
+          description: meetTable.description,
+          type: meetTable.type,
+          subType: meetTable.subType,
+          date: meetTable.date,
+          image: meetTable.image,
+          locations: meetTable.locations,
+          isCompleted: meetTable.isCompleted,
+          userId: meetTable.userId,
+          participantsIds: meetTable.participantsIds,
+          maxParticipants: meetTable.maxParticipants,
+          reward: meetTable.reward,
+          items: meetTable.items,
+          gallery: meetTable.gallery,
+          important: meetTable.important,
+          time: meetTable.time,
+          createdAt: meetTable.createdAt,
+          // Пользовательские данные
+          userName: usersTable.name,
+          userPhoto: usersTable.photo,
+          userPhotoUrl: usersTable.photoUrl,
+          userCity: usersTable.city,
+        })
+        .from(meetTable)
+        .leftJoin(usersTable, eq(meetTable.userId, usersTable.id))
+        .where(cursor ? lt(meetTable.id, cursor) : undefined)
+        .limit(limit + 1)
+        .orderBy(desc(meetTable.id));
 
       let nextCursor: number | undefined = undefined;
-      if (meetings.length > limit) {
-        const nextItem = meetings.pop();
+      if (meetingsWithUsers.length > limit) {
+        const nextItem = meetingsWithUsers.pop();
         nextCursor = nextItem!.id;
       }
 
       return {
-        items: meetings.map((meeting) => ({
+        items: meetingsWithUsers.map((meeting) => ({
           ...meeting,
-          user: users.find((user) => user.id === meeting.userId),
+          user: {
+            id: meeting.userId,
+            name: meeting.userName,
+            photo: meeting.userPhoto,
+            photoUrl: meeting.userPhotoUrl,
+            city: meeting.userCity,
+          },
         })),
         nextCursor,
       };

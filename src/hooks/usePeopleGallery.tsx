@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 export const usePeopleGallery = (users: any[]) => {
-  const [galleryPhotosByUserId, setGalleryPhotosByUserId] = useState<Record<number, string[]>>({});
-  const [currentIndexByUserId, setCurrentIndexByUserId] = useState<Record<number, number>>({});
+  const [galleryPhotosByUserId, setGalleryPhotosByUserId] = useState<
+    Record<number, string[]>
+  >({});
+  const [currentIndexByUserId, setCurrentIndexByUserId] = useState<
+    Record<number, number>
+  >({});
   const [selectedMainPhotoByUserId, setSelectedMainPhotoByUserId] = useState<
     Record<number, string | undefined>
   >({});
@@ -61,14 +65,12 @@ export const usePeopleGallery = (users: any[]) => {
     ].filter(Boolean);
 
     if (allPhotos.length <= 1) return;
-    
+
     const currentIndex = currentIndexByUserId[userId] ?? 0;
     const len = allPhotos.length;
     const nextIndex =
-      direction === "left"
-        ? (currentIndex + 1) % len
-        : (currentIndex - 1 + len) % len;
-    
+      direction === "left" ? (currentIndex + 1) % len : (currentIndex - 1 + len) % len;
+
     setCurrentIndexByUserId((prev) => ({ ...prev, [userId]: nextIndex }));
   };
 
@@ -77,10 +79,10 @@ export const usePeopleGallery = (users: any[]) => {
       selectedMainPhotoByUserId[userId] ?? "",
       ...(galleryPhotosByUserId[userId] ?? []),
     ].filter(Boolean);
-    
+
     const currentIndex = currentIndexByUserId[userId] ?? 0;
     const photosToShow = allPhotos.length > 0 ? allPhotos : [""]; // Empty string will trigger default image
-    
+
     setFullScreenPhotos(photosToShow);
     setFullScreenIndex(currentIndex);
     setIsFullScreen(true);
@@ -91,7 +93,7 @@ export const usePeopleGallery = (users: any[]) => {
       selectedMainPhotoByUserId[userId] ?? "",
       ...(galleryPhotosByUserId[userId] ?? []),
     ].filter(Boolean);
-    
+
     const currentIndex = currentIndexByUserId[userId] ?? 0;
     const currentPhoto = allPhotos[currentIndex] ?? "";
     const shouldShowImage = allPhotos.length > 0;

@@ -1146,6 +1146,60 @@ export const crmRouter = createTRPCRouter({
     });
   }),
 
+  createUserBot: crmProcedure
+    .input(
+      z.object({
+        photo: z.string(),
+        name: z.string(),
+        surname: z.string(),
+        login: z.string(),
+        email: z.string(),
+        phone: z.string(),
+        bio: z.string(),
+        gallery: z.array(z.string()),
+        birthday: z.string().optional(),
+        city: z.string().optional(),
+        sex: z.string().optional(),
+        balance: z.number().default(0),
+        isOnboarded: z.boolean().default(false),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const photoUrl = await uploadBase64Image(input.photo);
+
+      const galleryUrls = await Promise.all(
+        input.gallery.map(async (gallery) => await uploadBase64Image(gallery)),
+      );
+      await db
+        .insert(usersTable)
+        .values({
+          id: Date.now(),
+          photo: photoUrl,
+          name: input.name,
+          surname: input.surname,
+          login: input.login,
+          email: input.email,
+          phone: input.phone,
+          birthday: input.birthday,
+          city: input.city,
+          bio: input.bio,
+          sex: input.sex,
+          balance: input.balance,
+          isOnboarded: input.isOnboarded,
+          interests: {},
+          inventory: [],
+          gallery: galleryUrls,
+          notInterestedIds: [],
+          savedIds: [],
+          savedEvents: [],
+          savedMeetsIds: [],
+          warnings: [],
+          bans: [],
+        })
+        .returning();
+      return input;
+    }),
+
   // ===== СОБЫТИЯ В КАЛЕНДАРЕ ДЕТАЛЬНО =====
   getCalendarEventsDetailed: crmProcedure.query(async () => {
     const calendarEvents = await db.query.calendarTable.findMany({

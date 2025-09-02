@@ -16,7 +16,6 @@ import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { User } from "~/db/schema";
-import { useActivate } from "~/hooks/useActivate";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
@@ -45,11 +44,9 @@ function RouteComponent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
-  const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
-  const meeting = meetings?.find((event) => event.id === Number(id));
 
   const [count, setCount] = useState(1);
-  const { useActivateEvent } = useActivate();
+
   const queryClient = useQueryClient();
   const { data: userEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
 

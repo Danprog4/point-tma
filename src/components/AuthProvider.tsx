@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         queryClient.prefetchQuery(trpc.main.getReviews.queryOptions());
         queryClient.prefetchQuery(trpc.main.getUsers.queryOptions());
         queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
-        queryClient.prefetchQuery(trpc.meetings.getMeetings.queryOptions());
         queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),

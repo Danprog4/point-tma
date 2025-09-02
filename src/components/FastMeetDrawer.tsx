@@ -13,8 +13,8 @@ import {
 import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
 import { FastMeet, User as UserType } from "~/db/schema";
-import { usePeopleGallery } from "~/hooks";
 import { useFastMeet } from "~/hooks/useFastMeet";
+import { usePeopleGallery } from "~/hooks/usePeopleGallery";
 import { getImage } from "~/lib/utils/getImage";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getYMaspAdress } from "~/lib/utils/getYMaspAdress";

@@ -7,7 +7,7 @@ import { CreateMeetDrawer } from "~/components/CreateMeetDrawer";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { TagsDrawer } from "~/components/TagsDrawer";
 import { User } from "~/db/schema";
-import { usePeopleData } from "~/hooks";
+import { usePeopleData } from "~/hooks/usePeopleData";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/create-fastMeet")({

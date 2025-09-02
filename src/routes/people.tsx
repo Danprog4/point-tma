@@ -7,12 +7,10 @@ import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { PeopleHeader, PeopleMap, UsersList, ViewToggle } from "~/components/people";
 import PeopleDrawer from "~/components/PeopleDrawer";
 import { User } from "~/db/schema";
-import {
-  usePeopleActions,
-  usePeopleComplaints,
-  usePeopleData,
-  usePeopleGallery,
-} from "~/hooks";
+import { usePeopleActions } from "~/hooks/usePeopleActions";
+import { usePeopleComplaints } from "~/hooks/usePeopleComplaints";
+import { usePeopleData } from "~/hooks/usePeopleData";
+import { usePeopleGallery } from "~/hooks/usePeopleGallery";
 import { usePlatform } from "~/hooks/usePlatform";
 
 export const Route = createFileRoute("/people")({

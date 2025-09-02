@@ -16,6 +16,7 @@ import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
 import { User } from "~/db/schema";
+import { useEventsCache } from "~/hooks/useEventsCache";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
@@ -69,9 +70,10 @@ function RouteComponent() {
     }
   }, [name, id, userEvents]);
 
-  const { data: event } = useQuery(
-    trpc.event.getEvent.queryOptions({ id: Number(id), category: name ?? "" }),
-  );
+  const { events, isLoading: cacheLoading, getEventById } = useEventsCache();
+
+  // Ищем событие в кэше
+  const event = getEventById(Number(id), name ?? "");
 
   const filteredReviews = reviews?.filter((review) => review.eventId === Number(id));
   console.log(event);

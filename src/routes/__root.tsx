@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider } from "~/components/AuthProvider";
 import { Navbar } from "~/components/Navbar";
+
 import appCss from "~/lib/styles/app.css?url";
 import { loadYMapsScript } from "~/lib/ymaps";
 import { useTRPC } from "~/trpc/init/react";

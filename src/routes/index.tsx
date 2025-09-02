@@ -6,15 +6,16 @@ import { Calendar } from "~/components/Calendar";
 import { Header } from "~/components/Header";
 import { Selecter } from "~/components/Selecter";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
-import { useTRPC } from "~/trpc/init/react";
 
 import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 
+import { useFilteredEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
+import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -33,18 +34,21 @@ function Home() {
   const [showMapTest, setShowMapTest] = useState(false);
   const [clickedCoords, setClickedCoords] = useState<[number, number] | null>(null);
 
-  const { data: kinoData } = useQuery(
-    trpc.event.getEventsByCategory.queryOptions({ category: "Кино" }),
-  );
-  const { data: questsData } = useQuery(
-    trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
-  );
-  const { data: conferencesData } = useQuery(
-    trpc.event.getEventsByCategory.queryOptions({ category: "Конференция" }),
-  );
-  const { data: partiesData } = useQuery(
-    trpc.event.getEventsByCategory.queryOptions({ category: "Вечеринка" }),
-  );
+  // Используем новый хук для кэширования и фильтрации событий
+  const {
+    events: eventsData,
+    eventsByCategory,
+    isLoading: eventsLoading,
+  } = useFilteredEvents({
+    category: selectedFilter === "Все" ? undefined : selectedFilter,
+    search,
+  });
+
+  // Получаем отфильтрованные данные
+  const kinoData = eventsByCategory["Кино"] || [];
+  const questsData = eventsByCategory["Квест"] || [];
+  const conferencesData = eventsByCategory["Конференция"] || [];
+  const partiesData = eventsByCategory["Вечеринка"] || [];
 
   function ConferenceCard({ conf }: { conf: any }) {
     return (

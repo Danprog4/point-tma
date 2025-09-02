@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginMutation = useMutation(
     trpc.auth.login.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setLoggedIn(true);
         // Сразу устанавливаем данные пользователя в кэш
         queryClient.prefetchQuery(
@@ -37,7 +37,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             limit: 10,
           }),
         );
+        queryClient.prefetchQuery(trpc.main.getReviews.queryOptions());
+        queryClient.prefetchQuery(trpc.main.getUsers.queryOptions());
         queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
+        queryClient.prefetchQuery(trpc.meetings.getMeetings.queryOptions());
         queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
       },
     }),

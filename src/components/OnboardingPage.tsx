@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import imageCompression from "browser-image-compression";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -76,10 +77,27 @@ export const OnboardingPage = () => {
     if (isHeicFile(fileToProcess)) {
       fileToProcess = await convertHeicToPng(fileToProcess);
     }
+    try {
+      const compressedFile = await imageCompression(fileToProcess, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      fileToProcess = compressedFile;
+    } catch (error: any) {
+      toast.error(`❌ Сжатие изображения не удалось: ${error.message}`);
+      return;
+    }
 
-    const base64 = await convertToBase64(fileToProcess);
+    let base64str: string;
+    try {
+      base64str = await convertToBase64(fileToProcess);
+    } catch (error: any) {
+      toast.error(`❌ Преобразование в Base64 не удалось: ${error.message}`);
+      return;
+    }
 
-    setBase64(base64);
+    setBase64(base64str);
   };
 
   const handleSubmit = () => {

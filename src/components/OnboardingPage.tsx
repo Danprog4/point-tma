@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { AddPhoto } from "~/components/Icons/AddPhoto";
 import { Selecter } from "~/components/Selecter";
 import { monthOptions } from "~/config/months";
@@ -31,6 +32,10 @@ export const OnboardingPage = () => {
     trpc.main.getOnBoarding.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+        navigate({ to: "/" });
+      },
+      onError: () => {
+        toast.error("Ошибка при онбординге");
       },
     }),
   );

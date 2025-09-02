@@ -30,9 +30,7 @@ export const OnboardingPage = () => {
   const onBoarding = useMutation(
     trpc.main.getOnBoarding.mutationOptions({
       onSuccess: () => {
-        queryClient.setQueryData(trpc.main.getUser.queryKey(), (oldData: any) =>
-          oldData ? { ...oldData, isOnboarded: true } : oldData,
-        );
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
       },
     }),
   );

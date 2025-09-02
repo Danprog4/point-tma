@@ -157,7 +157,7 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
   const trpc = useTRPC();
 
   useEffect(() => {
-    if (true) {
+    if (isDev) {
       import("eruda").then((eruda) => {
         eruda.default.init();
       });

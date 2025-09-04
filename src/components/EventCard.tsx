@@ -1,3 +1,5 @@
+import { getImageUrl } from "~/lib/utils/getImageURL";
+
 export const EventCard = ({ event }: { event: any }) => {
   console.log(event);
   return (
@@ -5,7 +7,11 @@ export const EventCard = ({ event }: { event: any }) => {
       <div className={`h-32 ${event.bg || ""} relative`}>
         {event.image && (
           <img
-            src={event.image}
+            src={
+              event.image?.startsWith("https://") || event.image?.startsWith("/")
+                ? event.image
+                : getImageUrl(event.image)
+            }
             alt={event.title}
             className="absolute inset-0 h-full w-full rounded-2xl bg-transparent object-cover"
           />

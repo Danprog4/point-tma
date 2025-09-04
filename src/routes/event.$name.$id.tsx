@@ -19,6 +19,7 @@ import { User } from "~/db/schema";
 import { useEventsCache } from "~/hooks/useEventsCache";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { Quest } from "~/types/quest";
 
@@ -74,6 +75,8 @@ function RouteComponent() {
 
   // Ищем событие в кэше
   const event = getEventById(Number(id), name ?? "");
+
+  console.log(event, "event image");
 
   const filteredReviews = reviews?.filter((review) => review.eventId === Number(id));
   console.log(event);
@@ -296,7 +299,11 @@ function RouteComponent() {
           </div>
           <div className="relative">
             <img
-              src={event?.image ?? ""}
+              src={
+                event?.image?.startsWith("https://") || event?.image?.startsWith("/")
+                  ? event?.image
+                  : getImageUrl(event?.image || "")
+              }
               alt={event?.title ?? ""}
               className="h-[30vh] w-full rounded-t-xl object-cover"
             />
@@ -416,21 +423,18 @@ function RouteComponent() {
                     </div>
                     <Coin />
                   </div>
-                  {name === "Квест" && (
-                    <div className="text-sm">
-                      {(event as any)?.rewards
-                        ?.filter((reward: any) => reward.type === "text")
-                        .map((reward: any) => (
-                          <div key={reward.value}>
-                            {reward.value
-                              .split("\n")
-                              .map((line: string, index: number) => (
-                                <div key={index}>+ {line}</div>
-                              ))}
-                          </div>
-                        ))}
-                    </div>
-                  )}
+
+                  <div className="text-sm">
+                    {(event as any)?.rewards
+                      ?.filter((reward: any) => reward.type === "text")
+                      .map((reward: any) => (
+                        <div key={reward.value}>
+                          {reward.value.split("\n").map((line: string, index: number) => (
+                            <div key={index}>+ {line}</div>
+                          ))}
+                        </div>
+                      ))}
+                  </div>
                 </div>
 
                 <div>За успешное выполнение квеста</div>

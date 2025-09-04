@@ -6,6 +6,7 @@ import { Calendar } from "~/components/Calendar";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Selecter } from "~/components/Selecter";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -103,7 +104,11 @@ function RouteComponent() {
             <div>
               <div className="relative aspect-square w-full">
                 <img
-                  src={item.image}
+                  src={
+                    item.image?.startsWith("https://") || item.image?.startsWith("/")
+                      ? item.image
+                      : getImageUrl(item.image || "")
+                  }
                   alt={item.title}
                   className="h-full w-full rounded-t-3xl object-cover"
                 />
@@ -203,7 +208,11 @@ function RouteComponent() {
               >
                 <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
                   <img
-                    src={item.image}
+                    src={
+                      item.image?.startsWith("https://") || item.image?.startsWith("/")
+                        ? item.image
+                        : getImageUrl(item.image || "")
+                    }
                     alt={item.title}
                     className="h-full w-full object-cover"
                   />

@@ -1343,26 +1343,30 @@ export const crmRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  createQuest: creatorProcedure
+  createEvent: creatorProcedure
     .input(
       z.object({
         title: z.string(),
         description: z.string(),
         category: z.string(),
         type: z.string(),
-        rewards: z.array(z.object({ type: z.string(), value: z.number() })),
+        rewards: z.array(
+          z.object({ type: z.string(), value: z.union([z.number(), z.string()]) }),
+        ),
         date: z.string(),
         city: z.string(),
         image: z.string(),
         location: z.string(),
         price: z.number(),
-        quests: z.array(z.object({ title: z.string(), desc: z.string() })),
+        stages: z.array(z.object({ title: z.string(), desc: z.string() })),
         hasAchievement: z.boolean(),
         organizer: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const newQuest = await db.insert(eventsTable).values(input).returning();
+      const imageUUID = await uploadBase64Image(input.image);
+      const newInput = { ...input, image: imageUUID };
+      const newQuest = await db.insert(eventsTable).values(newInput).returning();
       return newQuest[0];
     }),
 

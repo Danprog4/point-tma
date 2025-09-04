@@ -290,7 +290,7 @@ export const eventsTable = pgTable("events", {
   isSeries: boolean("is_series").default(false),
   hasAchievement: boolean("has_achievement").default(false),
   stages: jsonb("stages").$type<Array<{ title: string; desc: string }>>(),
-  rewards: jsonb("rewards").$type<Array<{ type: string; value: number }>>(),
+  rewards: jsonb("rewards").$type<Array<{ type: string; value: number | string }>>(),
   quests: jsonb("quests").$type<Array<any>>(),
   createdAt: timestamp("created_at").defaultNow(),
   isReviewed: boolean("is_reviewed").default(false),

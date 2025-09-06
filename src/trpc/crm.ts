@@ -92,14 +92,39 @@ export const crmRouter = createTRPCRouter({
         birthday: z.string().optional(),
         bio: z.string().optional(),
         balance: z.number().optional(),
+        photo: z.string().optional(),
+        gallery: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { id, ...updateData } = input;
+      const imageUUID = await uploadBase64Image(input.photo || "");
+      const galleryUUIDs = await Promise.all(
+        input.gallery?.map(async (image) => {
+          if (image && image.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/)) {
+            const imageUUID = await uploadBase64Image(image || "");
+            return imageUUID;
+          }
+          return image;
+        }) || [],
+      );
+
       const updatedUser = await db
         .update(usersTable)
-        .set(updateData)
-        .where(eq(usersTable.id, Number(id)))
+        .set({
+          name: input.name,
+          surname: input.surname,
+          login: input.login,
+          email: input.email,
+          phone: input.phone,
+          city: input.city,
+          sex: input.sex,
+          birthday: input.birthday,
+          bio: input.bio,
+          balance: input.balance,
+          photo: imageUUID,
+          gallery: galleryUUIDs,
+        })
+        .where(eq(usersTable.id, Number(input.id)))
         .returning();
       if (!updatedUser[0])
         throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });

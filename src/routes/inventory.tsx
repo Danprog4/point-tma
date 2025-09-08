@@ -12,6 +12,7 @@ export const Route = createFileRoute("/inventory")({
 type GroupedTicket = {
   eventId: number;
   name: string;
+  caseId: number;
   type: string;
   count: number;
   isActive: boolean;
@@ -22,16 +23,22 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const navigate = useNavigate();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
-  const tickets = user?.inventory?.filter((item) => item.type === "ticket") ?? [];
 
-  const inactiveTickets = tickets.filter((ticket) => !ticket.isActive);
+  const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+
+  const getCase = (caseId: number) => {
+    return cases?.find((c) => c.id === caseId);
+  };
+
+  const inactiveTickets = user?.inventory?.filter((ticket) => !ticket.isActive);
 
   // Функция для группировки билетов
   const groupTickets = (tickets: typeof inactiveTickets): GroupedTicket[] => {
     const groupedMap = new Map<string, GroupedTicket>();
 
-    tickets.forEach((ticket) => {
+    tickets?.forEach((ticket) => {
       const key = `${ticket.eventId}-${ticket.name}`;
+      console.log(ticket, "ticket");
 
       if (groupedMap.has(key)) {
         const existing = groupedMap.get(key)!;
@@ -39,7 +46,8 @@ function RouteComponent() {
       } else {
         groupedMap.set(key, {
           eventId: ticket.eventId,
-          name: ticket.name,
+          name: ticket.name ?? "",
+          caseId: ticket.eventId as number,
           type: ticket.type,
           count: 1,
           isActive: ticket.isActive || false,
@@ -52,9 +60,16 @@ function RouteComponent() {
 
   const groupedTickets = groupTickets(inactiveTickets);
 
-  const getEvent = (eventId: number, name: string) => {
+  const getEvent = (eventId: number, name: string, type: string, caseId: number) => {
+    if (type === "case") {
+      const caseData = cases?.find((c) => c.id === caseId);
+      console.log(caseData, "caseData");
+      return caseData;
+    }
     return events?.find((event) => event.id === eventId && event.category === name);
   };
+
+  console.log(groupedTickets, "groupedTickets");
 
   const isMobile = usePlatform();
 
@@ -80,34 +95,61 @@ function RouteComponent() {
       </div>
       {groupedTickets.length > 0 ? (
         <div className="grid grid-cols-3 gap-4">
-          {groupedTickets.map((ticket) => (
-            <div
-              key={`${ticket.eventId}-${ticket.name}`}
-              className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
-              onClick={() => {
-                navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
-              }}
-            >
-              {/* Бейдж с количеством билетов */}
-              {ticket.count > 1 && (
-                <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                  {ticket.count}
+          {groupedTickets.map((ticket) => {
+            const eventData = getEvent(
+              ticket.eventId,
+              ticket.name,
+              ticket.type,
+              ticket.caseId,
+            );
+            const isCase = ticket.type === "case";
+
+            return (
+              <div
+                key={`${ticket.eventId}-${ticket.name}`}
+                className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+                onClick={() => {
+                  navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
+                }}
+              >
+                {/* Бейдж с количеством билетов */}
+                {ticket.count > 1 && (
+                  <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {ticket.count}
+                  </div>
+                )}
+
+                <img
+                  src={
+                    isCase
+                      ? ((eventData as any)?.photo ?? "")
+                      : ((eventData as any)?.image ?? "")
+                  }
+                  alt={
+                    isCase
+                      ? ((eventData as any)?.name ?? "")
+                      : ((eventData as any)?.title ?? "")
+                  }
+                  className="h-[61px] w-[61px] rounded-lg"
+                />
+
+                <div className="text-center text-xs font-bold text-[#A35700]">
+                  {(
+                    getEvent(
+                      ticket.eventId,
+                      ticket.name,
+                      ticket.type,
+                      ticket.caseId,
+                    ) as any
+                  )?.category === "Квест"
+                    ? "Квест"
+                    : isCase
+                      ? ((eventData as any)?.name ?? "Кейс")
+                      : "Ваучер"}
                 </div>
-              )}
-
-              <img
-                src={getEvent(ticket.eventId, ticket.name)?.image ?? ""}
-                alt={getEvent(ticket.eventId, ticket.name)?.title ?? ""}
-                className="h-[61px] w-[61px] rounded-lg"
-              />
-
-              <div className="text-center text-xs font-bold text-[#A35700]">
-                {getEvent(ticket.eventId, ticket.name)?.category === "Квест"
-                  ? "Билет на квест"
-                  : "Ваучер"}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-start text-gray-500">Ваш инвентарь пока пуст</div>

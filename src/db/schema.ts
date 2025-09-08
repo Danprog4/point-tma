@@ -26,9 +26,10 @@ export const usersTable = pgTable("users", {
     .$type<
       Array<{
         type: string;
+        caseId?: number;
         eventId: number;
         isActive?: boolean;
-        name: string;
+        name?: string;
         id?: number;
       }>
     >()
@@ -295,6 +296,16 @@ export const eventsTable = pgTable("events", {
   createdAt: timestamp("created_at").defaultNow(),
   isReviewed: boolean("is_reviewed").default(false),
   isApproved: boolean("is_approved").default(false),
+});
+
+export const casesTable = pgTable("cases", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }),
+  description: varchar("description", { length: 2000 }),
+  photo: varchar("photo", { length: 255 }),
+  items: jsonb("items").$type<Array<{ type: string; value: number | string }>>(),
+  isWithKey: boolean("is_with_key").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Export all table types

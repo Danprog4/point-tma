@@ -46,6 +46,7 @@ function RouteComponent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
+  const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
 
   const [count, setCount] = useState(1);
 
@@ -185,6 +186,19 @@ function RouteComponent() {
   };
 
   const isMobile = usePlatform();
+
+  console.log(event?.rewards, "events");
+
+  const itemsCase = event?.rewards?.filter((reward: any) => reward.type === "case");
+
+  console.log(itemsCase, "itemsCase");
+
+  const casePhoto = itemsCase?.map((item: any) => {
+    return cases?.find((c) => c.id === item.value)?.photo;
+  });
+
+  console.log(cases, "cases");
+  console.log(casePhoto, "casePhoto");
 
   return (
     <div
@@ -438,6 +452,24 @@ function RouteComponent() {
                 </div>
 
                 <div>За успешное выполнение квеста</div>
+                <div className="text-sm">
+                  {(event as any)?.rewards
+                    ?.filter((reward: any) => reward.type === "case")
+                    .map((reward: any) => (
+                      <div key={reward.value} className="flex items-center gap-2">
+                        <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
+                          <img
+                            src={cases?.find((c) => c.id === reward.value)?.photo || ""}
+                            alt="case"
+                            className="h-10 w-10"
+                          />
+                          <span className="mt-1 text-center text-sm">
+                            {cases?.find((c) => c.id === reward.value)?.name}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
                 <div className="flex gap-2">
                   <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
                     <img src="/shit.png" alt="coin" className="h-10 w-10" />

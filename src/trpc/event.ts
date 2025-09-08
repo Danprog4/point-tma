@@ -76,6 +76,27 @@ export const eventRouter = createTRPCRouter({
           isCompleted: true,
         })
         .where(eq(activeEventsTable.id, quest.id));
+
+      const cases = await db.query.casesTable.findMany();
+
+      if (eventData.rewards?.some((reward: any) => reward.type === "case")) {
+        const caseId = eventData.rewards.find(
+          (reward: any) => reward.type === "case",
+        )?.value;
+
+        await db
+          .update(usersTable)
+          .set({
+            inventory: [
+              ...(user.inventory || []),
+              {
+                type: "case",
+                eventId: caseId as number,
+              },
+            ],
+          })
+          .where(eq(usersTable.id, ctx.userId));
+      }
     }),
 
   buyEvent: procedure

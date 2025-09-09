@@ -28,4 +28,26 @@ export const casesRouter = createTRPCRouter({
     const keys = await db.query.keysTable.findMany();
     return keys;
   }),
+
+  buyCase: procedure
+    .input(z.object({ caseId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      // TODO: Реализовать покупку кейса
+      // 1. Проверить баланс пользователя
+      // 2. Списть монеты
+      // 3. Добавить кейс в инвентарь пользователя
+      console.log("Покупка кейса:", input.caseId, "пользователем:", ctx.userId);
+      return { success: true };
+    }),
+
+  openCase: procedure
+    .input(z.object({ caseId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      // TODO: Реализовать открытие кейса
+      // 1. Проверить наличие кейса в инвентаре
+      // 2. Удалить кейс из инвентаря
+      // 3. Выдать случайную награду
+      console.log("Открытие кейса:", input.caseId, "пользователем:", ctx.userId);
+      return { success: true, reward: "Ключ для золотого кейса" };
+    }),
 });

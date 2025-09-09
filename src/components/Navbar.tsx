@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
+import { ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 import { Main } from "./Icons/NavBar.tsx/Main";
@@ -25,6 +26,7 @@ export const Navbar = () => {
     pathname.pathname === "/quests" ||
     pathname.pathname === "/meetings" ||
     pathname.pathname === "/people" ||
+    pathname.pathname === "/shop" ||
     pathname.pathname === "/";
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export const Navbar = () => {
     <>
       {isRender ? (
         <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-6 gap-2">
             <button
               onClick={() => navigate({ to: "/" })}
               className="flex flex-col items-center py-2"
@@ -112,6 +114,24 @@ export const Navbar = () => {
               </span>
               <div className="mt-1 h-0.5 w-8">
                 {active === "/quests" && (
+                  <div className="h-full w-full rounded-full bg-purple-600"></div>
+                )}
+              </div>
+            </button>
+            <button
+              onClick={() => navigate({ to: "/shop" })}
+              className="flex flex-col items-center py-2"
+            >
+              <div className="mb-1 h-6 w-6">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <span
+                className={`text-xs font-medium ${active === "/shop" ? "text-gray-900" : "text-gray-400"}`}
+              >
+                Магазин
+              </span>
+              <div className="mt-1 h-0.5 w-8">
+                {active === "/shop" && (
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>

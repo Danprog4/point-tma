@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SkillsImport } from './routes/skills'
+import { Route as ShopImport } from './routes/shop'
 import { Route as QuestsImport } from './routes/quests'
 import { Route as ProfileSettImport } from './routes/profile-sett'
 import { Route as ProfileImport } from './routes/profile'
@@ -37,6 +38,7 @@ import { Route as UserQuestsIdImport } from './routes/user-quests.$id'
 import { Route as UserProfileIdImport } from './routes/user-profile.$id'
 import { Route as UserMeetingsIdImport } from './routes/user-meetings.$id'
 import { Route as MeetIdImport } from './routes/meet.$id'
+import { Route as CaseIdImport } from './routes/case.$id'
 import { Route as AllNameImport } from './routes/all.$name'
 import { Route as EventNameIdImport } from './routes/event.$name.$id'
 
@@ -45,6 +47,12 @@ import { Route as EventNameIdImport } from './routes/event.$name.$id'
 const SkillsRoute = SkillsImport.update({
   id: '/skills',
   path: '/skills',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ShopRoute = ShopImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -195,6 +203,12 @@ const UserMeetingsIdRoute = UserMeetingsIdImport.update({
 const MeetIdRoute = MeetIdImport.update({
   id: '/meet/$id',
   path: '/meet/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CaseIdRoute = CaseIdImport.update({
+  id: '/case/$id',
+  path: '/case/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -354,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestsImport
       parentRoute: typeof rootRoute
     }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopImport
+      parentRoute: typeof rootRoute
+    }
     '/skills': {
       id: '/skills'
       path: '/skills'
@@ -366,6 +387,13 @@ declare module '@tanstack/react-router' {
       path: '/all/$name'
       fullPath: '/all/$name'
       preLoaderRoute: typeof AllNameImport
+      parentRoute: typeof rootRoute
+    }
+    '/case/$id': {
+      id: '/case/$id'
+      path: '/case/$id'
+      fullPath: '/case/$id'
+      preLoaderRoute: typeof CaseIdImport
       parentRoute: typeof rootRoute
     }
     '/meet/$id': {
@@ -436,8 +464,10 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
+  '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
+  '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
@@ -467,8 +497,10 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
+  '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
+  '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
@@ -499,8 +531,10 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
   '/quests': typeof QuestsRoute
+  '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
   '/all/$name': typeof AllNameRoute
+  '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
   '/user-meetings/$id': typeof UserMeetingsIdRoute
   '/user-profile/$id': typeof UserProfileIdRoute
@@ -532,8 +566,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/profile-sett'
     | '/quests'
+    | '/shop'
     | '/skills'
     | '/all/$name'
+    | '/case/$id'
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
@@ -562,8 +598,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/profile-sett'
     | '/quests'
+    | '/shop'
     | '/skills'
     | '/all/$name'
+    | '/case/$id'
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
@@ -592,8 +630,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/profile-sett'
     | '/quests'
+    | '/shop'
     | '/skills'
     | '/all/$name'
+    | '/case/$id'
     | '/meet/$id'
     | '/user-meetings/$id'
     | '/user-profile/$id'
@@ -624,8 +664,10 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ProfileSettRoute: typeof ProfileSettRoute
   QuestsRoute: typeof QuestsRoute
+  ShopRoute: typeof ShopRoute
   SkillsRoute: typeof SkillsRoute
   AllNameRoute: typeof AllNameRoute
+  CaseIdRoute: typeof CaseIdRoute
   MeetIdRoute: typeof MeetIdRoute
   UserMeetingsIdRoute: typeof UserMeetingsIdRoute
   UserProfileIdRoute: typeof UserProfileIdRoute
@@ -655,8 +697,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ProfileSettRoute: ProfileSettRoute,
   QuestsRoute: QuestsRoute,
+  ShopRoute: ShopRoute,
   SkillsRoute: SkillsRoute,
   AllNameRoute: AllNameRoute,
+  CaseIdRoute: CaseIdRoute,
   MeetIdRoute: MeetIdRoute,
   UserMeetingsIdRoute: UserMeetingsIdRoute,
   UserProfileIdRoute: UserProfileIdRoute,
@@ -695,8 +739,10 @@ export const routeTree = rootRoute
         "/profile",
         "/profile-sett",
         "/quests",
+        "/shop",
         "/skills",
         "/all/$name",
+        "/case/$id",
         "/meet/$id",
         "/user-meetings/$id",
         "/user-profile/$id",
@@ -765,11 +811,17 @@ export const routeTree = rootRoute
     "/quests": {
       "filePath": "quests.tsx"
     },
+    "/shop": {
+      "filePath": "shop.tsx"
+    },
     "/skills": {
       "filePath": "skills.tsx"
     },
     "/all/$name": {
       "filePath": "all.$name.tsx"
+    },
+    "/case/$id": {
+      "filePath": "case.$id.tsx"
     },
     "/meet/$id": {
       "filePath": "meet.$id.tsx"

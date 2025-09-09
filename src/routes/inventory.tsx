@@ -10,9 +10,9 @@ export const Route = createFileRoute("/inventory")({
 
 // Тип для сгруппированного билета
 type GroupedTicket = {
-  eventId: number;
-  name: string;
-  caseId: number;
+  eventId?: number;
+  name?: string;
+  caseId?: number;
   type: string;
   count: number;
   isActive: boolean;
@@ -37,7 +37,8 @@ function RouteComponent() {
     const groupedMap = new Map<string, GroupedTicket>();
 
     tickets?.forEach((ticket) => {
-      const key = `${ticket.eventId}-${ticket.name}`;
+      // Создаем уникальный ключ для группировки
+      const key = `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}`;
       console.log(ticket, "ticket");
 
       if (groupedMap.has(key)) {
@@ -46,8 +47,8 @@ function RouteComponent() {
       } else {
         groupedMap.set(key, {
           eventId: ticket.eventId,
-          name: ticket.name ?? "",
-          caseId: ticket.eventId as number,
+          name: ticket.name,
+          caseId: ticket.caseId,
           type: ticket.type,
           count: 1,
           isActive: ticket.isActive || false,
@@ -60,13 +61,21 @@ function RouteComponent() {
 
   const groupedTickets = groupTickets(inactiveTickets);
 
-  const getEvent = (eventId: number, name: string, type: string, caseId: number) => {
-    if (type === "case") {
-      const caseData = cases?.find((c) => c.id === caseId);
+  const getEvent = (eventId?: number, name?: string, type?: string, caseId?: number) => {
+    if (type === "case" && eventId) {
+      const caseData = cases?.find((c) => c.id === eventId);
       console.log(caseData, "caseData");
       return caseData;
     }
-    return events?.find((event) => event.id === eventId && event.category === name);
+    if (type === "key" && caseId) {
+      const caseData = cases?.find((c) => c.id === caseId);
+      console.log(caseData, "caseData for key");
+      return caseData;
+    }
+    if (eventId && name) {
+      return events?.find((event) => event.id === eventId && event.category === name);
+    }
+    return null;
   };
 
   console.log(groupedTickets, "groupedTickets");
@@ -95,7 +104,7 @@ function RouteComponent() {
       </div>
       {groupedTickets.length > 0 ? (
         <div className="grid grid-cols-3 gap-4">
-          {groupedTickets.map((ticket) => {
+          {groupedTickets.map((ticket, index) => {
             const eventData = getEvent(
               ticket.eventId,
               ticket.name,
@@ -103,13 +112,16 @@ function RouteComponent() {
               ticket.caseId,
             );
             const isCase = ticket.type === "case";
+            const isKey = ticket.type === "key";
 
             return (
               <div
-                key={`${ticket.eventId}-${ticket.name}`}
+                key={`${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${index}`}
                 className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
                 onClick={() => {
-                  navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
+                  if (ticket.eventId && ticket.name) {
+                    navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
+                  }
                 }}
               >
                 {/* Бейдж с количеством билетов */}
@@ -121,12 +133,12 @@ function RouteComponent() {
 
                 <img
                   src={
-                    isCase
+                    isCase || isKey
                       ? ((eventData as any)?.photo ?? "")
                       : ((eventData as any)?.image ?? "")
                   }
                   alt={
-                    isCase
+                    isCase || isKey
                       ? ((eventData as any)?.name ?? "")
                       : ((eventData as any)?.title ?? "")
                   }
@@ -134,18 +146,13 @@ function RouteComponent() {
                 />
 
                 <div className="text-center text-xs font-bold text-[#A35700]">
-                  {(
-                    getEvent(
-                      ticket.eventId,
-                      ticket.name,
-                      ticket.type,
-                      ticket.caseId,
-                    ) as any
-                  )?.category === "Квест"
+                  {ticket.type === "ticket" && (eventData as any)?.category === "Квест"
                     ? "Квест"
                     : isCase
-                      ? ((eventData as any)?.name ?? "Кейс")
-                      : "Ваучер"}
+                      ? "Кейс"
+                      : isKey
+                        ? "Ключ"
+                        : "Ваучер"}
                 </div>
               </div>
             );

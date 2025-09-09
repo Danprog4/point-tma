@@ -27,7 +27,7 @@ export const usersTable = pgTable("users", {
       Array<{
         type: string;
         caseId?: number;
-        eventId: number;
+        eventId?: number;
         isActive?: boolean;
         name?: string;
         id?: number;
@@ -291,7 +291,10 @@ export const eventsTable = pgTable("events", {
   isSeries: boolean("is_series").default(false),
   hasAchievement: boolean("has_achievement").default(false),
   stages: jsonb("stages").$type<Array<{ title: string; desc: string }>>(),
-  rewards: jsonb("rewards").$type<Array<{ type: string; value: number | string }>>(),
+  rewards:
+    jsonb("rewards").$type<
+      Array<{ type: string; value?: number | string; eventId?: number; caseId?: number }>
+    >(),
   quests: jsonb("quests").$type<Array<any>>(),
   createdAt: timestamp("created_at").defaultNow(),
   isReviewed: boolean("is_reviewed").default(false),
@@ -305,6 +308,15 @@ export const casesTable = pgTable("cases", {
   photo: varchar("photo", { length: 255 }),
   items: jsonb("items").$type<Array<{ type: string; value: number | string }>>(),
   isWithKey: boolean("is_with_key").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const keysTable = pgTable("keys", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }),
+  description: varchar("description", { length: 2000 }),
+  caseId: bigint("case_id", { mode: "number" }),
+  photo: varchar("photo", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -97,6 +97,21 @@ export const eventRouter = createTRPCRouter({
           })
           .where(eq(usersTable.id, ctx.userId));
       }
+      if (eventData.rewards?.some((reward: any) => reward.type === "key")) {
+        const keyId = eventData.rewards.find(
+          (reward: any) => reward.type === "key",
+        )?.caseId;
+
+        await db
+          .update(usersTable)
+          .set({
+            inventory: [
+              ...(user.inventory || []),
+              { type: "key", caseId: keyId as number },
+            ],
+          })
+          .where(eq(usersTable.id, ctx.userId));
+      }
     }),
 
   buyEvent: procedure

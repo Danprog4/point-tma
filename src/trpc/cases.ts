@@ -23,4 +23,9 @@ export const casesRouter = createTRPCRouter({
     }
     return caseData;
   }),
+
+  getKeys: procedure.query(async () => {
+    const keys = await db.query.keysTable.findMany();
+    return keys;
+  }),
 });

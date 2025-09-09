@@ -47,6 +47,9 @@ function RouteComponent() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+  const { data: keys } = useQuery(trpc.cases.getKeys.queryOptions());
+
+  console.log(keys, "keys");
 
   const [count, setCount] = useState(1);
 
@@ -189,16 +192,12 @@ function RouteComponent() {
 
   console.log(event?.rewards, "events");
 
-  const itemsCase = event?.rewards?.filter((reward: any) => reward.type === "case");
+  const pointRewards = event?.rewards?.filter((reward: any) => reward.type === "point");
+  const caseRewards = event?.rewards?.filter((reward: any) => reward.type === "case");
+  const keyRewards = event?.rewards?.filter((reward: any) => reward.type === "key");
 
-  console.log(itemsCase, "itemsCase");
-
-  const casePhoto = itemsCase?.map((item: any) => {
-    return cases?.find((c) => c.id === item.value)?.photo;
-  });
-
-  console.log(cases, "cases");
-  console.log(casePhoto, "casePhoto");
+  console.log(caseRewards, "caseRewards");
+  console.log(keyRewards, "keyRewards");
 
   return (
     <div
@@ -401,17 +400,7 @@ function RouteComponent() {
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-base font-medium text-black">
-                            +
-                            {(event as any)?.rewards
-                              ?.find((reward: any) => reward.type === "point")
-                              ?.value?.toLocaleString() || 0}
-                          </span>
-                          <span>
-                            {(event as any)?.rewards
-                              ?.filter((reward: any) => reward.type === "text")
-                              .map((reward: any) => (
-                                <span key={reward.value}>{reward.value}</span>
-                              ))}
+                            +{pointRewards?.[0]?.value?.toLocaleString() || 0}
                           </span>
                           <span className="text-base font-medium text-black">points</span>
                           <Coin />
@@ -430,54 +419,64 @@ function RouteComponent() {
                   <div className="flex items-center">
                     <div className="text-2xl font-bold">Награда </div>
                     <div className="text-l pl-2 font-bold">
-                      +
-                      {(event as any)?.rewards
-                        ?.find((reward: any) => reward.type === "point")
-                        ?.value?.toLocaleString() || 0}
+                      +{pointRewards?.[0]?.value?.toLocaleString() || 0}
                     </div>
                     <Coin />
-                  </div>
-
-                  <div className="text-sm">
-                    {(event as any)?.rewards
-                      ?.filter((reward: any) => reward.type === "text")
-                      .map((reward: any) => (
-                        <div key={reward.value}>
-                          {reward.value.split("\n").map((line: string, index: number) => (
-                            <div key={index}>+ {line}</div>
-                          ))}
-                        </div>
-                      ))}
                   </div>
                 </div>
 
                 <div>За успешное выполнение квеста</div>
-                <div className="text-sm">
-                  {(event as any)?.rewards
-                    ?.filter((reward: any) => reward.type === "case")
-                    .map((reward: any) => (
-                      <div key={reward.value} className="flex items-center gap-2">
-                        <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
-                          <img
-                            src={cases?.find((c) => c.id === reward.value)?.photo || ""}
-                            alt="case"
-                            className="h-10 w-10"
-                          />
-                          <span className="mt-1 text-center text-sm">
-                            {cases?.find((c) => c.id === reward.value)?.name}
-                          </span>
-                        </div>
+
+                {/* Case rewards */}
+                {caseRewards && caseRewards.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {caseRewards.map((reward: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-blue-200 px-4"
+                      >
+                        <img
+                          src={cases?.find((c) => c.id === reward.eventId)?.photo || ""}
+                          alt="case"
+                          className="h-10 w-10"
+                        />
+                        <span className="mt-1 text-center text-sm">
+                          {cases?.find((c) => c.id === reward.eventId)?.name}
+                        </span>
                       </div>
                     ))}
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-blue-200">
-                    <img src="/shit.png" alt="coin" className="h-10 w-10" />
-                    <span className="mt-1 text-sm">Кепка BUCS</span>
                   </div>
-                  <div className="flex h-25 w-25 flex-col items-center justify-center rounded-lg bg-red-200">
+                )}
+
+                {/* Key rewards */}
+                {keyRewards && keyRewards.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {keyRewards.map((reward: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-yellow-200 px-4"
+                      >
+                        <img
+                          src={cases?.find((c) => c.id === reward.caseId)?.photo || ""}
+                          alt="key"
+                          className="h-10 w-10"
+                        />
+                        <span className="mt-1 text-center text-sm">
+                          Ключ от {cases?.find((c) => c.id === reward.caseId)?.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <div className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-blue-200 px-4">
+                    <img src="/shit.png" alt="coin" className="h-10 w-10" />
+                    <span className="mt-1 text-center text-sm">Кепка BUCS</span>
+                  </div>
+                  <div className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-red-200 px-4">
                     <img src="/cap.png" alt="coin" className="h-10 w-10" />
-                    <span className="mt-1 text-sm">Любитель к...</span>
+                    <span className="mt-1 text-center text-sm">Любитель к...</span>
                   </div>
                 </div>
               </div>

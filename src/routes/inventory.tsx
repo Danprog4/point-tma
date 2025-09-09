@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import KeyDrawer from "~/components/KeyDrawer";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -23,6 +25,8 @@ function RouteComponent() {
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const navigate = useNavigate();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
+  const [selectedKey, setSelectedKey] = useState<any>(null);
+  const [isKeyDrawerOpen, setIsKeyDrawerOpen] = useState(false);
 
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
 
@@ -119,7 +123,11 @@ function RouteComponent() {
                 key={`${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${index}`}
                 className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
                 onClick={() => {
-                  if (ticket.eventId && ticket.name) {
+                  if (isKey) {
+                    // Для ключей открываем KeyDrawer
+                    setSelectedKey(ticket);
+                    setIsKeyDrawerOpen(true);
+                  } else if (ticket.eventId && ticket.name) {
                     navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
                   }
                 }}
@@ -160,6 +168,18 @@ function RouteComponent() {
         </div>
       ) : (
         <div className="text-start text-gray-500">Ваш инвентарь пока пуст</div>
+      )}
+
+      {/* KeyDrawer для ключей */}
+      {selectedKey && (
+        <KeyDrawer
+          open={isKeyDrawerOpen}
+          onOpenChange={setIsKeyDrawerOpen}
+          keyData={selectedKey}
+          caseData={selectedKey.caseId ? getCase(selectedKey.caseId) : undefined}
+        >
+          <div />
+        </KeyDrawer>
       )}
     </div>
   );

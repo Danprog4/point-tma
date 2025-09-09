@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const FullPageSpinner = () => {
@@ -16,7 +15,7 @@ export const FullPageSpinner = () => {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-black" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-purple-600"></div>
     </div>
   );
 };

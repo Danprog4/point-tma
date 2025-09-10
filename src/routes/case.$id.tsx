@@ -386,11 +386,6 @@ function RouteComponent() {
               <span className="text-sm font-bold text-white">{caseData.price ?? 0}</span>
             </div>
           </div> */}
-
-          {/* Rarity Badge */}
-          <div className="absolute top-4 left-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-3 py-2">
-            <span className="text-sm font-bold text-white">Редкий</span>
-          </div>
         </div>
       </div>
 

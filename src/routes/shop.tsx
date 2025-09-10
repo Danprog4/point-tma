@@ -129,18 +129,13 @@ function RouteComponent() {
                   </div>
                 )}
 
-                {/* Price Badge */}
+                {/* Price Badge
                 <div className="absolute top-2 right-2 rounded-full bg-black/80 px-2 py-1">
                   <div className="flex items-center gap-1">
                     <Coins className="h-3 w-3 text-yellow-400" />
                     <span className="text-xs font-bold text-white">{price}</span>
                   </div>
-                </div>
-
-                {/* Rarity Badge */}
-                <div className="absolute top-2 left-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1">
-                  <span className="text-xs font-bold text-white">Редкий</span>
-                </div>
+                </div> */}
               </div>
 
               {/* Case Info */}

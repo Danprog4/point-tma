@@ -68,7 +68,7 @@ function RouteComponent() {
               <div className="mt-2 flex items-center gap-2">
                 <Coins className="h-5 w-5 text-yellow-400" />
                 <span className="text-2xl font-bold">{user?.balance || 0}</span>
-                <span className="text-sm opacity-80">монет</span>
+                <span className="text-sm opacity-80">поинтов</span>
               </div>
             </div>
             <div className="text-right">
@@ -177,7 +177,7 @@ function RouteComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-bold">Ежедневный бонус</h4>
-                <p className="text-sm opacity-90">Получите 50 монет бесплатно</p>
+                <p className="text-sm opacity-90">Получите 50 поинтов бесплатно</p>
               </div>
               <button className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/30">
                 Получить
@@ -190,7 +190,7 @@ function RouteComponent() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-bold">Недельный набор</h4>
-                <p className="text-sm opacity-90">3 кейса + 200 монет</p>
+                <p className="text-sm opacity-90">3 кейса + 200 поинтов</p>
               </div>
               <button className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/30">
                 Купить

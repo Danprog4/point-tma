@@ -129,6 +129,8 @@ function RouteComponent() {
                     setIsKeyDrawerOpen(true);
                   } else if (ticket.eventId && ticket.name) {
                     navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
+                  } else if (ticket.eventId) {
+                    navigate({ to: `/case/${ticket.eventId}` });
                   }
                 }}
               >

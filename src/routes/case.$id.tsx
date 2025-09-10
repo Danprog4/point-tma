@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Gift, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { toast } from "sonner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -18,7 +18,7 @@ function RouteComponent() {
     trpc.cases.getCase.queryOptions({ id: parseInt(id) }),
   );
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const [isOpening, setIsOpening] = useState(false);
+
   const isMobile = usePlatform();
 
   const isHasAlready = user?.inventory?.some(
@@ -26,28 +26,35 @@ function RouteComponent() {
   );
 
   // Мутация для покупки кейса
-  const buyCaseMutation = useMutation(trpc.cases.buyCase.mutationOptions());
+  const buyCaseMutation = useMutation(
+    trpc.cases.buyCase.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
 
   // Мутация для открытия кейса
-  const openCaseMutation = useMutation({
-    ...trpc.cases.openCase.mutationOptions(),
-    onSuccess: () => {
-      setIsOpening(false);
-      // Показать результат открытия
-    },
-  });
+  const openCaseMutation = useMutation(
+    trpc.cases.openCase.mutationOptions({
+      onSuccess: (data: any) => {
+        toast.success(
+          `Кейс открыт! Вы получили  ${data.reward.value} ${data.reward.type === "points" ? "поинтов" : ""}`,
+        );
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
 
   const handleBuyCase = () => {
     if (user && user.balance && user.balance >= 500) {
       buyCaseMutation.mutate({ caseId: parseInt(id) });
-      queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
     } else {
       alert("Недостаточно средств!");
     }
   };
 
   const handleOpenCase = () => {
-    setIsOpening(true);
     openCaseMutation.mutate({ caseId: parseInt(id) });
   };
 
@@ -88,7 +95,7 @@ function RouteComponent() {
         className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
-          onClick={() => navigate({ to: "/shop" })}
+          onClick={() => window.history.back()}
           className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
@@ -186,10 +193,10 @@ function RouteComponent() {
               {isHasAlready && (
                 <button
                   onClick={handleOpenCase}
-                  disabled={openCaseMutation.isPending || isOpening}
+                  disabled={openCaseMutation.isPending}
                   className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-4 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
                 >
-                  {isOpening ? "Открываем..." : "Открыть кейс"}
+                  {openCaseMutation.isPending ? "Открываем..." : "Открыть кейс"}
                 </button>
               )}
             </>

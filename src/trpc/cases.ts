@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { casesTable, usersTable } from "~/db/schema";
+import { getItem } from "~/lib/utils/getItem";
 import { createTRPCRouter, procedure } from "./init";
 
 export const casesRouter = createTRPCRouter({
@@ -73,11 +74,67 @@ export const casesRouter = createTRPCRouter({
   openCase: procedure
     .input(z.object({ caseId: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      // TODO: Реализовать открытие кейса
-      // 1. Проверить наличие кейса в инвентаре
-      // 2. Удалить кейс из инвентаря
-      // 3. Выдать случайную награду
-      console.log("Открытие кейса:", input.caseId, "пользователем:", ctx.userId);
-      return { success: true, reward: "Ключ для золотого кейса" };
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // 1. Проверяем наличие кейса в инвентаре
+      const caseInInventory = user.inventory?.find(
+        (item) => item.type === "case" && item.eventId === input.caseId,
+      );
+
+      if (!caseInInventory) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Case not found in inventory",
+        });
+      }
+
+      // 2. Получаем случайный предмет из кейса
+      const reward = await getItem(input.caseId, ctx.userId);
+
+      if (!reward) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate reward",
+        });
+      }
+
+      // 3. Обновляем инвентарь: удаляем кейс и добавляем награду
+      const updatedInventory = user.inventory
+        ?.filter((item, index) => {
+          const firstMatchIndex = user.inventory?.findIndex(
+            (inv) => inv.type === "case" && inv.eventId === input.caseId,
+          );
+          return !(
+            item.type === "case" &&
+            item.eventId === input.caseId &&
+            index === firstMatchIndex
+          );
+        })
+        .concat([reward]);
+
+      await db
+        .update(usersTable)
+        .set({
+          inventory: updatedInventory,
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      return {
+        success: true,
+        reward: {
+          type: reward.type,
+          value: reward.value,
+          id: reward.id,
+        },
+      };
     }),
 });

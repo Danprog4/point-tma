@@ -19,12 +19,17 @@ function RouteComponent() {
   const isMobile = usePlatform();
 
   // Мутация для покупки кейса
-  const buyCaseMutation = useMutation(trpc.cases.buyCase.mutationOptions());
+  const buyCaseMutation = useMutation(
+    trpc.cases.buyCase.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
 
   const handleBuyCase = (caseId: number, price: number) => {
     if (user && user.balance && user.balance >= price) {
       buyCaseMutation.mutate({ caseId });
-      queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
     } else {
       alert("Недостаточно средств!");
     }

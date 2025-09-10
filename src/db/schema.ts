@@ -306,7 +306,9 @@ export const casesTable = pgTable("cases", {
   name: varchar("name", { length: 255 }),
   description: varchar("description", { length: 2000 }),
   photo: varchar("photo", { length: 255 }),
-  items: jsonb("items").$type<Array<{ type: string; value: number | string }>>(),
+  items: jsonb("items")
+    .$type<Array<{ type: string; value: number | string }>>()
+    .default([]),
   price: integer("price"),
   isWithKey: boolean("is_with_key").default(false),
   createdAt: timestamp("created_at").defaultNow(),

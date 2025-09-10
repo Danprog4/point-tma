@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Gift, ShoppingBag } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Gift, Loader2, ShoppingBag } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
@@ -21,9 +23,39 @@ function RouteComponent() {
 
   const isMobile = usePlatform();
 
+  // Состояние для анимации открытия кейса
+  const [offset, setOffset] = useState(0);
+  const [isAnimationEnd, setIsAnimationEnd] = useState(false);
+  const [arrayWithWinningItem, setArrayWithWinningItem] = useState<any[]>([]);
+  const [isOpening, setIsOpening] = useState(false);
+  const [showZoomAnimation, setShowZoomAnimation] = useState(false);
+
   const isHasAlready = user?.inventory?.some(
     (item) => item.eventId === parseInt(id) && item.type === "case",
   );
+
+  // Эффекты для горизонтальной анимации
+  useEffect(() => {
+    if (!arrayWithWinningItem.length) return;
+    const timer = setTimeout(() => {
+      const itemWidth = window.innerWidth; // Ширина экрана
+      const targetIndex = arrayWithWinningItem.length - 1;
+      const calculatedOffset = targetIndex * itemWidth;
+      setOffset(calculatedOffset);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [arrayWithWinningItem]);
+
+  useEffect(() => {
+    if (offset > 0) {
+      const timer = setTimeout(() => {
+        setIsAnimationEnd(true);
+
+        setShowZoomAnimation(true);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [offset]);
 
   // Мутация для покупки кейса
   const buyCaseMutation = useMutation(
@@ -34,14 +66,52 @@ function RouteComponent() {
     }),
   );
 
+  // Функция для создания массива предметов для анимации
+  const createAnimationItems = (winningItem: any, caseItems: any[]) => {
+    const items = [];
+
+    // Добавляем случайные предметы из кейса (больше для непрерывной анимации)
+    for (let i = 0; i < 25; i++) {
+      const randomItem = caseItems[Math.floor(Math.random() * caseItems.length)];
+      items.push({
+        name: randomItem.type,
+        price: randomItem.value,
+        image: "/fallback.png", // Заглушка для изображения
+        id: Date.now() + i,
+        isWinning: false,
+      });
+    }
+
+    // Заменяем последний предмет на выигрышный
+    items[items.length - 1] = {
+      ...winningItem,
+      isWinning: true,
+    };
+
+    return items;
+  };
+
   // Мутация для открытия кейса
   const openCaseMutation = useMutation(
     trpc.cases.openCase.mutationOptions({
       onSuccess: (data: any) => {
-        toast.success(
-          `Кейс открыт! Вы получили  ${data.reward.value} ${data.reward.type === "points" ? "поинтов" : ""}`,
-        );
+        // Создаем выигрышный предмет
+        const winningItem = {
+          name: data.reward.type,
+          price: data.reward.value,
+          image: "/fallback.png", // Заглушка для изображения
+          id: data.reward.id,
+        };
+
+        // Создаем массив для анимации
+        const animationItems = createAnimationItems(winningItem, caseData?.items || []);
+
+        setIsOpening(true);
+        setArrayWithWinningItem(animationItems);
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+      onError: (error) => {
+        toast.error("Не удалось открыть кейс");
       },
     }),
   );
@@ -57,6 +127,16 @@ function RouteComponent() {
   const handleOpenCase = () => {
     openCaseMutation.mutate({ caseId: parseInt(id) });
   };
+
+  const resetAnimation = () => {
+    setIsAnimationEnd(false);
+    setArrayWithWinningItem([]);
+    setOffset(0);
+    setIsOpening(false);
+    setShowZoomAnimation(false);
+  };
+
+  const winningItem = arrayWithWinningItem[arrayWithWinningItem.length - 1];
 
   if (isLoading) {
     return (
@@ -83,6 +163,171 @@ function RouteComponent() {
   }
 
   const canAfford = user && user.balance && user.balance >= (caseData.price ?? 0);
+
+  // Если идет анимация открытия кейса
+  if (isOpening) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden">
+        <div className="relative h-full w-full">
+          {/* Стрелки для горизонтальной анимации */}
+          {/* <div className="absolute top-1/2 left-2 z-10 -translate-y-1/2 transform">
+            <div className="h-0 w-0 border-t-[20px] border-b-[20px] border-l-[30px] border-t-transparent border-r-red-500 border-b-transparent"></div>
+          </div>
+
+          <div className="absolute top-1/2 right-2 z-10 -translate-y-1/2 transform">
+            <div className="h-0 w-0 border-t-[20px] border-r-[30px] border-b-[20px] border-t-transparent border-b-transparent border-l-red-500"></div>
+          </div> */}
+
+          <div className="h-[100vh] overflow-hidden">
+            <div
+              className="flex flex-row items-center"
+              style={{
+                transform: `translateX(-${offset}px)`,
+                transition: "transform 4s ease-out",
+                width: `${arrayWithWinningItem.length * window.innerWidth}px`,
+              }}
+            >
+              {arrayWithWinningItem?.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex h-[100vh] w-screen flex-shrink-0 flex-col items-center justify-center gap-6 px-8"
+                >
+                  <div className="relative w-full">
+                    <div className="flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br from-[#9924FF] to-[#7C1ED9] shadow-2xl">
+                      <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+                        <Gift className="h-40 w-40 text-white" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="mb-2 text-5xl font-bold text-black">
+                      {item.name === "point" ? "Поинты" : item.name}
+                    </div>
+                    <div className="text-3xl font-semibold text-yellow-400">
+                      {item.price}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isAnimationEnd && winningItem && (
+              <motion.div
+                className="bg-opacity-90 absolute top-0 right-0 bottom-0 left-0 z-10 mx-auto flex w-full items-center justify-center bg-white px-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex w-full flex-col items-center justify-center gap-6 p-8">
+                  {/* Выигрышный предмет в стилистике приложения */}
+                  <motion.div
+                    className="relative w-full"
+                    initial={{ scale: 0.5, opacity: 0, y: 100 }}
+                    animate={{
+                      scale: showZoomAnimation ? 1.2 : 1,
+                      opacity: 1,
+                      y: showZoomAnimation ? -50 : 0,
+                      rotateY: showZoomAnimation ? 360 : 0,
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      ease: "easeOut",
+                      scale: { delay: 0.2, duration: 0.6 },
+                      y: { delay: 0.2, duration: 0.6 },
+                      rotateY: { delay: 0.4, duration: 0.8 },
+                    }}
+                  >
+                    <div className="flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br from-[#9924FF] to-[#7C1ED9] shadow-2xl">
+                      <motion.div
+                        className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm"
+                        animate={{
+                          boxShadow: showZoomAnimation
+                            ? [
+                                "0 0 0 0 rgba(153, 36, 255, 0.7)",
+                                "0 0 0 20px rgba(153, 36, 255, 0)",
+                                "0 0 0 0 rgba(153, 36, 255, 0)",
+                              ]
+                            : "0 0 0 0 rgba(153, 36, 255, 0)",
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: showZoomAnimation ? Infinity : 0,
+                          repeatDelay: 0.5,
+                        }}
+                      >
+                        <motion.div
+                          animate={{
+                            scale: showZoomAnimation ? [1, 1.1, 1] : 1,
+                            rotate: showZoomAnimation ? [0, 5, -5, 0] : 0,
+                          }}
+                          transition={{
+                            duration: 0.6,
+                            repeat: showZoomAnimation ? Infinity : 0,
+                            repeatDelay: 1,
+                          }}
+                        >
+                          <Gift className="h-40 w-40 text-white" />
+                        </motion.div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="text-center"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    <div className="mb-2 text-5xl font-bold text-black">
+                      {winningItem.name === "point" ? "Поинты" : winningItem.name}
+                    </div>
+                    <motion.div
+                      className="text-3xl font-semibold text-yellow-400"
+                      animate={{
+                        scale: showZoomAnimation ? [1, 1.1, 1] : 1,
+                        color: showZoomAnimation
+                          ? ["#fbbf24", "#f59e0b", "#fbbf24"]
+                          : "#fbbf24",
+                      }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: showZoomAnimation ? Infinity : 0,
+                        repeatDelay: 0.5,
+                      }}
+                    >
+                      {winningItem.price}
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div
+                    className="fixed right-0 bottom-0 left-0 flex w-full max-w-md flex-col gap-3 p-4"
+                    initial={{ opacity: 0, y: 100 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                  >
+                    <motion.button
+                      onClick={() => {
+                        resetAnimation();
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] p-4 text-center text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Закрыть
+                    </motion.button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -162,17 +407,30 @@ function RouteComponent() {
         <div className="mb-6">
           <h3 className="mb-3 text-lg font-bold text-gray-900">Возможные награды</h3>
           <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
+            {caseData?.items?.map((item, index) => (
               <div
-                key={item}
+                key={index}
                 className="flex h-20 flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-pink-100"
               >
                 <Gift className="h-6 w-6 text-purple-600" />
                 <span className="mt-1 text-xs font-medium text-gray-700">
-                  Награда {item}
+                  {item.type}
                 </span>
+                <span className="text-xs text-gray-500">{item.value}</span>
               </div>
-            ))}
+            )) ||
+              // Fallback если нет предметов
+              [1, 2, 3, 4, 5, 6].map((item) => (
+                <div
+                  key={item}
+                  className="flex h-20 flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-pink-100"
+                >
+                  <Gift className="h-6 w-6 text-purple-600" />
+                  <span className="mt-1 text-xs font-medium text-gray-700">
+                    Награда {item}
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -193,10 +451,17 @@ function RouteComponent() {
               {isHasAlready && (
                 <button
                   onClick={handleOpenCase}
-                  disabled={openCaseMutation.isPending}
+                  disabled={openCaseMutation.isPending || isOpening}
                   className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-4 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
                 >
-                  {openCaseMutation.isPending ? "Открываем..." : "Открыть кейс"}
+                  {openCaseMutation.isPending ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Открываем...
+                    </div>
+                  ) : (
+                    "Открыть кейс"
+                  )}
                 </button>
               )}
             </>

@@ -123,7 +123,7 @@ export const Navbar = () => {
               className="flex flex-col items-center py-2"
             >
               <div className="mb-1 h-6 w-6">
-                <ShoppingBag className="h-6 w-6" />
+                <ShoppingBag className="h-5 w-5" />
               </div>
               <span
                 className={`text-xs font-medium ${active === "/shop" ? "text-gray-900" : "text-gray-400"}`}

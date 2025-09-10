@@ -66,7 +66,13 @@ function RouteComponent() {
   const buyCaseMutation = useMutation(
     trpc.cases.buyCase.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+        queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+          return {
+            ...old,
+            balance: old.balance - (caseData?.price ?? 0),
+            inventory: [...old.inventory, { type: "case", eventId: parseInt(id) }],
+          };
+        });
       },
     }),
   );

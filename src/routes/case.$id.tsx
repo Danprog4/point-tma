@@ -131,6 +131,7 @@ function RouteComponent() {
   const handleBuyCase = () => {
     if (user && user.balance && user.balance >= 500) {
       buyCaseMutation.mutate({ caseId: parseInt(id) });
+      toast.success("Вы успешно купили кейс");
     } else {
       alert("Недостаточно средств!");
     }

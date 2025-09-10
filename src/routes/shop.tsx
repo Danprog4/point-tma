@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Coins, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -30,6 +31,7 @@ function RouteComponent() {
   const handleBuyCase = (caseId: number, price: number) => {
     if (user && user.balance && user.balance >= price) {
       buyCaseMutation.mutate({ caseId });
+      toast.success("Вы успешно купили кейс");
     } else {
       alert("Недостаточно средств!");
     }

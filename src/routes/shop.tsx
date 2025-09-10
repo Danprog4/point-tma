@@ -24,6 +24,7 @@ function RouteComponent() {
     trpc.cases.buyCase.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+        toast.success("Вы успешно купили кейс");
       },
     }),
   );
@@ -31,7 +32,6 @@ function RouteComponent() {
   const handleBuyCase = (caseId: number, price: number) => {
     if (user && user.balance && user.balance >= price) {
       buyCaseMutation.mutate({ caseId });
-      toast.success("Вы успешно купили кейс");
     } else {
       alert("Недостаточно средств!");
     }

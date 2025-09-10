@@ -418,11 +418,11 @@ function RouteComponent() {
             {caseData?.items?.map((item, index) => (
               <div
                 key={index}
-                className="flex h-20 flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-pink-100"
+                className="flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-pink-100"
               >
                 <Gift className="h-6 w-6 text-purple-600" />
                 <span className="mt-1 text-xs font-medium text-gray-700">
-                  {item.type}
+                  {item.type === "point" ? "Поинты" : item.type}
                 </span>
                 <span className="text-xs text-gray-500">{item.value}</span>
               </div>

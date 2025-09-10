@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { casesTable } from "~/db/schema";
+import { casesTable, usersTable } from "~/db/schema";
 import { createTRPCRouter, procedure } from "./init";
 
 export const casesRouter = createTRPCRouter({
@@ -32,12 +32,42 @@ export const casesRouter = createTRPCRouter({
   buyCase: procedure
     .input(z.object({ caseId: z.number() }))
     .mutation(async ({ input, ctx }) => {
-      // TODO: Реализовать покупку кейса
-      // 1. Проверить баланс пользователя
-      // 2. Списть монеты
-      // 3. Добавить кейс в инвентарь пользователя
-      console.log("Покупка кейса:", input.caseId, "пользователем:", ctx.userId);
-      return { success: true };
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const caseData = await db.query.casesTable.findFirst({
+        where: eq(casesTable.id, input.caseId),
+      });
+
+      if (!caseData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Case not found",
+        });
+      }
+
+      if (user.balance! < caseData.price!) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Not enough balance",
+        });
+      }
+
+      await db
+        .update(usersTable)
+        .set({
+          inventory: [...(user.inventory || []), { type: "case", eventId: input.caseId }],
+          balance: user.balance! - caseData.price!,
+        })
+        .where(eq(usersTable.id, ctx.userId));
     }),
 
   openCase: procedure

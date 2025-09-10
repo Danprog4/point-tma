@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Coins, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/shop")({
 function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [selectedCategory, setSelectedCategory] = useState("Все");
@@ -23,6 +24,7 @@ function RouteComponent() {
   const handleBuyCase = (caseId: number, price: number) => {
     if (user && user.balance && user.balance >= price) {
       buyCaseMutation.mutate({ caseId });
+      queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
     } else {
       alert("Недостаточно средств!");
     }
@@ -51,7 +53,7 @@ function RouteComponent() {
       </div>
 
       {/* Balance Section */}
-      <div className="pt-6 pb-4">
+      <div className="pb-4">
         <div className="rounded-2xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
@@ -150,7 +152,7 @@ function RouteComponent() {
                     handleBuyCase(caseItem.id, price);
                   }}
                   disabled={!canAfford || buyCaseMutation.isPending}
-                  className={`w-full rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                  className={`w-full rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
                     canAfford
                       ? "bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] text-white hover:from-[#7C1ED9] hover:to-[#5A1A9E]"
                       : "cursor-not-allowed bg-gray-300 text-gray-500"

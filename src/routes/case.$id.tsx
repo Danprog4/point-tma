@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Gift, ShoppingBag } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/case/$id")({
 function RouteComponent() {
   const { id } = Route.useParams();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: caseData, isLoading } = useQuery(
     trpc.cases.getCase.queryOptions({ id: parseInt(id) }),
@@ -39,6 +40,7 @@ function RouteComponent() {
   const handleBuyCase = () => {
     if (user && user.balance && user.balance >= 500) {
       buyCaseMutation.mutate({ caseId: parseInt(id) });
+      queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
     } else {
       alert("Недостаточно средств!");
     }

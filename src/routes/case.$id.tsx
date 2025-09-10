@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Gift, Loader2, ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSound } from "use-sound";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -16,6 +17,10 @@ function RouteComponent() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const gamble = useMemo(() => "/gamble.mp3", []);
+  const prize = useMemo(() => "/prize.mp3", []);
+  const [play] = useSound(gamble);
+  const [playPrize] = useSound(prize);
   const { data: caseData, isLoading } = useQuery(
     trpc.cases.getCase.queryOptions({ id: parseInt(id) }),
   );
@@ -50,8 +55,8 @@ function RouteComponent() {
     if (offset > 0) {
       const timer = setTimeout(() => {
         setIsAnimationEnd(true);
-
         setShowZoomAnimation(true);
+        playPrize();
       }, 4000);
       return () => clearTimeout(timer);
     }
@@ -107,6 +112,7 @@ function RouteComponent() {
         const animationItems = createAnimationItems(winningItem, caseData?.items || []);
 
         setIsOpening(true);
+        play();
         setArrayWithWinningItem(animationItems);
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
       },

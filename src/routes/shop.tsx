@@ -40,7 +40,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-40"
+      className="min-h-screen w-full overflow-y-auto bg-white px-4 pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div

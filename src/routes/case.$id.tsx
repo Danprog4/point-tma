@@ -326,7 +326,7 @@ function RouteComponent() {
                       onClick={() => {
                         resetAnimation();
                       }}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] p-4 text-center text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] px-6 py-3 text-center text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -345,7 +345,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-40"
+      className="min-h-screen w-full overflow-y-auto bg-white px-4 pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -448,13 +448,13 @@ function RouteComponent() {
         </div>
 
         {/* Action Buttons */}
-        <div className="fixed right-0 bottom-0 left-0 space-y-3 bg-white px-4 py-4">
+        <div className="fixed right-0 bottom-0 left-0 space-y-3 bg-white px-4 py-3">
           {canAfford ? (
             <>
               <button
                 onClick={handleBuyCase}
                 disabled={buyCaseMutation.isPending}
-                className="w-full rounded-xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] px-6 py-4 text-lg font-semibold text-white transition-all duration-200 hover:from-[#7C1ED9] hover:to-[#5A1A9E] disabled:opacity-50"
+                className="w-full rounded-xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] px-6 py-3 text-lg font-semibold text-white transition-all duration-200 hover:from-[#7C1ED9] hover:to-[#5A1A9E] disabled:opacity-50"
               >
                 {buyCaseMutation.isPending
                   ? "Покупка..."
@@ -465,7 +465,7 @@ function RouteComponent() {
                 <button
                   onClick={handleOpenCase}
                   disabled={openCaseMutation.isPending || isOpening}
-                  className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-4 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
+                  className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-3 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
                 >
                   {openCaseMutation.isPending ? (
                     <div className="flex items-center justify-center gap-2">

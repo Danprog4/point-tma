@@ -42,8 +42,21 @@ function RouteComponent() {
 
     tickets?.forEach((ticket) => {
       // Создаем уникальный ключ для группировки
-      const key = `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}`;
-      console.log(ticket, "ticket");
+      let key: string;
+
+      if (ticket.type === "case") {
+        // Для кейсов группируем по типу и ID кейса
+        const caseId = ticket.caseId || ticket.id;
+        key = `${ticket.type}-${caseId || "no-case"}`;
+      } else if (ticket.type === "key") {
+        // Для ключей группируем по типу и ID кейса
+        key = `${ticket.type}-${ticket.caseId || "no-case"}`;
+      } else {
+        // Для остальных типов используем старую логику
+        key = `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}`;
+      }
+
+      console.log(ticket, "ticket", "key:", key);
 
       if (groupedMap.has(key)) {
         const existing = groupedMap.get(key)!;
@@ -52,7 +65,7 @@ function RouteComponent() {
         groupedMap.set(key, {
           eventId: ticket.eventId,
           name: ticket.name,
-          caseId: ticket.caseId,
+          caseId: ticket.caseId || ticket.id,
           type: ticket.type,
           count: 1,
           isActive: ticket.isActive || false,
@@ -66,9 +79,11 @@ function RouteComponent() {
   const groupedTickets = groupTickets(inactiveTickets);
 
   const getEvent = (eventId?: number, name?: string, type?: string, caseId?: number) => {
-    if (type === "case" && eventId) {
-      const caseData = cases?.find((c) => c.id === eventId);
-      console.log(caseData, "caseData");
+    if (type === "case") {
+      // For cases, we need to find by the actual case ID, not eventId
+      const actualCaseId = caseId || eventId;
+      const caseData = cases?.find((c) => c.id === actualCaseId);
+      console.log(caseData, "caseData", "actualCaseId:", actualCaseId);
       return caseData;
     }
     if (type === "key" && caseId) {
@@ -83,13 +98,15 @@ function RouteComponent() {
   };
 
   console.log(groupedTickets, "groupedTickets");
+  console.log(user?.inventory, "user inventory");
+  console.log(cases, "cases data");
 
   const isMobile = usePlatform();
 
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-40"
+      className="mx-auto min-h-screen w-full max-w-sm bg-white px-4 pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -127,10 +144,14 @@ function RouteComponent() {
                     // Для ключей открываем KeyDrawer
                     setSelectedKey(ticket);
                     setIsKeyDrawerOpen(true);
+                  } else if (isCase) {
+                    // Для кейсов используем правильный ID
+                    const actualCaseId = ticket.caseId || ticket.eventId;
+                    if (actualCaseId) {
+                      navigate({ to: `/case/${actualCaseId}` });
+                    }
                   } else if (ticket.eventId && ticket.name) {
                     navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
-                  } else if (ticket.eventId) {
-                    navigate({ to: `/case/${ticket.eventId}` });
                   }
                 }}
               >
@@ -144,15 +165,15 @@ function RouteComponent() {
                 <img
                   src={
                     isCase || isKey
-                      ? ((eventData as any)?.photo ?? "")
-                      : ((eventData as any)?.image ?? "")
+                      ? ((eventData as any)?.photo ?? "/fallback.png")
+                      : ((eventData as any)?.image ?? "/fallback.png")
                   }
                   alt={
                     isCase || isKey
-                      ? ((eventData as any)?.name ?? "")
-                      : ((eventData as any)?.title ?? "")
+                      ? ((eventData as any)?.name ?? "Кейс")
+                      : ((eventData as any)?.title ?? "Предмет")
                   }
-                  className="h-[61px] w-[61px] rounded-lg"
+                  className="h-[61px] w-[61px] rounded-lg object-cover"
                 />
 
                 <div className="text-center text-xs font-bold text-[#A35700]">

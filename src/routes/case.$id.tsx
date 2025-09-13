@@ -97,17 +97,17 @@ function RouteComponent() {
   const [showZoomAnimation, setShowZoomAnimation] = useState(false);
 
   const isHasAlready = useMemo(() => {
+    const inventory = user?.inventory || [];
+
     if (caseData?.eventType && caseData?.eventId) {
-      return user?.inventory?.some(
+      return inventory.some(
         (item) =>
           item.eventId === caseData?.eventId &&
           item.type === "case" &&
           item.eventType === caseData?.eventType,
       );
     } else {
-      return user?.inventory?.some(
-        (item) => item.id === parseInt(id) && item.type === "case",
-      );
+      return inventory.some((item) => item.id === parseInt(id) && item.type === "case");
     }
   }, [user?.inventory, caseData, id]);
 
@@ -139,12 +139,14 @@ function RouteComponent() {
     trpc.cases.buyCase.mutationOptions({
       onSuccess: () => {
         queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+          const currentInventory = old.inventory || [];
+
           if (caseData?.eventType && caseData?.eventId) {
             return {
               ...old,
               balance: old.balance - (caseData?.price ?? 0),
               inventory: [
-                ...old.inventory,
+                ...currentInventory,
                 {
                   type: "case",
                   eventId: caseData?.eventId,
@@ -156,7 +158,7 @@ function RouteComponent() {
             return {
               ...old,
               balance: old.balance - (caseData?.price ?? 0),
-              inventory: [...old.inventory, { type: "case", id: parseInt(id) }],
+              inventory: [...currentInventory, { type: "case", id: parseInt(id) }],
             };
           }
         });

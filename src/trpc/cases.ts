@@ -31,7 +31,13 @@ export const casesRouter = createTRPCRouter({
   }),
 
   buyCase: procedure
-    .input(z.object({ caseId: z.number(), eventId: z.number().nullable(), eventType: z.string().nullable() }))
+    .input(
+      z.object({
+        caseId: z.number(),
+        eventId: z.number().nullable(),
+        eventType: z.string().nullable(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
@@ -80,7 +86,13 @@ export const casesRouter = createTRPCRouter({
     }),
 
   openCase: procedure
-    .input(z.object({ caseId: z.number(), eventType: z.string().nullable(), eventId: z.number().nullable() }))
+    .input(
+      z.object({
+        caseId: z.number(),
+        eventType: z.string().nullable(),
+        eventId: z.number().nullable(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),

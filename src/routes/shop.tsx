@@ -17,14 +17,25 @@ function RouteComponent() {
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [selectedCategory, setSelectedCategory] = useState("Все");
+  const [buyingCaseId, setBuyingCaseId] = useState<number[]>([]);
   const isMobile = usePlatform();
 
   // Мутация для покупки кейса
   const buyCaseMutation = useMutation(
     trpc.cases.buyCase.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (
+        _,
+        variables: { caseId: number; eventId: number | null; eventType: string | null },
+      ) => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
         toast.success("Вы успешно купили кейс");
+        setBuyingCaseId((prev) => prev.filter((id) => id !== variables.caseId));
+      },
+      onError: (
+        _,
+        variables: { caseId: number; eventId: number | null; eventType: string | null },
+      ) => {
+        setBuyingCaseId((prev) => prev.filter((id) => id !== variables.caseId));
       },
     }),
   );
@@ -36,6 +47,7 @@ function RouteComponent() {
     eventType: string,
   ) => {
     if (user && user.balance && user.balance >= price) {
+      setBuyingCaseId((prev) => [...prev, caseId]);
       buyCaseMutation.mutate({ caseId, eventId, eventType });
     } else {
       alert("Недостаточно средств!");
@@ -112,6 +124,7 @@ function RouteComponent() {
       <div className="grid grid-cols-2 gap-4">
         {cases?.map((caseItem) => {
           const canAfford = user && user?.balance && user?.balance >= caseItem.price!;
+          const isBuying = buyingCaseId.includes(caseItem.id);
 
           return (
             <div
@@ -162,16 +175,14 @@ function RouteComponent() {
                       caseItem.eventType!,
                     );
                   }}
-                  disabled={!canAfford || buyCaseMutation.isPending}
+                  disabled={!canAfford || isBuying}
                   className={`w-full rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
                     canAfford
                       ? "bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] text-white hover:from-[#7C1ED9] hover:to-[#5A1A9E]"
                       : "cursor-not-allowed bg-gray-300 text-gray-500"
                   }`}
                 >
-                  {buyCaseMutation.isPending
-                    ? "Покупка..."
-                    : `Купить за ${caseItem.price}`}
+                  {isBuying ? "Покупка..." : `Купить за ${caseItem.price}`}
                 </button>
               </div>
             </div>

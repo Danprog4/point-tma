@@ -335,21 +335,21 @@ function RouteComponent() {
                     key={index}
                     className="flex h-[100vh] w-screen flex-shrink-0 flex-col items-center justify-center gap-6 px-8"
                   >
-                    <div className="relative w-full">
+                    <div className="relative h-50 w-50">
                       <div
-                        className={`flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br ${rarityStyles.gradient} shadow-2xl`}
+                        className={`flex aspect-square w-full items-center justify-center rounded-lg bg-gradient-to-br ${rarityStyles.gradient} shadow-lg`}
                       >
-                        <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-                          <Gift className="h-40 w-40 text-white" />
+                        <div className="flex aspect-square w-full items-center justify-center rounded-md bg-white/10 backdrop-blur-sm">
+                          <Gift className="h-30 w-30 text-white" />
                         </div>
                       </div>
                     </div>
 
                     <div className="text-center">
-                      <div className="mb-2 text-5xl font-bold text-black">
+                      <div className="mb-2 text-2xl font-bold text-black">
                         {item.name === "point" ? "Поинты" : item.name}
                       </div>
-                      <div className={`text-3xl font-semibold ${rarityStyles.textColor}`}>
+                      <div className={`text-xl font-semibold ${rarityStyles.textColor}`}>
                         {item.price}
                       </div>
                     </div>

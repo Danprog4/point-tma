@@ -206,4 +206,11 @@ export const casesRouter = createTRPCRouter({
         },
       };
     }),
+
+  getMyCases: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+    return user?.inventory?.filter((item) => item.type === "case");
+  }),
 });

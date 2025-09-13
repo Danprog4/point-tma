@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Gift, Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Gift, Loader2, ShoppingBag, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSound } from "use-sound";
@@ -125,6 +125,10 @@ function RouteComponent() {
   const [arrayWithWinningItem, setArrayWithWinningItem] = useState<any[]>([]);
   const [isOpening, setIsOpening] = useState(false);
   const [showZoomAnimation, setShowZoomAnimation] = useState(false);
+
+  // Состояние для модалки наград
+  const [selectedReward, setSelectedReward] = useState<any>(null);
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
 
   const isHasAlready = useMemo(() => {
     const inventory = user?.inventory || [];
@@ -279,6 +283,17 @@ function RouteComponent() {
     setOffset(0);
     setIsOpening(false);
     setShowZoomAnimation(false);
+  };
+
+  // Функции для модалки наград
+  const openRewardModal = (reward: any) => {
+    setSelectedReward(reward);
+    setIsRewardModalOpen(true);
+  };
+
+  const closeRewardModal = () => {
+    setIsRewardModalOpen(false);
+    setSelectedReward(null);
   };
 
   const winningItem = arrayWithWinningItem[arrayWithWinningItem.length - 1];
@@ -495,6 +510,126 @@ function RouteComponent() {
     );
   }
 
+  // Reward Modal Component
+  const RewardModal = () => {
+    if (!selectedReward) return null;
+
+    const rarityStyles = getRarityStyles(selectedReward.rarity || "default");
+
+    return (
+      <AnimatePresence>
+        {isRewardModalOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeRewardModal}
+          >
+            <motion.div
+              className="relative w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl"
+              initial={{ scale: 0.5, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.5, opacity: 0, y: 50 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeRewardModal}
+                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Reward Content */}
+              <div className="flex flex-col items-center gap-6">
+                {/* Reward Icon */}
+                <motion.div
+                  className="relative"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+                >
+                  <div
+                    className={`flex aspect-square w-32 items-center justify-center rounded-2xl bg-gradient-to-br ${rarityStyles.gradient} shadow-xl`}
+                  >
+                    <motion.div
+                      className="flex aspect-square w-full items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm"
+                      animate={{
+                        boxShadow: [
+                          "0 0 0 0 rgba(153, 36, 255, 0.7)",
+                          "0 0 0 20px rgba(153, 36, 255, 0)",
+                          "0 0 0 0 rgba(153, 36, 255, 0)",
+                        ],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1,
+                      }}
+                    >
+                      <Gift className="h-16 w-16 text-white" />
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                {/* Reward Info */}
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <h3 className="mb-2 text-2xl font-bold text-gray-900">
+                    {selectedReward.type === "point" ? "Поинты" : selectedReward.type}
+                  </h3>
+                  <div className={`text-3xl font-bold ${rarityStyles.textColor}`}>
+                    {selectedReward.value}
+                  </div>
+                </motion.div>
+
+                {/* Rarity Badge */}
+                <motion.div
+                  className={`rounded-full px-4 py-2 text-sm font-semibold ${rarityStyles.bgColor} text-white`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6, duration: 0.3 }}
+                >
+                  {selectedReward.rarity === "common"
+                    ? "ОБЫЧНЫЙ"
+                    : selectedReward.rarity === "rare"
+                      ? "РЕДКИЙ"
+                      : selectedReward.rarity === "epic"
+                        ? "ЭПИЧЕСКИЙ"
+                        : selectedReward.rarity === "bronze"
+                          ? "БРОНЗОВЫЙ"
+                          : selectedReward.rarity === "silver"
+                            ? "СЕРЕБРЯНЫЙ"
+                            : selectedReward.rarity === "gold"
+                              ? "ЗОЛОТОЙ"
+                              : "ОБЫЧНЫЙ"}
+                </motion.div>
+
+                {/* Description */}
+                <motion.p
+                  className="text-center text-gray-600"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.3 }}
+                >
+                  {selectedReward.type === "point"
+                    ? "Виртуальная валюта для покупок в магазине"
+                    : "Уникальная награда из кейса"}
+                </motion.p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
+
   return (
     <div
       data-mobile={isMobile}
@@ -600,16 +735,19 @@ function RouteComponent() {
               console.log("Case item:", item, "rarity:", item.rarity);
               const rarityStyles = getRarityStyles(item.rarity || "default");
               return (
-                <div
+                <motion.div
                   key={index}
-                  className={`flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-gradient-to-br ${rarityStyles.gradient} border ${rarityStyles.borderColor} ${rarityStyles.shadowColor}`}
+                  className={`flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-gradient-to-br ${rarityStyles.gradient} border ${rarityStyles.borderColor} ${rarityStyles.shadowColor} cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg`}
+                  onClick={() => openRewardModal(item)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <Gift className="h-6 w-6 text-white" />
                   <span className="mt-1 text-xs font-medium text-white">
                     {item.type === "point" ? "Поинты" : item.type}
                   </span>
                   <span className="text-xs text-white">{item.value}</span>
-                </div>
+                </motion.div>
               );
             }) ||
               // Fallback если нет предметов
@@ -673,6 +811,9 @@ function RouteComponent() {
           )}
         </div>
       </div>
+
+      {/* Reward Modal */}
+      <RewardModal />
     </div>
   );
 }

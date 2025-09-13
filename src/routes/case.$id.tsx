@@ -21,9 +21,6 @@ function RouteComponent() {
   const prize = useMemo(() => "/prize.mp3", []);
   const [play] = useSound(gamble);
   const [playPrize] = useSound(prize);
-  const [loadingStates, setLoadingStates] = useState<{ id: number; status: boolean }[]>(
-    [],
-  );
   const { data: caseData, isLoading } = useQuery(
     trpc.cases.getCase.queryOptions({ id: parseInt(id) }),
   );
@@ -80,11 +77,6 @@ function RouteComponent() {
   const buyCaseMutation = useMutation(
     trpc.cases.buyCase.mutationOptions({
       onSuccess: () => {
-        setLoadingStates((prev) =>
-          prev.map((state) =>
-            state.id === parseInt(id) ? { ...state, status: false } : state,
-          ),
-        );
         queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
           if (caseData?.eventType && caseData?.eventId) {
             return {
@@ -168,7 +160,6 @@ function RouteComponent() {
     eventType: string | null,
     caseData: any,
   ) => {
-    setLoadingStates((prev) => [...prev, { id: parseInt(id), status: true }]);
     console.log(caseData);
     if (user && user.balance && user.balance >= 500) {
       console.log(eventId, eventType);
@@ -386,7 +377,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen w-full overflow-y-auto bg-white px-4 pb-24 data-[mobile=true]:pt-40"
+      className="min-h-screen w-full overflow-y-auto bg-white px-4 pb-32 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -502,19 +493,10 @@ function RouteComponent() {
               {isHasAlready && (
                 <button
                   onClick={() => handleOpenCase(caseData.eventId, caseData.eventType)}
-                  disabled={
-                    (openCaseMutation.isPending &&
-                      loadingStates.some(
-                        (state) => state.id === parseInt(id) && state.status,
-                      )) ||
-                    isOpening
-                  }
+                  disabled={openCaseMutation.isPending || isOpening}
                   className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-3 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
                 >
-                  {openCaseMutation.isPending &&
-                  loadingStates.some(
-                    (state) => state.id === parseInt(id) && state.status,
-                  ) ? (
+                  {openCaseMutation.isPending ? (
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-5 w-5 animate-spin" />
                       Открываем...

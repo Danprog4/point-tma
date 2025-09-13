@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { casesTable, usersTable } from "~/db/schema";
@@ -107,22 +107,36 @@ export const casesRouter = createTRPCRouter({
 
       let caseInInventory: any;
 
-      if (input.eventType && input.eventId) {
-        caseInInventory = user.inventory?.find(
-          (item) =>
-            item.type === "case" &&
-            item.eventId === input.eventId &&
-            item.eventType === input.eventType,
-        );
-      } else if (!input.eventType && !input.eventId) {
-        caseInInventory = user.inventory?.find(
-          (item) => item.type === "case" && item.id === input.caseId,
-        );
-      } else {
+      const caseData =
+        input.eventType && input.eventId
+          ? await db.query.casesTable.findFirst({
+              where: and(
+                eq(casesTable.id, input.caseId),
+                eq(casesTable.eventId, input.eventId),
+                eq(casesTable.eventType, input.eventType),
+              ),
+            })
+          : await db.query.casesTable.findFirst({
+              where: eq(casesTable.id, input.caseId),
+            });
+
+      if (!caseData) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Case not found in inventory",
+          code: "NOT_FOUND",
+          message: "Case not found",
         });
+      }
+
+      if (caseData.isWithKey) {
+        const keyInInventory = user.inventory?.find(
+          (item) => item.type === "key" && item.caseId === input.caseId,
+        );
+        if (!keyInInventory) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Key not found",
+          });
+        }
       }
 
       // 2. Получаем случайный предмет из кейса
@@ -136,15 +150,19 @@ export const casesRouter = createTRPCRouter({
       }
 
       // 3. Обновляем инвентарь: удаляем кейс и добавляем награду
-      const updatedInventory = user.inventory
+      let updatedInventory = user.inventory
         ?.filter((item, index) => {
           if (input.eventId && input.eventType) {
             const firstMatchIndex = user.inventory?.findIndex(
-              (inv) => inv.type === "case" && inv.eventId === input.caseId,
+              (inv) =>
+                inv.type === "case" &&
+                inv.eventId === input.caseId &&
+                inv.eventType === input.eventType,
             );
             return !(
               item.type === "case" &&
               item.eventId === input.caseId &&
+              item.eventType === input.eventType &&
               index === firstMatchIndex
             );
           } else if (!input.eventId && !input.eventType) {
@@ -159,6 +177,17 @@ export const casesRouter = createTRPCRouter({
           }
         })
         .concat([reward]);
+
+      if (caseData.isWithKey) {
+        const newInventory = updatedInventory?.filter(
+          (item) =>
+            item.type !== "key" &&
+            item.eventId !== input.eventId &&
+            item.eventType !== input.eventType,
+        );
+
+        updatedInventory = newInventory || [];
+      }
 
       await db
         .update(usersTable)

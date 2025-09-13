@@ -130,12 +130,16 @@ function RouteComponent() {
     const inventory = user?.inventory || [];
 
     if (caseData?.eventType && caseData?.eventId) {
-      return inventory.some(
+      const isHasCase = inventory.some(
         (item) =>
           item.eventId === caseData?.eventId &&
           item.type === "case" &&
           item.eventType === caseData?.eventType,
       );
+      const isHasKey = inventory.some(
+        (item) => item.caseId === caseData?.id && item.type === "key",
+      );
+      return isHasCase && isHasKey;
     } else {
       return inventory.some((item) => item.id === parseInt(id) && item.type === "case");
     }

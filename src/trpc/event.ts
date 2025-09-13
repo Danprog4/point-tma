@@ -92,6 +92,7 @@ export const eventRouter = createTRPCRouter({
               {
                 type: "case",
                 eventId: caseId as number,
+                eventType: eventData.category || "",
               },
             ],
           })

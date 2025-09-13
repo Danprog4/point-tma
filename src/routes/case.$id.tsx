@@ -35,9 +35,20 @@ function RouteComponent() {
   const [isOpening, setIsOpening] = useState(false);
   const [showZoomAnimation, setShowZoomAnimation] = useState(false);
 
-  const isHasAlready = user?.inventory?.some(
-    (item) => item.eventId === parseInt(id) && item.type === "case",
-  );
+  const isHasAlready = useMemo(() => {
+    if (caseData?.eventType && caseData?.eventId) {
+      return user?.inventory?.some(
+        (item) =>
+          item.eventId === caseData?.eventId &&
+          item.type === "case" &&
+          item.eventType === caseData?.eventType,
+      );
+    } else {
+      return user?.inventory?.some(
+        (item) => item.id === parseInt(id) && item.type === "case",
+      );
+    }
+  }, [user?.inventory, caseData, id]);
 
   // Эффекты для горизонтальной анимации
   useEffect(() => {
@@ -67,11 +78,26 @@ function RouteComponent() {
     trpc.cases.buyCase.mutationOptions({
       onSuccess: () => {
         queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
-          return {
-            ...old,
-            balance: old.balance - (caseData?.price ?? 0),
-            inventory: [...old.inventory, { type: "case", eventId: parseInt(id) }],
-          };
+          if (caseData?.eventType && caseData?.eventId) {
+            return {
+              ...old,
+              balance: old.balance - (caseData?.price ?? 0),
+              inventory: [
+                ...old.inventory,
+                {
+                  type: "case",
+                  eventId: caseData?.eventId,
+                  eventType: caseData?.eventType,
+                },
+              ],
+            };
+          } else {
+            return {
+              ...old,
+              balance: old.balance - (caseData?.price ?? 0),
+              inventory: [...old.inventory, { type: "case", id: parseInt(id) }],
+            };
+          }
         });
         toast.success("Вы успешно купили кейс");
       },
@@ -129,16 +155,22 @@ function RouteComponent() {
     }),
   );
 
-  const handleBuyCase = () => {
+  const handleBuyCase = (
+    eventId: number | null,
+    eventType: string | null,
+    caseData: any,
+  ) => {
+    console.log(caseData);
     if (user && user.balance && user.balance >= 500) {
-      buyCaseMutation.mutate({ caseId: parseInt(id) });
+      console.log(eventId, eventType);
+      buyCaseMutation.mutate({ caseId: parseInt(id), eventId, eventType });
     } else {
       alert("Недостаточно средств!");
     }
   };
 
-  const handleOpenCase = () => {
-    openCaseMutation.mutate({ caseId: parseInt(id) });
+  const handleOpenCase = (eventId: number | null, eventType: string | null) => {
+    openCaseMutation.mutate({ caseId: parseInt(id), eventId, eventType });
   };
 
   const resetAnimation = () => {
@@ -447,7 +479,9 @@ function RouteComponent() {
           {canAfford ? (
             <>
               <button
-                onClick={handleBuyCase}
+                onClick={() =>
+                  handleBuyCase(caseData.eventId, caseData.eventType, caseData)
+                }
                 disabled={buyCaseMutation.isPending}
                 className="w-full rounded-xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] px-6 py-3 text-lg font-semibold text-white transition-all duration-200 hover:from-[#7C1ED9] hover:to-[#5A1A9E] disabled:opacity-50"
               >
@@ -458,7 +492,7 @@ function RouteComponent() {
 
               {isHasAlready && (
                 <button
-                  onClick={handleOpenCase}
+                  onClick={() => handleOpenCase(caseData.eventId, caseData.eventType)}
                   disabled={openCaseMutation.isPending || isOpening}
                   className="w-full rounded-xl border-2 border-[#9924FF] px-6 py-3 text-lg font-semibold text-[#9924FF] transition-all duration-200 hover:bg-[#9924FF] hover:text-white disabled:opacity-50"
                 >

@@ -29,9 +29,14 @@ function RouteComponent() {
     }),
   );
 
-  const handleBuyCase = (caseId: number, price: number) => {
+  const handleBuyCase = (
+    caseId: number,
+    price: number,
+    eventId: number,
+    eventType: string,
+  ) => {
     if (user && user.balance && user.balance >= price) {
-      buyCaseMutation.mutate({ caseId });
+      buyCaseMutation.mutate({ caseId, eventId, eventType });
     } else {
       alert("Недостаточно средств!");
     }
@@ -106,8 +111,7 @@ function RouteComponent() {
       <h3 className="mb-4 text-lg font-bold text-gray-900">Популярные кейсы</h3>
       <div className="grid grid-cols-2 gap-4">
         {cases?.map((caseItem) => {
-          const price = 500; // Базовая цена кейса
-          const canAfford = user && user?.balance && user?.balance >= price;
+          const canAfford = user && user?.balance && user?.balance >= caseItem.price!;
 
           return (
             <div
@@ -151,7 +155,12 @@ function RouteComponent() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleBuyCase(caseItem.id, price);
+                    handleBuyCase(
+                      caseItem.id,
+                      caseItem.price!,
+                      caseItem.eventId!,
+                      caseItem.eventType!,
+                    );
                   }}
                   disabled={!canAfford || buyCaseMutation.isPending}
                   className={`w-full rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
@@ -160,7 +169,9 @@ function RouteComponent() {
                       : "cursor-not-allowed bg-gray-300 text-gray-500"
                   }`}
                 >
-                  {buyCaseMutation.isPending ? "Покупка..." : `Купить за ${price}`}
+                  {buyCaseMutation.isPending
+                    ? "Покупка..."
+                    : `Купить за ${caseItem.price}`}
                 </button>
               </div>
             </div>

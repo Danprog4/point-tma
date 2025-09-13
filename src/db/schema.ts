@@ -28,6 +28,7 @@ export const usersTable = pgTable("users", {
         type: string;
         caseId?: number;
         eventId?: number;
+        eventType?: string;
         isActive?: boolean;
         name?: string;
         id?: number;
@@ -311,6 +312,8 @@ export const casesTable = pgTable("cases", {
     .default([]),
   price: integer("price"),
   isWithKey: boolean("is_with_key").default(false),
+  eventType: varchar("event_type", { length: 255 }), // quest, conf, party, etc
+  eventId: bigint("event_id", { mode: "number" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

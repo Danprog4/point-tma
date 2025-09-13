@@ -31,7 +31,7 @@ export const casesRouter = createTRPCRouter({
   }),
 
   buyCase: procedure
-    .input(z.object({ caseId: z.number() }))
+    .input(z.object({ caseId: z.number(), eventId: z.number().nullable(), eventType: z.string().nullable() }))
     .mutation(async ({ input, ctx }) => {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
@@ -65,14 +65,22 @@ export const casesRouter = createTRPCRouter({
       await db
         .update(usersTable)
         .set({
-          inventory: [...(user.inventory || []), { type: "case", eventId: input.caseId }],
+          inventory: [
+            ...(user.inventory || []),
+            {
+              id: input.caseId,
+              type: "case",
+              eventId: input.eventId ?? undefined,
+              eventType: input.eventType || caseData.eventType || "",
+            },
+          ],
           balance: user.balance! - caseData.price!,
         })
         .where(eq(usersTable.id, ctx.userId));
     }),
 
   openCase: procedure
-    .input(z.object({ caseId: z.number() }))
+    .input(z.object({ caseId: z.number(), eventType: z.string().nullable(), eventId: z.number().nullable() }))
     .mutation(async ({ input, ctx }) => {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
@@ -85,12 +93,20 @@ export const casesRouter = createTRPCRouter({
         });
       }
 
-      // 1. Проверяем наличие кейса в инвентаре
-      const caseInInventory = user.inventory?.find(
-        (item) => item.type === "case" && item.eventId === input.caseId,
-      );
+      let caseInInventory: any;
 
-      if (!caseInInventory) {
+      if (input.eventType && input.eventId) {
+        caseInInventory = user.inventory?.find(
+          (item) =>
+            item.type === "case" &&
+            item.eventId === input.eventId &&
+            item.eventType === input.eventType,
+        );
+      } else if (!input.eventType && !input.eventId) {
+        caseInInventory = user.inventory?.find(
+          (item) => item.type === "case" && item.id === input.caseId,
+        );
+      } else {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Case not found in inventory",
@@ -110,14 +126,25 @@ export const casesRouter = createTRPCRouter({
       // 3. Обновляем инвентарь: удаляем кейс и добавляем награду
       const updatedInventory = user.inventory
         ?.filter((item, index) => {
-          const firstMatchIndex = user.inventory?.findIndex(
-            (inv) => inv.type === "case" && inv.eventId === input.caseId,
-          );
-          return !(
-            item.type === "case" &&
-            item.eventId === input.caseId &&
-            index === firstMatchIndex
-          );
+          if (input.eventId && input.eventType) {
+            const firstMatchIndex = user.inventory?.findIndex(
+              (inv) => inv.type === "case" && inv.eventId === input.caseId,
+            );
+            return !(
+              item.type === "case" &&
+              item.eventId === input.caseId &&
+              index === firstMatchIndex
+            );
+          } else if (!input.eventId && !input.eventType) {
+            const firstMatchIndex = user.inventory?.findIndex(
+              (inv) => inv.type === "case" && inv.id === input.caseId,
+            );
+            return !(
+              item.type === "case" &&
+              item.id === input.caseId &&
+              index === firstMatchIndex
+            );
+          }
         })
         .concat([reward]);
 

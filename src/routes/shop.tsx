@@ -6,6 +6,39 @@ import { toast } from "sonner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
+// Utility function to get rarity-based colors and styles
+const getRarityStyles = (rarity: string) => {
+  switch (rarity?.toLowerCase()) {
+    case "bronze":
+      return {
+        bgColor: "bg-amber-600",
+      };
+    case "silver":
+      return {
+        bgColor: "bg-gray-500",
+      };
+    case "gold":
+      return {
+        bgColor: "bg-yellow-500",
+      };
+    default:
+      return {
+        bgColor: "bg-purple-600",
+      };
+  }
+};
+
+// Utility function to get case type (limited or not)
+const getCaseType = (eventId: number | null, eventType: string | null) => {
+  if (eventId && eventType) {
+    return {
+      type: "limited",
+      label: "ЛИМИТ",
+      bgColor: "bg-red-500",
+    };
+  }
+};
+
 export const Route = createFileRoute("/shop")({
   component: RouteComponent,
 });
@@ -146,13 +179,41 @@ function RouteComponent() {
                   </div>
                 )}
 
-                {/* Price Badge
-                <div className="absolute top-2 right-2 rounded-full bg-black/80 px-2 py-1">
-                  <div className="flex items-center gap-1">
-                    <Coins className="h-3 w-3 text-yellow-400" />
-                    <span className="text-xs font-bold text-white">{price}</span>
+                {/* Rarity Badge */}
+                <div className="absolute top-2 left-2">
+                  {(() => {
+                    const rarityStyles = getRarityStyles(caseItem.rarity || "default");
+                    return (
+                      <div
+                        className={`rounded-full px-2 py-1 text-xs font-semibold ${rarityStyles.bgColor} text-white shadow-lg`}
+                      >
+                        {caseItem.rarity === "common"
+                          ? "ОБЫЧНЫЙ"
+                          : caseItem.rarity === "rare"
+                            ? "РЕДКИЙ"
+                            : caseItem.rarity === "epic"
+                              ? "ЭПИК"
+                              : "ОБЫЧНЫЙ"}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Limited/Regular Badge */}
+                {caseItem.eventId && caseItem.eventType && (
+                  <div className="absolute top-2 right-2">
+                    {(() => {
+                      const caseType = getCaseType(caseItem.eventId, caseItem.eventType);
+                      return (
+                        <div
+                          className={`rounded-full px-2 py-1 text-xs font-semibold ${caseType?.bgColor} text-white shadow-lg`}
+                        >
+                          {caseType?.label}
+                        </div>
+                      );
+                    })()}
                   </div>
-                </div> */}
+                )}
               </div>
 
               {/* Case Info */}

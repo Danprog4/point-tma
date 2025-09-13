@@ -22,6 +22,7 @@ const getRarityStyles = (rarity: string) => {
         iconColor: "text-amber-600",
         borderColor: "border-amber-300",
         shadowColor: "shadow-amber-200",
+        bgColor: "bg-amber-600",
       };
     case "silver":
       return {
@@ -31,6 +32,7 @@ const getRarityStyles = (rarity: string) => {
         iconColor: "text-gray-600",
         borderColor: "border-gray-300",
         shadowColor: "shadow-gray-200",
+        bgColor: "bg-gray-500",
       };
     case "gold":
       return {
@@ -40,6 +42,7 @@ const getRarityStyles = (rarity: string) => {
         iconColor: "text-yellow-600",
         borderColor: "border-yellow-300",
         shadowColor: "shadow-yellow-200",
+        bgColor: "bg-yellow-500",
       };
     default:
       return {
@@ -49,7 +52,20 @@ const getRarityStyles = (rarity: string) => {
         iconColor: "text-purple-600",
         borderColor: "border-purple-300",
         shadowColor: "shadow-purple-200",
+        bgColor: "bg-purple-600",
       };
+  }
+};
+
+// Utility function to get case type (limited or not)
+const getCaseType = (eventId: number | null, eventType: string | null) => {
+  if (eventId && eventType) {
+    return {
+      type: "limited",
+      label: "ЛИМИТИРОВАННЫЙ",
+      bgColor: "bg-red-500",
+      textColor: "text-white",
+    };
   }
 };
 
@@ -480,13 +496,41 @@ function RouteComponent() {
             </div>
           )}
 
-          {/* Price Badge
-          <div className="absolute top-4 right-4 rounded-full bg-black/80 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-yellow-400" />
-              <span className="text-sm font-bold text-white">{caseData.price ?? 0}</span>
+          {/* Rarity Badge */}
+          <div className="absolute top-3 left-3">
+            {(() => {
+              const rarityStyles = getRarityStyles(caseData.rarity || "default");
+              return (
+                <div
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${rarityStyles.bgColor} text-white shadow-lg`}
+                >
+                  {caseData.rarity === "common"
+                    ? "ОБЫЧНЫЙ"
+                    : caseData.rarity === "rare"
+                      ? "РЕДКИЙ"
+                      : caseData.rarity === "epic"
+                        ? "ЭПИЧЕСКИЙ"
+                        : "ОБЫЧНЫЙ"}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Limited/Regular Badge */}
+          {caseData.eventId && caseData.eventType && (
+            <div className="absolute top-3 right-3">
+              {(() => {
+                const caseType = getCaseType(caseData.eventId, caseData.eventType);
+                return (
+                  <div
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${caseType?.bgColor} ${caseType?.textColor} shadow-lg`}
+                  >
+                    {caseType?.label}
+                  </div>
+                );
+              })()}
             </div>
-          </div> */}
+          )}
         </div>
       </div>
 

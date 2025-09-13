@@ -314,6 +314,7 @@ export const casesTable = pgTable("cases", {
   isWithKey: boolean("is_with_key").default(false),
   eventType: varchar("event_type", { length: 255 }), // quest, conf, party, etc
   eventId: bigint("event_id", { mode: "number" }),
+  rarity: varchar("rarity", { length: 255 }), // common, rare, epic, legendary
   createdAt: timestamp("created_at").defaultNow(),
 });
 

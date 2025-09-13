@@ -8,6 +8,51 @@ import { useSound } from "use-sound";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
 
+// Utility function to get rarity-based colors and styles
+const getRarityStyles = (rarity: string) => {
+  // Отладочная информация
+  console.log("Getting rarity styles for:", rarity);
+
+  switch (rarity?.toLowerCase()) {
+    case "bronze":
+      return {
+        gradient: "from-amber-600 to-amber-800",
+        bgGradient: "from-amber-100 to-amber-200",
+        textColor: "text-amber-800",
+        iconColor: "text-amber-600",
+        borderColor: "border-amber-300",
+        shadowColor: "shadow-amber-200",
+      };
+    case "silver":
+      return {
+        gradient: "from-gray-400 to-gray-600",
+        bgGradient: "from-gray-100 to-gray-200",
+        textColor: "text-gray-700",
+        iconColor: "text-gray-600",
+        borderColor: "border-gray-300",
+        shadowColor: "shadow-gray-200",
+      };
+    case "gold":
+      return {
+        gradient: "from-yellow-400 to-yellow-600",
+        bgGradient: "from-yellow-100 to-yellow-200",
+        textColor: "text-yellow-700",
+        iconColor: "text-yellow-600",
+        borderColor: "border-yellow-300",
+        shadowColor: "shadow-yellow-200",
+      };
+    default:
+      return {
+        gradient: "from-purple-500 to-purple-700",
+        bgGradient: "from-purple-100 to-pink-100",
+        textColor: "text-purple-700",
+        iconColor: "text-purple-600",
+        borderColor: "border-purple-300",
+        shadowColor: "shadow-purple-200",
+      };
+  }
+};
+
 export const Route = createFileRoute("/case/$id")({
   component: RouteComponent,
 });
@@ -114,6 +159,7 @@ function RouteComponent() {
       items.push({
         name: randomItem.type,
         price: randomItem.value,
+        rarity: randomItem.rarity || "default", // Устанавливаем default если rarity отсутствует
         image: "/fallback.png", // Заглушка для изображения
         id: Date.now() + i,
         isWinning: false,
@@ -123,6 +169,7 @@ function RouteComponent() {
     // Заменяем последний предмет на выигрышный
     items[items.length - 1] = {
       ...winningItem,
+      rarity: winningItem.rarity || "default", // Устанавливаем default если rarity отсутствует
       isWinning: true,
     };
 
@@ -137,6 +184,7 @@ function RouteComponent() {
         const winningItem = {
           name: data.reward.type,
           price: data.reward.value,
+          rarity: data.reward.rarity,
           image: "/fallback.png", // Заглушка для изображения
           id: data.reward.id,
         };
@@ -232,29 +280,34 @@ function RouteComponent() {
                 width: `${arrayWithWinningItem.length * window.innerWidth}px`,
               }}
             >
-              {arrayWithWinningItem?.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex h-[100vh] w-screen flex-shrink-0 flex-col items-center justify-center gap-6 px-8"
-                >
-                  <div className="relative w-full">
-                    <div className="flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br from-[#9924FF] to-[#7C1ED9] shadow-2xl">
-                      <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
-                        <Gift className="h-40 w-40 text-white" />
+              {arrayWithWinningItem?.map((item, index) => {
+                const rarityStyles = getRarityStyles(item.rarity || "default");
+                return (
+                  <div
+                    key={index}
+                    className="flex h-[100vh] w-screen flex-shrink-0 flex-col items-center justify-center gap-6 px-8"
+                  >
+                    <div className="relative w-full">
+                      <div
+                        className={`flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br ${rarityStyles.gradient} shadow-2xl`}
+                      >
+                        <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+                          <Gift className="h-40 w-40 text-white" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="mb-2 text-5xl font-bold text-black">
+                        {item.name === "point" ? "Поинты" : item.name}
+                      </div>
+                      <div className={`text-3xl font-semibold ${rarityStyles.textColor}`}>
+                        {item.price}
                       </div>
                     </div>
                   </div>
-
-                  <div className="text-center">
-                    <div className="mb-2 text-5xl font-bold text-black">
-                      {item.name === "point" ? "Поинты" : item.name}
-                    </div>
-                    <div className="text-3xl font-semibold text-yellow-400">
-                      {item.price}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -286,39 +339,48 @@ function RouteComponent() {
                       rotateY: { delay: 0.4, duration: 0.8 },
                     }}
                   >
-                    <div className="flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br from-[#9924FF] to-[#7C1ED9] shadow-2xl">
-                      <motion.div
-                        className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm"
-                        animate={{
-                          boxShadow: showZoomAnimation
-                            ? [
-                                "0 0 0 0 rgba(153, 36, 255, 0.7)",
-                                "0 0 0 20px rgba(153, 36, 255, 0)",
-                                "0 0 0 0 rgba(153, 36, 255, 0)",
-                              ]
-                            : "0 0 0 0 rgba(153, 36, 255, 0)",
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: showZoomAnimation ? Infinity : 0,
-                          repeatDelay: 0.5,
-                        }}
-                      >
-                        <motion.div
-                          animate={{
-                            scale: showZoomAnimation ? [1, 1.1, 1] : 1,
-                            rotate: showZoomAnimation ? [0, 5, -5, 0] : 0,
-                          }}
-                          transition={{
-                            duration: 0.6,
-                            repeat: showZoomAnimation ? Infinity : 0,
-                            repeatDelay: 1,
-                          }}
+                    {(() => {
+                      const rarityStyles = getRarityStyles(
+                        winningItem.rarity || "default",
+                      );
+                      return (
+                        <div
+                          className={`flex aspect-square w-full items-center justify-center rounded-3xl bg-gradient-to-br ${rarityStyles.gradient} shadow-2xl`}
                         >
-                          <Gift className="h-40 w-40 text-white" />
-                        </motion.div>
-                      </motion.div>
-                    </div>
+                          <motion.div
+                            className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm"
+                            animate={{
+                              boxShadow: showZoomAnimation
+                                ? [
+                                    "0 0 0 0 rgba(153, 36, 255, 0.7)",
+                                    "0 0 0 20px rgba(153, 36, 255, 0)",
+                                    "0 0 0 0 rgba(153, 36, 255, 0)",
+                                  ]
+                                : "0 0 0 0 rgba(153, 36, 255, 0)",
+                            }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: showZoomAnimation ? Infinity : 0,
+                              repeatDelay: 0.5,
+                            }}
+                          >
+                            <motion.div
+                              animate={{
+                                scale: showZoomAnimation ? [1, 1.1, 1] : 1,
+                                rotate: showZoomAnimation ? [0, 5, -5, 0] : 0,
+                              }}
+                              transition={{
+                                duration: 0.6,
+                                repeat: showZoomAnimation ? Infinity : 0,
+                                repeatDelay: 1,
+                              }}
+                            >
+                              <Gift className="h-40 w-40 text-white" />
+                            </motion.div>
+                          </motion.div>
+                        </div>
+                      );
+                    })()}
                   </motion.div>
 
                   <motion.div
@@ -330,22 +392,29 @@ function RouteComponent() {
                     <div className="mb-2 text-5xl font-bold text-black">
                       {winningItem.name === "point" ? "Поинты" : winningItem.name}
                     </div>
-                    <motion.div
-                      className="text-3xl font-semibold text-yellow-400"
-                      animate={{
-                        scale: showZoomAnimation ? [1, 1.1, 1] : 1,
-                        color: showZoomAnimation
-                          ? ["#fbbf24", "#f59e0b", "#fbbf24"]
-                          : "#fbbf24",
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        repeat: showZoomAnimation ? Infinity : 0,
-                        repeatDelay: 0.5,
-                      }}
-                    >
-                      {winningItem.price}
-                    </motion.div>
+                    {(() => {
+                      const rarityStyles = getRarityStyles(
+                        winningItem.rarity || "default",
+                      );
+                      return (
+                        <motion.div
+                          className={`text-3xl font-semibold ${rarityStyles.textColor}`}
+                          animate={{
+                            scale: showZoomAnimation ? [1, 1.1, 1] : 1,
+                            color: showZoomAnimation
+                              ? ["#fbbf24", "#f59e0b", "#fbbf24"]
+                              : undefined,
+                          }}
+                          transition={{
+                            duration: 0.8,
+                            repeat: showZoomAnimation ? Infinity : 0,
+                            repeatDelay: 0.5,
+                          }}
+                        >
+                          {winningItem.price}
+                        </motion.div>
+                      );
+                    })()}
                   </motion.div>
 
                   <motion.div
@@ -447,18 +516,24 @@ function RouteComponent() {
         <div className="mb-6">
           <h3 className="mb-3 text-lg font-bold text-gray-900">Возможные награды</h3>
           <div className="grid grid-cols-3 gap-3">
-            {caseData?.items?.map((item, index) => (
-              <div
-                key={index}
-                className="flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-gradient-to-br from-purple-100 to-pink-100"
-              >
-                <Gift className="h-6 w-6 text-purple-600" />
-                <span className="mt-1 text-xs font-medium text-gray-700">
-                  {item.type === "point" ? "Поинты" : item.type}
-                </span>
-                <span className="text-xs text-gray-500">{item.value}</span>
-              </div>
-            )) ||
+            {caseData?.items?.map((item, index) => {
+              console.log("Case item:", item, "rarity:", item.rarity);
+              const rarityStyles = getRarityStyles(item.rarity || "default");
+              return (
+                <div
+                  key={index}
+                  className={`flex aspect-square w-full flex-col items-center justify-center rounded-xl bg-gradient-to-br ${rarityStyles.gradient} border ${rarityStyles.borderColor} ${rarityStyles.shadowColor}`}
+                >
+                  <Gift className="h-6 w-6 text-white" />
+                  <span className="mt-1 text-xs font-medium text-white">
+                    {item.type === "point" ? "Поинты" : item.type}
+                  </span>
+                  <span className="text-xs text-white">
+                    {item.value}
+                  </span>
+                </div>
+              );
+            }) ||
               // Fallback если нет предметов
               [1, 2, 3, 4, 5, 6].map((item) => (
                 <div

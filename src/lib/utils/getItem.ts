@@ -35,7 +35,7 @@ export const getItem = async (caseId: number, userId: number) => {
 
   // 3. Считаем веса
   const itemsWithWeights = caseItems.map(
-    (item: { type: string; value: number | string }) => {
+    (item: { type: string; value: number | string; rarity?: string }) => {
       // Преобразуем value в число для расчета веса
       const itemValue =
         typeof item.value === "number" ? item.value : parseInt(String(item.value)) || 0;
@@ -61,6 +61,7 @@ export const getItem = async (caseId: number, userId: number) => {
       return {
         type: item.type,
         value: item.value,
+        rarity: item.rarity || "default",
         caseId: caseId,
         id: Date.now(),
         isActive: true,

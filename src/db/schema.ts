@@ -308,7 +308,7 @@ export const casesTable = pgTable("cases", {
   description: varchar("description", { length: 2000 }),
   photo: varchar("photo", { length: 255 }),
   items: jsonb("items")
-    .$type<Array<{ type: string; value: number | string }>>()
+    .$type<Array<{ type: string; value: number | string; rarity: string }>>()
     .default([]),
   price: integer("price"),
   isWithKey: boolean("is_with_key").default(false),

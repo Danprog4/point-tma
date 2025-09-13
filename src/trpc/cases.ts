@@ -172,6 +172,7 @@ export const casesRouter = createTRPCRouter({
         reward: {
           type: reward.type,
           value: reward.value,
+          rarity: reward.rarity,
           id: reward.id,
         },
       };

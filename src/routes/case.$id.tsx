@@ -528,9 +528,7 @@ function RouteComponent() {
                   <span className="mt-1 text-xs font-medium text-white">
                     {item.type === "point" ? "Поинты" : item.type}
                   </span>
-                  <span className="text-xs text-white">
-                    {item.value}
-                  </span>
+                  <span className="text-xs text-white">{item.value}</span>
                 </div>
               );
             }) ||

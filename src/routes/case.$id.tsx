@@ -14,6 +14,36 @@ const getRarityStyles = (rarity: string) => {
   console.log("Getting rarity styles for:", rarity);
 
   switch (rarity?.toLowerCase()) {
+    case "common":
+      return {
+        gradient: "from-gray-400 to-gray-600",
+        bgGradient: "from-gray-100 to-gray-200",
+        textColor: "text-gray-700",
+        iconColor: "text-gray-600",
+        borderColor: "border-gray-300",
+        shadowColor: "shadow-gray-200",
+        bgColor: "bg-gray-500",
+      };
+    case "rare":
+      return {
+        gradient: "from-blue-500 to-blue-700",
+        bgGradient: "from-blue-100 to-blue-200",
+        textColor: "text-blue-700",
+        iconColor: "text-blue-600",
+        borderColor: "border-blue-300",
+        shadowColor: "shadow-blue-200",
+        bgColor: "bg-blue-500",
+      };
+    case "epic":
+      return {
+        gradient: "from-purple-500 to-purple-700",
+        bgGradient: "from-purple-100 to-purple-200",
+        textColor: "text-purple-700",
+        iconColor: "text-purple-600",
+        borderColor: "border-purple-300",
+        shadowColor: "shadow-purple-200",
+        bgColor: "bg-purple-600",
+      };
     case "bronze":
       return {
         gradient: "from-amber-600 to-amber-800",
@@ -46,13 +76,13 @@ const getRarityStyles = (rarity: string) => {
       };
     default:
       return {
-        gradient: "from-purple-500 to-purple-700",
-        bgGradient: "from-purple-100 to-pink-100",
-        textColor: "text-purple-700",
-        iconColor: "text-purple-600",
-        borderColor: "border-purple-300",
-        shadowColor: "shadow-purple-200",
-        bgColor: "bg-purple-600",
+        gradient: "from-gray-400 to-gray-600",
+        bgGradient: "from-gray-100 to-gray-200",
+        textColor: "text-gray-700",
+        iconColor: "text-gray-600",
+        borderColor: "border-gray-300",
+        shadowColor: "shadow-gray-200",
+        bgColor: "bg-gray-500",
       };
   }
 };

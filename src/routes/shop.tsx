@@ -9,6 +9,18 @@ import { useTRPC } from "~/trpc/init/react";
 // Utility function to get rarity-based colors and styles
 const getRarityStyles = (rarity: string) => {
   switch (rarity?.toLowerCase()) {
+    case "common":
+      return {
+        bgColor: "bg-gray-500",
+      };
+    case "rare":
+      return {
+        bgColor: "bg-blue-500",
+      };
+    case "epic":
+      return {
+        bgColor: "bg-purple-600",
+      };
     case "bronze":
       return {
         bgColor: "bg-amber-600",
@@ -23,7 +35,7 @@ const getRarityStyles = (rarity: string) => {
       };
     default:
       return {
-        bgColor: "bg-purple-600",
+        bgColor: "bg-gray-500",
       };
   }
 };

@@ -65,6 +65,25 @@ function RouteComponent() {
   const [buyingCaseId, setBuyingCaseId] = useState<number[]>([]);
   const isMobile = usePlatform();
 
+  // Функция для подсчета количества кейсов у пользователя
+  const getCaseCount = (caseItem: any) => {
+    const inventory = user?.inventory || [];
+
+    if (caseItem.eventType && caseItem.eventId) {
+      // Для лимитированных кейсов считаем по eventId и eventType
+      return inventory.filter(
+        (item) =>
+          item.eventId === caseItem.eventId &&
+          item.type === "case" &&
+          item.eventType === caseItem.eventType,
+      ).length;
+    } else {
+      // Для обычных кейсов считаем по id
+      return inventory.filter((item) => item.id === caseItem.id && item.type === "case")
+        .length;
+    }
+  };
+
   // Мутация для покупки кейса
   const buyCaseMutation = useMutation(
     trpc.cases.buyCase.mutationOptions({
@@ -170,6 +189,7 @@ function RouteComponent() {
         {cases?.map((caseItem) => {
           const canAfford = user && user?.balance && user?.balance >= caseItem.price!;
           const isBuying = buyingCaseId.includes(caseItem.id);
+          const caseCount = getCaseCount(caseItem);
 
           return (
             <div
@@ -224,6 +244,18 @@ function RouteComponent() {
                         </div>
                       );
                     })()}
+                  </div>
+                )}
+
+                {/* Case Count Badge */}
+                {caseCount > 0 && (
+                  <div className="absolute right-2 bottom-2">
+                    <div className="flex items-center gap-1 rounded-full bg-[#9924FF] px-2 py-1 shadow-lg">
+                      <ShoppingBag className="h-3 w-3 text-white" />
+                      <span className="text-xs font-semibold text-white">
+                        {caseCount}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

@@ -149,6 +149,25 @@ function RouteComponent() {
     }
   }, [user?.inventory, caseData, id]);
 
+  // Подсчет количества кейсов у пользователя
+  const caseCount = useMemo(() => {
+    const inventory = user?.inventory || [];
+
+    if (caseData?.eventType && caseData?.eventId) {
+      // Для лимитированных кейсов считаем по eventId и eventType
+      return inventory.filter(
+        (item) =>
+          item.eventId === caseData?.eventId &&
+          item.type === "case" &&
+          item.eventType === caseData?.eventType,
+      ).length;
+    } else {
+      // Для обычных кейсов считаем по id
+      return inventory.filter((item) => item.id === parseInt(id) && item.type === "case")
+        .length;
+    }
+  }, [user?.inventory, caseData, id]);
+
   // Эффекты для горизонтальной анимации
   useEffect(() => {
     if (!arrayWithWinningItem.length) return;
@@ -666,6 +685,17 @@ function RouteComponent() {
               <ShoppingBag className="h-16 w-16 text-white" />
             </div>
           )}
+
+          <div className="absolute right-4 bottom-4 flex flex-col items-center">
+            {caseCount > 0 && (
+              <div className="mt-1 flex items-center gap-1 rounded-full bg-[#9924FF] px-2 py-1">
+                <ShoppingBag className="h-3 w-3 text-white" />
+                <span className="text-xs font-semibold text-white">
+                  {caseCount} в инвентаре
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Rarity Badge */}
           <div className="absolute top-3 left-3">

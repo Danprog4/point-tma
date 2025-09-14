@@ -5,6 +5,7 @@ import { db } from "~/db";
 import {
   activeEventsTable,
   calendarTable,
+  casesTable,
   complaintsTable,
   eventsTable,
   fastMeetParticipantsTable,
@@ -1433,4 +1434,72 @@ export const crmRouter = createTRPCRouter({
         .where(eq(eventsTable.id, Number(input.id)));
       return { success: true };
     }),
+
+  getCases: crmProcedure.query(async () => {
+    return await db.query.casesTable.findMany();
+  }),
+
+  getCase: crmProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+    const caseData = await db.query.casesTable.findFirst({
+      where: eq(casesTable.id, input.id),
+    });
+    if (!caseData) throw new TRPCError({ code: "NOT_FOUND", message: "Case not found" });
+    return caseData;
+  }),
+
+  creatCase: crmProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        photo: z.string(),
+        items: z.array(
+          z.object({ type: z.string(), value: z.number(), rarity: z.string() }),
+        ),
+        price: z.number(),
+        isWithKey: z.boolean(),
+        eventType: z.string(),
+        eventId: z.number(),
+        rarity: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const photoUrl = await uploadBase64Image(input.photo);
+      const newCase = await db
+        .insert(casesTable)
+        .values({ ...input, photo: photoUrl })
+        .returning();
+      return newCase[0];
+    }),
+
+  updateCase: crmProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        description: z.string(),
+        photo: z.string(),
+        items: z.array(
+          z.object({ type: z.string(), value: z.number(), rarity: z.string() }),
+        ),
+        price: z.number(),
+        isWithKey: z.boolean(),
+        eventType: z.string(),
+        eventId: z.number(),
+        rarity: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const photoUrl = await uploadBase64Image(input.photo);
+      const updatedCase = await db
+        .update(casesTable)
+        .set({ ...input, photo: photoUrl, id: Number(input.id) })
+        .where(eq(casesTable.id, Number(input.id)))
+        .returning();
+      return updatedCase[0];
+    }),
+
+  getEvents: crmProcedure.query(async () => {
+    return await db.query.eventsTable.findMany();
+  }),
 });

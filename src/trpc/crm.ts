@@ -1447,7 +1447,7 @@ export const crmRouter = createTRPCRouter({
     return caseData;
   }),
 
-  creatCase: crmProcedure
+  createCase: crmProcedure
     .input(
       z.object({
         name: z.string(),
@@ -1464,12 +1464,24 @@ export const crmRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const photoUrl = await uploadBase64Image(input.photo);
+      let photoUrl = null;
+      if (input.photo && input.photo.startsWith("data:image/")) {
+        photoUrl = await uploadBase64Image(input.photo);
+      } else {
+        photoUrl = input.photo;
+      }
       const newCase = await db
         .insert(casesTable)
         .values({ ...input, photo: photoUrl })
         .returning();
       return newCase[0];
+    }),
+
+  deleteCase: crmProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.delete(casesTable).where(eq(casesTable.id, input.id));
+      return { success: true };
     }),
 
   updateCase: crmProcedure
@@ -1490,7 +1502,12 @@ export const crmRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const photoUrl = await uploadBase64Image(input.photo);
+      let photoUrl = null;
+      if (input.photo && input.photo.startsWith("data:image/")) {
+        photoUrl = await uploadBase64Image(input.photo);
+      } else {
+        photoUrl = input.photo;
+      }
       const updatedCase = await db
         .update(casesTable)
         .set({ ...input, photo: photoUrl, id: Number(input.id) })

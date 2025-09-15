@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSound } from "use-sound";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 // Utility function to get rarity-based colors and styles
@@ -676,7 +677,11 @@ function RouteComponent() {
         <div className="relative overflow-hidden rounded-2xl bg-gray-100">
           {caseData.photo ? (
             <img
-              src={caseData.photo}
+              src={
+                caseData.photo.startsWith("/")
+                  ? caseData.photo
+                  : getImageUrl(caseData.photo)
+              }
               alt={caseData.name || "Кейс"}
               className="h-64 w-full object-cover"
             />

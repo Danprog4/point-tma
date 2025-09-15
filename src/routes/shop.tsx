@@ -4,6 +4,7 @@ import { ArrowLeft, Coins, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 // Utility function to get rarity-based colors and styles
@@ -194,14 +195,18 @@ function RouteComponent() {
           return (
             <div
               key={caseItem.id}
-              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-lg"
+              className="group relative flex h-70 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-lg"
               onClick={() => navigate({ to: `/case/${caseItem.id}` })}
             >
               {/* Case Image */}
-              <div className="relative h-32 overflow-hidden">
+              <div className="relative h-32 w-full overflow-hidden">
                 {caseItem.photo ? (
                   <img
-                    src={caseItem.photo}
+                    src={
+                      caseItem.photo.startsWith("/")
+                        ? caseItem.photo
+                        : getImageUrl(caseItem.photo)
+                    }
                     alt={caseItem.name || "Кейс"}
                     className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                   />
@@ -260,16 +265,18 @@ function RouteComponent() {
                 )}
               </div>
 
-              {/* Case Info */}
-              <div className="p-4">
+              {/* Case Info - Center */}
+              <div className="flex-1 p-4 text-center">
                 <h4 className="mb-1 font-semibold text-gray-900">
                   {caseItem.name || "Неизвестный кейс"}
                 </h4>
                 <p className="mb-3 line-clamp-2 text-xs text-gray-500">
                   {caseItem.description || "Откройте кейс и получите уникальные награды"}
                 </p>
+              </div>
 
-                {/* Buy Button */}
+              {/* Buy Button - Bottom */}
+              <div className="p-4 pt-0">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

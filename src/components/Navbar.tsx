@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 import { Main } from "./Icons/NavBar.tsx/Main";
@@ -36,8 +35,8 @@ export const Navbar = () => {
   return (
     <>
       {isRender ? (
-        <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
-          <div className="grid grid-cols-6 gap-2">
+        <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white py-2">
+          <div className="grid grid-cols-5 gap-2">
             <button
               onClick={() => navigate({ to: "/" })}
               className="flex flex-col items-center py-2"
@@ -118,7 +117,7 @@ export const Navbar = () => {
                 )}
               </div>
             </button>
-            <button
+            {/* <button
               onClick={() => navigate({ to: "/shop" })}
               className="flex flex-col items-center py-2"
             >
@@ -135,7 +134,7 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
+            </button> */}
             <button
               onClick={() => navigate({ to: "/profile" })}
               className="flex flex-col items-center py-2"

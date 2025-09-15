@@ -14,6 +14,7 @@ import {
   Mars,
   Package,
   Settings,
+  ShoppingBag,
   Star,
   Venus,
   X as XIcon,
@@ -406,6 +407,13 @@ function RouteComponent() {
               {/* Menu Items */}
               <div className="mb-6">
                 <div className="space-y-0">
+                  <MenuItem
+                    onClick={() => {
+                      navigate({ to: "/shop" });
+                    }}
+                    icon={<ShoppingBag className="h-6 w-6 text-purple-300" />}
+                    title="Магазин"
+                  />
                   <MenuItem
                     onClick={() => {
                       navigate({ to: "/skills" });

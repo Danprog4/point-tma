@@ -13,6 +13,7 @@ import {
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
+import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
 export const meetingRouter = createTRPCRouter({
@@ -82,11 +83,28 @@ export const meetingRouter = createTRPCRouter({
         imageUrl = await uploadBase64Image(image);
       }
 
-      let itemsWithInfo = null;
+      let itemsWithInfo:
+        | {
+            type: string;
+            eventId: number;
+            isActive?: boolean;
+            name: string;
+            id?: number;
+          }[]
+        | null = null;
       if (inventory) {
-        itemsWithInfo = user.inventory?.filter((item) =>
+        const raw = user.inventory?.filter((item) =>
           inventory.includes(item?.id?.toString() ?? ""),
         );
+        itemsWithInfo = (raw || [])
+          .filter((it) => typeof it.eventId === "number")
+          .map((it) => ({
+            type: it.type,
+            eventId: it.eventId as number,
+            name: (it.name as string) || "",
+            isActive: it.isActive,
+            id: it.id,
+          }));
       }
 
       const [meet] = await db
@@ -148,6 +166,13 @@ export const meetingRouter = createTRPCRouter({
           date: new Date(date.split(".").reverse().join("-")),
         });
       }
+
+      await logAction({
+        userId: ctx.userId,
+        type: "meet_create",
+        meetId: meet.id,
+        amount: reward ? reward * (participants ?? 0) : null,
+      });
 
       return meet;
     }),
@@ -293,6 +318,12 @@ export const meetingRouter = createTRPCRouter({
         }));
 
         await db.insert(notificationsTable).values(notificationRows);
+        await logAction({
+          userId: ctx.userId,
+          type: "meet_invites_send",
+          meetId,
+          amount: rows.length,
+        });
       }
     }),
 
@@ -343,6 +374,8 @@ export const meetingRouter = createTRPCRouter({
             ),
           );
 
+        await logAction({ userId: ctx.userId, type: "fast_meet_leave", meetId });
+
         return;
       }
 
@@ -351,6 +384,8 @@ export const meetingRouter = createTRPCRouter({
         userId: ctx.userId,
         status: "pending",
       });
+
+      await logAction({ userId: ctx.userId, type: "fast_meet_join", meetId });
 
       return participant;
     }),
@@ -384,6 +419,13 @@ export const meetingRouter = createTRPCRouter({
         .set({ status: "accepted" })
         .where(eq(fastMeetParticipantsTable.id, participant.id));
 
+      await logAction({
+        userId: ctx.userId,
+        type: "fast_meet_accept",
+        meetId,
+        itemId: userId,
+      });
+
       return participant;
     }),
 
@@ -416,6 +458,13 @@ export const meetingRouter = createTRPCRouter({
         .update(fastMeetParticipantsTable)
         .set({ status: "rejected" })
         .where(eq(fastMeetParticipantsTable.id, participant.id));
+
+      await logAction({
+        userId: ctx.userId,
+        type: "fast_meet_decline",
+        meetId,
+        itemId: userId,
+      });
 
       return participant;
     }),
@@ -468,21 +517,24 @@ export const meetingRouter = createTRPCRouter({
         });
       }
 
-      const [fastMeet] = await db.insert(fastMeetTable).values({
-        name,
-        description,
-        city,
-        locations: locations.map((location) => ({
-          ...location,
-          coordinates: location.coordinates || ([0, 0] as [number, number]),
-        })),
-        coordinates: locations[0]?.coordinates as [number, number],
-        userId: ctx.userId,
-        createdAt: new Date(),
-        type,
-        subType,
-        tags,
-      });
+      const [fastMeet] = await db
+        .insert(fastMeetTable)
+        .values({
+          name,
+          description,
+          city,
+          locations: locations.map((location) => ({
+            ...location,
+            coordinates: location.coordinates || ([0, 0] as [number, number]),
+          })),
+          coordinates: locations[0]?.coordinates as [number, number],
+          userId: ctx.userId,
+          createdAt: new Date(),
+          type,
+          subType,
+          tags,
+        })
+        .returning();
 
       await db
         .delete(fastMeetParticipantsTable)
@@ -493,6 +545,11 @@ export const meetingRouter = createTRPCRouter({
           ),
         );
 
+      await logAction({
+        userId: ctx.userId,
+        type: "fast_meet_create",
+        meetId: fastMeet.id,
+      });
       return fastMeet;
     }),
 
@@ -541,6 +598,13 @@ export const meetingRouter = createTRPCRouter({
             eq(fastMeetParticipantsTable.meetId, meetId),
           ),
         );
+
+      await logAction({
+        userId: ctx.userId,
+        type: "fast_meet_kick",
+        meetId,
+        itemId: userId,
+      });
 
       return participant;
     }),
@@ -593,6 +657,8 @@ export const meetingRouter = createTRPCRouter({
         meetId: meet.id,
         isRequest: true,
       });
+
+      await logAction({ userId: ctx.userId, type: "meet_join_request", meetId: meet.id });
 
       return meetParticipant;
     }),
@@ -679,6 +745,12 @@ export const meetingRouter = createTRPCRouter({
         isRequest: true,
       });
 
+      await logAction({
+        userId: ctx.userId,
+        type: "meet_invite_send",
+        meetId: input.meetId,
+        itemId: input.toUserId,
+      });
       return request;
     }),
 
@@ -710,6 +782,12 @@ export const meetingRouter = createTRPCRouter({
             eq(notificationsTable.meetId, input.meetId),
           ),
         );
+      await logAction({
+        userId: ctx.userId,
+        type: "meet_invite_unsend",
+        meetId: input.meetId,
+        itemId: input.toUserId,
+      });
       return request;
     }),
 
@@ -733,6 +811,12 @@ export const meetingRouter = createTRPCRouter({
           ),
         );
 
+      await logAction({
+        userId: ctx.userId,
+        type: "meet_invite_decline",
+        meetId: input.meetId,
+        itemId: input.fromUserId,
+      });
       return request;
     }),
 
@@ -789,6 +873,12 @@ export const meetingRouter = createTRPCRouter({
         })
         .where(eq(meetTable.id, input.meetId));
 
+      await logAction({
+        userId: ctx.userId,
+        type: "meet_invite_accept",
+        meetId: input.meetId,
+        itemId: participantRow.id,
+      });
       return request;
     }),
 
@@ -828,6 +918,7 @@ export const meetingRouter = createTRPCRouter({
           .where(eq(meetTable.id, id));
       }
 
+      await logAction({ userId: ctx.userId, type: "meet_leave", meetId: id });
       return request;
     }),
 
@@ -842,6 +933,8 @@ export const meetingRouter = createTRPCRouter({
         .where(eq(meetTable.id, id));
 
       // TODO: Send notification to participants that the meet was ended
+
+      await logAction({ userId: ctx.userId, type: "meet_end", meetId: id });
 
       return request;
     }),
@@ -1028,6 +1121,7 @@ export const meetingRouter = createTRPCRouter({
         .delete(fastMeetParticipantsTable)
         .where(eq(fastMeetParticipantsTable.meetId, meetId));
 
+      await logAction({ userId: ctx.userId, type: "fast_meet_delete", meetId });
       return true;
     }),
 
@@ -1060,6 +1154,7 @@ export const meetingRouter = createTRPCRouter({
           ),
         );
 
+      await logAction({ userId: ctx.userId, type: "fast_meet_leave", meetId });
       return request;
     }),
 
@@ -1145,9 +1240,18 @@ export const meetingRouter = createTRPCRouter({
 
       let itemsWithInfo = null;
       if (inventory) {
-        itemsWithInfo = user.inventory?.filter((item) =>
+        const raw = user.inventory?.filter((item) =>
           inventory.includes(item?.id?.toString() ?? ""),
         );
+        itemsWithInfo = (raw || [])
+          .filter((it) => typeof it.eventId === "number")
+          .map((it) => ({
+            type: it.type,
+            eventId: it.eventId as number,
+            name: (it.name as string) || "",
+            isActive: it.isActive,
+            id: it.id,
+          }));
       }
 
       const [meet] = await db

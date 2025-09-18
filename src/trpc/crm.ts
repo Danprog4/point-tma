@@ -13,6 +13,7 @@ import {
   favoritesTable,
   friendRequestsTable,
   historyTable,
+  loggingTable,
   meetMessagesTable,
   meetParticipantsTable,
   meetTable,
@@ -27,6 +28,60 @@ import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
 export const crmRouter = createTRPCRouter({
+  // ===== LOGGING =====
+  getLogs: crmProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).max(200).optional(),
+          cursor: z.number().nullish(),
+          type: z.string().optional(),
+          userId: z.number().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const limit = input?.limit ?? 50;
+
+      const whereClauses: any[] = [];
+      if (input?.type) whereClauses.push(eq(loggingTable.type, input.type));
+      if (input?.userId) whereClauses.push(eq(loggingTable.userId, input.userId));
+
+      const rows = await db
+        .select({
+          id: loggingTable.id,
+          userId: loggingTable.userId,
+          type: loggingTable.type,
+          amount: loggingTable.amount,
+          eventId: loggingTable.eventId,
+          meetId: loggingTable.meetId,
+          caseId: loggingTable.caseId,
+          itemId: loggingTable.itemId,
+          keyId: loggingTable.keyId,
+          createdAt: loggingTable.createdAt,
+        })
+        .from(loggingTable)
+        .where(
+          whereClauses.length
+            ? whereClauses.length === 1
+              ? whereClauses[0]
+              : (whereClauses as any).reduce((acc: any, c: any) => acc && c)
+            : undefined,
+        )
+        .orderBy(desc(loggingTable.createdAt), desc(loggingTable.id))
+        .limit(limit + 1);
+
+      let nextCursor: number | undefined = undefined;
+      if (rows.length > limit) {
+        const nextItem = rows.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      return {
+        items: rows,
+        nextCursor,
+      };
+    }),
   // ===== ПОЛЬЗОВАТЕЛИ =====
   getUsers: crmProcedure.query(async () => {
     return await db.query.usersTable.findMany({

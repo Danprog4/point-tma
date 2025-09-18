@@ -2,6 +2,7 @@ import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { friendRequestsTable, notificationsTable } from "~/db/schema";
+import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
 export const friendsRouter = createTRPCRouter({
@@ -76,6 +77,12 @@ export const friendsRouter = createTRPCRouter({
         type: "friend request",
       });
 
+      await logAction({
+        userId: ctx.userId,
+        type: "friend_request_send",
+        itemId: input.userId,
+      });
+
       return request;
     }),
 
@@ -104,7 +111,11 @@ export const friendsRouter = createTRPCRouter({
             eq(notificationsTable.type, "friend request"),
           ),
         );
-
+      await logAction({
+        userId: ctx.userId,
+        type: "friend_request_unsend",
+        itemId: input.userId,
+      });
       return request;
     }),
 
@@ -124,7 +135,11 @@ export const friendsRouter = createTRPCRouter({
             eq(friendRequestsTable.toUserId, ctx.userId),
           ),
         );
-
+      await logAction({
+        userId: ctx.userId,
+        type: "friend_request_decline",
+        itemId: input.userId,
+      });
       return request;
     }),
 
@@ -144,7 +159,11 @@ export const friendsRouter = createTRPCRouter({
             eq(friendRequestsTable.toUserId, ctx.userId),
           ),
         );
-
+      await logAction({
+        userId: ctx.userId,
+        type: "friend_request_accept",
+        itemId: input.userId,
+      });
       return request;
     }),
 
@@ -172,7 +191,11 @@ export const friendsRouter = createTRPCRouter({
             ),
           ),
         );
-
+      await logAction({
+        userId: ctx.userId,
+        type: "friend_unfriend",
+        itemId: input.userId,
+      });
       return deleted;
     }),
 });

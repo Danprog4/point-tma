@@ -15,6 +15,7 @@ import {
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
+import { logAction } from "~/lib/utils/logger";
 import { procedure, publicProcedure } from "./init";
 export const router = {
   getHello: publicProcedure.query(() => {
@@ -113,6 +114,7 @@ export const router = {
         })
         .where(eq(usersTable.id, ctx.userId));
 
+      await logAction({ userId: ctx.userId, type: "onboarding_complete" });
       return user;
     }),
 
@@ -201,6 +203,7 @@ export const router = {
         })
         .where(eq(usersTable.id, ctx.userId));
 
+      await logAction({ userId: ctx.userId, type: "profile_update" });
       return user;
     }),
 
@@ -257,6 +260,14 @@ export const router = {
         fromUserId: ctx.userId,
         toUserId: input.userId,
         type: "like",
+      });
+
+      await logAction({
+        userId: ctx.userId,
+        type: "favorite_add",
+        itemId: input.userId,
+        eventId: input.eventId,
+        meetId: input.meetId,
       });
 
       return user;
@@ -393,7 +404,13 @@ export const router = {
             eq(favoritesTable.type, input.type),
           ),
         );
-
+      await logAction({
+        userId: ctx.userId,
+        type: "favorite_remove",
+        itemId: input.userId,
+        eventId: input.eventId,
+        meetId: input.meetId,
+      });
       return user;
     }),
 
@@ -419,6 +436,8 @@ export const router = {
         subscriberId: ctx.userId,
         targetUserId: input.userId,
       });
+
+      await logAction({ userId: ctx.userId, type: "subscribe", itemId: input.userId });
 
       return user;
     }),
@@ -449,7 +468,7 @@ export const router = {
             eq(subscriptionsTable.targetUserId, input.userId),
           ),
         );
-
+      await logAction({ userId: ctx.userId, type: "unsubscribe", itemId: input.userId });
       return user;
     }),
 
@@ -497,6 +516,11 @@ export const router = {
         rating: input.rating,
         userId: user.id,
       });
+      await logAction({
+        userId: ctx.userId,
+        type: "review_send",
+        eventId: input.eventId,
+      });
     }),
 
   getReviews: procedure.query(async ({ ctx }) => {
@@ -515,7 +539,7 @@ export const router = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await db.insert(complaintsTable).values({
+      const res = await db.insert(complaintsTable).values({
         eventId: input.eventId,
         name: input.name,
         complaint: input.complaint,
@@ -524,6 +548,14 @@ export const router = {
         toUserId: input.toUserId,
         type: input.type,
       });
+      await logAction({
+        userId: ctx.userId,
+        type: "complaint_send",
+        eventId: input.eventId,
+        meetId: input.meetId,
+        itemId: input.toUserId,
+      });
+      return res;
     }),
 
   getComplaints: procedure.query(async ({ ctx }) => {
@@ -543,8 +575,18 @@ export const router = {
         await db
           .delete(complaintsTable)
           .where(eq(complaintsTable.toUserId, input.toUserId!));
+        await logAction({
+          userId: ctx.userId,
+          type: "complaint_unsend",
+          itemId: input.toUserId,
+        });
       } else {
         await db.delete(complaintsTable).where(eq(complaintsTable.meetId, input.meetId!));
+        await logAction({
+          userId: ctx.userId,
+          type: "complaint_unsend",
+          meetId: input.meetId,
+        });
       }
     }),
 
@@ -571,6 +613,11 @@ export const router = {
         .update(usersTable)
         .set({ savedIds: updatedIds })
         .where(eq(usersTable.id, ctx.userId));
+      await logAction({
+        userId: ctx.userId,
+        type: "user_save_toggle",
+        itemId: input.userId,
+      });
 
       return user;
     }),
@@ -607,6 +654,11 @@ export const router = {
           .update(usersTable)
           .set({ savedMeetsIds: updatedMeetIds })
           .where(eq(usersTable.id, ctx.userId));
+        await logAction({
+          userId: ctx.userId,
+          type: "meet_save_toggle",
+          meetId: input.meetId,
+        });
       } else if (input.eventId && input.type) {
         const updatedEvents = savedEvents.some((event) => event.eventId === input.eventId)
           ? savedEvents.filter((event) => event.eventId !== input.eventId)
@@ -616,6 +668,11 @@ export const router = {
           .update(usersTable)
           .set({ savedEvents: updatedEvents })
           .where(eq(usersTable.id, ctx.userId));
+        await logAction({
+          userId: ctx.userId,
+          type: "event_save_toggle",
+          eventId: input.eventId,
+        });
       }
     }),
 
@@ -858,7 +915,7 @@ export const router = {
           lastLocationUpdate: new Date(),
         })
         .where(eq(usersTable.id, ctx.userId));
-
+      await logAction({ userId: ctx.userId, type: "location_update" });
       return { success: true };
     }),
 

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
+import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
 
@@ -113,6 +114,12 @@ export const eventRouter = createTRPCRouter({
           })
           .where(eq(usersTable.id, ctx.userId));
       }
+
+      await logAction({
+        userId: ctx.userId,
+        type: "quest_end",
+        eventId: input.id,
+      });
     }),
 
   buyEvent: procedure
@@ -207,6 +214,13 @@ export const eventRouter = createTRPCRouter({
           isTicket: true,
         });
       }
+
+      await logAction({
+        userId: ctx.userId,
+        type: "event_buy",
+        eventId: input.id,
+        amount: eventData.price ? eventData.price * input.count : null,
+      });
     }),
 
   activateEvent: procedure
@@ -301,6 +315,12 @@ export const eventRouter = createTRPCRouter({
           parse_mode: "Markdown",
         },
       );
+
+      await logAction({
+        userId: ctx.userId,
+        type: "event_activate",
+        eventId: input.id,
+      });
     }),
 
   getEvents: procedure.query(async () => {

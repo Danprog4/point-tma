@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import { casesTable, usersTable } from "~/db/schema";
 import { getItem } from "~/lib/utils/getItem";
+import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
 export const casesRouter = createTRPCRouter({
@@ -83,6 +84,14 @@ export const casesRouter = createTRPCRouter({
           balance: user.balance! - caseData.price!,
         })
         .where(eq(usersTable.id, ctx.userId));
+
+      await logAction({
+        userId: ctx.userId,
+        type: "case_buy",
+        caseId: input.caseId,
+        eventId: input.eventId ?? (undefined as unknown as number | null),
+        amount: caseData.price ?? null,
+      });
     }),
 
   openCase: procedure
@@ -195,6 +204,14 @@ export const casesRouter = createTRPCRouter({
           inventory: updatedInventory,
         })
         .where(eq(usersTable.id, ctx.userId));
+
+      await logAction({
+        userId: ctx.userId,
+        type: "case_open",
+        caseId: input.caseId,
+        eventId: input.eventId ?? (undefined as unknown as number | null),
+        itemId: (reward as any).id ?? null,
+      });
 
       return {
         success: true,

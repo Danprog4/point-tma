@@ -327,6 +327,19 @@ export const keysTable = pgTable("keys", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const loggingTable = pgTable("logging", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  eventId: bigint("event_id", { mode: "number" }),
+  meetId: bigint("meet_id", { mode: "number" }),
+  caseId: bigint("case_id", { mode: "number" }),
+  itemId: bigint("item_id", { mode: "number" }),
+  keyId: bigint("key_id", { mode: "number" }),
+  amount: integer("amount"),
+  type: varchar("type", { length: 255 }), // buy, active, etc
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;

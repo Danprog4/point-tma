@@ -4,6 +4,7 @@ import React from "react";
 export const labelByType: Record<string, string> = {
   event_buy: "Покупка билета",
   event_activate: "Активация билета",
+  event_save_toggle: "Сохранение события в избранное",
   quest_end: "Завершение квеста",
 
   case_buy: "Покупка кейса",
@@ -47,6 +48,7 @@ export const labelByType: Record<string, string> = {
 export const iconByType: Record<string, React.ReactNode> = {
   event_buy: <Ticket className="h-4 w-4" />,
   event_activate: <Ticket className="h-4 w-4" />,
+  event_save_toggle: <Ticket className="h-4 w-4" />,
   quest_end: <Gift className="h-4 w-4" />,
   case_buy: <Gift className="h-4 w-4" />,
   case_open: <Gift className="h-4 w-4" />,

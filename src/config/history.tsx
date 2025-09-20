@@ -19,6 +19,7 @@ export const labelByType: Record<string, string> = {
   meet_invite_accept: "Принятие приглашения",
   meet_leave: "Покидание встречи",
   meet_end: "Завершение встречи",
+  share_meet: "Поделиться встречей",
 
   fast_meet_create: "Создание быстрой встречи",
   fast_meet_join: "Присоединение к быстрой встрече",

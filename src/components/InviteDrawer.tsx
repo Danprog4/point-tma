@@ -1,7 +1,9 @@
+import { useMutation } from "@tanstack/react-query";
 import { shareURL } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Drawer } from "vaul";
+import { useTRPC } from "~/trpc/init/react";
 import { ShareIcon } from "./Icons/Share";
 
 export default function InviteDrawer({
@@ -29,6 +31,8 @@ export default function InviteDrawer({
   setParticipants: (participants: any[]) => void;
   meeting: any;
 }) {
+  const trpc = useTRPC();
+  const logShareMeet = useMutation(trpc.main.logShareMeet.mutationOptions());
   const [friendName, setFriendName] = useState("");
 
   // Log friends data only when it actually changes to avoid spam in the console
@@ -66,6 +70,9 @@ export default function InviteDrawer({
                 if (shareURL.isAvailable()) {
                   shareURL(link, text);
                 }
+                try {
+                  if (meeting?.id) logShareMeet.mutate({ meetId: Number(meeting.id) });
+                } catch {}
               }}
               className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2"
             >

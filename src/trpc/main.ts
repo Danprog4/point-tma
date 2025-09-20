@@ -1124,6 +1124,14 @@ export const router = {
       return { success: true };
     }),
 
+  // Log meet share action
+  logShareMeet: procedure
+    .input(z.object({ meetId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await logAction({ userId: ctx.userId, type: "share_meet", meetId: input.meetId });
+      return { success: true };
+    }),
+
   // Получить предупреждения пользователя
   getUserWarnings: procedure.query(async ({ ctx }) => {
     const user = await db.query.usersTable.findFirst({

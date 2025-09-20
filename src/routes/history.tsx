@@ -1,7 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { iconByType, labelByType } from "~/config/history";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getImageUrl } from "~/lib/utils/getImageURL";
+import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/history")({
   component: RouteComponent,
@@ -9,70 +13,87 @@ export const Route = createFileRoute("/history")({
 
 function RouteComponent() {
   const [activeFilter, setActiveFilter] = useState("Все");
-
-  const filters = ["Все", "Покупка", "Просмотр событий", "Просмотр профилей", "Отмены"];
-
-  const historyData = [
-    {
-      date: "Сегодня",
-      items: [
-        {
-          type: "Поход на концерт",
-          time: "16:21",
-          event: "Событие: Концерт группы «Korn»",
-        },
-      ],
-    },
-    {
-      date: "13 января",
-      items: [
-        {
-          type: "Участие в квесте",
-          time: "10:00",
-          event: "Событие: Квест «Камень вечности»",
-        },
-        {
-          type: "Встреча",
-          time: "20:30",
-          event: "Событие: Дизайнерские посиделки в баре",
-        },
-      ],
-    },
-    {
-      date: "11 января",
-      items: [
-        {
-          type: "Участие в квесте",
-          time: "23:00",
-          event: "Событие: Квест «Поиск сокровища»",
-        },
-        {
-          type: "Поход на концерт",
-          time: "19:00",
-          event: "Событие: Концерт группы «Gogol Bordello»",
-        },
-      ],
-    },
-    {
-      date: "9 января",
-      items: [
-        {
-          type: "Участие в конференции",
-          time: "10:00",
-          event: "Событие: Новые-старые менеджмент",
-        },
-        {
-          type: "Новое знакомство",
-          time: "9:30",
-          event: "Профиль: Тамара Утюгова",
-        },
-      ],
-    },
+  const filters = [
+    "Все",
+    "Покупки",
+    "Встречи",
+    "Быстрые встречи",
+    "Профиль",
+    "Соц",
+    "Кейсы",
   ];
 
+  const trpc = useTRPC();
   const navigate = useNavigate();
-
   const isMobile = usePlatform();
+
+  const { data, isLoading } = useQuery(trpc.main.getMyLogs.queryOptions({ limit: 100 }));
+  const flat = useMemo(() => data?.items ?? [], [data]);
+
+  const filtered = useMemo(() => {
+    if (!flat) return [] as typeof flat;
+    switch (activeFilter) {
+      case "Покупки":
+        return flat.filter(
+          (l) => l.type?.startsWith("event_buy") || l.type?.startsWith("case_buy"),
+        );
+      case "Кейсы":
+        return flat.filter((l) => l.type?.startsWith("case_"));
+      case "Встречи":
+        return flat.filter((l) => l.type?.startsWith("meet_"));
+      case "Быстрые встречи":
+        return flat.filter((l) => l.type?.startsWith("fast_meet_"));
+      case "Профиль":
+        return flat.filter(
+          (l) => l.type === "onboarding_complete" || l.type === "profile_update",
+        );
+      case "Соц":
+        return flat.filter(
+          (l) =>
+            l.type?.startsWith("friend_") ||
+            l.type === "favorite_add" ||
+            l.type === "favorite_remove" ||
+            l.type === "subscribe" ||
+            l.type === "unsubscribe" ||
+            l.type?.startsWith("review_") ||
+            l.type?.startsWith("complaint_"),
+        );
+      default:
+        return flat;
+    }
+  }, [flat, activeFilter]);
+
+  const groups = useMemo(() => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    const startOf30DaysAgo = new Date(startOfToday);
+    startOf30DaysAgo.setDate(startOf30DaysAgo.getDate() - 30);
+
+    const toDate = (d?: string | Date | null) => (d ? new Date(d) : new Date(0));
+
+    const today = filtered.filter((l) => {
+      const d = toDate(l.createdAt as any);
+      return d >= startOfToday;
+    });
+
+    const yesterday = filtered.filter((l) => {
+      const d = toDate(l.createdAt as any);
+      return d >= startOfYesterday && d < startOfToday;
+    });
+
+    const last30Days = filtered.filter((l) => {
+      const d = toDate(l.createdAt as any);
+      return d >= startOf30DaysAgo && d < startOfYesterday;
+    });
+
+    return [
+      { key: "today", title: "Сегодня", items: today },
+      { key: "yesterday", title: "Вчера", items: yesterday },
+      { key: "30days", title: "За 30 дней", items: last30Days },
+    ].filter((g) => g.items.length > 0);
+  }, [filtered]);
 
   return (
     <div
@@ -114,37 +135,69 @@ function RouteComponent() {
       </div>
 
       {/* History List */}
-      <div className="px-4 text-gray-500">Ваша история пока пуста</div>
-      <div className="hidden flex-1 overflow-y-auto">
-        {historyData.map((dateGroup, groupIndex) => (
-          <div key={groupIndex} className="mb-6">
-            {/* Date Header */}
-            <div className="px-4 py-1">
-              <h2 className="text-xs text-gray-900">{dateGroup.date}</h2>
+      {(!groups || groups.length === 0) && (
+        <div className="px-4 text-gray-500">Ваша история пока пуста</div>
+      )}
+      <div className="flex-1 overflow-y-auto">
+        {groups.map((group) => (
+          <div key={group.key} className="pb-4">
+            <div className="px-4 pt-2 pb-2 text-xs font-semibold text-gray-500 uppercase">
+              {group.title}
             </div>
-
-            {/* History Items */}
-            <div className="space-y-0">
-              {dateGroup.items.map((item, itemIndex) => (
-                <div key={itemIndex} className="rounded-3xl px-4 pb-6">
-                  <div className="flex flex-col gap-2">
-                    {/* Title and Time */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-base font-medium text-gray-900">
-                        {item.type}
-                      </span>
-                      <span className="text-base font-medium text-gray-900">
-                        {item.time}
-                      </span>
+            <div className="divide-y divide-gray-100">
+              {group.items.map((log) => {
+                const label = labelByType[log.type ?? ""] || log.type;
+                const Icon = iconByType[log.type ?? ""];
+                const created = new Date(log.createdAt ?? Date.now());
+                const time = created.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                const dateWithTime = `${created.toLocaleDateString()} ${time}`;
+                return (
+                  <button
+                    key={log.id}
+                    onClick={() => {
+                      if (log.route) navigate({ to: log.route as any });
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                  >
+                    {log.entityImage ? (
+                      <img
+                        src={
+                          log.entityImage.startsWith("/")
+                            ? log.entityImage
+                            : getImageUrl(log.entityImage)
+                        }
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-900">
+                        {Icon}
+                      </div>
+                    )}
+                    <div className="flex-1 text-left">
+                      <div className="text-sm font-medium text-gray-900">{label}</div>
+                      {log.entityTitle && (
+                        <div className="text-xs text-gray-700">{log.entityTitle}</div>
+                      )}
+                      <div className="text-xs text-gray-500">
+                        {log.meetId
+                          ? `Встреча #${log.meetId}`
+                          : log.caseId
+                            ? `Кейс #${log.caseId}`
+                            : log.itemId && log.type?.startsWith("friend_")
+                              ? `Профиль #${log.itemId}`
+                              : ""}
+                      </div>
                     </div>
-
-                    {/* Event Details */}
-                    <div className="flex">
-                      <p className="text-sm text-gray-900">{item.event}</p>
+                    <div className="text-xs font-medium text-gray-900">
+                      {group.key === "30days" ? dateWithTime : time}
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

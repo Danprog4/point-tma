@@ -119,6 +119,7 @@ export const eventRouter = createTRPCRouter({
         userId: ctx.userId,
         type: "quest_end",
         eventId: input.id,
+        eventType: eventData.category ?? input.name,
       });
     }),
 
@@ -219,6 +220,7 @@ export const eventRouter = createTRPCRouter({
         userId: ctx.userId,
         type: "event_buy",
         eventId: input.id,
+        eventType: eventData.category ?? input.name,
         amount: eventData.price ? eventData.price * input.count : null,
       });
     }),
@@ -320,6 +322,7 @@ export const eventRouter = createTRPCRouter({
         userId: ctx.userId,
         type: "event_activate",
         eventId: input.id,
+        eventType: eventData.category ?? input.name,
       });
     }),
 

@@ -54,10 +54,12 @@ export const crmRouter = createTRPCRouter({
           type: loggingTable.type,
           amount: loggingTable.amount,
           eventId: loggingTable.eventId,
+          eventType: loggingTable.eventType,
           meetId: loggingTable.meetId,
           caseId: loggingTable.caseId,
           itemId: loggingTable.itemId,
           keyId: loggingTable.keyId,
+          details: loggingTable.details,
           createdAt: loggingTable.createdAt,
         })
         .from(loggingTable)

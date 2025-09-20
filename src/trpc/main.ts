@@ -1,12 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
   calendarTable,
+  casesTable,
   complaintsTable,
+  eventsTable,
   favoritesTable,
   friendRequestsTable,
+  loggingTable,
   meetTable,
   notificationsTable,
   ratingsUserTable,
@@ -69,6 +72,158 @@ export const router = {
       });
 
       return user;
+    }),
+
+  // User activity history (logs)
+  getMyLogs: procedure
+    .input(
+      z
+        .object({
+          limit: z.number().min(1).max(100).optional(),
+          cursor: z.number().nullish(), // last seen id for pagination
+          type: z.string().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const pageSize = input?.limit ?? 50;
+
+      const whereParts = [eq(loggingTable.userId, ctx.userId)];
+      if (input?.type) whereParts.push(eq(loggingTable.type, input.type));
+      if (input?.cursor) whereParts.push(lt(loggingTable.id, input.cursor));
+
+      const items = await db.query.loggingTable.findMany({
+        where: and(...whereParts, ne(loggingTable.type, "location_update")),
+        orderBy: [desc(loggingTable.createdAt), desc(loggingTable.id)],
+        limit: pageSize + 1,
+        columns: {
+          id: true,
+          userId: true,
+          type: true,
+          amount: true,
+          eventId: true,
+          eventType: true,
+          meetId: true,
+          caseId: true,
+          itemId: true,
+          keyId: true,
+          createdAt: true,
+        },
+      });
+
+      const hasMore = items.length > pageSize;
+      const pageItems = hasMore ? items.slice(0, pageSize) : items;
+
+      // Collect referenced IDs
+      const eventIds = pageItems.map((l) => l.eventId).filter((v): v is number => !!v);
+      const meetIds = pageItems.map((l) => l.meetId).filter((v): v is number => !!v);
+      const caseIds = pageItems.map((l) => l.caseId).filter((v): v is number => !!v);
+      const userIds = pageItems
+        .map((l) =>
+          l.itemId &&
+          typeof l.type === "string" &&
+          (l.type.startsWith("friend_") ||
+            l.type === "subscribe" ||
+            l.type === "unsubscribe" ||
+            l.type === "favorite_add" ||
+            l.type === "favorite_remove")
+            ? l.itemId
+            : null,
+        )
+        .filter((v): v is number => !!v);
+
+      // Load referenced entities
+      const [events, meets, cases, users] = await Promise.all([
+        eventIds.length
+          ? db.query.eventsTable.findMany({
+              where: inArray(eventsTable.id, Array.from(new Set(eventIds))),
+              columns: { id: true, title: true, image: true, category: true },
+            })
+          : Promise.resolve(
+              [] as {
+                id: number;
+                title: string | null;
+                image: string | null;
+                category: string | null;
+              }[],
+            ),
+        meetIds.length
+          ? db.query.meetTable.findMany({
+              where: inArray(meetTable.id, Array.from(new Set(meetIds))),
+              columns: { id: true, name: true, image: true },
+            })
+          : Promise.resolve(
+              [] as { id: number; name: string | null; image: string | null }[],
+            ),
+        caseIds.length
+          ? db.query.casesTable.findMany({
+              where: inArray(casesTable.id, Array.from(new Set(caseIds))),
+              columns: { id: true, name: true, photo: true },
+            })
+          : Promise.resolve(
+              [] as { id: number; name: string | null; photo: string | null }[],
+            ),
+        userIds.length
+          ? db.query.usersTable.findMany({
+              where: inArray(usersTable.id, Array.from(new Set(userIds))),
+              columns: { id: true, name: true, surname: true, photo: true },
+            })
+          : Promise.resolve(
+              [] as {
+                id: number;
+                name: string | null;
+                surname: string | null;
+                photo: string | null;
+              }[],
+            ),
+      ]);
+
+      const eventById = new Map(events.map((e) => [e.id, e] as const));
+      const meetById = new Map(meets.map((m) => [m.id, m] as const));
+      const caseById = new Map(cases.map((c) => [c.id, c] as const));
+      const userById = new Map(users.map((u) => [u.id, u] as const));
+
+      const withRoute = pageItems.map((log) => {
+        let route: string | null = null;
+        let entityTitle: string | null = null;
+        let entityImage: string | null = null;
+        if (log.meetId) {
+          route = `/meet/${log.meetId}`;
+          const m = meetById.get(log.meetId);
+          entityTitle = m?.name ?? null;
+          entityImage = m?.image ?? null;
+        } else if (log.caseId) {
+          route = `/case/${log.caseId}`;
+          const c = caseById.get(log.caseId);
+          entityTitle = c?.name ?? null;
+          entityImage = (c as any)?.photo ?? null;
+        } else if (log.eventId) {
+          const ev = eventById.get(log.eventId);
+          if ((ev?.category || log.eventType) && log.eventId)
+            route = `/event/${encodeURIComponent(log.eventType || ev?.category || "")}/${log.eventId}`;
+          entityTitle = ev?.title ?? null;
+          entityImage = ev?.image ?? null;
+        } else if (
+          log.itemId &&
+          typeof log.type === "string" &&
+          (log.type.startsWith("friend_") ||
+            log.type === "subscribe" ||
+            log.type === "unsubscribe" ||
+            log.type === "favorite_add" ||
+            log.type === "favorite_remove")
+        ) {
+          route = `/user-profile/${log.itemId}`;
+          const u = userById.get(log.itemId);
+          entityTitle = u ? `${u.name ?? ""} ${u.surname ?? ""}`.trim() : null;
+          entityImage = u?.photo ?? null;
+        }
+        return { ...log, route, entityTitle, entityImage };
+      });
+
+      return {
+        items: withRoute,
+        nextCursor: hasMore ? withRoute[withRoute.length - 1]!.id : undefined,
+      };
     }),
 
   getOnBoarding: procedure
@@ -202,8 +357,21 @@ export const router = {
           city: input.city,
         })
         .where(eq(usersTable.id, ctx.userId));
-
-      await logAction({ userId: ctx.userId, type: "profile_update" });
+      // Compute and store diffs for CRM
+      const changes: Record<string, { from: unknown; to: unknown }> = {};
+      const fields: Array<[string, unknown, unknown]> = [
+        ["email", user?.email, input.email],
+        ["phone", user?.phone, input.phone],
+        ["bio", user?.bio, input.bio],
+        ["name", user?.name, input.name],
+        ["surname", user?.surname, input.surname],
+        ["birthday", user?.birthday, input.birthday],
+        ["city", user?.city, input.city],
+      ];
+      for (const [key, before, after] of fields) {
+        if (before !== after) changes[key] = { from: before ?? null, to: after ?? null };
+      }
+      await logAction({ userId: ctx.userId, type: "profile_update", details: changes });
       return user;
     }),
 
@@ -262,11 +430,20 @@ export const router = {
         type: "like",
       });
 
+      let eventCategoryForLog: string | undefined;
+      if (input.eventId) {
+        const ev = await db.query.eventsTable.findFirst({
+          where: eq(eventsTable.id, input.eventId),
+          columns: { category: true },
+        });
+        eventCategoryForLog = ev?.category ?? undefined;
+      }
       await logAction({
         userId: ctx.userId,
         type: "favorite_add",
         itemId: input.userId,
         eventId: input.eventId,
+        eventType: eventCategoryForLog,
         meetId: input.meetId,
       });
 
@@ -404,11 +581,20 @@ export const router = {
             eq(favoritesTable.type, input.type),
           ),
         );
+      let eventCategoryForLog: string | undefined;
+      if (input.eventId) {
+        const ev = await db.query.eventsTable.findFirst({
+          where: eq(eventsTable.id, input.eventId),
+          columns: { category: true },
+        });
+        eventCategoryForLog = ev?.category ?? undefined;
+      }
       await logAction({
         userId: ctx.userId,
         type: "favorite_remove",
         itemId: input.userId,
         eventId: input.eventId,
+        eventType: eventCategoryForLog,
         meetId: input.meetId,
       });
       return user;
@@ -516,10 +702,19 @@ export const router = {
         rating: input.rating,
         userId: user.id,
       });
+      let eventCategoryForLog: string | undefined;
+      if (input.eventId) {
+        const ev = await db.query.eventsTable.findFirst({
+          where: eq(eventsTable.id, input.eventId),
+          columns: { category: true },
+        });
+        eventCategoryForLog = ev?.category ?? undefined;
+      }
       await logAction({
         userId: ctx.userId,
         type: "review_send",
         eventId: input.eventId,
+        eventType: eventCategoryForLog,
       });
     }),
 
@@ -548,10 +743,19 @@ export const router = {
         toUserId: input.toUserId,
         type: input.type,
       });
+      let eventCategoryForLog: string | undefined;
+      if (input.eventId) {
+        const ev = await db.query.eventsTable.findFirst({
+          where: eq(eventsTable.id, input.eventId),
+          columns: { category: true },
+        });
+        eventCategoryForLog = ev?.category ?? undefined;
+      }
       await logAction({
         userId: ctx.userId,
         type: "complaint_send",
         eventId: input.eventId,
+        eventType: eventCategoryForLog,
         meetId: input.meetId,
         itemId: input.toUserId,
       });
@@ -672,6 +876,7 @@ export const router = {
           userId: ctx.userId,
           type: "event_save_toggle",
           eventId: input.eventId,
+          eventType: input.type,
         });
       }
     }),

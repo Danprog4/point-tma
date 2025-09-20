@@ -331,12 +331,14 @@ export const loggingTable = pgTable("logging", {
   id: serial("id").primaryKey(),
   userId: bigint("user_id", { mode: "number" }),
   eventId: bigint("event_id", { mode: "number" }),
+  eventType: varchar("event_type", { length: 255 }),
   meetId: bigint("meet_id", { mode: "number" }),
   caseId: bigint("case_id", { mode: "number" }),
   itemId: bigint("item_id", { mode: "number" }),
   keyId: bigint("key_id", { mode: "number" }),
   amount: integer("amount"),
   type: varchar("type", { length: 255 }), // buy, active, etc
+  details: jsonb("details").$type<Record<string, { from: unknown; to: unknown }>>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

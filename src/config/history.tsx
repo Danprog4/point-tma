@@ -12,7 +12,7 @@ export const labelByType: Record<string, string> = {
 
   meet_create: "Создание встречи",
   meet_join_request: "Запрос на участие во встрече",
-  meet_invites_send: "Отправка приглашений",
+  meet_invites_send: "Отправка приглашения",
   meet_invite_send: "Отправка приглашения",
   meet_invite_unsend: "Отмена приглашения",
   meet_invite_decline: "Отклонение приглашения",

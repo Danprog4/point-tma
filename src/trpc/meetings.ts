@@ -320,7 +320,7 @@ export const meetingRouter = createTRPCRouter({
         await db.insert(notificationsTable).values(notificationRows);
         await logAction({
           userId: ctx.userId,
-          type: "meet_invites_send",
+          type: "meet_invite_send",
           meetId,
           amount: rows.length,
         });

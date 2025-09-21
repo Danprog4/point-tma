@@ -12,14 +12,13 @@ export const labelByType: Record<string, string> = {
 
   meet_create: "Создание встречи",
   meet_join_request: "Запрос на участие во встрече",
-  meet_invites_send: "Отправка приглашения",
   meet_invite_send: "Отправка приглашения",
   meet_invite_unsend: "Отмена приглашения",
   meet_invite_decline: "Отклонение приглашения",
   meet_invite_accept: "Принятие приглашения",
   meet_leave: "Покидание встречи",
   meet_end: "Завершение встречи",
-  share_meet: "Поделиться встречей",
+  share_meet: "Вы поделились встречей",
 
   fast_meet_create: "Создание быстрой встречи",
   fast_meet_join: "Присоединение к быстрой встрече",
@@ -55,7 +54,6 @@ export const iconByType: Record<string, React.ReactNode> = {
   case_open: <Gift className="h-4 w-4" />,
   meet_create: <Calendar className="h-4 w-4" />,
   meet_join_request: <Calendar className="h-4 w-4" />,
-  meet_invites_send: <Calendar className="h-4 w-4" />,
   meet_invite_send: <Calendar className="h-4 w-4" />,
   meet_invite_unsend: <Calendar className="h-4 w-4" />,
   meet_invite_decline: <Calendar className="h-4 w-4" />,

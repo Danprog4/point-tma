@@ -9,5 +9,4 @@ export function lockBodyScroll() {
 export function unlockBodyScroll() {
   document.body.classList.remove("body--drawer-open");
   document.body.style.top = "";
-  window.scrollTo(0, scrollY);
 }

@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import KeyDrawer from "~/components/KeyDrawer";
 import { usePlatform } from "~/hooks/usePlatform";
+import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/inventory")({
@@ -165,7 +166,9 @@ function RouteComponent() {
                 <img
                   src={
                     isCase || isKey
-                      ? ((eventData as any)?.photo ?? "/fallback.png")
+                      ? (eventData as any)?.photo?.startsWith("/")
+                        ? (eventData as any).photo
+                        : (getImageUrl((eventData as any)?.photo) ?? "/fallback.png")
                       : ((eventData as any)?.image ?? "/fallback.png")
                   }
                   alt={

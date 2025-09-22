@@ -112,6 +112,8 @@ export default function CalendarDrawer({
     onOpenChange(false);
   };
 
+  console.log(events, "events");
+
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>
@@ -138,6 +140,14 @@ export default function CalendarDrawer({
                     );
 
                 console.log(event.isPlanned);
+
+                const hasInactiveTicket = !!user?.inventory?.some(
+                  (t: any) =>
+                    t?.type === "ticket" &&
+                    t?.eventId === event.eventId &&
+                    t?.name === event.eventType &&
+                    t?.isActive === false,
+                );
 
                 return (
                   <div key={event.id}>
@@ -190,7 +200,7 @@ export default function CalendarDrawer({
                             <div></div>
                           )}
                           <div className="flex items-center justify-center gap-2">
-                            {event.isTicket && (
+                            {hasInactiveTicket && (
                               <div className="font-bold text-black">
                                 У вас имеется неактивированный билет на это событие
                               </div>

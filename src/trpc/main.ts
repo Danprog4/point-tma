@@ -37,6 +37,7 @@ export const router = {
   getNotifications: procedure.query(async ({ ctx }) => {
     const notifications = await db.query.notificationsTable.findMany({
       where: eq(notificationsTable.toUserId, ctx.userId),
+      orderBy: [desc(notificationsTable.createdAt), desc(notificationsTable.id)],
     });
 
     return notifications;
@@ -1123,6 +1124,19 @@ export const router = {
       await logAction({ userId: ctx.userId, type: "location_update" });
       return { success: true };
     }),
+
+  markNotificationsAsRead: procedure.mutation(async ({ ctx }) => {
+    await db
+      .update(notificationsTable)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(notificationsTable.toUserId, ctx.userId),
+          eq(notificationsTable.isRead, false),
+        ),
+      );
+    return { success: true };
+  }),
 
   // Log meet share action
   logShareMeet: procedure

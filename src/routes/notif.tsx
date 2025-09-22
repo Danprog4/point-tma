@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -17,10 +18,20 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const markNotificationsAsRead = useMutation(
+    trpc.main.markNotificationsAsRead.mutationOptions(),
+  );
   const { data: notifications } = useQuery(trpc.main.getNotifications.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const readNotification = useMutation(trpc.main.readNotification.mutationOptions());
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
+
+  useEffect(() => {
+    markNotificationsAsRead.mutate();
+    queryClient.setQueryData(trpc.main.getNotifications.queryKey(), (old: any) => {
+      return old.map((n: any) => (n.isRead === false ? { ...n, isRead: true } : n));
+    });
+  }, []);
 
   const getNotificationMessage = (type: string) => {
     switch (type) {
@@ -81,14 +92,7 @@ function RouteComponent() {
       }
     })();
 
-    return (
-      <div className="relative">
-        {iconContent}
-        {!notification.isRead && (
-          <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500"></div>
-        )}
-      </div>
-    );
+    return <div className="relative">{iconContent}</div>;
   };
 
   const getNotificationDecs = (type: string, notification: any) => {
@@ -156,34 +160,52 @@ function RouteComponent() {
     }
   };
 
-  // Группировка уведомлений по временным периодам
+  // Приоритет сортировки по типу уведомления
+  const typePriority: Record<string, number> = {
+    "meet invite": 1,
+    "meet request": 2,
+    "friend request": 3,
+    subscribe: 4,
+    like: 5,
+  };
+
+  const sortByTypePriority = (arr: any[]) =>
+    [...arr].sort(
+      (a, b) => (typePriority[a.type || ""] ?? 99) - (typePriority[b.type || ""] ?? 99),
+    );
+
+  // Группировка как в истории: Сегодня, Вчера, За 30 дней (остальное игнорируем)
   const groupNotificationsByTime = () => {
-    if (!notifications) return { today: [], last7Days: [], last30Days: [] };
+    if (!notifications) return { today: [], yesterday: [], last30Days: [] };
 
-    const now = dayjs();
-    const today = now.startOf("day");
-    const sevenDaysAgo = now.subtract(7, "day");
-    const thirtyDaysAgo = now.subtract(30, "day");
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    const startOf30DaysAgo = new Date(startOfToday);
+    startOf30DaysAgo.setDate(startOf30DaysAgo.getDate() - 30);
 
-    const grouped = {
-      today: [] as any[],
-      last7Days: [] as any[],
-      last30Days: [] as any[],
-    };
+    const toDate = (d?: string | Date | null) => (d ? new Date(d) : new Date(0));
 
-    notifications.forEach((notification) => {
-      const notificationDate = dayjs(notification.createdAt);
-
-      if (notificationDate.isAfter(today)) {
-        grouped.today.push(notification);
-      } else if (notificationDate.isAfter(sevenDaysAgo)) {
-        grouped.last7Days.push(notification);
-      } else if (notificationDate.isAfter(thirtyDaysAgo)) {
-        grouped.last30Days.push(notification);
-      }
+    const today = notifications.filter((n) => {
+      const d = toDate(n.createdAt as any);
+      return d >= startOfToday;
+    });
+    const yesterday = notifications.filter((n) => {
+      const d = toDate(n.createdAt as any);
+      return d >= startOfYesterday && d < startOfToday;
+    });
+    // Включаем сюда не только последние 30 дней, но и всё, что старше вчера
+    const last30Days = notifications.filter((n) => {
+      const d = toDate(n.createdAt as any);
+      return d < startOfYesterday;
     });
 
-    return grouped;
+    return {
+      today: sortByTypePriority(today),
+      yesterday: sortByTypePriority(yesterday),
+      last30Days: sortByTypePriority(last30Days),
+    };
   };
 
   const handleReadNotification = (notification: any) => {
@@ -237,6 +259,9 @@ function RouteComponent() {
   const isMobile = usePlatform();
   const groupedNotifications = groupNotificationsByTime();
 
+  console.log(groupedNotifications);
+  console.log(notifications);
+
   return (
     <div
       data-mobile={isMobile}
@@ -253,21 +278,15 @@ function RouteComponent() {
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
         <h1 className="text-base font-bold text-gray-800">Уведомления</h1>
-        <div className="flex items-center justify-center p-4 pb-2"></div>
+        <div className="flex h-5 w-5 items-center justify-center"></div>
       </div>
 
       <div className="flex w-full flex-col items-start justify-center gap-6 px-4">
         {notifications && notifications.length > 0 ? (
           <>
             {renderNotificationSection("Сегодня", groupedNotifications.today)}
-            {renderNotificationSection(
-              "Последние 7 дней",
-              groupedNotifications.last7Days,
-            )}
-            {renderNotificationSection(
-              "Последние 30 дней",
-              groupedNotifications.last30Days,
-            )}
+            {renderNotificationSection("Вчера", groupedNotifications.yesterday)}
+            {renderNotificationSection("За 30 дней", groupedNotifications.last30Days)}
           </>
         ) : (
           <div className="px-4 py-4 text-start text-sm text-gray-500">

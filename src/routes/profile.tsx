@@ -30,6 +30,7 @@ import { WarningsBansDrawer } from "~/components/WarningsBansDrawer";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
@@ -459,7 +460,14 @@ function RouteComponent() {
                   />
                   <WarningsBansDrawer
                     open={isWarningsBansOpen}
-                    onOpenChange={setIsWarningsBansOpen}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        lockBodyScroll();
+                      } else {
+                        unlockBodyScroll();
+                      }
+                      setIsWarningsBansOpen(open);
+                    }}
                   >
                     <div className="flex cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0">
                       <div className="flex items-center gap-3">

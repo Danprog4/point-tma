@@ -186,6 +186,63 @@ export const Step2 = ({
         );
   };
 
+  // Reconstruct selected афиша items (including user-created custom events) for non-custom locations in edit mode
+  useEffect(() => {
+    if (!eventsData || !Array.isArray(locations) || locations.length === 0) return;
+
+    // Track already selected indices to avoid duplicates
+    const existingByIndex: Record<number, { id: number; type: string }> = {};
+    for (const si of selectedItems)
+      existingByIndex[si.index] = { id: si.id, type: si.type };
+
+    const inferred: { id: number; type: string; index: number }[] = [];
+
+    locations.forEach((loc, idx) => {
+      if (!loc) return;
+      // Skip if this step is explicitly custom
+      if (loc.isCustom) return;
+      // Skip if already selected
+      if (existingByIndex[idx]) return;
+
+      const address = (loc.address || "").toLowerCase().trim();
+      const title = (loc.location || "").toLowerCase().trim();
+      if (!address && !title) return;
+
+      let best: { id: number; type: string } | null = null;
+      let bestScore = -1;
+
+      for (const ev of eventsData) {
+        const evLocation = (ev.location || "").toLowerCase();
+        const evTitle = (ev.title || "").toLowerCase();
+
+        let score = 0;
+        if (address && evLocation && evLocation === address) score += 3;
+        if (title && evTitle && evTitle === title) score += 2;
+        if (title && evTitle && evTitle.includes(title)) score += 1;
+        if (address && evLocation && evLocation.includes(address)) score += 1;
+
+        if (score > bestScore) {
+          bestScore = score;
+          best = { id: ev.id as number, type: ev.type as string };
+        }
+      }
+
+      // Require a decent score to avoid false positives
+      if (best && bestScore >= 3) {
+        inferred.push({ id: best.id, type: best.type, index: idx });
+      }
+    });
+
+    if (inferred.length > 0) {
+      setSelectedItems((prev) => {
+        // Only add for indices that aren't already selected
+        const prevByIndex = new Set(prev.map((p) => p.index));
+        const additions = inferred.filter((i) => !prevByIndex.has(i.index));
+        return additions.length > 0 ? [...prev, ...additions] : prev;
+      });
+    }
+  }, [eventsData, locations]);
+
   const extractMarkersFromSuggest = (): Array<[number, number]> => {
     try {
       console.log("🗺️ Step2: extracting markers from", searchAddress.data);
@@ -874,15 +931,17 @@ export const Step2 = ({
                         <div
                           className="flex h-6 w-6 items-start"
                           onClick={() => {
-                            setSelectedItems(
-                              selectedItems.filter(
-                                (si) =>
-                                  !(
-                                    si.id === item.id &&
-                                    si.type === item.type &&
-                                    si.index === index
-                                  ),
-                              ),
+                            // Remove only the selected афиша item and clear all fields; keep the step empty
+                            const newLocations = [...locations];
+                            newLocations[index] = {
+                              location: "",
+                              address: "",
+                              starttime: "",
+                              endtime: "",
+                            };
+                            setLocations(newLocations);
+                            setSelectedItems((prev) =>
+                              prev.filter((si) => si.index !== index),
                             );
                           }}
                         >
@@ -971,7 +1030,40 @@ export const Step2 = ({
                     <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
                       <div
                         className=""
-                        onClick={() => setLength(length > 1 ? length - 1 : length)}
+                        onClick={() => {
+                          // Delete this step location cleanly
+                          if (length <= 1) {
+                            // If it's the only one, just clear fields and selection
+                            const newLocations = [...locations];
+                            newLocations[index] = {
+                              location: "",
+                              address: "",
+                              starttime: "",
+                              endtime: "",
+                            };
+                            setLocations(newLocations);
+                            setSelectedItems((prev) =>
+                              prev.filter((si) => si.index !== index),
+                            );
+                            return;
+                          }
+
+                          // Remove from locations
+                          const newLocations = locations.filter((_, i) => i !== index);
+                          setLocations(newLocations);
+
+                          // Remove and reindex selectedItems after the removed index
+                          setSelectedItems((prev) =>
+                            prev
+                              .filter((si) => si.index !== index)
+                              .map((si) =>
+                                si.index > index ? { ...si, index: si.index - 1 } : si,
+                              ),
+                          );
+
+                          // Decrease steps count
+                          setLength(length - 1);
+                        }}
                       >
                         <Bin />
                       </div>

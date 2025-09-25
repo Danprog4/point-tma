@@ -65,6 +65,7 @@ function RouteComponent() {
     { id: number; type: string; index: number }[]
   >([]);
   const [length, setLength] = useState(1);
+  const [index, setIndex] = useState(0);
 
   // Step 3 state
   const [friendName, setFriendName] = useState("");
@@ -89,12 +90,47 @@ function RouteComponent() {
   const updateMeeting = useMutation(
     trpc.meetings.updateMeeting.mutationOptions({
       onSuccess: () => {
+        const updatedMeeting = {
+          ...(meeting || {}),
+          id: Number(meetId),
+          name: title,
+          description,
+          type,
+          subType,
+          maxParticipants: participants || 0,
+          locations,
+          reward,
+          image: mainPhotoRaw,
+          gallery,
+          important,
+          time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "",
+          date: date ? date.toLocaleDateString("ru-RU") : "",
+          city,
+        } as any;
+
+        // Optimistically update meetings list (detail page derives from it)
+        queryClient.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) => {
+          if (!Array.isArray(old)) return old;
+          return old.map((m: any) =>
+            m.id === Number(meetId) ? { ...m, ...updatedMeeting } : m,
+          );
+        });
+
+        // Update individual meeting cache
+        queryClient.setQueryData(
+          trpc.meetings.getMeetingById.queryKey({ id: Number(meetId) }),
+          (old: any) => ({ ...old, ...updatedMeeting }),
+        );
+
+        // Also mark queries stale so background refetch can confirm
         queryClient.invalidateQueries({
           queryKey: trpc.meetings.getMeetings.queryKey(),
         });
+        queryClient.invalidateQueries({
+          queryKey: trpc.meetings.getMeetingById.queryKey({ id: Number(meetId) }),
+        });
 
         toast.success("✅ Встреча обновлена!");
-        // Go back to previous page, which should be the meet page
         window.history.back();
       },
       onError: (error) => {
@@ -305,7 +341,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="mt-8 flex gap-4 overflow-y-hidden px-4 pt-38 pb-4">
+      <div className="scrollbar-hidden mt-8 flex gap-4 overflow-y-hidden px-4 pt-30 pb-4">
         <button
           className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
             currentStep === 1 ? "bg-black text-white" : "bg-white text-black"
@@ -340,7 +376,7 @@ function RouteComponent() {
         </button>
       </div>
 
-      <div className="px-4 pb-20">
+      <div className="pb-20">
         {currentStep === 1 && (
           <Step1
             type={type}
@@ -385,8 +421,8 @@ function RouteComponent() {
         {currentStep === 2 && (
           <Step2
             setLocations={setLocations}
-            setIndex={() => {}}
-            index={0}
+            setIndex={setIndex}
+            index={index}
             isDisabled={false}
             locations={locations}
             length={length}
@@ -430,6 +466,7 @@ function RouteComponent() {
             selectedInventory={selectedInventory}
             user={user}
             isDisabled={false}
+            event={{} as any}
           />
         )}
       </div>

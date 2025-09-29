@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { openTelegramLink } from "@telegram-apps/sdk";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import ActiveDrawer from "~/components/ActiveDrawer";
 import GiveDrawer from "~/components/GiveDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
@@ -45,6 +46,7 @@ function RouteComponent() {
 
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
+  const sendGift = useMutation(trpc.main.sendGift.mutationOptions());
   const [page, setPage] = useState("info");
   const { name, id } = Route.useParams();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -53,7 +55,6 @@ function RouteComponent() {
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: keys } = useQuery(trpc.cases.getKeys.queryOptions());
   const [isGift, setIsGift] = useState(false);
-  const [isInvite, setIsInvite] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   console.log(keys, "keys");
@@ -92,9 +93,12 @@ function RouteComponent() {
   const filteredReviews = reviews?.filter((review) => review.eventId === Number(id));
   console.log(event);
 
-  const ticket = user?.inventory?.find(
-    (ticket) => ticket.eventId === Number(id) && ticket.name === name,
-  );
+  const ticket = useMemo(() => {
+    return user?.inventory?.find(
+      (ticket) => ticket.eventId === Number(id) && ticket.name === name,
+    );
+  }, [user?.inventory, id, name]);
+
   const ticketsForEvent =
     user?.inventory?.filter(
       (ticket) => ticket.eventId === Number(id) && ticket.name === name,
@@ -109,6 +113,25 @@ function RouteComponent() {
 
   const isDisabled = (user?.balance ?? 0) < (event?.price ?? 0) * count;
 
+  console.log(selectedUser, "selectedUser");
+  console.log(ticket, "ticket");
+
+  const handleGiveTicket = () => {
+    if (!selectedUser || !ticket?.id) return;
+    sendGift.mutate(
+      { userId: selectedUser.id, item: ticket as any },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+          setSelectedUser(null);
+          setIsOpen(false);
+          setIsGift(false);
+          toast.success("Билет успешно подарен");
+        },
+      },
+    );
+  };
+
   const handleBuyEvent = () => {
     if (isDisabled) {
       return;
@@ -121,52 +144,31 @@ function RouteComponent() {
         count,
       },
       {
-        onSuccess: () => {
-          queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
-            if (!old) return old;
-            return {
-              ...old,
-              inventory: [
-                ...(old.inventory ?? []),
-                {
-                  type: "ticket",
-                  eventId: Number(id),
-                  name,
-                  isActive: false,
-                  id: Date.now(),
-                },
-              ],
-            };
-          });
-
+        onSuccess: (createdTickets: any[]) => {
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
 
-          setIsBought(true);
           if (isGift) {
-            setIsGiveDrawerOpen(true);
-            setIsOpen(false);
-            setIsBought(false);
-            setIsGift(false);
+            const justCreated = createdTickets?.[createdTickets.length - 1];
+            if (selectedUser && justCreated?.id) {
+              sendGift.mutate(
+                { userId: selectedUser.id, item: justCreated },
+                {
+                  onSuccess: () => {
+                    queryClient.invalidateQueries({
+                      queryKey: trpc.main.getUser.queryKey(),
+                    });
+                    setSelectedUser(null);
+                    setIsOpen(false);
+                    setIsGift(false);
+                    toast.success("Билет успешно подарен");
+                  },
+                },
+              );
+            }
             return;
           }
-          if (isInvite) {
-            navigate({
-              to: "/createMeet",
-              search: {
-                step: 0,
-                isExtra: true,
-                isBasic: false,
-                typeOfEvent: event?.category,
-                idOfEvent: event?.id,
-                event: event,
-                selectedIds: selectedIds,
-              },
-            });
-            setIsOpen(false);
-            setIsBought(false);
-            setIsInvite(false);
-            return;
-          }
+
+          setIsBought(true);
         },
       },
     );
@@ -640,8 +642,8 @@ function RouteComponent() {
               setIsMoreOpen={setIsMoreOpen}
               handleSaveEventOrMeet={handleSaveEventOrMeet}
               handleGiveTicket={() => {
+                setIsGiveDrawerOpen(true);
                 setIsGift(true);
-                setIsOpen(true);
                 setIsMoreOpen(false);
               }}
               handleInvite={() => {
@@ -669,6 +671,13 @@ function RouteComponent() {
           open={isGiveDrawerOpen}
           onOpenChange={setIsGiveDrawerOpen}
           users={users as User[]}
+          isGift={isGift}
+          handleBuyEvent={() => {
+            setIsOpen(true);
+            setIsGiveDrawerOpen(false);
+          }}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
         />
       )}
 
@@ -682,8 +691,18 @@ function RouteComponent() {
           setSelectedIds={setSelectedIds}
           getImageUrl={getImageUrl}
           handleBuyEvent={() => {
-            setIsInvite(true);
-            setIsOpen(true);
+            navigate({
+              to: "/createMeet",
+              search: {
+                step: 0,
+                isExtra: true,
+                isBasic: false,
+                typeOfEvent: event?.category,
+                idOfEvent: event?.id,
+                event: event,
+                selectedIds: selectedIds,
+              },
+            });
             setIsInviteDrawerOpen(false);
           }}
           user={user}

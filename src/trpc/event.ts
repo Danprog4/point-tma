@@ -223,6 +223,8 @@ export const eventRouter = createTRPCRouter({
         eventType: eventData.category ?? input.name,
         amount: eventData.price ? eventData.price * input.count : null,
       });
+      const created = newInventory.slice(-input.count);
+      return created;
     }),
 
   activateEvent: procedure

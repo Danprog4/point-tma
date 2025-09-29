@@ -1003,7 +1003,7 @@ export const router = {
           eventId: z.number(),
           isActive: z.boolean().optional(),
           name: z.string(),
-          id: z.number().optional(),
+          id: z.number(),
         }),
       }),
     )
@@ -1030,16 +1030,22 @@ export const router = {
         });
       }
 
-      const newUserInventory = user.inventory?.filter(
-        (item) =>
-          !(
-            item.eventId === input.item.eventId &&
-            item.name === input.item.name &&
-            item.id === input.item.id
-          ),
-      );
+      const currentInventory = user.inventory || [];
+      const removeIdx = currentInventory.findIndex((i) => i.id === input.item.id);
 
-      const newTargetInventory = [...(targetUser.inventory || []), input.item];
+      if (removeIdx < 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Ticket id not found" });
+      }
+
+      const newUserInventory = [
+        ...currentInventory.slice(0, removeIdx),
+        ...currentInventory.slice(removeIdx + 1),
+      ];
+
+      const newTargetInventory = [
+        ...(targetUser.inventory || []),
+        { ...input.item, isActive: false },
+      ];
 
       await db
         .update(usersTable)

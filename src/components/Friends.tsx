@@ -10,9 +10,13 @@ import { CloseRed } from "./Icons/CloseRed";
 export const Friends = ({
   isDrawer = false,
   setSelectedUser,
+  handleBuyEvent,
+  isGift,
 }: {
   isDrawer?: boolean;
   setSelectedUser?: (user: User) => void;
+  handleBuyEvent?: () => void;
+  isGift?: boolean;
 }) => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -73,6 +77,12 @@ export const Friends = ({
                       className="text-[#9924FF]"
                       onClick={(e) => {
                         e.stopPropagation();
+
+                        if (isGift) {
+                          setSelectedUser?.(user);
+                          handleBuyEvent?.();
+                          return;
+                        }
                         setSelectedUser?.(user);
                       }}
                     >
@@ -173,6 +183,12 @@ export const Friends = ({
                       className="text-[#9924FF]"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (isGift) {
+                          setSelectedUser?.(requestUser as any);
+                          handleBuyEvent?.();
+
+                          return;
+                        }
                         setSelectedUser?.(requestUser as any);
                       }}
                     >

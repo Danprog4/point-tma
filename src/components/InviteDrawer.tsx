@@ -229,7 +229,7 @@ export default function InviteDrawer({
               onClick={handleBuyEvent}
               className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
             >
-              <div>Купить и создать встречу</div>
+              <div>Создать встречу</div>
             </button>
           </div>
         </Drawer.Content>

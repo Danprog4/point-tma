@@ -29,7 +29,7 @@ export default function GiveDrawer({
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
+  const [isSent, setIsSent] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const trpc = useTRPC();
   const { data: eventData } = useQuery(
@@ -42,31 +42,48 @@ export default function GiveDrawer({
 
   const sendGift = useMutation(
     trpc.main.sendGift.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
-      },
+      onSuccess: () => {},
       onError: () => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
       },
     }),
   );
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
-  const [isSent, setIsSent] = useState(false);
+  const onClickBack = () => {
+    onOpenChange(!open);
+    if (isSent && open) {
+      queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      if (selectedUser && item) {
+        // Оптимистично обновляем кэш - удаляем только конкретный билет
+        queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            inventory:
+              old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
+          };
+        });
+
+        sendGift.mutate({ userId: selectedUser.id, item });
+        setIsSent(true);
+      }
+    }
+  };
+
   const handleSendGift = () => {
     console.log(selectedUser, "selectedUser");
     console.log(item, "item");
 
     if (selectedUser && item) {
       // Оптимистично обновляем кэш - удаляем только конкретный билет
-      queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          inventory:
-            old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
-        };
-      });
+      // queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {
+      //   if (!old) return old;
+      //   return {
+      //     ...old,
+      //     inventory:
+      //       old.inventory?.filter(Boolean).filter((i) => i.id !== item?.id) ?? [],
+      //   };
+      // });
 
       sendGift.mutate({ userId: selectedUser.id, item });
       setIsSent(true);
@@ -74,14 +91,14 @@ export default function GiveDrawer({
   };
 
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange}>
+    <Drawer.Root open={open} onOpenChange={onClickBack}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80%] flex-col rounded-t-[16px] bg-white py-4">
           <header className="flex items-center justify-between px-4 pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="font-bold">Сделать подарок</div>
-            <button className="z-[100]" onClick={() => onOpenChange(false)}>
+            <button className="z-[100]" onClick={() => onClickBack()}>
               <X className="h-6 w-6 text-gray-900" />
             </button>
           </header>

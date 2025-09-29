@@ -18,6 +18,7 @@ export default function InviteDrawer({
   participants,
   setParticipants,
   meeting,
+  handleBuyEvent,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,7 +30,8 @@ export default function InviteDrawer({
   users: any[];
   participants: any[];
   setParticipants: (participants: any[]) => void;
-  meeting: any;
+  meeting?: any;
+  handleBuyEvent: () => void;
 }) {
   const trpc = useTRPC();
   const logShareMeet = useMutation(trpc.main.logShareMeet.mutationOptions());
@@ -64,23 +66,25 @@ export default function InviteDrawer({
               <X className="h-6 w-6 text-gray-900" />
             </button>
           </header>
-          <div className="flex items-center justify-between">
-            <div
-              onClick={() => {
-                if (shareURL.isAvailable()) {
-                  shareURL(link, text);
-                }
-                try {
-                  if (meeting?.id) logShareMeet.mutate({ meetId: Number(meeting.id) });
-                } catch {}
-              }}
-              className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2"
-            >
-              <ShareIcon />
-              Поделиться ссылкой на встречу
+          {meeting && (
+            <div className="flex items-center justify-between pb-4">
+              <div
+                onClick={() => {
+                  if (shareURL.isAvailable()) {
+                    shareURL(link, text);
+                  }
+                  try {
+                    if (meeting?.id) logShareMeet.mutate({ meetId: Number(meeting.id) });
+                  } catch {}
+                }}
+                className="flex w-full items-center gap-2 rounded-3xl border border-[#DEB8FF] px-4 py-2"
+              >
+                <ShareIcon />
+                Поделиться ссылкой на встречу
+              </div>
             </div>
-          </div>
-          <div className="flex w-full flex-col items-start gap-2 overflow-y-auto py-4">
+          )}
+          <div className="flex w-full flex-col items-start gap-2 overflow-y-auto pb-4">
             <div className="mb-2 flex w-full gap-2 text-xl font-bold">
               Пригласите друга
             </div>
@@ -219,6 +223,14 @@ export default function InviteDrawer({
                   })}
               </div>
             )}
+          </div>
+          <div className="max-auto fixed right-0 bottom-4 left-0 px-4">
+            <button
+              onClick={handleBuyEvent}
+              className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+            >
+              <div>Купить и создать встречу</div>
+            </button>
           </div>
         </Drawer.Content>
       </Drawer.Portal>

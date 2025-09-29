@@ -10,6 +10,7 @@ import { BlueTelegram } from "~/components/Icons/BlueTelegram";
 import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
 import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
+import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
 import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
@@ -38,7 +39,10 @@ function RouteComponent() {
   const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isGiveDrawerOpen, setIsGiveDrawerOpen] = useState(false);
+  const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
   const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const buyEvent = useMutation(trpc.event.buyEvent.mutationOptions());
   const [page, setPage] = useState("info");
@@ -49,6 +53,8 @@ function RouteComponent() {
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: keys } = useQuery(trpc.cases.getKeys.queryOptions());
   const [isGift, setIsGift] = useState(false);
+  const [isInvite, setIsInvite] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   console.log(keys, "keys");
 
@@ -139,6 +145,24 @@ function RouteComponent() {
           if (isGift) {
             setIsGiveDrawerOpen(true);
             setIsOpen(false);
+            setIsBought(false);
+            return;
+          }
+          if (isInvite) {
+            navigate({
+              to: "/createMeet",
+              search: {
+                step: 0,
+                isExtra: true,
+                isBasic: false,
+                typeOfEvent: event?.category,
+                idOfEvent: event?.id,
+                event: event,
+                selectedIds: selectedIds,
+              },
+            });
+            setIsOpen(false);
+            setIsBought(false);
             return;
           }
         },
@@ -618,6 +642,10 @@ function RouteComponent() {
                 setIsOpen(true);
                 setIsMoreOpen(false);
               }}
+              handleInvite={() => {
+                setIsInviteDrawerOpen(true);
+                setIsMoreOpen(false);
+              }}
               event={event}
               isSaved={isSaved}
             />
@@ -639,6 +667,26 @@ function RouteComponent() {
           open={isGiveDrawerOpen}
           onOpenChange={setIsGiveDrawerOpen}
           users={users as User[]}
+        />
+      )}
+
+      {isInviteDrawerOpen && (
+        <InviteDrawer
+          open={isInviteDrawerOpen}
+          onOpenChange={setIsInviteDrawerOpen}
+          users={users as User[]}
+          friends={friends as any[]}
+          selectedIds={selectedIds}
+          setSelectedIds={setSelectedIds}
+          getImageUrl={getImageUrl}
+          handleBuyEvent={() => {
+            setIsInvite(true);
+            setIsOpen(true);
+            setIsInviteDrawerOpen(false);
+          }}
+          user={user}
+          participants={[]}
+          setParticipants={() => {}}
         />
       )}
     </div>

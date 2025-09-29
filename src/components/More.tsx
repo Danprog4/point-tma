@@ -12,6 +12,7 @@ export const More = ({
   handleSaveEventOrMeet,
   isSaved,
   handleGiveTicket,
+  handleInvite,
 }: {
   setIsMoreOpen: (isMoreOpen: boolean) => void;
   event?: any;
@@ -19,6 +20,7 @@ export const More = ({
   handleSaveEventOrMeet: (meetId?: number, eventId?: number, type?: string) => void;
   isSaved?: boolean;
   handleGiveTicket: () => void;
+  handleInvite: () => void;
 }) => {
   const navigate = useNavigate();
   const funcProps = !meet
@@ -73,7 +75,10 @@ export const More = ({
             {isSaved ? "Удалить из избранного" : "Добавить в избранное"}
           </div>
         </div>
-        <div className="flex cursor-pointer items-center justify-center gap-4">
+        <div
+          className="flex cursor-pointer items-center justify-center gap-4"
+          onClick={handleInvite}
+        >
           <Plus />
           <div>Пригласить</div>
         </div>

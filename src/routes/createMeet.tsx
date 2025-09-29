@@ -25,6 +25,8 @@ function RouteComponent() {
     idOfEvent?: string;
     userId?: string;
     calendarDate?: string;
+    event?: Event;
+    selectedIds?: number[];
   };
 
   console.log({ search }, "search");
@@ -91,10 +93,10 @@ function RouteComponent() {
   };
 
   useEffect(() => {
-    if (search.userId) {
-      setSelectedIds([Number(search.userId)]);
+    if (search.userId || search.selectedIds) {
+      setSelectedIds(search.selectedIds || [Number(search.userId)]);
     }
-  }, [search.userId]);
+  }, [search.userId, search.selectedIds]);
 
   // Валидация idOfEvent перед использованием
   const eventId = search.idOfEvent ? Number(search.idOfEvent) : 0;
@@ -130,6 +132,20 @@ function RouteComponent() {
       setIndex(0);
     }
   }, [search.idOfEvent, event, isValidEventId]);
+
+  useEffect(() => {
+    if (search.event) {
+      setLocations([
+        {
+          location: search.event?.title || "",
+          address: search.event?.location || "",
+          starttime: "",
+          endtime: "",
+        },
+      ]);
+      setLength(1);
+    }
+  }, [search.event]);
 
   const handleNext = () => {
     setStep(step + 1);

@@ -146,6 +146,7 @@ function RouteComponent() {
             setIsGiveDrawerOpen(true);
             setIsOpen(false);
             setIsBought(false);
+            setIsGift(false);
             return;
           }
           if (isInvite) {
@@ -163,6 +164,7 @@ function RouteComponent() {
             });
             setIsOpen(false);
             setIsBought(false);
+            setIsInvite(false);
             return;
           }
         },

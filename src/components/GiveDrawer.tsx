@@ -50,7 +50,6 @@ export default function GiveDrawer({
   );
 
   const onClickBack = () => {
-    onOpenChange(!open);
     if (isSent && open) {
       queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
       if (selectedUser && item) {
@@ -68,6 +67,7 @@ export default function GiveDrawer({
         setIsSent(true);
       }
     }
+    onOpenChange(!open);
   };
 
   const handleSendGift = () => {

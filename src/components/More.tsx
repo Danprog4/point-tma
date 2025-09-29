@@ -11,12 +11,14 @@ export const More = ({
   meet,
   handleSaveEventOrMeet,
   isSaved,
+  handleGiveTicket,
 }: {
   setIsMoreOpen: (isMoreOpen: boolean) => void;
   event?: any;
   meet?: any;
   handleSaveEventOrMeet: (meetId?: number, eventId?: number, type?: string) => void;
   isSaved?: boolean;
+  handleGiveTicket: () => void;
 }) => {
   const navigate = useNavigate();
   const funcProps = !meet
@@ -29,7 +31,10 @@ export const More = ({
         style={{ boxShadow: "0px 4px 40px 0px #000000BF" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex cursor-pointer items-center justify-center gap-4">
+        <div
+          className="flex cursor-pointer items-center justify-center gap-4"
+          onClick={handleGiveTicket}
+        >
           <Gift />
           <div>Подарить</div>
         </div>

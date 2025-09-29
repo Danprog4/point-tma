@@ -48,6 +48,7 @@ function RouteComponent() {
   const [isBought, setIsBought] = useState(false);
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: keys } = useQuery(trpc.cases.getKeys.queryOptions());
+  const [isGift, setIsGift] = useState(false);
 
   console.log(keys, "keys");
 
@@ -133,7 +134,13 @@ function RouteComponent() {
           });
 
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+
           setIsBought(true);
+          if (isGift) {
+            setIsGiveDrawerOpen(true);
+            setIsOpen(false);
+            return;
+          }
         },
       },
     );
@@ -606,6 +613,11 @@ function RouteComponent() {
             <More
               setIsMoreOpen={setIsMoreOpen}
               handleSaveEventOrMeet={handleSaveEventOrMeet}
+              handleGiveTicket={() => {
+                setIsGift(true);
+                setIsOpen(true);
+                setIsMoreOpen(false);
+              }}
               event={event}
               isSaved={isSaved}
             />

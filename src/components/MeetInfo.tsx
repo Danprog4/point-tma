@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import React from "react";
+import { User } from "~/db/schema";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 
@@ -36,21 +37,6 @@ interface Meeting {
   }>;
 }
 
-interface User {
-  id: number;
-  name: string;
-  surname: string;
-  photo?: string;
-  photoUrl?: string;
-}
-
-interface Event {
-  rewards?: Array<{
-    type: string;
-    value: any;
-  }>;
-}
-
 interface Organizer {
   id: number;
   name: string;
@@ -62,7 +48,9 @@ interface Organizer {
 interface MeetInfoProps {
   meeting?: Meeting;
   organizer?: Organizer;
+  user?: User;
   users?: User[];
+
   locations?: Location[];
   getImageUrl?: (photo: string) => string;
 }
@@ -70,6 +58,7 @@ interface MeetInfoProps {
 export const MeetInfo: React.FC<MeetInfoProps> = ({
   meeting,
   organizer,
+  user,
   users,
 
   getImageUrl = (photo) => photo,
@@ -77,6 +66,21 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
   const navigate = useNavigate();
   const trpc = useTRPC();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
+
+  const isUserHave = (location: any) => {
+    const eventId = events?.find((event) => event.title === location.location)?.id;
+    const category = events?.find((event) => event.title === location.location)?.category;
+    return user?.inventory?.some(
+      (item: any) =>
+        item.eventId === eventId && item.name === category && item.type === "ticket",
+    );
+  };
+
+  const getLinkToEvent = (location: any) => {
+    const eventId = events?.find((event) => event.title === location.location)?.id;
+    const category = events?.find((event) => event.title === location.location)?.category;
+    return `/event/${category}/${eventId}`;
+  };
 
   return (
     <div className="flex flex-col pb-20">
@@ -141,22 +145,37 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                   </span>
                 </div>
                 {!location.isCustom ? (
-                  <div className="flex items-center justify-start gap-2">
-                    <img
-                      src={
-                        events?.find((event) => event.title === location.location)
-                          ?.image ?? ""
-                      }
-                      alt="image"
-                      className="h-16 w-16 rounded-lg"
-                    />
-                    <div className="flex flex-col items-start justify-center">
-                      <div className="text-sm font-bold">{location.location}</div>
-                      <div className="text-sm">{location.address}</div>
-                      <div className="flex items-center gap-2 text-sm text-neutral-500">
-                        <div>{location.starttime}</div>
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-center justify-start gap-2">
+                      <img
+                        src={
+                          events?.find((event) => event.title === location.location)
+                            ?.image ?? ""
+                        }
+                        alt="image"
+                        className="h-16 w-16 rounded-lg"
+                      />
+                      <div className="flex flex-col items-start justify-center">
+                        <div className="text-sm font-bold">{location.location}</div>
+                        <div className="text-sm">{location.address}</div>
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <div>{location.starttime}</div>
+                        </div>
                       </div>
                     </div>
+                    {isUserHave(location) ? (
+                      <div className="text-sm text-green-500">Билет получен</div>
+                    ) : (
+                      <div className="text-sm font-bold text-red-500">
+                        Билет не получен!{" "}
+                        <Link
+                          className="font-bold text-blue-500"
+                          to={getLinkToEvent(location)}
+                        >
+                          Приобрести билет
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-1">

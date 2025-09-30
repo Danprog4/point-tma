@@ -388,6 +388,8 @@ function RouteComponent() {
 
           {isMoreOpen && (
             <More
+              handleGiveTicket={() => {}}
+              handleInvite={() => {}}
               setIsMoreOpen={setIsMoreOpen}
               meet={meeting}
               handleSaveEventOrMeet={handleSaveEventOrMeet}
@@ -438,6 +440,7 @@ function RouteComponent() {
           users={users || []}
           participants={allParticipantIds}
           setParticipants={() => {}}
+          handleBuyEvent={() => {}}
         />
       )}
     </div>

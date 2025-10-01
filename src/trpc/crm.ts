@@ -6,6 +6,7 @@ import {
   activeEventsTable,
   calendarTable,
   casesTable,
+  categoriesTable,
   complaintsTable,
   eventsTable,
   fastMeetParticipantsTable,
@@ -28,6 +29,26 @@ import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
 export const crmRouter = createTRPCRouter({
+  getCategories: crmProcedure.query(async () => {
+    return await db.query.categoriesTable.findMany({
+      orderBy: [desc(categoriesTable.createdAt)],
+    });
+  }),
+
+  createCategory: crmProcedure
+    .input(z.object({ name: z.string(), types: z.array(z.string()) }))
+    .mutation(async ({ input }) => {
+      return await db.insert(categoriesTable).values(input);
+    }),
+
+  deleteCategory: crmProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      return await db
+        .delete(categoriesTable)
+        .where(eq(categoriesTable.id, Number(input.id)));
+    }),
+
   // ===== LOGGING =====
   getLogs: crmProcedure
     .input(

@@ -342,6 +342,13 @@ export const loggingTable = pgTable("logging", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const categoriesTable = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }),
+  types: jsonb("types").$type<string[]>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;

@@ -27,6 +27,7 @@ function Home() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const { data: popularEvents } = useQuery(trpc.main.getPopularEvents.queryOptions());
+  const { data: newEvents } = useQuery(trpc.event.getNewEvents.queryOptions());
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -127,12 +128,13 @@ function Home() {
 
           <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
             {[
+              { emoji: "🎉", name: "Популярное" },
+              { emoji: "🆕", name: "Новые" },
               { emoji: "🎞", name: "Кино" },
               { emoji: "💃", name: "Вечеринки" },
               { emoji: "📈", name: "Конференции" },
               { emoji: "🤝", name: "Нетворкинг" },
               { emoji: "🕵️‍♂️", name: "Квесты" },
-              { emoji: "🎉", name: "Популярное" },
             ].map((chip) => (
               <div
                 key={chip.name}
@@ -187,13 +189,14 @@ function Home() {
             width="w-full"
             placeholder="Все события"
             cities={[
+              "Популярное",
+              "Новые",
               "Все события",
               "Кино",
               "Театр",
               "Концерты",
               "Конференции",
               "Вечеринки",
-              "Популярное",
             ]}
           />
         </div>
@@ -211,6 +214,38 @@ function Home() {
           </div>
           <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
             {(popularEvents?.slice?.(0, 5) || [])
+              .filter((event) =>
+                event.title?.toLowerCase().includes(search.toLowerCase()),
+              )
+              .map((event: any, idx: number) => (
+                <div
+                  onClick={() => {
+                    saveScrollPosition("home");
+                    navigate({
+                      to: "/event/$name/$id",
+                      params: { name: event.category, id: event.id },
+                    });
+                  }}
+                >
+                  <EventCard key={idx} event={event} />
+                </div>
+              ))}
+          </div>
+        </div>
+
+        <div className="mb-6 w-full overflow-x-hidden">
+          <div className="mb-4 flex items-center justify-between px-4">
+            <h2 className="text-xl font-bold text-gray-900">Новое</h2>
+            <ArrowRight
+              className="h-5 w-5 cursor-pointer text-gray-500"
+              onClick={() => {
+                saveScrollPosition("home");
+                navigate({ to: "/all/$name", params: { name: "Новое" } });
+              }}
+            />
+          </div>
+          <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            {(newEvents?.slice?.(0, 5) || [])
               .filter((event) =>
                 event.title?.toLowerCase().includes(search.toLowerCase()),
               )

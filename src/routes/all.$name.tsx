@@ -24,11 +24,15 @@ function RouteComponent() {
   console.log(name);
   const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
   const { data: popularEvents } = useQuery(trpc.main.getPopularEvents.queryOptions());
+  const { data: newEvents } = useQuery(trpc.event.getNewEvents.queryOptions());
 
   let data: any[] = [];
   switch (name) {
     case "Популярное":
       data = popularEvents || [];
+      break;
+    case "Новое":
+      data = newEvents || [];
       break;
     case "Квесты":
       data = eventsData?.filter((event) => event.category === "Квест") || [];
@@ -50,7 +54,7 @@ function RouteComponent() {
       data = [];
   }
 
-  const typeOrCategory = name === "Популярное" ? "category" : "type";
+  const typeOrCategory = name === "Популярное" || name === "Новое" ? "category" : "type";
   const pluralCategoryName = getPluralCategoryName(name);
 
   const isMobile = usePlatform();
@@ -82,12 +86,13 @@ function RouteComponent() {
         </div>
         <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
           {[
+            { emoji: "🎉", name: "Популярное" },
+            { emoji: "🆕", name: "Новое" },
             { emoji: "🎞", name: "Кино" },
             { emoji: "💃", name: "Вечеринки" },
             { emoji: "📈", name: "Конференции" },
             { emoji: "🤝", name: "Нетворкинг" },
             { emoji: "🕵️‍♂️", name: "Квесты" },
-            { emoji: "🎉", name: "Популярное" },
           ].map((chip) => (
             <div
               onClick={() => {
@@ -144,6 +149,8 @@ function RouteComponent() {
             placeholder="Все события"
             cities={[
               "Все события",
+              "Популярное",
+              "Новое",
               "Кино",
               "Театр",
               "Концерты",

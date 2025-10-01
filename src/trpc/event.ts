@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
+import { getNewEvents } from "~/lib/utils/getNewEvents";
 import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
@@ -12,6 +13,11 @@ export const eventRouter = createTRPCRouter({
     const events = await db.query.activeEventsTable.findMany({
       where: eq(activeEventsTable.userId, ctx.userId),
     });
+    return events;
+  }),
+
+  getNewEvents: procedure.query(async () => {
+    const events = await getNewEvents();
     return events;
   }),
 

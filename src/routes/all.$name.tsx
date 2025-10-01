@@ -7,6 +7,7 @@ import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Selecter } from "~/components/Selecter";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { getPluralCategoryName } from "~/lib/utils/getPluralCategoryName";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -22,9 +23,13 @@ function RouteComponent() {
   const navigate = useNavigate();
   console.log(name);
   const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
+  const { data: popularEvents } = useQuery(trpc.main.getPopularEvents.queryOptions());
 
   let data: any[] = [];
   switch (name) {
+    case "Популярное":
+      data = popularEvents || [];
+      break;
     case "Квесты":
       data = eventsData?.filter((event) => event.category === "Квест") || [];
       console.log(data);
@@ -44,6 +49,9 @@ function RouteComponent() {
     default:
       data = [];
   }
+
+  const typeOrCategory = name === "Популярное" ? "category" : "type";
+  const pluralCategoryName = getPluralCategoryName(name);
 
   const isMobile = usePlatform();
 
@@ -79,6 +87,7 @@ function RouteComponent() {
             { emoji: "📈", name: "Конференции" },
             { emoji: "🤝", name: "Нетворкинг" },
             { emoji: "🕵️‍♂️", name: "Квесты" },
+            { emoji: "🎉", name: "Популярное" },
           ].map((chip) => (
             <div
               onClick={() => {
@@ -184,15 +193,17 @@ function RouteComponent() {
       {Object.entries(
         data.reduce(
           (acc, item) => {
-            if (!acc[item.type]) acc[item.type] = [];
-            acc[item.type].push(item);
+            if (!acc[item[typeOrCategory]]) acc[item[typeOrCategory]] = [];
+            acc[item[typeOrCategory]].push(item);
             return acc;
           },
           {} as Record<string, typeof data>,
         ),
       ).map(([type, items]) => (
         <div key={type} className="">
-          <h2 className="px-4 text-lg font-bold text-black">{type}</h2>
+          <h2 className="px-4 text-lg font-bold text-black">
+            {getPluralCategoryName(type)}
+          </h2>
 
           <div className="grid grid-cols-2 gap-2 px-4 py-2">
             {(items as any[]).map((item) => (

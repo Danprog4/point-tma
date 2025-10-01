@@ -18,6 +18,7 @@ import {
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
+import { getPopularEvents } from "~/lib/utils/getPopularEvents";
 import { logAction } from "~/lib/utils/logger";
 import { procedure, publicProcedure } from "./init";
 export const router = {
@@ -32,6 +33,10 @@ export const router = {
     });
 
     return user;
+  }),
+
+  getPopularEvents: procedure.query(async ({ ctx }) => {
+    return await getPopularEvents();
   }),
 
   getNotifications: procedure.query(async ({ ctx }) => {

@@ -29,7 +29,7 @@ import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, creatorProcedure, crmProcedure } from "./init";
 
 export const crmRouter = createTRPCRouter({
-  getCategories: crmProcedure.query(async () => {
+  getCategories: creatorProcedure.query(async () => {
     return await db.query.categoriesTable.findMany({
       orderBy: [desc(categoriesTable.createdAt)],
     });

@@ -16,6 +16,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
+import { levelsConfig } from "~/config/levels";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
 import { getImage } from "~/lib/utils/getImage";
@@ -316,35 +317,94 @@ function RouteComponent() {
               </div>
               <div className="flex items-center justify-center gap-4 px-4 py-4">
                 <div className="relative flex items-center">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-purple-800 bg-purple-600">
-                    <span className="text-xl font-bold text-white">1</span>
-                  </div>
+                  {/* Круг с прогресс-баром по XP */}
+                  {(() => {
+                    // Импортируем уровни и XP
+                    // levelsConfig: [{level, xpToNextLevel}, ...]
+                    // user?.level, user?.xp
+                    // Если нет данных, просто рендерим круг
+                    if (!user?.level || user.xp == null) {
+                      return (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 bg-purple-600">
+                          <span className="text-xl font-bold text-white">
+                            {user?.level}
+                          </span>
+                        </div>
+                      );
+                    }
+                    // Получаем данные о текущем и следующем уровне
+                    // levelsConfig[0] - level 1, ...
+                    const currentLevelIdx = Math.max(
+                      0,
+                      levelsConfig.findIndex((l) => l.level === user.level),
+                    );
+                    const currentLevel = levelsConfig[currentLevelIdx];
+                    const nextLevel = levelsConfig[currentLevelIdx + 1];
+                    // Сколько XP нужно для следующего уровня
+                    const xpToNext = nextLevel
+                      ? nextLevel.xpToNextLevel
+                      : currentLevel.xpToNextLevel;
+                    // Сколько XP у пользователя на этом уровне
+                    // Если есть поле user.xp, считаем прогресс
+                    // Если нет, показываем полностью закрашенный круг
+                    const progress =
+                      nextLevel && xpToNext ? Math.min(1, user.xp / xpToNext) : 1;
+
+                    // SVG круг с прогрессом
+                    const size = 40;
+                    const strokeWidth = 4;
+                    const radius = (size - strokeWidth) / 2;
+                    const circumference = 2 * Math.PI * radius;
+                    const offset = circumference * (1 - progress);
+
+                    return (
+                      <div
+                        className="relative flex items-center justify-center"
+                        style={{ width: size, height: size }}
+                      >
+                        <svg width={size} height={size}>
+                          {/* Серый фон круга */}
+                          <circle
+                            cx={size / 2}
+                            cy={size / 2}
+                            r={radius}
+                            stroke="#E5E7EB"
+                            strokeWidth={strokeWidth}
+                            fill="#7C3AED"
+                          />
+                          {/* Синий прогресс */}
+                          <circle
+                            cx={size / 2}
+                            cy={size / 2}
+                            r={radius}
+                            stroke="#2563EB"
+                            strokeWidth={strokeWidth}
+                            fill="none"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            strokeLinecap="round"
+                            style={{
+                              transition: "stroke-dashoffset 0.5s",
+                            }}
+                          />
+                        </svg>
+                        <span className="absolute top-0 left-0 flex h-full w-full items-center justify-center text-xl font-bold text-white">
+                          {user.level}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="text-center">
                   <div className="mb-1 flex items-center justify-center gap-2">
-                    <h2
-                      className={`font-bold text-nowrap text-black ${(user?.name + " " + user?.surname)?.length > 15 ? "text-lg" : "text-xl"}`}
-                    >
+                    <h2 className="text-xl font-bold text-black">
                       {user?.name} {user?.surname}
                     </h2>
                   </div>
                 </div>
-
                 <div className="flex items-center">
                   <Star className="h-7 w-7 fill-blue-500 text-blue-500" />
                 </div>
-
-                <button
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToFavorites();
-                  }}
-                >
-                  <Heart
-                    className={cn("h-6 w-6 text-black", isFavorite && "text-red-500")}
-                  />
-                </button>
               </div>
 
               <div className="flex items-center justify-between px-4 pb-4">

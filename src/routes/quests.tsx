@@ -207,9 +207,10 @@ function RouteComponent() {
                       <div className="flex items-center gap-1">
                         <span className="text-base font-medium text-black">
                           +
-                          {questData?.rewards
-                            ?.find((reward) => reward.type === "point")
-                            ?.value.toLocaleString() || 0}
+                          {(
+                            questData?.rewards?.find((reward) => reward.type === "point")
+                              ?.value ?? 0
+                          ).toLocaleString()}
                         </span>
 
                         <span className="text-base font-medium text-black">points</span>
@@ -262,9 +263,10 @@ function RouteComponent() {
                   <div className="ml-auto flex items-center gap-1">
                     <span className="text-base font-medium text-black">
                       +
-                      {quest.rewards
-                        ?.find((reward) => reward.type === "point")
-                        ?.value.toLocaleString() || 0}
+                      {(
+                        quest?.rewards?.find((reward) => reward.type === "point")
+                          ?.value ?? 0
+                      ).toLocaleString()}
                     </span>
 
                     <span className="text-base font-medium text-black">points</span>

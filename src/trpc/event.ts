@@ -1,9 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { xpForBuyEvent, xpForEndQuest } from "~/consts/levels-xp";
 import { db } from "~/db";
 import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
 import { getNewEvents } from "~/lib/utils/getNewEvents";
+import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { createTRPCRouter, procedure } from "./init";
@@ -127,6 +129,8 @@ export const eventRouter = createTRPCRouter({
         eventId: input.id,
         eventType: eventData.category ?? input.name,
       });
+
+      await giveXps(ctx.userId, user, xpForEndQuest);
     }),
 
   buyEvent: procedure
@@ -229,6 +233,9 @@ export const eventRouter = createTRPCRouter({
         eventType: eventData.category ?? input.name,
         amount: eventData.price ? eventData.price * input.count : null,
       });
+
+      await giveXps(ctx.userId, user, xpForBuyEvent);
+
       const created = newInventory.slice(-input.count);
       return created;
     }),

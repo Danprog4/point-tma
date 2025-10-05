@@ -62,6 +62,8 @@ export const usersTable = pgTable("users", {
       userId: number;
     }[]
   >(),
+  xp: integer("xp").default(0),
+  level: integer("level").default(1),
 });
 
 export const fastMeetTable = pgTable("fast_meets", {

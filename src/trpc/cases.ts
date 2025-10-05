@@ -1,9 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { xpForBuyCase } from "~/consts/levels-xp";
 import { db } from "~/db";
 import { casesTable, usersTable } from "~/db/schema";
 import { getItem } from "~/lib/utils/getItem";
+import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
@@ -92,6 +94,8 @@ export const casesRouter = createTRPCRouter({
         eventId: input.eventId ?? (undefined as unknown as number | null),
         amount: caseData.price ?? null,
       });
+
+      await giveXps(ctx.userId, user, xpForBuyCase);
     }),
 
   openCase: procedure

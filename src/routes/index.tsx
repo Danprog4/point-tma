@@ -11,6 +11,7 @@ import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 
+import GetUpButton from "~/components/getUpButton";
 import { useFilteredEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -86,7 +87,7 @@ function Home() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto bg-white pt-14 pb-10 data-[mobile=true]:pt-39"
+      className="min-h-screen bg-white pt-14 pb-10 data-[mobile=true]:pt-39"
     >
       <Header />
 
@@ -414,6 +415,7 @@ function Home() {
           </div>
         </div>
       </div>
+      <GetUpButton />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Settings } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
+import GetUpButton from "~/components/getUpButton";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Coin } from "~/components/Icons/Coin";
@@ -301,8 +302,15 @@ function RouteComponent() {
 
       {/* TODO: Add handleSaveEventorMeet */}
       {isMoreOpen && (
-        <More setIsMoreOpen={setIsMoreOpen} handleSaveEventOrMeet={() => {}} />
+        <More
+          setIsMoreOpen={setIsMoreOpen}
+          handleSaveEventOrMeet={() => {}}
+          handleGiveTicket={() => {}}
+          handleInvite={() => {}}
+        />
       )}
+
+      <GetUpButton />
     </div>
   );
 }

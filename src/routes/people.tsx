@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
+import GetUpButton from "~/components/getUpButton";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { PeopleHeader, PeopleMap, UsersList, ViewToggle } from "~/components/people";
@@ -113,13 +114,16 @@ function RouteComponent() {
       <ViewToggle isList={isList} setIsList={setIsList} />
 
       {isList && (
-        <UsersList
-          users={sortedUsers || []}
-          galleryData={galleryData}
-          isFavorite={isFavorite}
-          onFavoriteClick={(userId) => handleToFavorites(userId, isFavorite(userId))}
-          onMoreClick={handleUserMoreClick}
-        />
+        <>
+          <UsersList
+            users={sortedUsers || []}
+            galleryData={galleryData}
+            isFavorite={isFavorite}
+            onFavoriteClick={(userId) => handleToFavorites(userId, isFavorite(userId))}
+            onMoreClick={handleUserMoreClick}
+          />
+          <GetUpButton />
+        </>
       )}
 
       {!isList && (

@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TasksImport } from './routes/tasks'
 import { Route as SkillsImport } from './routes/skills'
 import { Route as ShopImport } from './routes/shop'
 import { Route as QuestsImport } from './routes/quests'
@@ -43,6 +44,12 @@ import { Route as AllNameImport } from './routes/all.$name'
 import { Route as EventNameIdImport } from './routes/event.$name.$id'
 
 // Create/Update Routes
+
+const TasksRoute = TasksImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const SkillsRoute = SkillsImport.update({
   id: '/skills',
@@ -382,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillsImport
       parentRoute: typeof rootRoute
     }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksImport
+      parentRoute: typeof rootRoute
+    }
     '/all/$name': {
       id: '/all/$name'
       path: '/all/$name'
@@ -466,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
+  '/tasks': typeof TasksRoute
   '/all/$name': typeof AllNameRoute
   '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
@@ -499,6 +514,7 @@ export interface FileRoutesByTo {
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
+  '/tasks': typeof TasksRoute
   '/all/$name': typeof AllNameRoute
   '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
@@ -533,6 +549,7 @@ export interface FileRoutesById {
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
+  '/tasks': typeof TasksRoute
   '/all/$name': typeof AllNameRoute
   '/case/$id': typeof CaseIdRoute
   '/meet/$id': typeof MeetIdRoute
@@ -568,6 +585,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/shop'
     | '/skills'
+    | '/tasks'
     | '/all/$name'
     | '/case/$id'
     | '/meet/$id'
@@ -600,6 +618,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/shop'
     | '/skills'
+    | '/tasks'
     | '/all/$name'
     | '/case/$id'
     | '/meet/$id'
@@ -632,6 +651,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/shop'
     | '/skills'
+    | '/tasks'
     | '/all/$name'
     | '/case/$id'
     | '/meet/$id'
@@ -666,6 +686,7 @@ export interface RootRouteChildren {
   QuestsRoute: typeof QuestsRoute
   ShopRoute: typeof ShopRoute
   SkillsRoute: typeof SkillsRoute
+  TasksRoute: typeof TasksRoute
   AllNameRoute: typeof AllNameRoute
   CaseIdRoute: typeof CaseIdRoute
   MeetIdRoute: typeof MeetIdRoute
@@ -699,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuestsRoute: QuestsRoute,
   ShopRoute: ShopRoute,
   SkillsRoute: SkillsRoute,
+  TasksRoute: TasksRoute,
   AllNameRoute: AllNameRoute,
   CaseIdRoute: CaseIdRoute,
   MeetIdRoute: MeetIdRoute,
@@ -741,6 +763,7 @@ export const routeTree = rootRoute
         "/quests",
         "/shop",
         "/skills",
+        "/tasks",
         "/all/$name",
         "/case/$id",
         "/meet/$id",
@@ -816,6 +839,9 @@ export const routeTree = rootRoute
     },
     "/skills": {
       "filePath": "skills.tsx"
+    },
+    "/tasks": {
+      "filePath": "tasks.tsx"
     },
     "/all/$name": {
       "filePath": "all.$name.tsx"

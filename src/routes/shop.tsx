@@ -130,7 +130,7 @@ function RouteComponent() {
         className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
-          onClick={() => navigate({ to: "/profile" })}
+          onClick={() => window.history.back()}
           className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />

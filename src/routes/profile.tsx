@@ -16,6 +16,7 @@ import {
   Settings,
   ShoppingBag,
   Star,
+  Target,
   Venus,
   X as XIcon,
 } from "lucide-react";
@@ -535,6 +536,13 @@ function RouteComponent() {
                     }}
                     icon={<Package className="h-6 w-6 text-purple-300" />}
                     title="Инвентарь"
+                  />
+                  <MenuItem
+                    onClick={() => {
+                      navigate({ to: "/tasks" });
+                    }}
+                    icon={<Target className="h-6 w-6 text-purple-300" />}
+                    title="Задания"
                   />
                   <WarningsBansDrawer
                     open={isWarningsBansOpen}

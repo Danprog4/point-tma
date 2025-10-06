@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { FavIcon } from "~/components/Icons/Fav";
+import { LevelInfoModal } from "~/components/LevelInfoModal";
 import { MenuItem } from "~/components/MenuItem";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
@@ -52,6 +53,7 @@ function RouteComponent() {
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isFriendsPage, setIsFriendsPage] = useState(false);
   const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
+  const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const navigate = useNavigate();
   const [page, setPage] = useState<"info" | "friends">("info");
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(
@@ -274,8 +276,9 @@ function RouteComponent() {
 
                     return (
                       <div
-                        className="relative flex items-center justify-center"
+                        className="relative flex cursor-pointer items-center justify-center transition-transform hover:scale-110"
                         style={{ width: size, height: size }}
+                        onClick={() => setIsLevelModalOpen(true)}
                       >
                         <svg width={size} height={size}>
                           {/* Серый фон круга */}
@@ -566,6 +569,14 @@ function RouteComponent() {
           )}
 
           {/* {page === "friends" && <Friends />} */}
+
+          {/* Level Info Modal */}
+          <LevelInfoModal
+            isOpen={isLevelModalOpen}
+            onClose={() => setIsLevelModalOpen(false)}
+            currentLevel={user?.level ?? undefined}
+            currentXp={user?.xp ?? undefined}
+          />
 
           {isFullScreen && allPhotos.length > 0 && (
             <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">

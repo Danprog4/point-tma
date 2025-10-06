@@ -124,17 +124,21 @@ export function LevelInfoModal({
               {/* Кнопки управления */}
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 <button
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-purple-600 shadow-md transition-all hover:bg-purple-600 hover:text-white"
-                  title="Подробнее о системе уровней"
-                >
-                  <HelpCircle className="h-5 w-5" />
-                </button>
-                <button
                   onClick={onClose}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
                 >
                   <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="absolute top-4 left-4 z-10 flex gap-2">
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-purple-600 shadow-md transition-all hover:bg-purple-600 hover:text-white"
+                  title="Подробнее о системе уровней"
+                >
+                  <HelpCircle
+                    className={`h-5 w-5 ${showDetails ? "text-purple-600" : "text-gray-600"}`}
+                  />
                 </button>
               </div>
 
@@ -192,7 +196,7 @@ export function LevelInfoModal({
               </div>
 
               {/* Контент */}
-              <div className="h-[50vh] overflow-y-auto p-6">
+              <div className="scrollbar-hidden h-[50vh] overflow-y-auto p-6">
                 <AnimatePresence mode="wait">
                   {!showDetails ? (
                     <motion.div

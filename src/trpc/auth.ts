@@ -123,7 +123,7 @@ export const authRouter = {
                   [
                     {
                       text: "🚀 Перейти в приложение",
-                      url: "https://t.me/pointTMA_bot",
+                      url: "https://point-tma.vercel.app/",
                     },
                   ],
                 ],

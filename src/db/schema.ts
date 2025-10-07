@@ -66,6 +66,15 @@ export const usersTable = pgTable("users", {
   level: integer("level").default(1),
 });
 
+export const tasksProgressTable = pgTable("tasks_progress", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  taskId: varchar("task_id", { length: 255 }),
+  progress: integer("progress").default(0),
+  isCompleted: boolean("is_completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const fastMeetTable = pgTable("fast_meets", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }),

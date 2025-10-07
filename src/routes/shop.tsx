@@ -93,6 +93,18 @@ function RouteComponent() {
         variables: { caseId: number; eventId: number | null; eventType: string | null },
       ) => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+
+        // Обновляем прогресс задания "buy-case"
+        queryClient.setQueryData(trpc.tasks.getTasksProgress.queryKey(), (old: any) => {
+          if (!old) return old;
+          return old.map((task: any) => {
+            if (task.taskId === "buy-case" && !task.isCompleted) {
+              return { ...task, progress: (task.progress || 0) + 1 };
+            }
+            return task;
+          });
+        });
+
         toast.success("Вы успешно купили кейс");
         setBuyingCaseId((prev) => prev.filter((id) => id !== variables.caseId));
       },

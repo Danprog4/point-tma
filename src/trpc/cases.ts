@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { xpForBuyCase } from "~/consts/levels-xp";
 import { db } from "~/db";
-import { casesTable, usersTable } from "~/db/schema";
+import { casesTable, tasksProgressTable, usersTable } from "~/db/schema";
 import { getItem } from "~/lib/utils/getItem";
 import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
@@ -96,6 +96,23 @@ export const casesRouter = createTRPCRouter({
       });
 
       await giveXps(ctx.userId, user, xpForBuyCase);
+
+      // Обновляем прогресс задания "buy-case" если оно начато
+      const existingTask = await db.query.tasksProgressTable.findFirst({
+        where: and(
+          eq(tasksProgressTable.userId, ctx.userId),
+          eq(tasksProgressTable.taskId, "buy-case"),
+        ),
+      });
+
+      if (existingTask && !existingTask.isCompleted) {
+        await db
+          .update(tasksProgressTable)
+          .set({
+            progress: (existingTask.progress ?? 0) + 1,
+          })
+          .where(eq(tasksProgressTable.id, existingTask.id));
+      }
     }),
 
   openCase: procedure

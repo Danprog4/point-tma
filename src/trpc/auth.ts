@@ -6,6 +6,7 @@ import { SignJWT } from "jose";
 import { z } from "zod";
 import { db } from "~/db";
 import { usersTable } from "~/db/schema";
+import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { publicProcedure } from "./init";
 
 export const authRouter = {
@@ -95,6 +96,42 @@ export const authRouter = {
           .returning();
 
         console.log(newUser, "newUser");
+
+        if (referrerId) {
+          const referrerIdNumber = Number(referrerId);
+
+          const referrer = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, referrerIdNumber),
+          });
+
+          if (referrer) {
+            await db
+              .update(usersTable)
+              .set({
+                xp: (referrer?.xp ?? 0) + 10,
+                balance: (referrer?.balance ?? 0) + 100,
+              })
+              .where(eq(usersTable.id, referrerIdNumber));
+          }
+
+          await sendTelegram(
+            `Вы пригласили друга и получили бонусы! 🎉\n\nСледите за своими достижениями в приложении.`,
+            referrerIdNumber,
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "🚀 Перейти в приложение",
+                      url: "https://t.me/pointTMA_bot",
+                    },
+                  ],
+                ],
+              },
+              parse_mode: "Markdown",
+            },
+          );
+        }
 
         return newUser[0];
       }

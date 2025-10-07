@@ -48,6 +48,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const isMobile = usePlatform();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: referrals } = useQuery(trpc.main.getReferrals.queryOptions());
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -267,13 +268,15 @@ function RouteComponent() {
                     </p>
 
                     {/* Stats Grid */}
-                    <div className="mb-6 space-y-3">
+                    <div className="space-y-3">
                       <div className="rounded-2xl bg-white/20 p-4 backdrop-blur-sm">
                         <div className="mb-2 flex items-center justify-between">
                           <span className="text-sm text-white/80">Приглашено друзей</span>
                           <Users className="h-4 w-4 text-white/60" />
                         </div>
-                        <div className="text-3xl font-bold text-white">0</div>
+                        <div className="text-3xl font-bold text-white">
+                          {referrals?.length || 0}
+                        </div>
                       </div>
 
                       <div className="rounded-2xl bg-white/20 p-4 backdrop-blur-sm">
@@ -288,18 +291,20 @@ function RouteComponent() {
                         <div className="rounded-2xl bg-white/20 p-4 backdrop-blur-sm">
                           <div className="mb-1 flex items-center gap-1">
                             <Sparkles className="h-4 w-4 text-yellow-300" />
-                            <span className="text-2xl font-bold text-white">0</span>
+                            <span className="text-2xl font-bold text-white">
+                              {referrals?.reduce((acc) => acc + 10, 0) || 0}
+                            </span>
                           </div>
-                          <span className="text-xs text-white/80">Всего XP</span>
+                          <span className="text-xs text-white/80">Получено XP</span>
                         </div>
                         <div className="rounded-2xl bg-white/20 p-4 backdrop-blur-sm">
                           <div className="mb-1 flex items-center gap-1">
                             <Gift className="h-4 w-4 text-yellow-300" />
-                            <span className="text-2xl font-bold text-white">0</span>
+                            <span className="text-2xl font-bold text-white">
+                              {referrals?.reduce((acc) => acc + 100, 0) || 0}
+                            </span>
                           </div>
-                          <span className="text-xs text-white/80">
-                            Поинтов заработано
-                          </span>
+                          <span className="text-xs text-white/80">Получено поинтов</span>
                         </div>
                       </div>
                     </div>

@@ -35,6 +35,14 @@ export const router = {
     return user;
   }),
 
+  getReferrals: procedure.query(async ({ ctx }) => {
+    const users = await db.query.usersTable.findMany({
+      where: eq(usersTable.referrerId, ctx.userId),
+    });
+
+    return users;
+  }),
+
   getPopularEvents: procedure.query(async ({ ctx }) => {
     return await getPopularEvents();
   }),

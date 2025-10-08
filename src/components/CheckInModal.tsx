@@ -19,6 +19,8 @@ export function CheckInModal({
 
   const todayReward = getRewardForStreak(currentStreak || 1);
 
+  // Блокируем скролл при монтировании модалки
+
   const handleClaim = () => {
     onClose();
     queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {

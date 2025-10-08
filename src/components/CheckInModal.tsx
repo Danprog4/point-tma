@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { DAILY_REWARDS, getRewardForStreak } from "~/config/checkin";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 
@@ -20,6 +22,12 @@ export function CheckInModal({
   const todayReward = getRewardForStreak(currentStreak || 1);
 
   // Блокируем скролл при монтировании модалки
+  useEffect(() => {
+    lockBodyScroll();
+    return () => {
+      unlockBodyScroll();
+    };
+  }, []);
 
   const handleClaim = () => {
     onClose();

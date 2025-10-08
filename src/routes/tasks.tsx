@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles, Trophy } from "lucide-react";
+import { useRef } from "react";
 import { useScroll } from "~/components/hooks/useScroll";
 import { ReferralCard, TaskCard } from "~/components/tasks";
 import { getTasks } from "~/config/tasks";
@@ -35,6 +36,16 @@ function RouteComponent() {
   const tasks = getTasks(navigate);
   const tasksWithInfo = getTasksWithProgress(tasks);
 
+  // Create ref for info section
+  const infoSectionRef = useRef<HTMLDivElement>(null);
+
+  // Handler to scroll to info section
+  const handleScrollToInfo = () => {
+    if (infoSectionRef.current) {
+      infoSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div
       data-mobile={isMobile}
@@ -58,6 +69,7 @@ function RouteComponent() {
       {/* Main Content */}
       <div className="px-4 pb-6">
         <ReferralCard
+          onScrollToInfo={handleScrollToInfo}
           referralsCount={referrals?.length || 0}
           completedTasksCount={completedTasksCount()}
           copiedLink={copiedLink}
@@ -66,7 +78,7 @@ function RouteComponent() {
         />
 
         {/* Tasks Section */}
-        <div className="mt-8">
+        <div className="mt-8 mb-2">
           <div className="mb-4 flex items-center gap-2">
             <Trophy className="h-6 w-6 text-purple-600" />
             <h3 className="text-xl font-bold text-gray-900">Задания</h3>
@@ -88,8 +100,15 @@ function RouteComponent() {
           </div>
         </div>
 
+        <p className="text-sm font-medium text-purple-600">
+          Не забывайте заходить каждый день и получать ежедневные награды!
+        </p>
+
         {/* Info Section */}
-        <div className="mt-6 rounded-2xl border-2 border-purple-100 bg-purple-50 p-4">
+        <div
+          ref={infoSectionRef}
+          className="mt-6 rounded-2xl border-2 border-purple-100 bg-purple-50 p-4"
+        >
           <div className="mb-2 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-600" />
             <h4 className="font-semibold text-purple-900">Как это работает?</h4>

@@ -65,10 +65,17 @@ export function CheckInModal({
               const day = i + 1;
               const currentDay = ((currentStreak - 1) % 10) + 1;
               const isActive = day === currentDay;
+              const isCompleted = day < currentDay;
               return (
                 <div
                   key={i}
-                  className={`flex h-20 w-16 flex-col items-center justify-between rounded-xl border p-2 text-center text-xs ${isActive ? "border-purple-600 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-800"}`}
+                  className={`flex h-20 w-16 flex-col items-center justify-between rounded-xl border p-2 text-center text-xs ${
+                    isActive
+                      ? "border-purple-600 bg-purple-50 text-purple-700"
+                      : isCompleted
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-800"
+                  }`}
                 >
                   <div className="text-xs">День {day}</div>
                   <div className="mt-1 flex items-center font-semibold">

@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Copy,
   Gift,
+  Info,
   Share2,
   Sparkles,
   Trophy,
@@ -17,6 +18,7 @@ interface ReferralCardProps {
   copiedLink: boolean;
   onShare: () => void;
   onCopyLink: () => void;
+  onScrollToInfo: () => void;
 }
 
 export function ReferralCard({
@@ -25,6 +27,7 @@ export function ReferralCard({
   copiedLink,
   onShare,
   onCopyLink,
+  onScrollToInfo,
 }: ReferralCardProps) {
   const [showStats, setShowStats] = useState(false);
 
@@ -77,9 +80,15 @@ export function ReferralCard({
                   <div className="rounded-full bg-white/20 p-2 backdrop-blur-sm">
                     <Users className="h-6 w-6 text-white" />
                   </div>
-                  <span className="text-sm font-medium text-white/90">
+                  <span className="text-sm font-medium text-white">
                     Приглашай и зарабатывай
                   </span>
+
+                  <div className="flex aspect-square w-5 items-center justify-center rounded-full text-xs text-white">
+                    <button onClick={onScrollToInfo}>
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <h2 className="mb-2 text-2xl font-bold text-white">Пригласи друзей</h2>

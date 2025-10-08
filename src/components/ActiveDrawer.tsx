@@ -52,6 +52,15 @@ export default function ActiveDrawer({
       },
       {
         onSuccess: () => {
+          queryClient.setQueryData(trpc.tasks.getTasksProgress.queryKey(), (old: any) => {
+            if (!old) return old;
+            return old.map((task: any) => {
+              if (task.taskId === "active-event" && !task.isCompleted) {
+                return { ...task, progress: (task.progress || 0) + 1 };
+              }
+              return task;
+            });
+          });
           queryClient.invalidateQueries({ queryKey: trpc.event.getMyEvents.queryKey() });
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
         },

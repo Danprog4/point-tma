@@ -147,6 +147,16 @@ function RouteComponent() {
         onSuccess: (createdTickets: any[]) => {
           queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
 
+          queryClient.setQueryData(trpc.tasks.getTasksProgress.queryKey(), (old: any) => {
+            if (!old) return old;
+            return old.map((task: any) => {
+              if (task.taskId === "buy-event" && !task.isCompleted) {
+                return { ...task, progress: (task.progress || 0) + 1 };
+              }
+              return task;
+            });
+          });
+
           if (isGift) {
             const justCreated = createdTickets?.[createdTickets.length - 1];
             if (selectedUser && justCreated?.id) {

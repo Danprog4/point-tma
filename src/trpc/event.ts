@@ -3,7 +3,13 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { xpForBuyEvent, xpForEndQuest } from "~/consts/levels-xp";
 import { db } from "~/db";
-import { activeEventsTable, calendarTable, eventsTable, usersTable } from "~/db/schema";
+import {
+  activeEventsTable,
+  calendarTable,
+  eventsTable,
+  tasksProgressTable,
+  usersTable,
+} from "~/db/schema";
 import { getNewEvents } from "~/lib/utils/getNewEvents";
 import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
@@ -236,6 +242,22 @@ export const eventRouter = createTRPCRouter({
 
       await giveXps(ctx.userId, user, xpForBuyEvent);
 
+      const existingTask = await db.query.tasksProgressTable.findFirst({
+        where: and(
+          eq(tasksProgressTable.userId, ctx.userId),
+          eq(tasksProgressTable.taskId, "buy-event"),
+        ),
+      });
+
+      if (existingTask && !existingTask.isCompleted) {
+        await db
+          .update(tasksProgressTable)
+          .set({
+            progress: (existingTask.progress ?? 0) + 1,
+          })
+          .where(eq(tasksProgressTable.id, existingTask.id));
+      }
+
       const created = newInventory.slice(-input.count);
       return created;
     }),
@@ -339,6 +361,22 @@ export const eventRouter = createTRPCRouter({
         eventId: input.id,
         eventType: eventData.category ?? input.name,
       });
+
+      const existingTask = await db.query.tasksProgressTable.findFirst({
+        where: and(
+          eq(tasksProgressTable.userId, ctx.userId),
+          eq(tasksProgressTable.taskId, "active-event"),
+        ),
+      });
+
+      if (existingTask && !existingTask.isCompleted) {
+        await db
+          .update(tasksProgressTable)
+          .set({
+            progress: (existingTask.progress ?? 0) + 1,
+          })
+          .where(eq(tasksProgressTable.id, existingTask.id));
+      }
     }),
 
   getEvents: procedure.query(async () => {

@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { tasksProgressTable } from "~/db/schema";
-import { buyCase } from "~/lib/utils/tasks/buyCase";
+import { checkTask } from "~/lib/utils/checkTask";
 import { createTRPCRouter, procedure } from "./init";
 
 export const tasksRouter = createTRPCRouter({
@@ -39,7 +39,15 @@ export const tasksRouter = createTRPCRouter({
       }
 
       if (task.taskId === "buy-case") {
-        return await buyCase({ userId: ctx.userId });
+        return await checkTask({ userId: ctx.userId, taskId: input.taskId });
+      }
+
+      if (task.taskId === "buy-event") {
+        return await checkTask({ userId: ctx.userId, taskId: input.taskId });
+      }
+
+      if (task.taskId === "active-event") {
+        return await checkTask({ userId: ctx.userId, taskId: input.taskId });
       }
 
       throw new TRPCError({

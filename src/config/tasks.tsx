@@ -1,4 +1,4 @@
-import { ShoppingBag, Target } from "lucide-react";
+import { Calendar, ShoppingBag, Ticket } from "lucide-react";
 
 interface Task {
   id: string;
@@ -28,14 +28,60 @@ export const getTasks = (navigate: (opts: { to: string }) => void): Task[] => [
     total: 1,
   },
   {
-    id: "visit-shop",
-    title: "Посетить магазин",
-    description: "Зайдите в магазин и ознакомьтесь с ассортиментом",
+    id: "buy-event",
+    title: "Купить 1 событие",
+    description: "Приобретите 1 событие из афиши и получите награду",
     reward: {
       xp: 10,
-      points: 50,
+      points: 100,
     },
-    icon: <Target className="h-6 w-6" />,
-    action: () => navigate({ to: "/shop" }),
+    icon: <Calendar className="h-6 w-6" />,
+    action: () => navigate({ to: "/" }),
+    total: 1,
+  },
+  {
+    id: "active-event",
+    title: "Активировать 1 билет",
+    description: "Активируйте 1 билет на квест и получите награду",
+    reward: {
+      xp: 30,
+      points: 150,
+    },
+    icon: <Ticket className="h-6 w-6" />,
+    action: () => navigate({ to: "/quests" }),
+    total: 1,
+  },
+];
+
+export const backendTasks = [
+  {
+    id: "buy-case",
+    title: "Купить 1 кейс",
+    description: "Приобретите 1 кейс в магазине и получите награду",
+    reward: {
+      xp: 50,
+      points: 200,
+    },
+    total: 1,
+  },
+  {
+    id: "buy-event",
+    title: "Купить 1 событие",
+    description: "Приобретите 1 событие из афиши и получите награду",
+    reward: {
+      xp: 10,
+      points: 100,
+    },
+    total: 1,
+  },
+  {
+    id: "active-event",
+    title: "Активировать 1 билет",
+    description: "Активируйте 1 билет на квест и получите награду",
+    reward: {
+      xp: 30,
+      points: 150,
+    },
+    total: 1,
   },
 ];

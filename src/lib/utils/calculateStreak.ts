@@ -21,7 +21,9 @@ export function calculateStreak(user: {
       newStreak = user.checkInStreak ?? 1;
     } else if (lastStart.getTime() === startOfYesterday.getTime()) {
       // consecutive day
-      newStreak = (user.checkInStreak ?? 0) + 1;
+      const currentStreak = user.checkInStreak ?? 0;
+      // Если стрик был 10, сбрасываем на 1 (начинаем цикл заново)
+      newStreak = currentStreak >= 10 ? 1 : currentStreak + 1;
     } else {
       // missed a day → reset
       newStreak = 1;

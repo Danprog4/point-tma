@@ -21,6 +21,19 @@ export function CheckInModal({
 
   const handleClaim = () => {
     onClose();
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      if (!old) return old;
+      const reward = getRewardForStreak(currentStreak || 1);
+      let updated = { ...old, checkInStreak: currentStreak };
+      if (reward.type === "points") {
+        updated = { ...updated, balance: (old.balance || 0) + reward.value };
+      }
+      if (reward.type === "xp") {
+        updated = { ...updated, xp: (old.xp || 0) + reward.value };
+      }
+      updated = { ...updated, lastCheckIn: new Date().toISOString() };
+      return updated;
+    });
     claim.mutate(undefined, {
       onSuccess: (res) => {
         queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });

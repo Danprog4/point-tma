@@ -38,7 +38,10 @@ export const Header = () => {
       </div>
       <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1">
         <Coin />
-        <span className="text-sm font-medium">{splitBalanceToK()}К</span>
+        <span className="text-sm font-medium">
+          {splitBalanceToK()}
+          {user?.balance && user?.balance > 1000 ? "К" : ""}
+        </span>
       </div>
       <div className="flex w-[81px] items-center justify-end gap-4">
         {activeNotifications && activeNotifications.length > 0 ? (

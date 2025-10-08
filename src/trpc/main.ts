@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
 import { z } from "zod";
+import { getRewardForStreak } from "~/config/checkin";
 import { db } from "~/db";
 import {
   calendarTable,
@@ -18,7 +19,9 @@ import {
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
+import { calculateStreak } from "~/lib/utils/calculateStreak";
 import { getPopularEvents } from "~/lib/utils/getPopularEvents";
+import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
 import { procedure, publicProcedure } from "./init";
 export const router = {
@@ -33,6 +36,54 @@ export const router = {
     });
 
     return user;
+  }),
+
+  claimDailyCheckIn: procedure.mutation(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lastCheck = user.lastCheckIn ? new Date(user.lastCheckIn) : undefined;
+    const lastStart = lastCheck
+      ? new Date(lastCheck.getFullYear(), lastCheck.getMonth(), lastCheck.getDate())
+      : undefined;
+
+    // Проверка: уже сделал чекин сегодня
+    if (lastStart && lastStart.getTime() === startOfToday.getTime()) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Вы уже получили награду сегодня",
+      });
+    }
+
+    // Вычисляем новый стрик
+    const newStreak = calculateStreak(user);
+
+    // Получаем награду за новый день
+    const reward = getRewardForStreak(newStreak);
+
+    if (reward.type === "points") {
+      await db
+        .update(usersTable)
+        .set({ balance: (user.balance || 0) + reward.value })
+        .where(eq(usersTable.id, ctx.userId));
+    }
+
+    if (reward.type === "xp") {
+      await giveXps(ctx.userId, user, reward.value);
+    }
+
+    // Обновляем стрик И lastCheckIn
+    await db
+      .update(usersTable)
+      .set({ checkInStreak: newStreak, lastCheckIn: now })
+      .where(eq(usersTable.id, ctx.userId));
+
+    return { streak: newStreak };
   }),
 
   getReferrals: procedure.query(async ({ ctx }) => {

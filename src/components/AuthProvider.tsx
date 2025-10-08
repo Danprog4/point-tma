@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useTRPC } from "~/trpc/init/react";
-
 import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useLocationSaver } from "~/hooks/useLocationSaver";
+import { actions } from "~/store/checkInStore";
+import { useTRPC } from "~/trpc/init/react";
 import { OnboardingPage } from "./OnboardingPage";
 import { FullPageSpinner } from "./Spinner";
 // Компонент-обертка для клиентской геолокации
@@ -13,6 +13,7 @@ const ClientLocationSaver = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { setIsCheckedInToday } = actions;
   const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
   const trpc = useTRPC();
@@ -31,6 +32,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     trpc.auth.login.mutationOptions({
       onSuccess: async (data) => {
         setLoggedIn(true);
+
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const lastCheck = data.lastCheckIn ? new Date(data.lastCheckIn) : undefined;
+        const lastStart = lastCheck
+          ? new Date(lastCheck.getFullYear(), lastCheck.getMonth(), lastCheck.getDate())
+          : undefined;
+
+        const isCheckedToday =
+          !!lastStart && lastStart.getTime() === startOfToday.getTime();
+        setIsCheckedInToday(isCheckedToday);
+
         // Сразу устанавливаем данные пользователя в кэш
         queryClient.prefetchQuery(
           trpc.meetings.getMeetingsPagination.queryOptions({
@@ -40,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         queryClient.prefetchQuery(trpc.main.getReviews.queryOptions());
         queryClient.prefetchQuery(trpc.main.getUsers.queryOptions());
         queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
-        queryClient.setQueryData(trpc.main.getUser.queryKey(), data);
+
         queryClient.setQueryData(trpc.main.getNotifications.queryKey(), []);
         queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), []);
         queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), []);

@@ -11,11 +11,15 @@ import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 
+import { useSnapshot } from "valtio";
+import { CheckInModal } from "~/components/CheckInModal";
 import GetUpButton from "~/components/getUpButton";
 import { useFilteredEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
+import { calculateStreak } from "~/lib/utils/calculateStreak";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
+import { actions, store } from "~/store/checkInStore";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/")({
@@ -24,6 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   useScrollRestoration("home");
+  const { isCheckedInToday } = useSnapshot(store);
   const [selectedFilter, setSelectedFilter] = useState("Все");
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -84,12 +89,24 @@ function Home() {
 
   const searchAdress = useMutation(trpc.yandex.suggest.mutationOptions());
 
+  // Вычисляем стрик на фронте используя ту же функцию что и на бэке
+  const currentStreak = user ? calculateStreak(user) : 0;
+
   return (
     <div
       data-mobile={isMobile}
       className="min-h-screen bg-white pt-14 pb-10 data-[mobile=true]:pt-39"
     >
       <Header />
+
+      {!isCheckedInToday && user && (
+        <CheckInModal
+          onClose={() => {
+            actions.setIsCheckedInToday(true);
+          }}
+          currentStreak={currentStreak}
+        />
+      )}
 
       <div className="flex items-center justify-between px-4 py-5">
         <h1 className="text-3xl font-bold text-black">Афиша</h1>

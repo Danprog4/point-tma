@@ -92,6 +92,7 @@ export const authRouter = {
             photo: null,
             gallery: [],
             isOnboarded: false,
+            lastLogin: new Date(),
           })
           .returning();
 
@@ -137,6 +138,11 @@ export const authRouter = {
 
         return newUser[0];
       }
+
+      await db
+        .update(usersTable)
+        .set({ lastLogin: new Date() })
+        .where(eq(usersTable.id, existingUser.id));
 
       return existingUser;
     }),

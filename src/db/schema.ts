@@ -64,6 +64,9 @@ export const usersTable = pgTable("users", {
   >(),
   xp: integer("xp").default(0),
   level: integer("level").default(1),
+  lastLogin: timestamp("last_login"),
+  lastCheckIn: timestamp("last_check_in"),
+  checkInStreak: integer("check_in_streak").default(0),
 });
 
 export const tasksProgressTable = pgTable("tasks_progress", {

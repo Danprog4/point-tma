@@ -1,107 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { achievements, achievementTypes } from "~/config/achievments";
 import { usePlatform } from "~/hooks/usePlatform";
 
 export const Route = createFileRoute("/achievments")({
   component: RouteComponent,
 });
-
-// Define achievement types and their styles
-const achievementTypes = {
-  default: {
-    borderColor: "border-gray-300",
-    textColor: "text-gray-500",
-    dotColor: "bg-gray-400",
-    bgColor: "bg-white",
-    hasGradientBorder: false,
-  },
-  pro: {
-    borderColor: "border-green-200",
-    textColor: "text-green-600",
-    dotColor: "bg-green-400",
-    bgColor: "bg-white",
-    hasGradientBorder: false,
-  },
-  rare: {
-    borderColor: "border-blue-300",
-    textColor: "text-blue-600",
-    dotColor: "bg-blue-500",
-    bgColor: "bg-white",
-    hasGradientBorder: false,
-  },
-  legend: {
-    borderColor: "border-purple-300",
-    textColor: "text-purple-600",
-    dotColor: "bg-purple-500",
-    bgColor: "bg-white",
-    hasGradientBorder: true,
-  },
-  epic: {
-    borderColor: "border-yellow-300",
-    textColor: "text-yellow-600",
-    dotColor: "bg-yellow-500",
-    bgColor: "bg-yellow-50",
-    hasGradientBorder: true,
-  },
-};
-
-const achievements = [
-  {
-    id: 1,
-    title: "Любитель свиданий",
-    type: "default" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
-    image: "💕",
-    completed: true,
-  },
-  {
-    id: 2,
-    title: "Любитель квестов",
-    type: "pro" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
-    image: "🎯",
-    completed: true,
-  },
-  {
-    id: 3,
-    title: "Мастер свиданий",
-    type: "rare" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
-    image: "👑",
-    completed: true,
-  },
-  {
-    id: 4,
-    title: "Король свиданий",
-    type: "legend" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
-    image: "👑",
-    completed: true,
-  },
-  {
-    id: 5,
-    title: "Первый квест",
-    type: "epic" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
-    image: "⭐",
-    completed: true,
-  },
-  {
-    id: 6,
-    title: "Мастер квестов",
-    type: "default" as keyof typeof achievementTypes,
-    progress: 5,
-    total: 10,
-    image: "🎮",
-    completed: false,
-  },
-];
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -193,7 +98,7 @@ function RouteComponent() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="px-4 pb-4">
+      <div className="pb-4">
         <div className="scrollbar-hidden flex w-full flex-1 items-center gap-6 overflow-x-auto">
           {filters.map((filter) => (
             <button

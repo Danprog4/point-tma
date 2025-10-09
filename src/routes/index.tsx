@@ -147,7 +147,7 @@ function Home() {
           <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
             {[
               { emoji: "🎉", name: "Популярное" },
-              { emoji: "🆕", name: "Новые" },
+              { emoji: "🆕", name: "Новое" },
               { emoji: "🎞", name: "Кино" },
               { emoji: "💃", name: "Вечеринки" },
               { emoji: "📈", name: "Конференции" },

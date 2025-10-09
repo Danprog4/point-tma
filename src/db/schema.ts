@@ -67,6 +67,8 @@ export const usersTable = pgTable("users", {
   lastLogin: timestamp("last_login"),
   lastCheckIn: timestamp("last_check_in"),
   checkInStreak: integer("check_in_streak").default(0),
+  achievements: jsonb("achievements").$type<Array<any>>(),
+  skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
 });
 
 export const tasksProgressTable = pgTable("tasks_progress", {
@@ -310,6 +312,8 @@ export const eventsTable = pgTable("events", {
     jsonb("rewards").$type<
       Array<{ type: string; value?: number | string; eventId?: number; caseId?: number }>
     >(),
+  achievements: jsonb("achievements").$type<Array<any>>(),
+  skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
   quests: jsonb("quests").$type<Array<any>>(),
   createdAt: timestamp("created_at").defaultNow(),
   isReviewed: boolean("is_reviewed").default(false),

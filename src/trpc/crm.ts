@@ -1465,6 +1465,8 @@ export const crmRouter = createTRPCRouter({
         stages: z.array(z.object({ title: z.string(), desc: z.string() })),
         hasAchievement: z.boolean(),
         organizer: z.string(),
+        skills: z.array(z.record(z.number())),
+        achievements: z.array(z.any()),
       }),
     )
     .mutation(async ({ input }) => {

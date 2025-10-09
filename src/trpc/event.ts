@@ -129,6 +129,24 @@ export const eventRouter = createTRPCRouter({
           .where(eq(usersTable.id, ctx.userId));
       }
 
+      if (eventData.skills) {
+        await db
+          .update(usersTable)
+          .set({
+            skills: [...(user.skills || []), ...eventData.skills],
+          })
+          .where(eq(usersTable.id, ctx.userId));
+      }
+
+      if (eventData.achievements) {
+        await db
+          .update(usersTable)
+          .set({
+            achievements: [...(user.achievements || []), ...eventData.achievements],
+          })
+          .where(eq(usersTable.id, ctx.userId));
+      }
+
       await logAction({
         userId: ctx.userId,
         type: "quest_end",

@@ -36,59 +36,30 @@ export const achievementTypes = {
   },
 };
 
-export const achievements = [
+export const availableAchievements = [
   {
-    id: 1,
     title: "Любитель свиданий",
     type: "default" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
     image: "💕",
-    completed: true,
   },
   {
-    id: 2,
     title: "Любитель квестов",
     type: "pro" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
     image: "🎯",
-    completed: true,
   },
   {
-    id: 3,
     title: "Мастер свиданий",
     type: "rare" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
     image: "👑",
-    completed: true,
   },
   {
-    id: 4,
     title: "Король свиданий",
     type: "legend" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
     image: "👑",
-    completed: true,
   },
   {
-    id: 5,
     title: "Первый квест",
     type: "epic" as keyof typeof achievementTypes,
-    progress: 10,
-    total: 10,
     image: "⭐",
-    completed: true,
-  },
-  {
-    id: 6,
-    title: "Мастер квестов",
-    type: "default" as keyof typeof achievementTypes,
-    progress: 5,
-    total: 10,
-    image: "🎮",
-    completed: false,
   },
 ];

@@ -9,7 +9,6 @@ import { useInfiniteScroll, useScrollRestoration } from "~/components/hooks/useS
 import { LocationIcon } from "~/components/Icons/Location";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { usePlatform } from "~/hooks/usePlatform";
-import { usePullToRefresh } from "~/hooks/usePullToRefresh";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
@@ -48,13 +47,6 @@ function RouteComponent() {
       queryKey: trpc.meetings.getMeetingsPagination.queryKey(),
     });
   };
-
-  const { containerRef, isPulling, isRefreshing, pullDistance, threshold } =
-    usePullToRefresh({
-      onRefresh: handleRefresh,
-      threshold: 80,
-      enabled: true,
-    });
 
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
   const activeMeetRequests = meetRequests?.filter(
@@ -118,48 +110,9 @@ function RouteComponent() {
 
   return (
     <div
-      ref={containerRef}
       data-mobile={isMobile}
       className="min-h-screen overflow-y-auto bg-white pt-14 pb-32 data-[mobile=true]:pt-39"
     >
-      {/* Pull to Refresh Indicator */}
-      {isPulling && (
-        <div
-          className="fixed top-0 right-0 left-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm transition-all duration-200"
-          style={{
-            height: `${Math.min(pullDistance, threshold * 1.5)}px`,
-            opacity: Math.min(pullDistance / threshold, 1),
-          }}
-        >
-          <div className="flex flex-col items-center gap-2">
-            {isRefreshing ? (
-              <>
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600"></div>
-                <span className="text-xs text-gray-600">Обновление...</span>
-              </>
-            ) : (
-              <>
-                <div
-                  className="h-6 w-6 rounded-full border-2 border-purple-600 transition-transform"
-                  style={{
-                    transform: `rotate(${(pullDistance / threshold) * 360}deg)`,
-                  }}
-                >
-                  <div className="flex h-full w-full items-center justify-center">
-                    <div className="h-1 w-1 rounded-full bg-purple-600"></div>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-600">
-                  {pullDistance >= threshold
-                    ? "Отпустите для обновления"
-                    : "Потяните вниз"}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Top Navigation */}
       <Header />
 

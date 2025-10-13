@@ -17,7 +17,7 @@ export const UsersList = ({
   onMoreClick,
 }: UsersListProps) => {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 text-black">
       {users?.map((user) => (
         <UserCard
           key={user.id}

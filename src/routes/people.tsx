@@ -1,5 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import PullToRefresh from "react-simple-pull-to-refresh";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import GetUpButton from "~/components/getUpButton";
@@ -13,12 +15,15 @@ import { usePeopleComplaints } from "~/hooks/usePeopleComplaints";
 import { usePeopleData } from "~/hooks/usePeopleData";
 import { usePeopleGallery } from "~/hooks/usePeopleGallery";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/people")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
   const { openFastMeetId, cameFromList } = Route.useSearch() as {
     openFastMeetId?: number;
     cameFromList?: boolean;
@@ -97,82 +102,89 @@ function RouteComponent() {
     setIsDrawerOpen(false);
   };
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: trpc.main.getUsers.queryKey(),
+    });
+  };
+
   return (
     <div
       data-mobile={isMobile}
       className="min-h-screen overflow-y-auto bg-white pt-14 pb-24 data-[mobile=true]:pt-39"
     >
       <Header />
+      <PullToRefresh onRefresh={handleRefresh} className="text-white">
+        <PeopleHeader
+          search={search}
+          setSearch={setSearch}
+          isFilterOpen={isFilterOpen}
+          setIsFilterOpen={setIsFilterOpen}
+        />
 
-      <PeopleHeader
-        search={search}
-        setSearch={setSearch}
-        isFilterOpen={isFilterOpen}
-        setIsFilterOpen={setIsFilterOpen}
-      />
+        <ViewToggle isList={isList} setIsList={setIsList} />
 
-      <ViewToggle isList={isList} setIsList={setIsList} />
+        {isList && (
+          <>
+            <UsersList
+              users={sortedUsers || []}
+              galleryData={galleryData}
+              isFavorite={isFavorite}
+              onFavoriteClick={(userId) => handleToFavorites(userId, isFavorite(userId))}
+              onMoreClick={handleUserMoreClick}
+            />
+            <GetUpButton />
+          </>
+        )}
 
-      {isList && (
-        <>
-          <UsersList
+        {!isList && (
+          <PeopleMap
             users={sortedUsers || []}
-            galleryData={galleryData}
-            isFavorite={isFavorite}
-            onFavoriteClick={(userId) => handleToFavorites(userId, isFavorite(userId))}
-            onMoreClick={handleUserMoreClick}
+            currentUser={user}
+            fastMeets={fastMeets || []}
+            className="px-4"
+            preOpenFastMeetId={preOpenFastMeetId ?? undefined}
+            preOpenCameFromList={cameFromList ?? false}
           />
-          <GetUpButton />
-        </>
-      )}
+        )}
 
-      {!isList && (
-        <PeopleMap
-          users={sortedUsers || []}
-          currentUser={user}
-          fastMeets={fastMeets || []}
-          className="px-4"
-          preOpenFastMeetId={preOpenFastMeetId ?? undefined}
-          preOpenCameFromList={cameFromList ?? false}
-        />
-      )}
-
-      <PeopleDrawer
-        open={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
-        userId={selectedUser as number}
-        onComplain={handleComplaintAction}
-        onSave={handleSaveAction}
-        onHide={handleHideAction}
-        user={user as User}
-        isComplained={selectedUser ? isComplained(selectedUser) : false}
-      />
-
-      {galleryData.isFullScreen && galleryData.fullScreenPhotos.length > 0 && (
-        <FullScreenPhoto
-          allPhotos={galleryData.fullScreenPhotos}
-          currentIndex={galleryData.fullScreenIndex}
-          setCurrentIndex={galleryData.setFullScreenIndex}
-          setIsFullScreen={galleryData.setIsFullScreen}
-        />
-      )}
-
-      {isComplaintOpen && (
-        <ComplaintDrawer
-          handleSendComplaint={() => {
-            if (selectedUser) {
-              handleSubmitComplaint(selectedUser);
-            }
-          }}
-          complaint={complaint}
-          setComplaint={setComplaint}
-          open={isComplaintOpen}
-          onOpenChange={setIsComplaintOpen}
+        <PeopleDrawer
+          open={isDrawerOpen}
+          onOpenChange={setIsDrawerOpen}
           userId={selectedUser as number}
-          type="user"
+          onComplain={handleComplaintAction}
+          onSave={handleSaveAction}
+          onHide={handleHideAction}
+          user={user as User}
           isComplained={selectedUser ? isComplained(selectedUser) : false}
         />
-      )}
+
+        {galleryData.isFullScreen && galleryData.fullScreenPhotos.length > 0 && (
+          <FullScreenPhoto
+            allPhotos={galleryData.fullScreenPhotos}
+            currentIndex={galleryData.fullScreenIndex}
+            setCurrentIndex={galleryData.setFullScreenIndex}
+            setIsFullScreen={galleryData.setIsFullScreen}
+          />
+        )}
+
+        {isComplaintOpen && (
+          <ComplaintDrawer
+            handleSendComplaint={() => {
+              if (selectedUser) {
+                handleSubmitComplaint(selectedUser);
+              }
+            }}
+            complaint={complaint}
+            setComplaint={setComplaint}
+            open={isComplaintOpen}
+            onOpenChange={setIsComplaintOpen}
+            userId={selectedUser as number}
+            type="user"
+            isComplained={selectedUser ? isComplained(selectedUser) : false}
+          />
+        )}
+      </PullToRefresh>
     </div>
   );
 }

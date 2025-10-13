@@ -22,6 +22,7 @@ export const Route = createFileRoute("/meetings")({
 function RouteComponent() {
   const navigate = useNavigate();
   useScrollRestoration("meetings");
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
@@ -44,9 +45,11 @@ function RouteComponent() {
   );
 
   const handleRefresh = async () => {
+    setIsFetchingMore(true);
     await queryClient.invalidateQueries({
       queryKey: trpc.meetings.getMeetings.queryKey(),
     });
+    setIsFetchingMore(false);
   };
 
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
@@ -307,7 +310,8 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-        <div className="fixed right-4 bottom-20 left-4">
+
+        <div className={`right-4 bottom-20 left-4`}>
           <button
             onClick={() => {
               saveScrollPosition("meetings");

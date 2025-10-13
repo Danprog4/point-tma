@@ -310,18 +310,19 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-
-        <div className={`right-4 bottom-20 left-4`}>
-          <button
-            onClick={() => {
-              saveScrollPosition("meetings");
-              navigate({ to: "/createMeet" });
-            }}
-            className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-          >
-            Создать встречу
-          </button>
-        </div>
+        {!isFetchingMore && (
+          <div className="fixed right-4 bottom-20 left-4">
+            <button
+              onClick={() => {
+                saveScrollPosition("meetings");
+                navigate({ to: "/createMeet" });
+              }}
+              className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+            >
+              Создать встречу
+            </button>
+          </div>
+        )}
       </PullToRefresh>
     </div>
   );

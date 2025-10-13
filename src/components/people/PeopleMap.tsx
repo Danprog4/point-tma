@@ -16,6 +16,7 @@ interface PeopleMapProps {
   preOpenFastMeetId?: number;
   preOpenCameFromList?: boolean;
   setIsList?: (isList: boolean) => void;
+  isFetchingMore?: boolean;
 }
 
 export const PeopleMap = ({
@@ -26,6 +27,7 @@ export const PeopleMap = ({
   preOpenFastMeetId,
   preOpenCameFromList,
   setIsList,
+  isFetchingMore,
 }: PeopleMapProps) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(preOpenFastMeetId ? true : false);
@@ -335,14 +337,16 @@ export const PeopleMap = ({
         }}
       />
 
-      <div className="fixed right-4 bottom-20 left-4">
-        <button
-          onClick={buttonConfig.action}
-          className={`w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md ${buttonConfig.className} px-6 py-3 font-medium text-white shadow-lg transition-colors`}
-        >
-          {buttonConfig.text}
-        </button>
-      </div>
+      {!isFetchingMore && (
+        <div className="fixed right-4 bottom-20 left-4">
+          <button
+            onClick={buttonConfig.action}
+            className={`w-full ${isFetchingMore ? "opacity-50" : ""} rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md ${buttonConfig.className} px-6 py-3 font-medium text-white shadow-lg transition-colors`}
+          >
+            {buttonConfig.text}
+          </button>
+        </div>
+      )}
       <FastMeetDrawer
         open={isOpen}
         onOpenChange={(open) => {

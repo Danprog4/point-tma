@@ -28,6 +28,7 @@ function RouteComponent() {
     openFastMeetId?: number;
     cameFromList?: boolean;
   };
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   // Restore saved scroll position (if any) when returning to the list
   useScrollRestoration("people");
@@ -103,9 +104,11 @@ function RouteComponent() {
   };
 
   const handleRefresh = async () => {
+    setIsFetchingMore(true);
     await queryClient.invalidateQueries({
       queryKey: trpc.main.getUsers.queryKey(),
     });
+    setIsFetchingMore(false);
   };
 
   return (
@@ -145,6 +148,7 @@ function RouteComponent() {
             className="px-4"
             preOpenFastMeetId={preOpenFastMeetId ?? undefined}
             preOpenCameFromList={cameFromList ?? false}
+            isFetchingMore={isFetchingMore}
           />
         )}
 

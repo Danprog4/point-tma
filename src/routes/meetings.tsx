@@ -45,7 +45,7 @@ function RouteComponent() {
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({
-      queryKey: trpc.meetings.getMeetingsPagination.queryKey(),
+      queryKey: trpc.meetings.getMeetings.queryKey(),
     });
   };
 

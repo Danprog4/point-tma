@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { xpForBuyEvent, xpForEndQuest } from "~/consts/levels-xp";
 import { db } from "~/db";
@@ -422,6 +422,7 @@ export const eventRouter = createTRPCRouter({
           eq(eventsTable.isApproved, true),
           eq(eventsTable.isReviewed, true),
         ),
+        orderBy: [desc(eventsTable.createdAt)],
       });
       return events;
     }),

@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useState } from "react";
+import PullToRefresh from "react-simple-pull-to-refresh";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
 import GetUpButton from "~/components/getUpButton";
@@ -62,6 +63,7 @@ export function getTypeColor(type: string) {
 
 function RouteComponent() {
   useScrollRestoration("quests");
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -111,176 +113,183 @@ function RouteComponent() {
 
   const isMobile = usePlatform();
 
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: trpc.event.getEventsByCategory.queryKey({ category: "Квест" }),
+    });
+  };
+
   return (
     <div
       data-mobile={isMobile}
       className="min-h-screen overflow-y-auto bg-white pt-14 pb-30 data-[mobile=true]:pt-39"
     >
       <Header />
-
-      <div className="flex items-center justify-between px-4 py-5">
-        <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold text-black">Квесты</h1>
-          <Selecter width="20px" height="20px" />
-        </div>
-        <Settings className="h-5 w-5 text-black" />
-      </div>
-
-      <div className="mb-4 flex items-center justify-center gap-6 px-4">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          type="text"
-          placeholder="Поиск квестов"
-          className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-        />
-
-        <FilterDrawer
-          open={isOpen}
-          onOpenChange={(open) => {
-            if (open) {
-              lockBodyScroll();
-            } else {
-              unlockBodyScroll();
-            }
-            setIsOpen(open);
-          }}
-        >
-          <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
-            <WhiteFilter />
+      <PullToRefresh onRefresh={handleRefresh} className="text-white">
+        <div className="flex items-center justify-between px-4 py-5">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-black">Квесты</h1>
+            <Selecter width="20px" height="20px" />
           </div>
-        </FilterDrawer>
-      </div>
+          <Settings className="h-5 w-5 text-black" />
+        </div>
 
-      <Calendar />
+        <div className="mb-4 flex items-center justify-center gap-6 px-4">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            type="text"
+            placeholder="Поиск квестов"
+            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+          />
 
-      <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
-        {filters.map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter ?? "")}
-            className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-              activeFilter === filter
-                ? "bg-black text-white"
-                : "border-gray-200 bg-white text-black"
-            }`}
+          <FilterDrawer
+            open={isOpen}
+            onOpenChange={(open) => {
+              if (open) {
+                lockBodyScroll();
+              } else {
+                unlockBodyScroll();
+              }
+              setIsOpen(open);
+            }}
           >
-            {filter}
-          </button>
-        ))}
-      </div>
+            <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+              <WhiteFilter />
+            </div>
+          </FilterDrawer>
+        </div>
 
-      <div className="space-y-4">
-        {userQuestsData && userQuestsData.length > 0 && (
-          <>
-            <h2 className="px-4 text-lg font-semibold text-black">Активные квесты</h2>
-            {userQuestsData
-              .filter(
-                (quest) =>
-                  (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-              )
-              .map((quest) => {
-                const questData = questsData?.find((q) => q.id === quest.eventId);
-                return (
-                  <div key={quest.id} className="mb-4 px-4">
-                    <QuestCard quest={questData as any} isNavigable={true} />
-                    <p className="py-2 text-xs leading-4 text-black">
-                      {questData?.description?.slice(0, 100)}
-                      {questData?.description && questData.description.length > 100
-                        ? "..."
-                        : ""}
-                    </p>
+        <Calendar />
 
-                    <div className="mb-6 flex w-full items-center justify-between">
-                      {questData?.hasAchievement ? (
-                        <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                          + Достижение
-                        </span>
-                      ) : (
-                        <span
-                          style={{ visibility: "hidden" }}
-                          className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                        >
-                          + Достижение
-                        </span>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <span className="text-base font-medium text-black">
-                          +
-                          {(
-                            questData?.rewards?.find((reward) => reward.type === "point")
-                              ?.value ?? 0
-                          ).toLocaleString()}
-                        </span>
+        <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter ?? "")}
+              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeFilter === filter
+                  ? "bg-black text-white"
+                  : "border-gray-200 bg-white text-black"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
 
-                        <span className="text-base font-medium text-black">points</span>
-                        <Coin />
+        <div className="space-y-4">
+          {userQuestsData && userQuestsData.length > 0 && (
+            <>
+              <h2 className="px-4 text-lg font-semibold text-black">Активные квесты</h2>
+              {userQuestsData
+                .filter(
+                  (quest) =>
+                    (activeFilter === "Все" && questsData) || quest.type === activeFilter,
+                )
+                .map((quest) => {
+                  const questData = questsData?.find((q) => q.id === quest.eventId);
+                  return (
+                    <div key={quest.id} className="mb-4 px-4">
+                      <QuestCard quest={questData as any} isNavigable={true} />
+                      <p className="py-2 text-xs leading-4 text-black">
+                        {questData?.description?.slice(0, 100)}
+                        {questData?.description && questData.description.length > 100
+                          ? "..."
+                          : ""}
+                      </p>
+
+                      <div className="mb-6 flex w-full items-center justify-between">
+                        {questData?.hasAchievement ? (
+                          <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                            + Достижение
+                          </span>
+                        ) : (
+                          <span
+                            style={{ visibility: "hidden" }}
+                            className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                          >
+                            + Достижение
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <span className="text-base font-medium text-black">
+                            +
+                            {(
+                              questData?.rewards?.find(
+                                (reward) => reward.type === "point",
+                              )?.value ?? 0
+                            ).toLocaleString()}
+                          </span>
+
+                          <span className="text-base font-medium text-black">points</span>
+                          <Coin />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-          </>
-        )}
+                  );
+                })}
+            </>
+          )}
 
-        <div className="mb-6">
+          <div className="mb-6">
+            {questsData
+              ?.filter((quest) => quest.isSeries)
+              .filter((quest) => quest.isSeries)
+
+              .map((quest) => <SeriesQuestCard key={quest.id} quest={quest as any} />)}
+          </div>
+
           {questsData
-            ?.filter((quest) => quest.isSeries)
-            .filter((quest) => quest.isSeries)
+            ?.filter((quest) => !quest.isSeries)
+            .filter(
+              (quest) =>
+                (activeFilter === "Все" && questsData) || quest.type === activeFilter,
+            )
+            .filter((quest) => {
+              return (
+                quest.title?.toLowerCase().includes(search.toLowerCase()) ||
+                quest.description?.toLowerCase().includes(search.toLowerCase())
+              );
+            })
+            .map((quest, idx) => (
+              <div key={quest.id}>
+                <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
+                <div className="px-4">
+                  <QuestCard quest={quest as any} isNavigable={true} />
+                  <p className="py-2 text-xs leading-4 text-black">
+                    {quest.description?.slice(0, 100) +
+                      (quest.description?.length && quest.description.length > 100
+                        ? "..."
+                        : "")}
+                  </p>
+                  <div className="mb-6 flex items-center justify-between">
+                    {quest.hasAchievement && (
+                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
+                        + Достижение
+                      </span>
+                    )}
+                    <div className="ml-auto flex items-center gap-1">
+                      <span className="text-base font-medium text-black">
+                        +
+                        {(
+                          quest?.rewards?.find((reward) => reward.type === "point")
+                            ?.value ?? 0
+                        ).toLocaleString()}
+                      </span>
 
-            .map((quest) => <SeriesQuestCard key={quest.id} quest={quest as any} />)}
-        </div>
-
-        {questsData
-          ?.filter((quest) => !quest.isSeries)
-          .filter(
-            (quest) =>
-              (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-          )
-          .filter((quest) => {
-            return (
-              quest.title?.toLowerCase().includes(search.toLowerCase()) ||
-              quest.description?.toLowerCase().includes(search.toLowerCase())
-            );
-          })
-          .map((quest, idx) => (
-            <div key={quest.id}>
-              <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
-              <div className="px-4">
-                <QuestCard quest={quest as any} isNavigable={true} />
-                <p className="py-2 text-xs leading-4 text-black">
-                  {quest.description?.slice(0, 100) +
-                    (quest.description?.length && quest.description.length > 100
-                      ? "..."
-                      : "")}
-                </p>
-                <div className="mb-6 flex items-center justify-between">
-                  {quest.hasAchievement && (
-                    <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                      + Достижение
-                    </span>
-                  )}
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="text-base font-medium text-black">
-                      +
-                      {(
-                        quest?.rewards?.find((reward) => reward.type === "point")
-                          ?.value ?? 0
-                      ).toLocaleString()}
-                    </span>
-
-                    <span className="text-base font-medium text-black">points</span>
-                    <Coin />
+                      <span className="text-base font-medium text-black">points</span>
+                      <Coin />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-      </div>
+            ))}
+        </div>
 
-      {/* Create Quest Button */}
+        {/* Create Quest Button */}
 
-      {/* <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
+        {/* <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
         <div className="mx-auto flex w-full items-center gap-2 px-4">
           <button
             onClick={() =>
@@ -302,17 +311,18 @@ function RouteComponent() {
         </div>
       </div> */}
 
-      {/* TODO: Add handleSaveEventorMeet */}
-      {isMoreOpen && (
-        <More
-          setIsMoreOpen={setIsMoreOpen}
-          handleSaveEventOrMeet={() => {}}
-          handleGiveTicket={() => {}}
-          handleInvite={() => {}}
-        />
-      )}
+        {/* TODO: Add handleSaveEventorMeet */}
+        {isMoreOpen && (
+          <More
+            setIsMoreOpen={setIsMoreOpen}
+            handleSaveEventOrMeet={() => {}}
+            handleGiveTicket={() => {}}
+            handleInvite={() => {}}
+          />
+        )}
 
-      <GetUpButton />
+        <GetUpButton />
+      </PullToRefresh>
     </div>
   );
 }

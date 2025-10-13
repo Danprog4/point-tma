@@ -237,7 +237,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(popularEvents?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -259,7 +259,7 @@ function Home() {
           </div>
 
           <div className="mb-6 w-full overflow-x-hidden">
-            <div className="mb-4 flex items-center justify-between px-4">
+            <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Новое</h2>
               <ArrowRight
                 className="h-5 w-5 cursor-pointer text-gray-500"
@@ -269,7 +269,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(newEvents?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -291,7 +291,7 @@ function Home() {
           </div>
 
           <div className="mb-6 w-full overflow-x-hidden">
-            <div className="mb-4 flex items-center justify-between px-4">
+            <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Кино</h2>
               <ArrowRight
                 className="h-5 w-5 cursor-pointer text-gray-500"
@@ -301,7 +301,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(kinoData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -324,7 +324,7 @@ function Home() {
 
           {/* Quests Section */}
           <div className="mb-6">
-            <div className="mb-4 flex items-center justify-between px-4">
+            <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Квесты</h2>
               <ArrowRight
                 className="h-5 w-5 cursor-pointer text-gray-500"
@@ -334,7 +334,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(questsData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -356,7 +356,7 @@ function Home() {
           </div>
 
           {/* Banner */}
-          <div className="mb-6 px-4">
+          <div className="mb-6 px-4 text-black">
             <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white">
               <div className="flex items-center justify-between">
                 <span
@@ -377,7 +377,7 @@ function Home() {
 
           {/* Top Conferences */}
           <div className="mb-6">
-            <div className="mb-4 flex items-center justify-between px-4">
+            <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">ТОП Конференций</h2>
               <ArrowRight
                 className="h-5 w-5 cursor-pointer text-gray-500"
@@ -387,7 +387,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4 text-black">
               {(conferencesData?.slice?.(0, 5) || [])
                 .filter((conf) =>
                   conf.title?.toLowerCase().includes(search.toLowerCase()),
@@ -410,7 +410,7 @@ function Home() {
 
           {/* Parties Section */}
           <div className="mb-20">
-            <div className="mb-4 flex items-center justify-between px-4">
+            <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Вечеринки</h2>
               <ArrowRight
                 className="h-5 w-5 cursor-pointer text-gray-500"
@@ -420,7 +420,7 @@ function Home() {
                 }}
               />
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(partiesData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),

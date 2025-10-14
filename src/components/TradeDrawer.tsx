@@ -146,9 +146,9 @@ export default function TradeDrawer({
     if (cameFromGiveOrTrade && !skipReopenGiveOrTrade) {
       setIsGiveOrTradeOpen(true);
       setCameFromGiveOrTrade(false);
-      toast.success("Обмен на билет успешно отправлен!");
     } else if (cameFromGiveOrTrade) {
       setCameFromGiveOrTrade(false);
+      toast.success("Обмен на билет успешно отправлен!");
     }
     onOpenChange(open);
   };

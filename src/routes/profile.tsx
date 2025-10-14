@@ -178,7 +178,7 @@ function RouteComponent() {
       ) : (
         <div
           data-mobile={isMobile}
-          className="min-h-screen overflow-y-auto bg-white pt-14 pb-20 data-[mobile=true]:pt-39"
+          className="min-h-screen overflow-y-auto bg-white pt-14 pb-20 text-black data-[mobile=true]:pt-39"
         >
           <Header />
 
@@ -213,7 +213,7 @@ function RouteComponent() {
           </div> */}
 
             {page === "info" && (
-              <>
+              <div className="text-black">
                 <div className="relative">
                   <div className="relative h-90 rounded-t-2xl">
                     <img
@@ -595,7 +595,7 @@ function RouteComponent() {
                     </WarningsBansDrawer>
                   </div>
                 </div>
-              </>
+              </div>
             )}
 
             {/* {page === "friends" && <Friends />} */}

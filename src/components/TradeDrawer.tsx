@@ -572,8 +572,8 @@ export default function TradeDrawer({
               <button
                 className="mt-2 rounded-lg bg-purple-200 px-6 py-2 font-bold text-purple-900 transition hover:bg-purple-300"
                 onClick={() => {
-                  handleDrawerClose(false);
                   setCameFromGiveOrTrade(false);
+                  handleDrawerClose(false);
                 }}
               >
                 Закрыть

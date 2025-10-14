@@ -17,6 +17,9 @@ export default function GiveDrawer({
   handleBuyEvent,
   setSelectedUser,
   selectedUser,
+  isGiveOrTradeOpen,
+  setIsGiveOrTradeOpen,
+  cameFromGiveOrTrade,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -33,6 +36,9 @@ export default function GiveDrawer({
   handleBuyEvent: () => void;
   setSelectedUser: (user: User) => void;
   selectedUser: User | null;
+  isGiveOrTradeOpen?: boolean;
+  setIsGiveOrTradeOpen?: (open: boolean) => void;
+  cameFromGiveOrTrade?: boolean;
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -66,6 +72,9 @@ export default function GiveDrawer({
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setIsSent(false);
+      if (cameFromGiveOrTrade) {
+        setIsGiveOrTradeOpen?.(true);
+      }
     }
     onOpenChange(nextOpen);
   };

@@ -4,14 +4,22 @@ import { Drawer } from "vaul";
 export default function GiveOrTradeDrawer({
   open,
   onOpenChange,
+  setIsGiveOrTradeOpen,
+  setIsGiveDrawerOpen,
+  setCameFromGiveOrTrade,
+  setIsTradeDrawerOpen,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  setIsGiveOrTradeOpen: (open: boolean) => void;
+  setIsGiveDrawerOpen: (open: boolean) => void;
+  setCameFromGiveOrTrade: (open: boolean) => void;
+  setIsTradeDrawerOpen: (open: boolean) => void;
 }) {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1.5px]" />
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-16 flex h-fit flex-col rounded-t-3xl bg-gradient-to-t from-white to-[#f3e9fc] px-6 py-7 shadow-2xl">
           <header className="flex items-center justify-between pb-4">
             <div className="mx-auto text-lg font-extrabold text-purple-700">
@@ -32,7 +40,11 @@ export default function GiveOrTradeDrawer({
           <div className="mt-4 flex flex-col gap-5">
             <button
               className="flex w-full items-center gap-3 rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-100/60 to-transparent px-6 py-4 shadow transition hover:scale-[1.01] active:bg-purple-50"
-              disabled
+              onClick={() => {
+                setIsGiveDrawerOpen(true);
+                setIsGiveOrTradeOpen(false);
+                setCameFromGiveOrTrade(true);
+              }}
             >
               <Gift className="h-6 w-6 text-purple-500" />
               <div className="flex flex-col items-start">
@@ -46,7 +58,11 @@ export default function GiveOrTradeDrawer({
             </button>
             <button
               className="flex w-full items-center gap-3 rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-100/30 to-transparent px-6 py-4 shadow transition hover:scale-[1.01] active:bg-yellow-50"
-              disabled
+              onClick={() => {
+                setIsTradeDrawerOpen(true);
+                setIsGiveOrTradeOpen(false);
+                setCameFromGiveOrTrade(true);
+              }}
             >
               <Repeat2 className="h-6 w-6 text-yellow-600" />
               <div className="flex flex-col items-start">

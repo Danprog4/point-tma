@@ -18,6 +18,7 @@ import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
+import TradeDrawer from "~/components/TradeDrawer";
 import { User } from "~/db/schema";
 import { useEventsCache } from "~/hooks/useEventsCache";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -43,6 +44,8 @@ function RouteComponent() {
   const [isGiveDrawerOpen, setIsGiveDrawerOpen] = useState(false);
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
   const [isGiveOrTradeOpen, setIsGiveOrTradeOpen] = useState(false);
+  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [cameFromGiveOrTrade, setCameFromGiveOrTrade] = useState(false);
   const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
 
@@ -58,6 +61,18 @@ function RouteComponent() {
   const { data: keys } = useQuery(trpc.cases.getKeys.queryOptions());
   const [isGift, setIsGift] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Map friendship records to actual User objects
+  const friendUsers = useMemo(() => {
+    if (!friends || !users || !user) return [];
+    return friends
+      .map((friendship) => {
+        const friendId =
+          friendship.fromUserId === user.id ? friendship.toUserId : friendship.fromUserId;
+        return users.find((u) => u.id === friendId);
+      })
+      .filter((u): u is User => u !== undefined);
+  }, [friends, users, user]);
 
   console.log(keys, "keys");
 
@@ -690,6 +705,9 @@ function RouteComponent() {
           }}
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
+          isGiveOrTradeOpen={isGiveOrTradeOpen}
+          setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
+          cameFromGiveOrTrade={cameFromGiveOrTrade}
         />
       )}
 
@@ -724,7 +742,23 @@ function RouteComponent() {
       )}
 
       {isGiveOrTradeOpen && (
-        <GiveOrTradeDrawer open={isGiveOrTradeOpen} onOpenChange={setIsGiveOrTradeOpen} />
+        <GiveOrTradeDrawer
+          open={isGiveOrTradeOpen}
+          onOpenChange={setIsGiveOrTradeOpen}
+          setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
+          setIsGiveDrawerOpen={setIsGiveDrawerOpen}
+          setCameFromGiveOrTrade={setCameFromGiveOrTrade}
+          setIsTradeDrawerOpen={setIsTradeDrawerOpen}
+        />
+      )}
+
+      {isTradeDrawerOpen && (
+        <TradeDrawer
+          open={isTradeDrawerOpen}
+          onOpenChange={setIsTradeDrawerOpen}
+          users={users as User[]}
+          friends={friendUsers}
+        />
       )}
     </div>
   );

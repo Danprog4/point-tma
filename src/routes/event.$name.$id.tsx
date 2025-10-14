@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import ActiveDrawer from "~/components/ActiveDrawer";
 import GiveDrawer from "~/components/GiveDrawer";
+import GiveOrTradeDrawer from "~/components/GiveOrTradeDrawer";
 import { useScroll } from "~/components/hooks/useScroll";
 import { BlueTelegram } from "~/components/Icons/BlueTelegram";
 import { Coin } from "~/components/Icons/Coin";
@@ -41,6 +42,7 @@ function RouteComponent() {
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isGiveDrawerOpen, setIsGiveDrawerOpen] = useState(false);
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
+  const [isGiveOrTradeOpen, setIsGiveOrTradeOpen] = useState(false);
   const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
 
@@ -586,10 +588,10 @@ function RouteComponent() {
               {event?.category === "Квест" ? (
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button
-                    onClick={() => setIsGiveDrawerOpen(true)}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
+                    onClick={() => setIsGiveOrTradeOpen(true)}
+                    className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
                   >
-                    <div>Подарить</div>
+                    <div className="text-sm">Подарить/Обменять</div>
                   </button>
 
                   <ActiveDrawer
@@ -719,6 +721,10 @@ function RouteComponent() {
           participants={[]}
           setParticipants={() => {}}
         />
+      )}
+
+      {isGiveOrTradeOpen && (
+        <GiveOrTradeDrawer open={isGiveOrTradeOpen} onOpenChange={setIsGiveOrTradeOpen} />
       )}
     </div>
   );

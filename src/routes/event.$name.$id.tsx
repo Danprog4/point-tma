@@ -708,6 +708,7 @@ function RouteComponent() {
           isGiveOrTradeOpen={isGiveOrTradeOpen}
           setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
           cameFromGiveOrTrade={cameFromGiveOrTrade}
+          setCameFromGiveOrTrade={setCameFromGiveOrTrade}
         />
       )}
 

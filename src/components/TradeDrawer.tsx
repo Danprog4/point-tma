@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Coins, Repeat2, User as UserIcon, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { User } from "~/db/schema";
 import { getImage } from "~/lib/utils/getImage";
@@ -140,12 +141,16 @@ export default function TradeDrawer({
     setSearch("");
   };
 
-  const handleDrawerClose = (open: boolean) => {
+  const handleDrawerClose = (open: boolean, skipReopenGiveOrTrade = false) => {
     if (!open) handleReset();
-    if (cameFromGiveOrTrade) {
+    if (cameFromGiveOrTrade && !skipReopenGiveOrTrade) {
       setIsGiveOrTradeOpen(true);
+      setCameFromGiveOrTrade(false);
+    } else if (cameFromGiveOrTrade) {
+      setCameFromGiveOrTrade(false);
     }
     onOpenChange(open);
+    toast.success("Обмен на билет успешно отправлен!");
   };
 
   const handleUserSelect = (user: User) => {
@@ -191,6 +196,8 @@ export default function TradeDrawer({
       selectedItems.some((sItem) => sItem.id === gItem.id),
     ).length;
   };
+
+  console.log(cameFromGiveOrTrade, "cameFromGiveOrTrade");
 
   return (
     <Drawer.Root open={open} onOpenChange={handleDrawerClose}>
@@ -572,8 +579,7 @@ export default function TradeDrawer({
               <button
                 className="mt-2 rounded-lg bg-purple-200 px-6 py-2 font-bold text-purple-900 transition hover:bg-purple-300"
                 onClick={() => {
-                  setCameFromGiveOrTrade(false);
-                  handleDrawerClose(false);
+                  handleDrawerClose(false, true);
                 }}
               >
                 Закрыть

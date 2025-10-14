@@ -760,6 +760,7 @@ function RouteComponent() {
           friends={friendUsers}
           cameFromGiveOrTrade={cameFromGiveOrTrade}
           setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
+          setCameFromGiveOrTrade={setCameFromGiveOrTrade}
         />
       )}
     </div>

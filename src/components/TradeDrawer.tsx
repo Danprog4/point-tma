@@ -43,6 +43,7 @@ export default function TradeDrawer({
   friends = [],
   cameFromGiveOrTrade,
   setIsGiveOrTradeOpen,
+  setCameFromGiveOrTrade,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,6 +51,7 @@ export default function TradeDrawer({
   friends?: User[];
   cameFromGiveOrTrade: boolean;
   setIsGiveOrTradeOpen: (value: boolean) => void;
+  setCameFromGiveOrTrade: (value: boolean) => void;
 }) {
   const trpc = useTRPC();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
@@ -569,7 +571,10 @@ export default function TradeDrawer({
               </div>
               <button
                 className="mt-2 rounded-lg bg-purple-200 px-6 py-2 font-bold text-purple-900 transition hover:bg-purple-300"
-                onClick={() => handleDrawerClose(false)}
+                onClick={() => {
+                  handleDrawerClose(false);
+                  setCameFromGiveOrTrade(false);
+                }}
               >
                 Закрыть
               </button>

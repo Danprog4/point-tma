@@ -41,11 +41,15 @@ export default function TradeDrawer({
   onOpenChange,
   users,
   friends = [],
+  cameFromGiveOrTrade,
+  setIsGiveOrTradeOpen,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   users: User[];
   friends?: User[];
+  cameFromGiveOrTrade: boolean;
+  setIsGiveOrTradeOpen: (value: boolean) => void;
 }) {
   const trpc = useTRPC();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
@@ -136,6 +140,9 @@ export default function TradeDrawer({
 
   const handleDrawerClose = (open: boolean) => {
     if (!open) handleReset();
+    if (cameFromGiveOrTrade) {
+      setIsGiveOrTradeOpen(true);
+    }
     onOpenChange(open);
   };
 
@@ -276,7 +283,7 @@ export default function TradeDrawer({
                                 {user.name} {user.surname}
                               </span>
                               <span className="text-xs text-purple-400">
-                                {user.login ? `@${user.login}` : ""}
+                                {user.login ? `${user.login}` : ""}
                               </span>
                             </div>
                           </button>
@@ -310,7 +317,7 @@ export default function TradeDrawer({
                               {user.name} {user.surname}
                             </span>
                             <span className="text-xs text-yellow-400">
-                              {user.login ? `@${user.login}` : ""}
+                              {user.login ? `${user.login}` : ""}
                             </span>
                           </div>
                         </button>
@@ -363,7 +370,7 @@ export default function TradeDrawer({
               {/* Inventory Items Grid */}
               <div className="mb-4 flex-1 overflow-y-auto" style={{ maxHeight: "35vh" }}>
                 {groupedInventory.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3 p-2">
                     {groupedInventory.map((item, index) => {
                       const itemData = getItemData(item);
                       const isCase = item.type === "case";
@@ -389,11 +396,11 @@ export default function TradeDrawer({
                           )}
 
                           {/* Selected count badge */}
-                          {/* {selectedCount > 0 && (
+                          {selectedCount > 0 && (
                             <div className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white">
                               ✓{selectedCount > 1 ? selectedCount : ""}
                             </div>
-                          )} */}
+                          )}
 
                           <img
                             src={
@@ -468,7 +475,7 @@ export default function TradeDrawer({
                   {selectedUser.name} {selectedUser.surname}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {selectedUser.login ? `@${selectedUser.login}` : ""}
+                  {selectedUser.login ? `${selectedUser.login}` : ""}
                 </div>
               </div>
 

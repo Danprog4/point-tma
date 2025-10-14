@@ -758,6 +758,8 @@ function RouteComponent() {
           onOpenChange={setIsTradeDrawerOpen}
           users={users as User[]}
           friends={friendUsers}
+          cameFromGiveOrTrade={cameFromGiveOrTrade}
+          setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
         />
       )}
     </div>

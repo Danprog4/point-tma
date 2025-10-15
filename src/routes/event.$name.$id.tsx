@@ -133,22 +133,6 @@ function RouteComponent() {
   console.log(selectedUser, "selectedUser");
   console.log(ticket, "ticket");
 
-  const handleGiveTicket = () => {
-    if (!selectedUser || !ticket?.id) return;
-    sendGift.mutate(
-      { userId: selectedUser.id, item: ticket as any },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
-          setSelectedUser(null);
-          setIsOpen(false);
-          setIsGift(false);
-          toast.success("Билет успешно подарен");
-        },
-      },
-    );
-  };
-
   const handleBuyEvent = () => {
     if (isDisabled) {
       return;
@@ -249,6 +233,12 @@ function RouteComponent() {
 
     setIsCompleted(true);
   };
+
+  const itemData = useMemo(() => {
+    return user?.inventory?.find(
+      (item) => item.eventId === Number(id) && item.name === name && !item.isActive,
+    );
+  }, [user?.inventory, id, name]);
 
   const isMobile = usePlatform();
 
@@ -602,12 +592,25 @@ function RouteComponent() {
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               {event?.category === "Квест" ? (
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                  <button
-                    onClick={() => setIsGiveOrTradeOpen(true)}
-                    className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
-                  >
-                    <div className="text-sm">Подарить/Обменять</div>
-                  </button>
+                  {!itemData?.isInTrade ? (
+                    <button
+                      onClick={() => setIsGiveOrTradeOpen(true)}
+                      className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
+                    >
+                      <div className="text-sm">Подарить/Обменять</div>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        toast.error(
+                          "Вы уже обмениваетесь этим предметом. Сначала завершите обмен",
+                        )
+                      }
+                      className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white opacity-50 shadow-lg"
+                    >
+                      <div className="text-sm">Подарить/Обменять</div>
+                    </button>
+                  )}
 
                   <ActiveDrawer
                     id={Number(id)}
@@ -762,6 +765,7 @@ function RouteComponent() {
           cameFromGiveOrTrade={cameFromGiveOrTrade}
           setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
           setCameFromGiveOrTrade={setCameFromGiveOrTrade}
+          event={{ type: "event", id: Number(id), name: name }}
         />
       )}
     </div>

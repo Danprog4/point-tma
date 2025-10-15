@@ -32,6 +32,7 @@ export const usersTable = pgTable("users", {
         isActive?: boolean;
         name?: string;
         id?: number;
+        isInTrade?: boolean;
       }>
     >()
     .default([]),
@@ -367,6 +368,25 @@ export const categoriesTable = pgTable("categories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const tradesTable = pgTable("trades", {
+  id: serial("id").primaryKey(),
+  fromUserId: bigint("from_user_id", { mode: "number" }),
+  toUserId: bigint("to_user_id", { mode: "number" }),
+  typeOfGiving: varchar("type_of_giving", { length: 255 }), // case, item, ticket, etc...
+  eventIdOfGiving: bigint("event_id_of_giving", { mode: "number" }),
+  eventTypeOfGiving: varchar("event_type_of_giving", { length: 255 }), // quest, conf, party, etc
+  caseIdOfGiving: bigint("case_id_of_giving", { mode: "number" }),
+  itemIdOfGiving: bigint("item_id_of_giving", { mode: "number" }),
+  amountOfGiving: integer("amount_of_giving"),
+  typeOfReceiving: varchar("type_of_receiving", { length: 255 }), // case, item, ticket, etc...
+  eventIdOfReceiving: bigint("event_id_of_receiving", { mode: "number" }),
+  caseIdOfReceiving: bigint("case_id_of_receiving", { mode: "number" }),
+  itemIdOfReceiving: bigint("item_id_of_receiving", { mode: "number" }),
+  amountOfReceiving: integer("amount_of_receiving"),
+  status: varchar("status", { length: 255 }), // pending, accepted, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -409,3 +429,5 @@ export type Calendar = typeof calendarTable.$inferSelect;
 export type NewCalendar = typeof calendarTable.$inferInsert;
 export type RatingUser = typeof ratingsUserTable.$inferSelect;
 export type NewRatingUser = typeof ratingsUserTable.$inferInsert;
+
+export type Trade = typeof tradesTable.$inferSelect;

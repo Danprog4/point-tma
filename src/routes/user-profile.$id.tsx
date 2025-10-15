@@ -1,17 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Calendar1,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  Mars,
-  Star,
-  Venus,
-  X as XIcon,
-} from "lucide-react";
+import { ArrowLeft, Calendar1, Heart, Mars, Star, Venus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { useScroll } from "~/components/hooks/useScroll";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
 import { ProfileMore } from "~/components/ProfileMore";
@@ -662,55 +653,23 @@ function RouteComponent() {
               </div>
 
               {isFullScreen && allPhotos.length > 0 && (
-                <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">
-                  {allPhotos.length > 1 && (
-                    <ChevronLeft
-                      className="absolute left-4 h-10 w-10 cursor-pointer text-white"
-                      onClick={() =>
-                        setCurrentIndex(
-                          (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
-                        )
-                      }
-                    />
-                  )}
-
-                  {(() => {
-                    const imgSrc = allPhotos[currentIndex];
-                    return (
-                      <img
-                        src={
-                          imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)
-                        }
-                        alt="Full view"
-                        className="max-h-full max-w-full object-contain"
-                      />
-                    );
-                  })()}
-
-                  {allPhotos.length > 1 && (
-                    <ChevronRight
-                      className="absolute right-4 h-10 w-10 cursor-pointer text-white"
-                      onClick={() =>
-                        setCurrentIndex((prev) => (prev + 1) % allPhotos.length)
-                      }
-                    />
-                  )}
-
-                  <XIcon
-                    className="absolute top-24 right-4 h-8 w-8 cursor-pointer text-white"
-                    onClick={() => setIsFullScreen(false)}
+                <>
+                  <FullScreenPhoto
+                    allPhotos={allPhotos}
+                    currentIndex={currentIndex}
+                    setCurrentIndex={setCurrentIndex}
+                    setIsFullScreen={setIsFullScreen}
                   />
-
                   <Heart
                     className={cn(
-                      "absolute right-4 bottom-4 h-10 w-10 cursor-pointer rounded-lg bg-neutral-500 p-2 text-white",
+                      "absolute right-4 bottom-4 z-[100001] h-10 w-10 cursor-pointer rounded-lg bg-neutral-500 p-2 text-white",
                       isPhotoFavorite(allPhotos[currentIndex]) && "text-red-500",
                     )}
                     onClick={() => {
                       handlePhotoToFavorites({ photo: allPhotos[currentIndex] });
                     }}
                   />
-                </div>
+                </>
               )}
               {user?.id !== me?.id && (
                 <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">

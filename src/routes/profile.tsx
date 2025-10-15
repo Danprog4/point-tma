@@ -6,7 +6,6 @@ import {
   BarChart3,
   Calendar,
   Calendar1,
-  ChevronLeft,
   ChevronRight,
   Crown,
   History,
@@ -18,10 +17,10 @@ import {
   Star,
   Target,
   Venus,
-  X as XIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
 import { FavIcon } from "~/components/Icons/Fav";
@@ -609,46 +608,12 @@ function RouteComponent() {
             />
 
             {isFullScreen && allPhotos.length > 0 && (
-              <div className="bg-opacity-90 fixed inset-0 z-[100000] flex items-center justify-center bg-black">
-                {/* Left arrow */}
-                {allPhotos.length > 1 && (
-                  <ChevronLeft
-                    className="absolute left-4 h-10 w-10 cursor-pointer text-white"
-                    onClick={() =>
-                      setCurrentIndex(
-                        (prev) => (prev - 1 + allPhotos.length) % allPhotos.length,
-                      )
-                    }
-                  />
-                )}
-
-                {(() => {
-                  const imgSrc = allPhotos[currentIndex];
-                  return (
-                    <img
-                      src={
-                        imgSrc.startsWith("data:image/") ? imgSrc : getImageUrl(imgSrc)
-                      }
-                      alt="Full view"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  );
-                })()}
-
-                {allPhotos.length > 1 && (
-                  <ChevronRight
-                    className="absolute right-4 h-10 w-10 cursor-pointer text-white"
-                    onClick={() =>
-                      setCurrentIndex((prev) => (prev + 1) % allPhotos.length)
-                    }
-                  />
-                )}
-
-                <XIcon
-                  className="absolute top-24 right-4 h-8 w-8 cursor-pointer text-white"
-                  onClick={() => setIsFullScreen(false)}
-                />
-              </div>
+              <FullScreenPhoto
+                allPhotos={allPhotos}
+                currentIndex={currentIndex}
+                setCurrentIndex={setCurrentIndex}
+                setIsFullScreen={setIsFullScreen}
+              />
             )}
           </PullToRefresh>
         </div>

@@ -32,6 +32,7 @@ export const tradesRouter = createTRPCRouter({
         itemIdOfGiving: z.number().optional(),
         amountOfGiving: z.number().optional(),
         eventIdOfReceiving: z.number().optional(),
+        eventTypeOfReceiving: z.string().optional(),
         caseIdOfReceiving: z.number().optional(),
         itemIdOfReceiving: z.number().optional(),
         amountOfReceiving: z.number().optional(),
@@ -65,7 +66,9 @@ export const tradesRouter = createTRPCRouter({
           .update(usersTable)
           .set({
             inventory: user.inventory?.map((item: any) =>
-              item.eventId === input.eventIdOfGiving && item.type === "ticket"
+              item.eventId === input.eventIdOfGiving &&
+              item.type === "ticket" &&
+              item.name === input.eventTypeOfGiving
                 ? { ...item, isInTrade: true }
                 : item,
             ),

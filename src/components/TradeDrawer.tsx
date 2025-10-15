@@ -60,7 +60,7 @@ export default function TradeDrawer({
   cameFromGiveOrTrade: boolean;
   setIsGiveOrTradeOpen: (value: boolean) => void;
   setCameFromGiveOrTrade: (value: boolean) => void;
-  event: { type: string; id: number; name: string };
+  event: { type: string; eventId: number; name: string; id: number };
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -238,7 +238,8 @@ export default function TradeDrawer({
       let tradeData: any = {
         toUserId: selectedUser.id,
         typeOfGiving: "ticket",
-        eventIdOfGiving: event.id,
+        eventIdOfGiving: event.eventId,
+        eventTypeOfGiving: event.name, // Добавляем тип билета, который мы отдаем
       };
 
       if (selectedItems.length > 0 && requestedPoints === 0) {
@@ -248,7 +249,8 @@ export default function TradeDrawer({
           ...tradeData,
           typeOfReceiving: firstSelectedItem.type as "case" | "item" | "ticket",
           eventIdOfReceiving: firstSelectedItem.eventId,
-          eventTypeOfGiving: firstSelectedItem.eventType,
+
+          eventTypeOfReceiving: firstSelectedItem.name, // Используем name (категорию билета)
           caseIdOfReceiving: firstSelectedItem.caseId,
           itemIdOfReceiving: firstSelectedItem.id,
         };
@@ -269,7 +271,7 @@ export default function TradeDrawer({
         return {
           ...old,
           inventory: old.inventory?.map((item: any) =>
-            item.eventId === event.id &&
+            item.eventId === event.eventId &&
             item.type === "ticket" &&
             item.name === event.name
               ? { ...item, isInTrade: true }
@@ -285,6 +287,8 @@ export default function TradeDrawer({
       toast.error("Ошибка при отправке запроса на обмен");
     }
   };
+
+  console.log(selectedItems, "selectedItems");
 
   return (
     <Drawer.Root open={open} onOpenChange={handleDrawerClose}>

@@ -378,11 +378,14 @@ export const tradesTable = pgTable("trades", {
   caseIdOfGiving: bigint("case_id_of_giving", { mode: "number" }),
   itemIdOfGiving: bigint("item_id_of_giving", { mode: "number" }),
   amountOfGiving: integer("amount_of_giving"),
+  ticketIdOfGiving: bigint("ticket_id_of_giving", { mode: "number" }),
   typeOfReceiving: varchar("type_of_receiving", { length: 255 }), // case, item, ticket, etc...
   eventIdOfReceiving: bigint("event_id_of_receiving", { mode: "number" }),
+  eventTypeOfReceiving: varchar("event_type_of_receiving", { length: 255 }), // quest, conf, party, etc
   caseIdOfReceiving: bigint("case_id_of_receiving", { mode: "number" }),
   itemIdOfReceiving: bigint("item_id_of_receiving", { mode: "number" }),
   amountOfReceiving: integer("amount_of_receiving"),
+  ticketIdOfReceiving: bigint("ticket_id_of_receiving", { mode: "number" }),
   status: varchar("status", { length: 255 }), // pending, accepted, rejected
   createdAt: timestamp("created_at").defaultNow(),
 });

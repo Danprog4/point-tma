@@ -765,7 +765,12 @@ function RouteComponent() {
           cameFromGiveOrTrade={cameFromGiveOrTrade}
           setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
           setCameFromGiveOrTrade={setCameFromGiveOrTrade}
-          event={{ type: "event", id: Number(id), name: name }}
+          event={{
+            type: "event",
+            eventId: Number(id),
+            name: name,
+            id: itemData?.id ?? 0,
+          }}
         />
       )}
     </div>

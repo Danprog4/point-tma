@@ -12,6 +12,7 @@ import {
   Lock,
   Mars,
   Package,
+  Repeat2,
   Settings,
   ShoppingBag,
   Star,
@@ -26,6 +27,7 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { FavIcon } from "~/components/Icons/Fav";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
 import { MenuItem } from "~/components/MenuItem";
+import MyTrades from "~/components/MyTrades";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
 import { WarningsBansDrawer } from "~/components/WarningsBansDrawer";
@@ -53,6 +55,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isFriendsPage, setIsFriendsPage] = useState(false);
+  const [isTradesPage, setIsTradesPage] = useState(false);
   const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -161,6 +164,9 @@ function RouteComponent() {
     await queryClient.invalidateQueries({
       queryKey: trpc.main.getUserFavorites.queryKey(),
     });
+    await queryClient.invalidateQueries({
+      queryKey: trpc.trades.getMyTrades.queryKey(),
+    });
   };
   return (
     <>
@@ -174,6 +180,8 @@ function RouteComponent() {
             users={users}
           />
         </>
+      ) : isTradesPage ? (
+        <MyTrades onBack={() => setIsTradesPage(false)} />
       ) : (
         <div
           data-mobile={isMobile}
@@ -564,6 +572,13 @@ function RouteComponent() {
                       }}
                       icon={<Target className="h-6 w-6 text-purple-300" />}
                       title="Задания"
+                    />
+                    <MenuItem
+                      onClick={() => {
+                        setIsTradesPage(true);
+                      }}
+                      icon={<Repeat2 className="h-6 w-6 text-purple-300" />}
+                      title="Мои обмены"
                     />
                     <WarningsBansDrawer
                       open={isWarningsBansOpen}

@@ -44,7 +44,7 @@ export default function TradeConfirmation({
     <div className="flex flex-col items-center py-4">
       <div className="mb-2 text-2xl font-bold text-purple-700">Подтверждение обмена</div>
       <div className="mb-4 text-center text-base text-gray-600">
-        Вы хотите предложить обмен билетом с:
+        Вы хотите предложить обмен предметами с:
       </div>
       <div className="mb-4 flex flex-col items-center gap-2">
         <img

@@ -15,8 +15,8 @@ export const tradesRouter = createTRPCRouter({
       where: or(
         eq(tradesTable.fromUserId, ctx.userId),
         eq(tradesTable.toUserId, ctx.userId),
-        desc(tradesTable.createdAt),
       ),
+      orderBy: [desc(tradesTable.createdAt)],
     });
   }),
 

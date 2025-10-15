@@ -305,7 +305,7 @@ export default function TradeDrawer({
             <>
               <div className="mt-2 mb-5 text-center text-base text-purple-700">
                 <span className="font-semibold">
-                  Обменяйтесь билетом с одним из друзей!
+                  Обменяйтесь предметами с одним из друзей!
                 </span>
                 <br />
                 Получите новые впечатления или помогите другу попасть на событие.

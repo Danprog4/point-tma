@@ -22,7 +22,7 @@ export default function TradeHeader({
       />
       <div className="mx-auto flex items-center gap-2 text-xl font-extrabold text-purple-700">
         <Repeat2 className="h-7 w-7 text-purple-600" />
-        Обмен билетом
+        Обмен предметами
       </div>
       <button
         onClick={onClose}

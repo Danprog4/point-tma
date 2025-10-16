@@ -118,26 +118,17 @@ function RouteComponent() {
   };
 
   const [sortedTickets, setSortedTickets] = useState<GroupedTicket[]>([]);
-  const [ticketIds, setTicketIds] = useState<string[]>([]);
+
+  // Initialize sorted tickets only once
+  React.useEffect(() => {
+    if (sortedTickets.length === 0 && inactiveTickets) {
+      const tickets = groupTickets(inactiveTickets);
+      setSortedTickets(tickets);
+    }
+  }, [inactiveTickets, sortedTickets.length]);
 
   const groupedTickets =
     sortedTickets.length > 0 ? sortedTickets : groupTickets(inactiveTickets);
-
-  // Update sorted tickets when data changes
-  React.useEffect(() => {
-    const tickets = groupTickets(inactiveTickets);
-
-    // Only update if we don't have sorted tickets yet
-    if (sortedTickets.length === 0) {
-      setSortedTickets(tickets);
-      // Create stable IDs for each ticket based on their content
-      const ids = tickets.map(
-        (ticket, index) =>
-          `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${ticket.count}-${index}`,
-      );
-      setTicketIds(ids);
-    }
-  }, [inactiveTickets]); // Remove sortedTickets from dependencies
 
   // Drag start handler
   const handleDragStart = () => {
@@ -152,15 +143,11 @@ function RouteComponent() {
 
     if (active.id !== over?.id && over) {
       setSortedTickets((items) => {
-        const oldIndex = ticketIds.indexOf(active.id as string);
-        const newIndex = ticketIds.indexOf(over.id as string);
+        const oldIndex = parseInt(active.id as string);
+        const newIndex = parseInt(over.id as string);
 
-        if (oldIndex !== -1 && newIndex !== -1) {
-          // Update both tickets and IDs arrays
-          const newTickets = arrayMove(items, oldIndex, newIndex);
-          const newIds = arrayMove(ticketIds, oldIndex, newIndex);
-          setTicketIds(newIds);
-          return newTickets;
+        if (!isNaN(oldIndex) && !isNaN(newIndex)) {
+          return arrayMove(items, oldIndex, newIndex);
         }
         return items;
       });
@@ -195,7 +182,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-40"
+      className="mx-auto min-h-screen w-full bg-white pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -229,7 +216,10 @@ function RouteComponent() {
           onDragEnd={handleDragEnd}
           modifiers={[restrictToParentElement]}
         >
-          <SortableContext items={ticketIds} strategy={rectSortingStrategy}>
+          <SortableContext
+            items={groupedTickets.map((_, index) => index.toString())}
+            strategy={rectSortingStrategy}
+          >
             {groupedTickets.length > 0 ? (
               <div className="grid grid-cols-3 gap-4 p-4">
                 {groupedTickets.map((ticket, index) => {
@@ -242,8 +232,8 @@ function RouteComponent() {
 
                   return (
                     <SortableInventoryItem
-                      key={ticketIds[index]}
-                      id={ticketIds[index]}
+                      key={`${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${index}`}
+                      id={index.toString()}
                       ticket={ticket}
                       index={index}
                       eventData={eventData}

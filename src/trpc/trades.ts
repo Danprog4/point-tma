@@ -87,4 +87,46 @@ export const tradesRouter = createTRPCRouter({
 
       return trade[0];
     }),
+
+  approveTrade: procedure
+    .input(
+      z.object({
+        tradeId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const trade = await db.query.tradesTable.findFirst({
+        where: eq(tradesTable.id, input.tradeId),
+      });
+
+      await db
+        .update(tradesTable)
+        .set({
+          status: "completed",
+        })
+        .where(eq(tradesTable.id, input.tradeId));
+
+      return trade;
+    }),
+
+  rejectTrade: procedure
+    .input(
+      z.object({
+        tradeId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const trade = await db.query.tradesTable.findFirst({
+        where: eq(tradesTable.id, input.tradeId),
+      });
+
+      await db
+        .update(tradesTable)
+        .set({
+          status: "rejected",
+        })
+        .where(eq(tradesTable.id, input.tradeId));
+
+      return trade;
+    }),
 });

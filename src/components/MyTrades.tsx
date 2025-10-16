@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Clock, Repeat2, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImage } from "~/lib/utils/getImage";
@@ -29,11 +30,29 @@ interface MyTradesProps {
 
 export default function MyTrades({ onBack }: MyTradesProps) {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const isMobile = usePlatform();
+
   const { data: trades, isLoading } = useQuery(trpc.trades.getMyTrades.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+  const approveTrade = useMutation(
+    trpc.trades.approveTrade.mutationOptions({
+      onError: (error) => {
+        toast.error("Не удалось принять обмен!");
+        queryClient.invalidateQueries({ queryKey: trpc.trades.getMyTrades.queryKey() });
+      },
+    }),
+  );
+  const rejectTrade = useMutation(
+    trpc.trades.rejectTrade.mutationOptions({
+      onError: (error) => {
+        toast.error("Не удалось отклонить обмен!");
+        queryClient.invalidateQueries({ queryKey: trpc.trades.getMyTrades.queryKey() });
+      },
+    }),
+  );
 
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -128,6 +147,32 @@ export default function MyTrades({ onBack }: MyTradesProps) {
     setIsDetailOpen(true);
   };
 
+  const handleApproveTrade = (tradeId: number) => {
+    approveTrade.mutate({ tradeId });
+    queryClient.setQueryData(trpc.trades.getMyTrades.queryKey(), (old: any) => {
+      return old.map((trade: any) => {
+        if (trade.id === tradeId) {
+          return { ...trade, status: "completed" };
+        }
+        return trade;
+      });
+    });
+    toast.success("Обмен принят!");
+  };
+
+  const handleRejectTrade = (tradeId: number) => {
+    rejectTrade.mutate({ tradeId });
+    queryClient.setQueryData(trpc.trades.getMyTrades.queryKey(), (old: any) => {
+      return old.map((trade: any) => {
+        if (trade.id === tradeId) {
+          return { ...trade, status: "rejected" };
+        }
+        return trade;
+      });
+    });
+    toast.success("Обмен отклонен!");
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -159,7 +204,6 @@ export default function MyTrades({ onBack }: MyTradesProps) {
         </div>
         <div className="flex items-center justify-center p-4 pb-2"></div>
       </div>
-
       {/* Content */}
       <div className="">
         {sortedTrades.length === 0 ? (
@@ -297,7 +341,6 @@ export default function MyTrades({ onBack }: MyTradesProps) {
           </div>
         )}
       </div>
-
       {/* Trade Detail Drawer */}
       <Drawer.Root open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <Drawer.Portal>
@@ -435,6 +478,33 @@ export default function MyTrades({ onBack }: MyTradesProps) {
                       </div>
                     </div>
                   </div>
+
+                  {/* Action Buttons for Pending Trades */}
+                  {selectedTrade.status === "pending" && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900">Действия</h3>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            handleApproveTrade(selectedTrade.id);
+                            setIsDetailOpen(false);
+                          }}
+                          className="flex-1 rounded-xl bg-green-500 px-4 py-3 font-semibold text-white transition hover:bg-green-600"
+                        >
+                          Принять обмен
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleRejectTrade(selectedTrade.id);
+                            setIsDetailOpen(false);
+                          }}
+                          className="flex-1 rounded-xl bg-red-500 px-4 py-3 font-semibold text-white transition hover:bg-red-600"
+                        >
+                          Отклонить обмен
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

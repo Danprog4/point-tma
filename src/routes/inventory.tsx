@@ -182,7 +182,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full bg-white pb-24 data-[mobile=true]:pt-40"
+      className="mx-auto min-h-screen w-full overflow-y-auto bg-white pb-24 data-[mobile=true]:pt-40"
     >
       {/* Header */}
       <div
@@ -202,10 +202,10 @@ function RouteComponent() {
 
       <div
         style={{
-          height: "calc(100vh - 120px)",
+          height: "calc(100vh - 120px)", // Space for fixed header
           margin: "0 auto",
           overflow: "auto",
-          paddingTop: "0px", // Space for fixed header
+          paddingTop: "0px",
         }}
         className="scrollbar-hidden min-h-screen overflow-y-auto"
       >

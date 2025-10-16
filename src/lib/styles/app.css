@@ -249,3 +249,39 @@ textarea {
   font-weight: bold;
   color: white;
 }
+
+/* Drag and Drop mobile fixes */
+.touch-none {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent mobile browser zoom on double tap */
+.no-zoom {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Better mobile drag handling */
+@media (max-width: 768px) {
+  .drag-handle {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Prevent scrolling during drag on mobile */
+  body.dragging {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+}

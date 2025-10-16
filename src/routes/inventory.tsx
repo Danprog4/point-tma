@@ -1,10 +1,28 @@
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { restrictToParentElement } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import KeyDrawer from "~/components/KeyDrawer";
+import { SortableInventoryItem } from "~/components/SortableInventoryItem";
+import { useDragScrollLock } from "~/hooks/useDragScrollLock";
 import { usePlatform } from "~/hooks/usePlatform";
-import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/inventory")({
@@ -28,8 +46,30 @@ function RouteComponent() {
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
   const [selectedKey, setSelectedKey] = useState<any>(null);
   const [isKeyDrawerOpen, setIsKeyDrawerOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+
+  // Lock page scroll during drag
+  useDragScrollLock(isDragging);
+
+  // Sensors for drag and drop with activation constraints
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 10, // Require 10px of movement before starting drag
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay before drag starts on touch
+        tolerance: 5, // 5px tolerance for movement
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const getCase = (caseId: number) => {
     return cases?.find((c) => c.id === caseId);
@@ -77,7 +117,55 @@ function RouteComponent() {
     return Array.from(groupedMap.values());
   };
 
-  const groupedTickets = groupTickets(inactiveTickets);
+  const [sortedTickets, setSortedTickets] = useState<GroupedTicket[]>([]);
+  const [ticketIds, setTicketIds] = useState<string[]>([]);
+
+  const groupedTickets =
+    sortedTickets.length > 0 ? sortedTickets : groupTickets(inactiveTickets);
+
+  // Update sorted tickets when data changes
+  React.useEffect(() => {
+    const tickets = groupTickets(inactiveTickets);
+
+    // Only update if we don't have sorted tickets yet
+    if (sortedTickets.length === 0) {
+      setSortedTickets(tickets);
+      // Create stable IDs for each ticket based on their content
+      const ids = tickets.map(
+        (ticket, index) =>
+          `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${ticket.count}-${index}`,
+      );
+      setTicketIds(ids);
+    }
+  }, [inactiveTickets]); // Remove sortedTickets from dependencies
+
+  // Drag start handler
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  // Drag end handler
+  const handleDragEnd = (event: DragEndEvent) => {
+    setIsDragging(false);
+
+    const { active, over } = event;
+
+    if (active.id !== over?.id && over) {
+      setSortedTickets((items) => {
+        const oldIndex = ticketIds.indexOf(active.id as string);
+        const newIndex = ticketIds.indexOf(over.id as string);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          // Update both tickets and IDs arrays
+          const newTickets = arrayMove(items, oldIndex, newIndex);
+          const newIds = arrayMove(ticketIds, oldIndex, newIndex);
+          setTicketIds(newIds);
+          return newTickets;
+        }
+        return items;
+      });
+    }
+  };
 
   const getEvent = (eventId?: number, name?: string, type?: string, caseId?: number) => {
     if (type === "case") {
@@ -124,77 +212,56 @@ function RouteComponent() {
 
         <button className="flex h-6 w-6 items-center justify-center"></button>
       </div>
-      {groupedTickets.length > 0 ? (
-        <div className="grid grid-cols-3 gap-4">
-          {groupedTickets.map((ticket, index) => {
-            const eventData = getEvent(
-              ticket.eventId,
-              ticket.name,
-              ticket.type,
-              ticket.caseId,
-            );
-            const isCase = ticket.type === "case";
-            const isKey = ticket.type === "key";
 
-            return (
-              <div
-                key={`${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${index}`}
-                className="relative flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
-                onClick={() => {
-                  if (isKey) {
-                    // Для ключей открываем KeyDrawer
-                    setSelectedKey(ticket);
-                    setIsKeyDrawerOpen(true);
-                  } else if (isCase) {
-                    // Для кейсов используем правильный ID
-                    const actualCaseId = ticket.caseId || ticket.eventId;
-                    if (actualCaseId) {
-                      navigate({ to: `/case/${actualCaseId}` });
-                    }
-                  } else if (ticket.eventId && ticket.name) {
-                    navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
-                  }
-                }}
-              >
-                {/* Бейдж с количеством билетов */}
-                {ticket.count > 1 && (
-                  <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                    {ticket.count}
-                  </div>
-                )}
+      <div
+        style={{
+          height: "calc(100vh - 120px)",
+          margin: "0 auto",
+          overflow: "auto",
+          paddingTop: "0px", // Space for fixed header
+        }}
+        className="scrollbar-hidden min-h-screen overflow-y-auto"
+      >
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToParentElement]}
+        >
+          <SortableContext items={ticketIds} strategy={rectSortingStrategy}>
+            {groupedTickets.length > 0 ? (
+              <div className="grid grid-cols-3 gap-4 p-4">
+                {groupedTickets.map((ticket, index) => {
+                  const eventData = getEvent(
+                    ticket.eventId,
+                    ticket.name,
+                    ticket.type,
+                    ticket.caseId,
+                  );
 
-                <img
-                  src={
-                    isCase || isKey
-                      ? (eventData as any)?.photo?.startsWith("/")
-                        ? (eventData as any).photo
-                        : (getImageUrl((eventData as any)?.photo) ?? "/fallback.png")
-                      : ((eventData as any)?.image ?? "/fallback.png")
-                  }
-                  alt={
-                    isCase || isKey
-                      ? ((eventData as any)?.name ?? "Кейс")
-                      : ((eventData as any)?.title ?? "Предмет")
-                  }
-                  className="h-[61px] w-[61px] rounded-lg object-cover"
-                />
-
-                <div className="text-center text-xs font-bold text-[#A35700]">
-                  {ticket.type === "ticket" && (eventData as any)?.category === "Квест"
-                    ? "Квест"
-                    : isCase
-                      ? "Кейс"
-                      : isKey
-                        ? "Ключ"
-                        : "Ваучер"}
-                </div>
+                  return (
+                    <SortableInventoryItem
+                      key={ticketIds[index]}
+                      id={ticketIds[index]}
+                      ticket={ticket}
+                      index={index}
+                      eventData={eventData}
+                      getCase={getCase}
+                      onKeyClick={(ticket) => {
+                        setSelectedKey(ticket);
+                        setIsKeyDrawerOpen(true);
+                      }}
+                    />
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-start text-gray-500">Ваш инвентарь пока пуст</div>
-      )}
+            ) : (
+              <div className="p-4 text-start text-gray-500">Ваш инвентарь пока пуст</div>
+            )}
+          </SortableContext>
+        </DndContext>
+      </div>
 
       {/* KeyDrawer для ключей */}
       {selectedKey && (

@@ -1,0 +1,119 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useNavigate } from "@tanstack/react-router";
+import React from "react";
+import { getImageUrl } from "~/lib/utils/getImageURL";
+
+// Type for grouped ticket
+type GroupedTicket = {
+  eventId?: number;
+  name?: string;
+  caseId?: number;
+  type: string;
+  count: number;
+  isActive: boolean;
+};
+
+type SortableInventoryItemProps = {
+  id: string;
+  ticket: GroupedTicket;
+  index: number;
+  eventData: any;
+  getCase: (caseId: number) => any;
+  onKeyClick: (ticket: GroupedTicket) => void;
+};
+
+export function SortableInventoryItem({
+  id,
+  ticket,
+  index,
+  eventData,
+  getCase,
+  onKeyClick,
+}: SortableInventoryItemProps) {
+  const navigate = useNavigate();
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
+      id: id,
+    });
+
+  const isCase = ticket.type === "case";
+  const isKey = ticket.type === "key";
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 1,
+  };
+
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent click when dragging
+    if (isDragging) return;
+
+    // Prevent default touch behavior
+    e.preventDefault();
+
+    if (isKey) {
+      // For keys, open KeyDrawer
+      onKeyClick(ticket);
+    } else if (isCase) {
+      // For cases, use correct ID
+      const actualCaseId = ticket.caseId || ticket.eventId;
+      if (actualCaseId) {
+        navigate({ to: `/case/${actualCaseId}` });
+      }
+    } else if (ticket.eventId && ticket.name) {
+      navigate({ to: `/event/${ticket.name}/${ticket.eventId}` });
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative flex aspect-square cursor-grab touch-none flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 select-none active:cursor-grabbing ${
+        isDragging ? "scale-105 shadow-2xl" : "shadow-md"
+      }`}
+      onClick={handleClick}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      {...attributes}
+      {...listeners}
+    >
+      {/* Badge with ticket count */}
+      {ticket.count > 1 && (
+        <div className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+          {ticket.count}
+        </div>
+      )}
+
+      <img
+        src={
+          isCase || isKey
+            ? (eventData as any)?.photo?.startsWith("/")
+              ? (eventData as any).photo
+              : (getImageUrl((eventData as any)?.photo) ?? "/fallback.png")
+            : ((eventData as any)?.image ?? "/fallback.png")
+        }
+        alt={
+          isCase || isKey
+            ? ((eventData as any)?.name ?? "Кейс")
+            : ((eventData as any)?.title ?? "Предмет")
+        }
+        className="pointer-events-none h-[61px] w-[61px] rounded-lg object-cover"
+        draggable={false}
+      />
+
+      <div className="pointer-events-none text-center text-xs font-bold text-[#A35700]">
+        {ticket.type === "ticket" && (eventData as any)?.category === "Квест"
+          ? "Квест"
+          : isCase
+            ? "Кейс"
+            : isKey
+              ? "Ключ"
+              : "Ваучер"}
+      </div>
+    </div>
+  );
+}

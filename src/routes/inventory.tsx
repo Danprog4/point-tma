@@ -67,12 +67,7 @@ function RouteComponent() {
   };
 
   const updateInventoryOrderMutation = useMutation(
-    trpc.main.updateInventoryOrder.mutationOptions({
-      onSuccess: () => {
-        // Обновляем кеш пользователя
-        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
-      },
-    }),
+    trpc.main.updateInventoryOrder.mutationOptions(),
   );
 
   const inactiveTickets = user?.inventory?.filter((ticket) => !ticket.isActive);

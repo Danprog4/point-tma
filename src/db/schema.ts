@@ -33,6 +33,7 @@ export const usersTable = pgTable("users", {
         name?: string;
         id?: number;
         isInTrade?: boolean;
+        index?: number;
       }>
     >()
     .default([]),
@@ -150,6 +151,7 @@ export const meetTable = pgTable("meets", {
   reward: integer("reward"),
   items: jsonb("items").$type<
     Array<{
+      index: number;
       type: string;
       eventId: number;
       isActive?: boolean;

@@ -15,7 +15,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
@@ -41,6 +41,7 @@ type GroupedTicket = {
 
 function RouteComponent() {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const navigate = useNavigate();
   const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
@@ -75,29 +76,40 @@ function RouteComponent() {
     return cases?.find((c) => c.id === caseId);
   };
 
+  const updateInventoryOrderMutation = useMutation(
+    trpc.main.updateInventoryOrder.mutationOptions({
+      onSuccess: () => {
+        // Обновляем кеш пользователя
+        queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
+      },
+    }),
+  );
+
   const inactiveTickets = user?.inventory?.filter((ticket) => !ticket.isActive);
 
-  // Функция для группировки билетов
+  // Функция для группировки билетов с учетом index
   const groupTickets = (tickets: typeof inactiveTickets): GroupedTicket[] => {
+    // Сначала сортируем по index, если он есть
+    const sortedByIndex = [...(tickets || [])].sort((a, b) => {
+      const indexA = a.index ?? Infinity;
+      const indexB = b.index ?? Infinity;
+      return indexA - indexB;
+    });
+
     const groupedMap = new Map<string, GroupedTicket>();
 
-    tickets?.forEach((ticket) => {
+    sortedByIndex.forEach((ticket) => {
       // Создаем уникальный ключ для группировки
       let key: string;
 
       if (ticket.type === "case") {
-        // Для кейсов группируем по типу и ID кейса
         const caseId = ticket.caseId || ticket.id;
         key = `${ticket.type}-${caseId || "no-case"}`;
       } else if (ticket.type === "key") {
-        // Для ключей группируем по типу и ID кейса
         key = `${ticket.type}-${ticket.caseId || "no-case"}`;
       } else {
-        // Для остальных типов используем старую логику
         key = `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}`;
       }
-
-      console.log(ticket, "ticket", "key:", key);
 
       if (groupedMap.has(key)) {
         const existing = groupedMap.get(key)!;
@@ -119,16 +131,15 @@ function RouteComponent() {
 
   const [sortedTickets, setSortedTickets] = useState<GroupedTicket[]>([]);
 
-  // Initialize sorted tickets only once
+  // Initialize and update sorted tickets
   React.useEffect(() => {
-    if (sortedTickets.length === 0 && inactiveTickets) {
+    if (inactiveTickets) {
       const tickets = groupTickets(inactiveTickets);
       setSortedTickets(tickets);
     }
-  }, [inactiveTickets, sortedTickets.length]);
+  }, [user?.inventory]);
 
-  const groupedTickets =
-    sortedTickets.length > 0 ? sortedTickets : groupTickets(inactiveTickets);
+  const groupedTickets = sortedTickets;
 
   // Drag start handler
   const handleDragStart = () => {
@@ -147,7 +158,68 @@ function RouteComponent() {
         const newIndex = parseInt(over.id as string);
 
         if (!isNaN(oldIndex) && !isNaN(newIndex)) {
-          return arrayMove(items, oldIndex, newIndex);
+          const newOrder = arrayMove(items, oldIndex, newIndex);
+
+          // Синхронизируем с backend
+          // Обновляем индексы в inventory
+          if (user?.inventory) {
+            const updatedInventory = user.inventory.map((item, idx) => ({
+              ...item,
+              index: idx,
+            }));
+
+            // Находим группы в новом порядке и обновляем их индексы
+            const groupToNewIndex = new Map<string, number>();
+            newOrder.forEach((group, groupIndex) => {
+              let key: string;
+              if (group.type === "case") {
+                const caseId = group.caseId;
+                key = `${group.type}-${caseId || "no-case"}`;
+              } else if (group.type === "key") {
+                key = `${group.type}-${group.caseId || "no-case"}`;
+              } else {
+                key = `${group.type}-${group.eventId || "no-event"}-${group.name || "no-name"}`;
+              }
+              groupToNewIndex.set(key, groupIndex);
+            });
+
+            // Обновляем индексы элементов согласно новому порядку групп
+            const reindexedInventory = updatedInventory.map((item) => {
+              let key: string;
+              if (item.type === "case") {
+                const caseId = item.caseId || item.id;
+                key = `${item.type}-${caseId || "no-case"}`;
+              } else if (item.type === "key") {
+                key = `${item.type}-${item.caseId || "no-case"}`;
+              } else {
+                key = `${item.type}-${item.eventId || "no-event"}-${item.name || "no-name"}`;
+              }
+              const groupIndex = groupToNewIndex.get(key) ?? item.index ?? 0;
+              return { ...item, index: groupIndex * 1000 + (item.index ?? 0) };
+            });
+
+            // Сортируем и перенумеруем
+            const sortedInventory = reindexedInventory
+              .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+              .map((item, idx) => ({
+                type: item.type,
+                caseId: item.caseId,
+                eventId: item.eventId,
+                eventType: item.eventType,
+                isActive: item.isActive,
+                name: item.name,
+                id: item.id,
+                isInTrade: item.isInTrade,
+                index: idx,
+              }));
+
+            // Асинхронно синхронизируем с бэком
+            updateInventoryOrderMutation.mutate({
+              inventory: sortedInventory,
+            });
+          }
+
+          return newOrder;
         }
         return items;
       });
@@ -159,12 +231,10 @@ function RouteComponent() {
       // For cases, we need to find by the actual case ID, not eventId
       const actualCaseId = caseId || eventId;
       const caseData = cases?.find((c) => c.id === actualCaseId);
-      console.log(caseData, "caseData", "actualCaseId:", actualCaseId);
       return caseData;
     }
     if (type === "key" && caseId) {
       const caseData = cases?.find((c) => c.id === caseId);
-      console.log(caseData, "caseData for key");
       return caseData;
     }
     if (eventId && name) {
@@ -172,10 +242,6 @@ function RouteComponent() {
     }
     return null;
   };
-
-  console.log(groupedTickets, "groupedTickets");
-  console.log(user?.inventory, "user inventory");
-  console.log(cases, "cases data");
 
   const isMobile = usePlatform();
 

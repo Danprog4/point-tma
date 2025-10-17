@@ -1166,6 +1166,47 @@ export const router = {
       }
     }),
 
+  updateInventoryOrder: procedure
+    .input(
+      z.object({
+        inventory: z.array(
+          z.object({
+            type: z.string(),
+            caseId: z.number().optional(),
+            eventId: z.number().optional(),
+            eventType: z.string().optional(),
+            isActive: z.boolean().optional(),
+            name: z.string().optional(),
+            id: z.number().optional(),
+            isInTrade: z.boolean().optional(),
+            index: z.number().optional(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // Обновляем inventory с новыми индексами
+      await db
+        .update(usersTable)
+        .set({
+          inventory: input.inventory,
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      return { success: true };
+    }),
+
   updateLocation: procedure
     .input(
       z.object({

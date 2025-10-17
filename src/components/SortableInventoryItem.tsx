@@ -66,7 +66,7 @@ export function SortableInventoryItem({
       if (startPos.current && !isDragging) {
         isLongPress.current = true;
         onLongPress(ticket, eventData);
-        
+
         if (navigator.vibrate) {
           navigator.vibrate(50);
         }
@@ -79,7 +79,7 @@ export function SortableInventoryItem({
     if (startPos.current && longPressTimer.current) {
       const deltaX = Math.abs(e.clientX - startPos.current.x);
       const deltaY = Math.abs(e.clientY - startPos.current.y);
-      
+
       // Если сдвинули больше 8px - это drag, отменяем long press
       if (deltaX > 8 || deltaY > 8) {
         cancelLongPress();
@@ -91,7 +91,7 @@ export function SortableInventoryItem({
   // При отпускании - отменяем таймер
   const handlePointerUp = () => {
     cancelLongPress();
-    
+
     // Сбрасываем флаг long press через небольшую задержку
     setTimeout(() => {
       startPos.current = null;

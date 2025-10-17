@@ -1,18 +1,9 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "@tanstack/react-router";
-import React from "react";
+import React, { useRef } from "react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
-
-// Type for grouped ticket
-type GroupedTicket = {
-  eventId?: number;
-  name?: string;
-  caseId?: number;
-  type: string;
-  count: number;
-  isActive: boolean;
-};
+import type { GroupedTicket } from "~/types/inventory";
 
 type SortableInventoryItemProps = {
   id: string;
@@ -21,6 +12,7 @@ type SortableInventoryItemProps = {
   eventData: any;
   getCase: (caseId: number) => any;
   onKeyClick: (ticket: GroupedTicket) => void;
+  onLongPress: (ticket: GroupedTicket, eventData: any) => void;
 };
 
 export function SortableInventoryItem({
@@ -30,15 +22,21 @@ export function SortableInventoryItem({
   eventData,
   getCase,
   onKeyClick,
+  onLongPress,
 }: SortableInventoryItemProps) {
   const navigate = useNavigate();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
       id: id,
+      // Отключаем drag на время long press
+      disabled: false,
     });
 
   const isCase = ticket.type === "case";
   const isKey = ticket.type === "key";
+
+  // Long press logic
+  const isLongPress = useRef(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,9 +45,32 @@ export function SortableInventoryItem({
     zIndex: isDragging ? 1000 : 1,
   };
 
+  // Context menu = долгое нажатие на мобиле
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault(); // Отключаем стандартное контекстное меню
+
+    if (!isDragging) {
+      isLongPress.current = true;
+      onLongPress(ticket, eventData);
+
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      // Сбрасываем флаг
+      setTimeout(() => {
+        isLongPress.current = false;
+      }, 200);
+    }
+  };
+
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent click when dragging
-    if (isDragging) return;
+    // Prevent click when dragging or long pressing
+    if (isDragging || isLongPress.current) {
+      isLongPress.current = false;
+      return;
+    }
 
     // Prevent default touch behavior
     e.preventDefault();
@@ -71,13 +92,15 @@ export function SortableInventoryItem({
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`relative flex aspect-square cursor-grab touch-none flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 select-none active:cursor-grabbing ${
+      style={{
+        ...style,
+        touchAction: "none", // Важно! Отключает браузерные жесты
+      }}
+      className={`relative flex aspect-square cursor-grab flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 select-none active:cursor-grabbing ${
         isDragging ? "scale-105 shadow-2xl" : "shadow-md"
       }`}
       onClick={handleClick}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
+      onContextMenu={handleContextMenu}
       {...attributes}
       {...listeners}
     >

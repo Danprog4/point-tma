@@ -4,7 +4,6 @@ import {
   DragEndEvent,
   KeyboardSensor,
   PointerSensor,
-  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -19,25 +18,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
+import { InventoryItemPreview } from "~/components/InventoryItemPreview";
 import KeyDrawer from "~/components/KeyDrawer";
 import { SortableInventoryItem } from "~/components/SortableInventoryItem";
 import { useDragScrollLock } from "~/hooks/useDragScrollLock";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
+import type { GroupedTicket } from "~/types/inventory";
 
 export const Route = createFileRoute("/inventory")({
   component: RouteComponent,
 });
-
-// Тип для сгруппированного билета
-type GroupedTicket = {
-  eventId?: number;
-  name?: string;
-  caseId?: number;
-  type: string;
-  count: number;
-  isActive: boolean;
-};
 
 function RouteComponent() {
   const trpc = useTRPC();
@@ -49,6 +40,11 @@ function RouteComponent() {
   const [isKeyDrawerOpen, setIsKeyDrawerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Preview state
+  const [previewTicket, setPreviewTicket] = useState<GroupedTicket | null>(null);
+  const [previewEventData, setPreviewEventData] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
 
   // Lock page scroll during drag
@@ -58,13 +54,7 @@ function RouteComponent() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10, // Require 10px of movement before starting drag
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200, // 200ms delay before drag starts on touch
-        tolerance: 5, // 5px tolerance for movement
+        distance: 8, // Require 8px of movement before starting drag (работает и для touch)
       },
     }),
     useSensor(KeyboardSensor, {
@@ -243,6 +233,13 @@ function RouteComponent() {
     return null;
   };
 
+  // Handle long press
+  const handleLongPress = (ticket: GroupedTicket, eventData: any) => {
+    setPreviewTicket(ticket);
+    setPreviewEventData(eventData);
+    setIsPreviewOpen(true);
+  };
+
   const isMobile = usePlatform();
 
   return (
@@ -308,6 +305,7 @@ function RouteComponent() {
                         setSelectedKey(ticket);
                         setIsKeyDrawerOpen(true);
                       }}
+                      onLongPress={handleLongPress}
                     />
                   );
                 })}
@@ -330,6 +328,14 @@ function RouteComponent() {
           <div />
         </KeyDrawer>
       )}
+
+      {/* Preview модальное окно */}
+      <InventoryItemPreview
+        isOpen={isPreviewOpen}
+        ticket={previewTicket}
+        eventData={previewEventData}
+        onClose={() => setIsPreviewOpen(false)}
+      />
     </div>
   );
 }

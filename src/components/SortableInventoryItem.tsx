@@ -37,6 +37,8 @@ export function SortableInventoryItem({
 
   // Long press logic
   const isLongPress = useRef(false);
+  const longPressTimer = useRef<number | null>(null);
+  const startPos = useRef<{ x: number; y: number } | null>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -45,24 +47,56 @@ export function SortableInventoryItem({
     zIndex: isDragging ? 1000 : 1,
   };
 
-  // Context menu = долгое нажатие на мобиле
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault(); // Отключаем стандартное контекстное меню
-
-    if (!isDragging) {
-      isLongPress.current = true;
-      onLongPress(ticket, eventData);
-
-      // Haptic feedback
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-
-      // Сбрасываем флаг
-      setTimeout(() => {
-        isLongPress.current = false;
-      }, 200);
+  // Отменяем long press таймер
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
+  };
+
+  // Запускаем long press при pointerdown
+  const handlePointerDown = (e: React.PointerEvent) => {
+    startPos.current = { x: e.clientX, y: e.clientY };
+    isLongPress.current = false;
+
+    // Запускаем таймер на 500ms
+    longPressTimer.current = window.setTimeout(() => {
+      // Проверяем что не двигались
+      if (startPos.current && !isDragging) {
+        isLongPress.current = true;
+        onLongPress(ticket, eventData);
+        
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+      }
+    }, 500);
+  };
+
+  // Отслеживаем движение - если двигаем, отменяем long press
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (startPos.current && longPressTimer.current) {
+      const deltaX = Math.abs(e.clientX - startPos.current.x);
+      const deltaY = Math.abs(e.clientY - startPos.current.y);
+      
+      // Если сдвинули больше 8px - это drag, отменяем long press
+      if (deltaX > 8 || deltaY > 8) {
+        cancelLongPress();
+        startPos.current = null;
+      }
+    }
+  };
+
+  // При отпускании - отменяем таймер
+  const handlePointerUp = () => {
+    cancelLongPress();
+    
+    // Сбрасываем флаг long press через небольшую задержку
+    setTimeout(() => {
+      startPos.current = null;
+      isLongPress.current = false;
+    }, 100);
   };
 
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
@@ -89,6 +123,23 @@ export function SortableInventoryItem({
     }
   };
 
+  // Комбинируем listeners с нашими обработчиками
+  const combinedListeners = {
+    ...listeners,
+    onPointerDown: (e: React.PointerEvent) => {
+      handlePointerDown(e);
+      listeners?.onPointerDown?.(e as any);
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      handlePointerMove(e);
+      listeners?.onPointerMove?.(e as any);
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      handlePointerUp();
+      listeners?.onPointerUp?.(e as any);
+    },
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -100,9 +151,8 @@ export function SortableInventoryItem({
         isDragging ? "scale-105 shadow-2xl" : "shadow-md"
       }`}
       onClick={handleClick}
-      onContextMenu={handleContextMenu}
       {...attributes}
-      {...listeners}
+      {...combinedListeners}
     >
       {/* Badge with ticket count */}
       {ticket.count > 1 && (

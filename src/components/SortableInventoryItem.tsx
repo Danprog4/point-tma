@@ -71,7 +71,7 @@ export function SortableInventoryItem({
           navigator.vibrate(50);
         }
       }
-    }, 500);
+    }, 300);
   };
 
   // Отслеживаем движение - если двигаем, отменяем long press

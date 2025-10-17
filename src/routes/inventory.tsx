@@ -18,9 +18,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
+import ActiveDrawer from "~/components/ActiveDrawer";
+import GiveOrTradeDrawer from "~/components/GiveOrTradeDrawer";
 import { InventoryItemPreview } from "~/components/InventoryItemPreview";
 import KeyDrawer from "~/components/KeyDrawer";
 import { SortableInventoryItem } from "~/components/SortableInventoryItem";
+import TradeDrawer from "~/components/TradeDrawer";
+import { User } from "~/db/schema";
 import { useDragScrollLock } from "~/hooks/useDragScrollLock";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useTRPC } from "~/trpc/init/react";
@@ -45,7 +49,27 @@ function RouteComponent() {
   const [previewEventData, setPreviewEventData] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  // Drawer states
+  const [isGiveOrTradeOpen, setIsGiveOrTradeOpen] = useState(false);
+  const [isActiveDrawerOpen, setIsActiveDrawerOpen] = useState(false);
+  const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [cameFromGiveOrTrade, setCameFromGiveOrTrade] = useState(false);
+
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
+
+  // Map friendship records to actual User objects
+  const friendUsers = React.useMemo(() => {
+    if (!friends || !users || !user) return [];
+    return friends
+      .map((friendship: any) => {
+        const friendId =
+          friendship.fromUserId === user.id ? friendship.toUserId : friendship.fromUserId;
+        return users.find((u: any) => u.id === friendId);
+      })
+      .filter((u: any): u is User => u !== undefined);
+  }, [friends, users, user]);
 
   // Lock page scroll during drag
   useDragScrollLock(isDragging);
@@ -235,6 +259,30 @@ function RouteComponent() {
     setIsPreviewOpen(true);
   };
 
+  // Get item data for actions
+  const getItemData = () => {
+    if (!previewTicket) return null;
+    return user?.inventory?.find(
+      (item) =>
+        item.eventId === previewTicket.eventId &&
+        item.name === previewTicket.name &&
+        !item.isActive,
+    );
+  };
+
+  const itemData = getItemData();
+
+  // Handle actions from preview
+  const handleGiveOrTrade = () => {
+    setIsGiveOrTradeOpen(true);
+    setIsPreviewOpen(false);
+  };
+
+  const handleActivate = () => {
+    setIsActiveDrawerOpen(true);
+    setIsPreviewOpen(false);
+  };
+
   const isMobile = usePlatform();
 
   return (
@@ -330,7 +378,53 @@ function RouteComponent() {
         ticket={previewTicket}
         eventData={previewEventData}
         onClose={() => setIsPreviewOpen(false)}
+        onGiveOrTrade={previewTicket?.type === "ticket" ? handleGiveOrTrade : undefined}
+        onActivate={previewTicket?.type === "ticket" ? handleActivate : undefined}
+        isInTrade={itemData?.isInTrade}
       />
+
+      {/* GiveOrTrade Drawer */}
+      {isGiveOrTradeOpen && previewTicket && (
+        <GiveOrTradeDrawer
+          open={isGiveOrTradeOpen}
+          onOpenChange={setIsGiveOrTradeOpen}
+          setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
+          setIsGiveDrawerOpen={() => {}}
+          setCameFromGiveOrTrade={setCameFromGiveOrTrade}
+          setIsTradeDrawerOpen={setIsTradeDrawerOpen}
+        />
+      )}
+
+      {/* Trade Drawer */}
+      {isTradeDrawerOpen && previewTicket && itemData && (
+        <TradeDrawer
+          open={isTradeDrawerOpen}
+          onOpenChange={setIsTradeDrawerOpen}
+          users={users as User[]}
+          friends={friendUsers}
+          cameFromGiveOrTrade={cameFromGiveOrTrade}
+          setIsGiveOrTradeOpen={setIsGiveOrTradeOpen}
+          setCameFromGiveOrTrade={setCameFromGiveOrTrade}
+          event={{
+            type: "event",
+            eventId: previewTicket.eventId ?? 0,
+            name: previewTicket.name ?? "",
+            id: itemData.id ?? 0,
+          }}
+        />
+      )}
+
+      {/* Active Drawer */}
+      {isActiveDrawerOpen && previewTicket && (
+        <ActiveDrawer
+          id={previewTicket.eventId ?? 0}
+          name={previewTicket.name ?? ""}
+          open={isActiveDrawerOpen}
+          onOpenChange={setIsActiveDrawerOpen}
+        >
+          <div />
+        </ActiveDrawer>
+      )}
     </div>
   );
 }

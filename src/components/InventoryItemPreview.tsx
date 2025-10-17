@@ -8,6 +8,9 @@ type InventoryItemPreviewProps = {
   ticket: GroupedTicket | null;
   eventData: any;
   onClose: () => void;
+  onGiveOrTrade?: () => void;
+  onActivate?: () => void;
+  isInTrade?: boolean;
 };
 
 export function InventoryItemPreview({
@@ -15,6 +18,9 @@ export function InventoryItemPreview({
   ticket,
   eventData,
   onClose,
+  onGiveOrTrade,
+  onActivate,
+  isInTrade = false,
 }: InventoryItemPreviewProps) {
   // Блокируем скролл когда открыто
   useEffect(() => {
@@ -130,12 +136,51 @@ export function InventoryItemPreview({
                 )}
               </motion.div>
 
+              {/* Кнопки действий */}
+              {(onGiveOrTrade || onActivate) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mt-6 flex w-full flex-col gap-2"
+                >
+                  {onGiveOrTrade && ticket.type === "ticket" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onGiveOrTrade();
+                      }}
+                      disabled={isInTrade}
+                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all ${
+                        isInTrade
+                          ? "cursor-not-allowed bg-gray-300 opacity-50"
+                          : "bg-red-300 hover:bg-red-500 active:scale-95"
+                      }`}
+                    >
+                      {isInTrade ? "В обмене" : "Подарить/Обменять"}
+                    </button>
+                  )}
+
+                  {onActivate && ticket.type === "ticket" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onActivate();
+                      }}
+                      className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:bg-purple-700 active:scale-95"
+                    >
+                      Активировать
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
               {/* Подсказка для закрытия */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.6 }}
                 transition={{ delay: 0.3 }}
-                className="mt-6 text-xs text-gray-400"
+                className="mt-4 text-xs text-gray-400"
               >
                 Нажмите чтобы закрыть
               </motion.div>

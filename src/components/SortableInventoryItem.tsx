@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "@tanstack/react-router";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import React, { useRef } from "react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import type { GroupedTicket } from "~/types/inventory";
@@ -60,15 +61,15 @@ export function SortableInventoryItem({
     startPos.current = { x: e.clientX, y: e.clientY };
     isLongPress.current = false;
 
-    // Запускаем таймер на 500ms
+    // Запускаем таймер на 300ms
     longPressTimer.current = window.setTimeout(() => {
       // Проверяем что не двигались
       if (startPos.current && !isDragging) {
         isLongPress.current = true;
         onLongPress(ticket, eventData);
 
-        if (navigator.vibrate) {
-          navigator.vibrate(50);
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.impactOccurred("medium");
         }
       }
     }, 300);
@@ -84,6 +85,10 @@ export function SortableInventoryItem({
       if (deltaX > 8 || deltaY > 8) {
         cancelLongPress();
         startPos.current = null;
+
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.impactOccurred("light");
+        }
       }
     }
   };

@@ -36,7 +36,7 @@ export const Navbar = () => {
       {isRender ? (
         <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
           <div className="grid grid-cols-5 gap-2">
-            <Link to="/" className="flex flex-col items-center py-2" preload="render">
+            <Link to="/" className="flex flex-col items-center py-2" preload="viewport">
               <div className="mb-1 h-6 w-6">
                 <Main />
               </div>
@@ -54,7 +54,7 @@ export const Navbar = () => {
             <Link
               to="/meetings"
               className="flex flex-col items-center py-2"
-              preload="render"
+              preload="viewport"
             >
               {activeMeetRequests && activeMeetRequests?.length > 0 ? (
                 <div className="relative mb-1 h-6 w-6">
@@ -80,7 +80,7 @@ export const Navbar = () => {
             <Link
               to="/people"
               className="flex flex-col items-center py-2"
-              preload="render"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 <People />
@@ -100,7 +100,7 @@ export const Navbar = () => {
             <Link
               to="/quests"
               className="flex flex-col items-center py-2"
-              preload="render"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 <Quests />
@@ -137,7 +137,7 @@ export const Navbar = () => {
             <Link
               to="/profile"
               className="flex flex-col items-center py-2"
-              preload="render"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 {activeRequests && activeRequests?.length > 0 ? (

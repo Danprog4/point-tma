@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/init/react";
 import { Main } from "./Icons/NavBar.tsx/Main";
@@ -11,7 +11,6 @@ import { Quests } from "./Icons/NavBar.tsx/Quests";
 export const Navbar = () => {
   const trpc = useTRPC();
   const pathname = useLocation();
-  const navigate = useNavigate();
   const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
   const activeRequests = requests?.filter((request) => request.status === "pending");
   const { data: meetRequests } = useQuery(trpc.meetings.getRequests.queryOptions());
@@ -37,10 +36,7 @@ export const Navbar = () => {
       {isRender ? (
         <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
           <div className="grid grid-cols-5 gap-2">
-            <button
-              onClick={() => navigate({ to: "/" })}
-              className="flex flex-col items-center py-2"
-            >
+            <Link to="/" className="flex flex-col items-center py-2" preload="viewport">
               <div className="mb-1 h-6 w-6">
                 <Main />
               </div>
@@ -54,10 +50,11 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
-            <button
-              onClick={() => navigate({ to: "/meetings" })}
+            </Link>
+            <Link
+              to="/meetings"
               className="flex flex-col items-center py-2"
+              preload="viewport"
             >
               {activeMeetRequests && activeMeetRequests?.length > 0 ? (
                 <div className="relative mb-1 h-6 w-6">
@@ -79,10 +76,11 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
-            <button
-              onClick={() => navigate({ to: "/people" })}
+            </Link>
+            <Link
+              to="/people"
               className="flex flex-col items-center py-2"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 <People />
@@ -98,10 +96,11 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
-            <button
-              onClick={() => navigate({ to: "/quests" })}
+            </Link>
+            <Link
+              to="/quests"
               className="flex flex-col items-center py-2"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 <Quests />
@@ -116,9 +115,9 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
-            {/* <button
-              onClick={() => navigate({ to: "/shop" })}
+            </Link>
+            {/* <Link
+              to="/shop"
               className="flex flex-col items-center py-2"
             >
               <div className="mb-1 h-6 w-6">
@@ -134,10 +133,11 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button> */}
-            <button
-              onClick={() => navigate({ to: "/profile" })}
+            </Link> */}
+            <Link
+              to="/profile"
               className="flex flex-col items-center py-2"
+              preload="viewport"
             >
               <div className="mb-1 h-6 w-6">
                 {activeRequests && activeRequests?.length > 0 ? (
@@ -159,7 +159,7 @@ export const Navbar = () => {
                   <div className="h-full w-full rounded-full bg-purple-600"></div>
                 )}
               </div>
-            </button>
+            </Link>
           </div>
         </div>
       ) : null}

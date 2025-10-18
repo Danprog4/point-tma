@@ -116,13 +116,13 @@
   * {
     @apply border-border outline-ring/50;
     font-family:
-      "Nunito",
+      "Raleway",
       -apple-system,
       BlinkMacSystemFont,
       "Segoe UI",
       sans-serif;
     font-optical-sizing: auto;
-    font-weight: 600;
+    font-weight: 500;
   }
   body {
     @apply bg-background text-foreground;
@@ -160,13 +160,13 @@ body {
   color: black;
   overscroll-behavior: contain; /* Исправлено */
   font-family:
-    "Nunito",
+    "Raleway",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
   font-optical-sizing: auto;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* App root container styles */

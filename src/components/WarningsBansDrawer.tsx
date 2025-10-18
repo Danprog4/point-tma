@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Ban, Clock } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Ban, Clock, X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
 import { useTRPC } from "~/trpc/init/react";
@@ -37,12 +37,12 @@ export const WarningsBansDrawer = ({
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit flex-col rounded-t-[16px] bg-white px-4 py-4">
-          <header className="flex items-center justify-center pb-4">
+          <header className="flex items-center justify-between pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-xl font-bold">Модерация</div>
-            {/* <button onClick={() => onOpenChange(false)}>
+            <button onClick={() => onOpenChange(false)}>
               <X className="h-6 w-6 text-gray-900" />
-            </button> */}
+            </button>
           </header>
 
           {/* Tabs */}

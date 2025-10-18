@@ -20,6 +20,7 @@ import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 import ActiveDrawer from "~/components/ActiveDrawer";
 import GiveOrTradeDrawer from "~/components/GiveOrTradeDrawer";
+import { useScroll } from "~/components/hooks/useScroll";
 import { InventoryItemPreview } from "~/components/InventoryItemPreview";
 import KeyDrawer from "~/components/KeyDrawer";
 import { SortableInventoryItem } from "~/components/SortableInventoryItem";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/inventory")({
 });
 
 function RouteComponent() {
+  useScroll();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());

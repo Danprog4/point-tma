@@ -373,14 +373,20 @@ function RouteComponent() {
                 <div className="flex items-center justify-center gap-4 px-4 pb-4">
                   <div
                     className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
-                    onClick={() => setIsSubscribersPage(true)}
+                    onClick={() => {
+                      setIsSubscribersPage(true);
+                      saveScrollPosition("profile");
+                    }}
                   >
                     <div>{userSubscribers?.length || 0}</div>
                     <div className="text-sm text-neutral-500">Подписчики</div>
                   </div>
                   <div
                     className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
-                    onClick={() => setIsFriendsPage(true)}
+                    onClick={() => {
+                      setIsFriendsPage(true);
+                      saveScrollPosition("profile");
+                    }}
                   >
                     <div>{uniqueFriends.length || 0}</div>
                     <div className="text-sm text-neutral-500">Друзья</div>

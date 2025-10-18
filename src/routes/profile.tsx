@@ -24,6 +24,7 @@ import PullToRefresh from "react-simple-pull-to-refresh";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScroll } from "~/components/hooks/useScroll";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { FavIcon } from "~/components/Icons/Fav";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
 import { MenuItem } from "~/components/MenuItem";
@@ -39,6 +40,7 @@ import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -46,6 +48,7 @@ export const Route = createFileRoute("/profile")({
 
 function RouteComponent() {
   useScroll();
+  useScrollRestoration("profile");
 
   // Use the friends data hook
   const { users, activeRequests, uniqueFriends, user, acceptRequest, declineRequest } =
@@ -472,6 +475,9 @@ function RouteComponent() {
                       params={{ id: user?.id!.toString()! }}
                       preload="viewport"
                       className="rounded-xl bg-yellow-400 p-3 shadow-sm"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
                     >
                       <div className="mb-1 text-center text-xl font-bold text-black">
                         {activeQuests?.length || 0}
@@ -488,6 +494,9 @@ function RouteComponent() {
                       params={{ id: user?.id!.toString()! }}
                       preload="viewport"
                       className="rounded-xl bg-purple-600 p-3 shadow-sm"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
                     >
                       <div className="mb-1 text-center text-xl font-bold text-white">
                         {userMeetings?.length || 0}
@@ -505,46 +514,94 @@ function RouteComponent() {
                 {/* Menu Items */}
                 <div className="mb-6">
                   <div className="space-y-0">
-                    <Link to="/shop" preload="viewport">
+                    <Link
+                      to="/shop"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<ShoppingBag className="h-6 w-6 text-purple-300" />}
                         title="Магазин"
                       />
                     </Link>
-                    <Link to="/skills" preload="viewport">
+                    <Link
+                      to="/skills"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<BarChart3 className="h-6 w-6 text-purple-300" />}
                         title="Ваши навыки"
                       />
                     </Link>
-                    <Link to="/achievments" preload="viewport">
+                    <Link
+                      to="/achievments"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<Award className="h-6 w-6 text-purple-300" />}
                         title="Достижения"
                       />
                     </Link>
-                    <Link to="/calendar" preload="viewport">
+                    <Link
+                      to="/calendar"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<Calendar className="h-6 w-6 text-purple-300" />}
                         title="Календарь"
                       />
                     </Link>
-                    <Link to="/favourites" preload="viewport">
+                    <Link
+                      to="/favourites"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem icon={<FavIcon />} title="Избранное" />
                     </Link>
-                    <Link to="/history" preload="viewport">
+                    <Link
+                      to="/history"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<History className="h-6 w-6 text-purple-300" />}
                         title="История"
                       />
                     </Link>
-                    <Link to="/inventory" preload="viewport">
+                    <Link
+                      to="/inventory"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<Package className="h-6 w-6 text-purple-300" />}
                         title="Инвентарь"
                       />
                     </Link>
-                    <Link to="/tasks" preload="viewport">
+                    <Link
+                      to="/tasks"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
                       <MenuItem
                         icon={<Target className="h-6 w-6 text-purple-300" />}
                         title="Задания"
@@ -552,6 +609,7 @@ function RouteComponent() {
                     </Link>
                     <MenuItem
                       onClick={() => {
+                        saveScrollPosition("profile");
                         setIsTradesPage(true);
                       }}
                       icon={<Repeat2 className="h-6 w-6 text-purple-300" />}

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import { CheckIcon, TrashIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -79,6 +80,9 @@ export const FastMeetInfo = ({
     const recent = chatTimestamps.filter((t) => now - t < 60_000);
     if (recent.length >= 2) {
       toast.error("Можно отправлять не более 2 сообщений в минуту");
+      if (hapticFeedback.isSupported()) {
+        hapticFeedback.notificationOccurred("error");
+      }
       return;
     }
     setChatTimestamps([...recent, now]);

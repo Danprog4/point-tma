@@ -6,6 +6,7 @@ import { DAILY_REWARDS, getRewardForStreak } from "~/config/checkin";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
+import { hapticFeedback } from "@telegram-apps/sdk";
 
 export function CheckInModal({
   onClose,
@@ -53,6 +54,9 @@ export function CheckInModal({
       },
     });
     toast.success("Награда получена!");
+    if (hapticFeedback.isSupported()) {
+      hapticFeedback.notificationOccurred("success");
+    }
   };
 
   return (

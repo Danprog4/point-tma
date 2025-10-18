@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -66,6 +67,9 @@ export default function CalendarDrawer({
     trpc.main.addToCalendar.mutationOptions({
       onError: () => {
         toast.error("Не удалось добавить событие в календарь");
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("error");
+        }
       },
     }),
   );
@@ -108,6 +112,9 @@ export default function CalendarDrawer({
     }
 
     toast.success("Событие успешно добавлено в календарь");
+    if (hapticFeedback.isSupported()) {
+      hapticFeedback.notificationOccurred("success");
+    }
     setIsOpen(false);
     onOpenChange(false);
   };

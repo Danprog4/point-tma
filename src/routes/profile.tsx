@@ -23,7 +23,6 @@ import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
-import { useScroll } from "~/components/hooks/useScroll";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { FavIcon } from "~/components/Icons/Fav";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
@@ -47,7 +46,6 @@ export const Route = createFileRoute("/profile")({
 });
 
 function RouteComponent() {
-  useScroll();
   useScrollRestoration("profile");
 
   // Use the friends data hook

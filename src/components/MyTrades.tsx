@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, Clock, Repeat2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -42,6 +43,9 @@ export default function MyTrades({ onBack }: MyTradesProps) {
       onError: (error) => {
         toast.error("Не удалось принять обмен!");
         queryClient.invalidateQueries({ queryKey: trpc.trades.getMyTrades.queryKey() });
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("error");
+        }
       },
     }),
   );
@@ -50,6 +54,9 @@ export default function MyTrades({ onBack }: MyTradesProps) {
       onError: (error) => {
         toast.error("Не удалось отклонить обмен!");
         queryClient.invalidateQueries({ queryKey: trpc.trades.getMyTrades.queryKey() });
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("error");
+        }
       },
     }),
   );
@@ -158,6 +165,9 @@ export default function MyTrades({ onBack }: MyTradesProps) {
       });
     });
     toast.success("Обмен принят!");
+    if (hapticFeedback.isSupported()) {
+      hapticFeedback.notificationOccurred("success");
+    }
   };
 
   const handleRejectTrade = (tradeId: number) => {
@@ -171,6 +181,9 @@ export default function MyTrades({ onBack }: MyTradesProps) {
       });
     });
     toast.success("Обмен отклонен!");
+    if (hapticFeedback.isSupported()) {
+      hapticFeedback.notificationOccurred("success");
+    }
   };
 
   if (isLoading) {

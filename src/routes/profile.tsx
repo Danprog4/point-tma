@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
   Award,
@@ -58,7 +58,6 @@ function RouteComponent() {
   const [isTradesPage, setIsTradesPage] = useState(false);
   const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
-  const navigate = useNavigate();
   const [page, setPage] = useState<"info" | "friends">("info");
   const [mainPhoto, setMainPhoto] = useState<string | undefined>(
     user?.photo || undefined,
@@ -194,10 +193,9 @@ function RouteComponent() {
               <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-bold text-black">Профиль</h1>
               </div>
-              <Settings
-                className="h-5 w-5 cursor-pointer text-black"
-                onClick={() => navigate({ to: "/profile-sett" })}
-              />
+              <Link to="/profile-sett" preload="viewport">
+                <Settings className="h-5 w-5 cursor-pointer text-black" />
+              </Link>
             </div>
 
             {/* <div className="flex gap-4 px-4 pb-4">
@@ -413,21 +411,18 @@ function RouteComponent() {
                       </div>
                     </div>
                   </div>
-                  <div
+                  <Link
+                    to="/fill-profile"
+                    search={{
+                      isSettingsSearch: getPercent() === "100" ? "true" : "false",
+                    }}
+                    preload="viewport"
                     className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
-                    onClick={() =>
-                      navigate({
-                        to: "/fill-profile",
-                        search: {
-                          isSettingsSearch: getPercent() === "100" ? "true" : "false",
-                        },
-                      })
-                    }
                   >
                     <div className="text-white">
                       {getPercent() === "100" ? "Изменить" : "Заполнить"}
                     </div>
-                  </div>
+                  </Link>
                 </div>
 
                 <div className="mx-4">
@@ -472,14 +467,11 @@ function RouteComponent() {
 
                 <div className="mt-4 mb-6 px-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div
+                    <Link
+                      to="/user-quests/$id"
+                      params={{ id: user?.id!.toString()! }}
+                      preload="viewport"
                       className="rounded-xl bg-yellow-400 p-3 shadow-sm"
-                      onClick={() => {
-                        navigate({
-                          to: "/user-quests/$id",
-                          params: { id: user?.id!.toString()! },
-                        });
-                      }}
                     >
                       <div className="mb-1 text-center text-xl font-bold text-black">
                         {activeQuests?.length || 0}
@@ -490,15 +482,12 @@ function RouteComponent() {
                         </div>
                         <span className="text-sm text-black">Квесты</span>
                       </div>
-                    </div>
-                    <div
+                    </Link>
+                    <Link
+                      to="/user-meetings/$id"
+                      params={{ id: user?.id!.toString()! }}
+                      preload="viewport"
                       className="rounded-xl bg-purple-600 p-3 shadow-sm"
-                      onClick={() => {
-                        navigate({
-                          to: "/user-meetings/$id",
-                          params: { id: user?.id!.toString()! },
-                        });
-                      }}
                     >
                       <div className="mb-1 text-center text-xl font-bold text-white">
                         {userMeetings?.length || 0}
@@ -507,7 +496,7 @@ function RouteComponent() {
                         <Calendar1 className="h-4 w-4 text-white" />
                         <span className="text-sm text-white">Встречи</span>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                 </div>
 
@@ -516,63 +505,51 @@ function RouteComponent() {
                 {/* Menu Items */}
                 <div className="mb-6">
                   <div className="space-y-0">
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/shop" });
-                      }}
-                      icon={<ShoppingBag className="h-6 w-6 text-purple-300" />}
-                      title="Магазин"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/skills" });
-                        console.log("clicked");
-                      }}
-                      icon={<BarChart3 className="h-6 w-6 text-purple-300" />}
-                      title="Ваши навыки"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/achievments" });
-                      }}
-                      icon={<Award className="h-6 w-6 text-purple-300" />}
-                      title="Достижения"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/calendar" });
-                      }}
-                      icon={<Calendar className="h-6 w-6 text-purple-300" />}
-                      title="Календарь"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/favourites" });
-                      }}
-                      icon={<FavIcon />}
-                      title="Избранное"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/history" });
-                      }}
-                      icon={<History className="h-6 w-6 text-purple-300" />}
-                      title="История"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/inventory" });
-                      }}
-                      icon={<Package className="h-6 w-6 text-purple-300" />}
-                      title="Инвентарь"
-                    />
-                    <MenuItem
-                      onClick={() => {
-                        navigate({ to: "/tasks" });
-                      }}
-                      icon={<Target className="h-6 w-6 text-purple-300" />}
-                      title="Задания"
-                    />
+                    <Link to="/shop" preload="viewport">
+                      <MenuItem
+                        icon={<ShoppingBag className="h-6 w-6 text-purple-300" />}
+                        title="Магазин"
+                      />
+                    </Link>
+                    <Link to="/skills" preload="viewport">
+                      <MenuItem
+                        icon={<BarChart3 className="h-6 w-6 text-purple-300" />}
+                        title="Ваши навыки"
+                      />
+                    </Link>
+                    <Link to="/achievments" preload="viewport">
+                      <MenuItem
+                        icon={<Award className="h-6 w-6 text-purple-300" />}
+                        title="Достижения"
+                      />
+                    </Link>
+                    <Link to="/calendar" preload="viewport">
+                      <MenuItem
+                        icon={<Calendar className="h-6 w-6 text-purple-300" />}
+                        title="Календарь"
+                      />
+                    </Link>
+                    <Link to="/favourites" preload="viewport">
+                      <MenuItem icon={<FavIcon />} title="Избранное" />
+                    </Link>
+                    <Link to="/history" preload="viewport">
+                      <MenuItem
+                        icon={<History className="h-6 w-6 text-purple-300" />}
+                        title="История"
+                      />
+                    </Link>
+                    <Link to="/inventory" preload="viewport">
+                      <MenuItem
+                        icon={<Package className="h-6 w-6 text-purple-300" />}
+                        title="Инвентарь"
+                      />
+                    </Link>
+                    <Link to="/tasks" preload="viewport">
+                      <MenuItem
+                        icon={<Target className="h-6 w-6 text-purple-300" />}
+                        title="Задания"
+                      />
+                    </Link>
                     <MenuItem
                       onClick={() => {
                         setIsTradesPage(true);

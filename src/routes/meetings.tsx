@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
@@ -20,7 +20,6 @@ export const Route = createFileRoute("/meetings")({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
   useScrollRestoration("meetings");
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const trpc = useTRPC();
@@ -126,12 +125,13 @@ function RouteComponent() {
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-black">Встречи</h1>
           </div>
-          <div
+          <Link
+            to="/my-meetings"
+            preload="viewport"
             className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2 text-sm font-medium text-black"
             style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
             onClick={() => {
               saveScrollPosition("meetings");
-              navigate({ to: "/my-meetings" });
             }}
           >
             {activeMeetRequests && activeMeetRequests?.length > 0 ? (
@@ -142,7 +142,7 @@ function RouteComponent() {
             ) : (
               "Мои встречи"
             )}
-          </div>
+          </Link>
         </div>
 
         <div className="mb-4 flex items-center justify-center gap-6 px-4">
@@ -199,15 +199,14 @@ function RouteComponent() {
               </div>
               <div className="scrollbar-hidden flex gap-4 overflow-x-auto">
                 {allMeetings?.slice(0, 7).map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/meet/$id"
+                    params={{ id: event.id.toString() }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("meetings");
-                      navigate({
-                        to: "/meet/$id",
-                        params: { id: event.id.toString() },
-                      });
                     }}
-                    key={idx}
                     className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
                   >
                     <div className={`relative h-full w-full`}>
@@ -223,7 +222,7 @@ function RouteComponent() {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -232,14 +231,13 @@ function RouteComponent() {
             <div className="scrollbar-hidden col-span-2 space-y-4">
               {filteredMeetings?.map((meeting: any, groupIndex: number) => (
                 <div key={meeting.id || groupIndex}>
-                  <div
+                  <Link
+                    to="/meet/$id"
+                    params={{ id: meeting.id?.toString() || "" }}
+                    preload="viewport"
                     className="cursor-pointer overflow-hidden rounded-2xl"
                     onClick={() => {
                       saveScrollPosition("meetings");
-                      navigate({
-                        to: "/meet/$id",
-                        params: { id: meeting.id?.toString() || "" },
-                      });
                     }}
                   >
                     {/* Avatar Section */}
@@ -294,7 +292,7 @@ function RouteComponent() {
                         <div className="text-sm text-neutral-500">Сегодня в 15:30</div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
 
@@ -312,15 +310,16 @@ function RouteComponent() {
         </div>
         {!isFetchingMore && (
           <div className="fixed right-4 bottom-20 left-4">
-            <button
+            <Link
+              to="/createMeet"
+              preload="viewport"
               onClick={() => {
                 saveScrollPosition("meetings");
-                navigate({ to: "/createMeet" });
               }}
-              className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+              className="flex w-full items-center justify-center rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
             >
               Создать встречу
-            </button>
+            </Link>
           </div>
         )}
       </PullToRefresh>

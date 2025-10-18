@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
@@ -65,7 +65,6 @@ function RouteComponent() {
   useScrollRestoration("quests");
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");

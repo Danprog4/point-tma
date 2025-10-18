@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Coins, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -58,7 +58,6 @@ export const Route = createFileRoute("/shop")({
 
 function RouteComponent() {
   const trpc = useTRPC();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -205,10 +204,12 @@ function RouteComponent() {
           const caseCount = getCaseCount(caseItem);
 
           return (
-            <div
+            <Link
               key={caseItem.id}
+              to="/case/$id"
+              params={{ id: caseItem.id.toString() }}
+              preload="viewport"
               className="group relative flex h-70 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-lg"
-              onClick={() => navigate({ to: `/case/${caseItem.id}` })}
             >
               {/* Case Image */}
               <div className="relative h-32 w-full overflow-hidden">
@@ -309,7 +310,7 @@ function RouteComponent() {
                   {isBuying ? "Покупка..." : `Купить за ${caseItem.price}`}
                 </button>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

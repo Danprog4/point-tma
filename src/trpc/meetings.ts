@@ -85,6 +85,7 @@ export const meetingRouter = createTRPCRouter({
 
       let itemsWithInfo:
         | {
+            index: number;
             type: string;
             eventId: number;
             isActive?: boolean;
@@ -99,6 +100,7 @@ export const meetingRouter = createTRPCRouter({
         itemsWithInfo = (raw || [])
           .filter((it) => typeof it.eventId === "number")
           .map((it) => ({
+            index: it.index ?? 0,
             type: it.type,
             eventId: it.eventId as number,
             name: (it.name as string) || "",
@@ -1265,7 +1267,14 @@ export const meetingRouter = createTRPCRouter({
           locations,
           subType,
           reward,
-          items: itemsWithInfo,
+          items: itemsWithInfo as {
+            index: number;
+            type: string;
+            eventId: number;
+            isActive?: boolean;
+            name: string;
+            id?: number;
+          }[],
           image: imageUrl,
           isBig,
           date,

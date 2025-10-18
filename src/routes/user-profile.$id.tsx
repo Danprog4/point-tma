@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft, Calendar1, Heart, Mars, Star, Venus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
@@ -29,7 +29,6 @@ function RouteComponent() {
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const { state } = useRouterState({ select: (s) => s.location });
   const trpc = useTRPC();
-  const navigate = useNavigate();
   const { id } = Route.useParams();
   const { data: me } = useQuery(trpc.main.getUser.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
@@ -459,14 +458,11 @@ function RouteComponent() {
 
               <div className="mt-4 mb-6 px-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div
+                  <Link
+                    to="/user-quests/$id"
+                    params={{ id: user?.id!.toString()! }}
+                    preload="viewport"
                     className="rounded-xl bg-yellow-400 p-3 shadow-sm"
-                    onClick={() => {
-                      navigate({
-                        to: "/user-quests/$id",
-                        params: { id: user?.id!.toString()! },
-                      });
-                    }}
                   >
                     <div className="mb-1 text-center text-xl font-bold text-black">
                       {activeQuests?.length || 0}
@@ -477,15 +473,12 @@ function RouteComponent() {
                       </div>
                       <span className="text-sm text-black">Квесты</span>
                     </div>
-                  </div>
-                  <div
+                  </Link>
+                  <Link
+                    to="/user-meetings/$id"
+                    params={{ id: user?.id!.toString()! }}
+                    preload="viewport"
                     className="rounded-xl bg-purple-600 p-3 shadow-sm"
-                    onClick={() => {
-                      navigate({
-                        to: "/user-meetings/$id",
-                        params: { id: user?.id!.toString()! },
-                      });
-                    }}
                   >
                     <div className="mb-1 text-center text-xl font-bold text-white">
                       {userMeetings?.length || 0}
@@ -494,7 +487,7 @@ function RouteComponent() {
                       <Calendar1 className="h-4 w-4 text-white" />
                       <span className="text-sm text-white">Встречи</span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
 
@@ -673,17 +666,14 @@ function RouteComponent() {
               )}
               {user?.id !== me?.id && (
                 <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
-                  <div
-                    onClick={() =>
-                      navigate({
-                        to: "/invite",
-                        search: { id: user?.id!.toString()! },
-                      })
-                    }
+                  <Link
+                    to="/invite"
+                    search={{ id: user?.id!.toString()! }}
+                    preload="viewport"
                     className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
                   >
                     Пригласить
-                  </div>
+                  </Link>
                 </div>
               )}
             </>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
@@ -32,7 +32,6 @@ function Home() {
   const { isCheckedInToday } = useSnapshot(store);
   const [selectedFilter, setSelectedFilter] = useState("Все");
   const trpc = useTRPC();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: popularEvents } = useQuery(trpc.main.getPopularEvents.queryOptions());
   const { data: newEvents } = useQuery(trpc.event.getNewEvents.queryOptions());
@@ -161,21 +160,23 @@ function Home() {
                 { emoji: "🤝", name: "Нетворкинг" },
                 { emoji: "🕵️‍♂️", name: "Квесты" },
               ].map((chip) => (
-                <div
+                <Link
                   key={chip.name}
+                  to="/all/$name"
+                  params={{ name: chip.name }}
+                  preload="viewport"
                   className={`flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap ${
                     selectedFilter === chip.name
                       ? "bg-black text-white"
                       : "border-gray-200 bg-white text-black"
                   }`}
                   onClick={() => {
-                    navigate({ to: "/all/$name", params: { name: chip.name } });
                     setSelectedFilter(chip.name);
                   }}
                 >
                   <div>{chip.emoji}</div>
                   <div>{chip.name}</div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -229,13 +230,16 @@ function Home() {
           <div className="mb-6 w-full overflow-x-hidden">
             <div className="mb-4 flex items-center justify-between px-4">
               <h2 className="text-xl font-bold text-gray-900">Популярное</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Популярное" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Популярное" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(popularEvents?.slice?.(0, 5) || [])
@@ -243,17 +247,17 @@ function Home() {
                   event.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: event.category, id: event.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: event.category, id: event.id },
-                      });
                     }}
                   >
-                    <EventCard key={idx} event={event} />
-                  </div>
+                    <EventCard event={event} />
+                  </Link>
                 ))}
             </div>
           </div>
@@ -261,13 +265,16 @@ function Home() {
           <div className="mb-6 w-full overflow-x-hidden">
             <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Новое</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Новое" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Новое" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(newEvents?.slice?.(0, 5) || [])
@@ -275,17 +282,17 @@ function Home() {
                   event.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: event.category, id: event.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: event.category, id: event.id },
-                      });
                     }}
                   >
-                    <EventCard key={idx} event={event} />
-                  </div>
+                    <EventCard event={event} />
+                  </Link>
                 ))}
             </div>
           </div>
@@ -293,13 +300,16 @@ function Home() {
           <div className="mb-6 w-full overflow-x-hidden">
             <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Кино</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Кино" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Кино" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(kinoData?.slice?.(0, 5) || [])
@@ -307,17 +317,17 @@ function Home() {
                   event.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: event.category, id: event.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: event.category, id: event.id },
-                      });
                     }}
                   >
-                    <EventCard key={idx} event={event} />
-                  </div>
+                    <EventCard event={event} />
+                  </Link>
                 ))}
             </div>
           </div>
@@ -326,13 +336,16 @@ function Home() {
           <div className="mb-6">
             <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Квесты</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Квесты" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Квесты" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(questsData?.slice?.(0, 5) || [])
@@ -340,17 +353,17 @@ function Home() {
                   event.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: event.category, id: event.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: event.category, id: event.id },
-                      });
                     }}
                   >
-                    <EventCard key={idx} event={event} />
-                  </div>
+                    <EventCard event={event} />
+                  </Link>
                 ))}
             </div>
           </div>
@@ -358,20 +371,21 @@ function Home() {
           {/* Banner */}
           <div className="mb-6 px-4 text-black">
             <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white">
-              <div className="flex items-center justify-between">
-                <span
-                  className="text-lg font-bold"
-                  onClick={() => {
-                    saveScrollPosition("home");
-                    navigate({ to: "/all/$name", params: { name: "Квесты" } });
-                  }}
-                >
-                  Квесты для компании
-                </span>
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white">
-                  <Plus className="h-6 w-6 text-blue-500" />
+              <Link
+                to="/all/$name"
+                params={{ name: "Квесты" }}
+                preload="viewport"
+                onClick={() => {
+                  saveScrollPosition("home");
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold">Квесты для компании</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white">
+                    <Plus className="h-6 w-6 text-blue-500" />
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -379,13 +393,16 @@ function Home() {
           <div className="mb-6">
             <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">ТОП Конференций</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Конференции" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Конференции" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4 text-black">
               {(conferencesData?.slice?.(0, 5) || [])
@@ -393,17 +410,17 @@ function Home() {
                   conf.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((conf: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: conf.category, id: conf.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: conf.category, id: conf.id },
-                      });
                     }}
                   >
-                    <ConferenceCard key={idx} conf={conf} />
-                  </div>
+                    <ConferenceCard conf={conf} />
+                  </Link>
                 ))}
             </div>
           </div>
@@ -412,13 +429,16 @@ function Home() {
           <div className="mb-20">
             <div className="mb-4 flex items-center justify-between px-4 text-black">
               <h2 className="text-xl font-bold text-gray-900">Вечеринки</h2>
-              <ArrowRight
-                className="h-5 w-5 cursor-pointer text-gray-500"
+              <Link
+                to="/all/$name"
+                params={{ name: "Вечеринки" }}
+                preload="viewport"
                 onClick={() => {
                   saveScrollPosition("home");
-                  navigate({ to: "/all/$name", params: { name: "Вечеринки" } });
                 }}
-              />
+              >
+                <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
+              </Link>
             </div>
             <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
               {(partiesData?.slice?.(0, 5) || [])
@@ -426,17 +446,17 @@ function Home() {
                   event.title?.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((event: any, idx: number) => (
-                  <div
+                  <Link
+                    key={idx}
+                    to="/event/$name/$id"
+                    params={{ name: event.category, id: event.id }}
+                    preload="viewport"
                     onClick={() => {
                       saveScrollPosition("home");
-                      navigate({
-                        to: "/event/$name/$id",
-                        params: { name: event.category, id: event.id },
-                      });
                     }}
                   >
-                    <EventCard key={idx} event={event} />
-                  </div>
+                    <EventCard event={event} />
+                  </Link>
                 ))}
             </div>
           </div>

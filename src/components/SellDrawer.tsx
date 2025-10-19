@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { User } from "~/db/schema";
@@ -37,8 +37,31 @@ export default function SellDrawer({
   const [price, setPrice] = useState("");
   const [isSelling, setIsSelling] = useState(false);
   const [isSold, setIsSold] = useState(false);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const { data: mySellings } = useQuery(trpc.market.getMySellings.queryOptions());
+
+  // Handle keyboard open/close to prevent layout shifts
+  useEffect(() => {
+    if (!open) return;
+
+    const handleResize = () => {
+      // Detect if keyboard is open (viewport height decreased)
+      if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        setIsKeyboardOpen(viewportHeight < windowHeight * 0.75);
+      }
+    };
+
+    if (window.visualViewport) {
+      const viewport = window.visualViewport;
+      viewport.addEventListener("resize", handleResize);
+      return () => {
+        viewport.removeEventListener("resize", handleResize);
+      };
+    }
+  }, [open]);
 
   const availableItems = useMemo(() => {
     if (!user?.inventory) return 0;
@@ -155,8 +178,14 @@ export default function SellDrawer({
     <Drawer.Root open={open} onOpenChange={handleOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80vh] flex-col rounded-t-[16px] bg-white py-4">
-          <header className="flex items-center justify-between border-b px-4 pb-4">
+        <Drawer.Content
+          className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex flex-col rounded-t-[16px] bg-white py-4"
+          style={{
+            height: isKeyboardOpen ? "100vh" : "80vh",
+            maxHeight: isKeyboardOpen ? "100vh" : "80vh",
+          }}
+        >
+          <header className="flex shrink-0 items-center justify-between border-b px-4 pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-lg font-bold">Продать предмет</div>
             <button className="z-[100]" onClick={() => handleOpenChange(false)}>
@@ -199,6 +228,8 @@ export default function SellDrawer({
                     </button>
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={amount}
                       onChange={(e) =>
                         setAmount(
@@ -208,6 +239,9 @@ export default function SellDrawer({
                           ),
                         )
                       }
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
                       min="1"
                       max={availableItems}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
@@ -234,8 +268,13 @@ export default function SellDrawer({
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
                       placeholder="Введите цену"
                       min="1"
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-lg font-semibold focus:border-purple-600 focus:outline-none"
@@ -288,7 +327,7 @@ export default function SellDrawer({
 
           {/* Footer */}
           {!isSold && (
-            <div className="border-t px-4 py-4">
+            <div className="shrink-0 border-t px-4 py-4">
               <button
                 onClick={handleSellItem}
                 disabled={!isFormValid || isSelling}
@@ -304,7 +343,7 @@ export default function SellDrawer({
           )}
 
           {isSold && (
-            <div className="border-t px-4 py-4">
+            <div className="shrink-0 border-t px-4 py-4">
               <button
                 onClick={() => handleOpenChange(false)}
                 className="w-full rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white hover:bg-purple-700 active:scale-95"

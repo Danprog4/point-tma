@@ -113,7 +113,6 @@ function RouteComponent() {
                 }}
                 placeholder="Поиск..."
                 className="w-full rounded-lg border border-gray-300 py-2 pr-10 pl-10 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
-                style={{ fontSize: "16px" }}
               />
               {search && (
                 <button

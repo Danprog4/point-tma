@@ -234,7 +234,6 @@ export default function BuyItemDrawer({
                       min="1"
                       max={maxQuantity}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
-                      style={{ fontSize: "16px" }}
                     />
                     <button
                       onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}

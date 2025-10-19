@@ -71,6 +71,10 @@ export default function SellDrawer({
       onSuccess: () => {
         setIsSelling(false);
         setIsSold(true);
+        toast.success("Предмет выставлен на продажу");
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("success");
+        }
       },
       onError: () => {
         toast.error("Ошибка при продаже предмета");
@@ -132,11 +136,6 @@ export default function SellDrawer({
           }) || [],
       };
     });
-
-    toast.success("Предмет выставлен на продажу");
-    if (hapticFeedback.isSupported()) {
-      hapticFeedback.notificationOccurred("success");
-    }
   };
 
   const handleOpenChange = (nextOpen: boolean) => {

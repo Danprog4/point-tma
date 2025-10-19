@@ -23,6 +23,7 @@ import { Route as NotifImport } from './routes/notif'
 import { Route as MyMeetingsImport } from './routes/my-meetings'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as MeetingEditImport } from './routes/meeting-edit'
+import { Route as MarketImport } from './routes/market'
 import { Route as InviteImport } from './routes/invite'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
@@ -114,6 +115,12 @@ const MeetingsRoute = MeetingsImport.update({
 const MeetingEditRoute = MeetingEditImport.update({
   id: '/meeting-edit',
   path: '/meeting-edit',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const MarketRoute = MarketImport.update({
+  id: '/market',
+  path: '/market',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -312,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteImport
       parentRoute: typeof rootRoute
     }
+    '/market': {
+      id: '/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof MarketImport
+      parentRoute: typeof rootRoute
+    }
     '/meeting-edit': {
       id: '/meeting-edit'
       path: '/meeting-edit'
@@ -469,6 +483,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
@@ -503,6 +518,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
@@ -538,6 +554,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
   '/my-meetings': typeof MyMeetingsRoute
@@ -574,6 +591,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/market'
     | '/meeting-edit'
     | '/meetings'
     | '/my-meetings'
@@ -607,6 +625,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/market'
     | '/meeting-edit'
     | '/meetings'
     | '/my-meetings'
@@ -640,6 +659,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/market'
     | '/meeting-edit'
     | '/meetings'
     | '/my-meetings'
@@ -675,6 +695,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
   InviteRoute: typeof InviteRoute
+  MarketRoute: typeof MarketRoute
   MeetingEditRoute: typeof MeetingEditRoute
   MeetingsRoute: typeof MeetingsRoute
   MyMeetingsRoute: typeof MyMeetingsRoute
@@ -709,6 +730,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
   InviteRoute: InviteRoute,
+  MarketRoute: MarketRoute,
   MeetingEditRoute: MeetingEditRoute,
   MeetingsRoute: MeetingsRoute,
   MyMeetingsRoute: MyMeetingsRoute,
@@ -752,6 +774,7 @@ export const routeTree = rootRoute
         "/history",
         "/inventory",
         "/invite",
+        "/market",
         "/meeting-edit",
         "/meetings",
         "/my-meetings",
@@ -806,6 +829,9 @@ export const routeTree = rootRoute
     },
     "/invite": {
       "filePath": "invite.tsx"
+    },
+    "/market": {
+      "filePath": "market.tsx"
     },
     "/meeting-edit": {
       "filePath": "meeting-edit.tsx"

@@ -4,6 +4,7 @@ import { crmRouter } from "../crm";
 import { eventRouter } from "../event";
 import { friendsRouter } from "../friends";
 import { router } from "../main";
+import { marketRouter } from "../market";
 import { meetingRouter } from "../meetings";
 import { tasksRouter } from "../tasks";
 import { tradesRouter } from "../trades";
@@ -21,6 +22,7 @@ export const trpcRouter = createTRPCRouter({
   crm: crmRouter,
   tasks: tasksRouter,
   trades: tradesRouter,
+  market: marketRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

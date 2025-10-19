@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -46,15 +46,17 @@ export default function SellDrawer({
     return eventData;
   }, [item, eventData]);
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      setAmount(1);
-      setPrice("");
-      setIsSelling(false);
-      setIsSold(false);
-    }
-    onOpenChange(nextOpen);
-  };
+  const sellItem = useMutation(
+    trpc.market.sellItem.mutationOptions({
+      onSuccess: () => {
+        setIsSelling(false);
+        setIsSold(true);
+      },
+      onError: () => {
+        toast.error("Ошибка при продаже предмета");
+      },
+    }),
+  );
 
   const handleSellItem = () => {
     const priceNum = price === "" ? 0 : parseInt(price) || 0;
@@ -65,37 +67,42 @@ export default function SellDrawer({
 
     setIsSelling(true);
 
-    // TODO: После создания бэкенда, здесь будет мутация для создания записи в таблице selling
-    // sellItem.mutate(
-    //   {
-    //     eventId: item?.eventId,
-    //     eventType: item?.name,
-    //     amount,
-    //     price: priceNum,
-    //   },
-    //   {
-    //     onSuccess: () => {
-    //       queryClient.invalidateQueries({ queryKey: trpc.main.getUser.queryKey() });
-    //       setIsSold(true);
-    //       setIsSelling(false);
-    //       toast.success("Предмет выставлен на продажу");
-    //     },
-    //     onError: () => {
-    //       setIsSelling(false);
-    //       toast.error("Ошибка при продаже предмета");
-    //     },
-    //   },
-    // );
+    sellItem.mutate({
+      type: "ticket",
+      eventId: item?.eventId as number,
+      eventType: item?.name as string,
+      amount,
+      price: priceNum,
+    });
 
-    // Временно просто показываем успешный результат
-    setTimeout(() => {
-      setIsSold(true);
+    queryClient.setQueryData(trpc.market.getMySellings.queryKey(), (old: any) => {
+      return [
+        ...old,
+        {
+          id: Date.now(),
+          type: "ticket",
+          eventId: item?.eventId as number,
+          eventType: item?.name as string,
+          amount,
+          price: priceNum,
+        } as any,
+      ];
+    });
+
+    toast.success("Предмет выставлен на продажу");
+    if (hapticFeedback.isSupported()) {
+      hapticFeedback.notificationOccurred("success");
+    }
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setAmount(1);
+      setPrice("");
       setIsSelling(false);
-      toast.success("Предмет выставлен на продажу");
-      if (hapticFeedback.isSupported()) {
-        hapticFeedback.notificationOccurred("success");
-      }
-    }, 500);
+      setIsSold(false);
+    }
+    onOpenChange(nextOpen);
   };
 
   const priceNum = price === "" ? 0 : parseInt(price) || 0;

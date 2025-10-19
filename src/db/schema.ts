@@ -390,6 +390,17 @@ export const tradesTable = pgTable("trades", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const sellingTable = pgTable("selling", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  type: varchar("type", { length: 255 }), // case, item, ticket, etc... now only tickets
+  eventId: bigint("event_id", { mode: "number" }),
+  eventType: varchar("event_type", { length: 255 }), // quest, conf, party, etc
+  amount: integer("amount"),
+  price: integer("price"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;

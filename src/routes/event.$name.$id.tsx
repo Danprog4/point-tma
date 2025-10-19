@@ -18,6 +18,7 @@ import QrDrawer from "~/components/QrDrawer";
 import { BuyQuest } from "~/components/quest/BuyQuest";
 import { QuestCard } from "~/components/QuestCard";
 import { ReviewEventDrawer } from "~/components/ReviewEventDrawer";
+import SellDrawer from "~/components/SellDrawer";
 import TradeDrawer from "~/components/TradeDrawer";
 import { User } from "~/db/schema";
 import { useEventsCache } from "~/hooks/useEventsCache";
@@ -45,6 +46,7 @@ function RouteComponent() {
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
   const [isGiveOrTradeOpen, setIsGiveOrTradeOpen] = useState(false);
   const [isTradeDrawerOpen, setIsTradeDrawerOpen] = useState(false);
+  const [isSellDrawerOpen, setIsSellDrawerOpen] = useState(false);
   const [cameFromGiveOrTrade, setCameFromGiveOrTrade] = useState(false);
   const { data: reviews } = useQuery(trpc.main.getReviews.queryOptions());
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
@@ -591,44 +593,53 @@ function RouteComponent() {
           ) : hasInactiveTicket ? (
             <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
               {event?.category === "Квест" ? (
-                <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
-                  {!itemData?.isInTrade ? (
-                    <button
-                      onClick={() => setIsGiveOrTradeOpen(true)}
-                      className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
-                    >
-                      <div className="text-sm">Подарить/Обменять</div>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        toast.error(
-                          "Вы уже обмениваетесь этим предметом. Сначала завершите обмен",
-                        )
-                      }
-                      className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white opacity-50 shadow-lg"
-                    >
-                      <div className="text-sm">Подарить/Обменять</div>
-                    </button>
-                  )}
+                <div className="mx-auto flex w-full flex-col gap-2 px-4 py-4">
+                  <div className="flex gap-2">
+                    {!itemData?.isInTrade ? (
+                      <button
+                        onClick={() => setIsGiveOrTradeOpen(true)}
+                        className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
+                      >
+                        <div className="text-sm">Подарить/Обменять</div>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          toast.error(
+                            "Вы уже обмениваетесь этим предметом. Сначала завершите обмен",
+                          )
+                        }
+                        className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white opacity-50 shadow-lg"
+                      >
+                        <div className="text-sm">Подарить/Обменять</div>
+                      </button>
+                    )}
 
-                  <ActiveDrawer
-                    id={Number(id)}
-                    name={name}
-                    open={isActiveDrawerOpen}
-                    onOpenChange={(open) => {
-                      if (open) {
-                        lockBodyScroll();
-                      } else {
-                        unlockBodyScroll();
-                      }
-                      setIsActiveDrawerOpen(open);
-                    }}
+                    <ActiveDrawer
+                      id={Number(id)}
+                      name={name}
+                      open={isActiveDrawerOpen}
+                      onOpenChange={(open) => {
+                        if (open) {
+                          lockBodyScroll();
+                        } else {
+                          unlockBodyScroll();
+                        }
+                        setIsActiveDrawerOpen(open);
+                      }}
+                    >
+                      <button className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                        <div>Активировать</div>
+                      </button>
+                    </ActiveDrawer>
+                  </div>
+
+                  <button
+                    onClick={() => setIsSellDrawerOpen(true)}
+                    className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-green-500 px-6 py-3 font-medium text-white shadow-lg"
                   >
-                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                      <div>Активировать</div>
-                    </button>
-                  </ActiveDrawer>
+                    <div>Продать</div>
+                  </button>
                 </div>
               ) : (
                 <div className="flex w-full items-center gap-2 px-4 py-4">
@@ -771,6 +782,18 @@ function RouteComponent() {
             name: name,
             id: itemData?.id ?? 0,
           }}
+        />
+      )}
+      {isSellDrawerOpen && (
+        <SellDrawer
+          open={isSellDrawerOpen}
+          onOpenChange={setIsSellDrawerOpen}
+          item={{
+            type: "ticket",
+            eventId: Number(id),
+            name: name ?? "",
+          }}
+          eventTitle={name ?? ""}
         />
       )}
     </div>

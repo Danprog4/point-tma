@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { User } from "~/db/schema";
@@ -39,6 +39,19 @@ export default function SellDrawer({
   const [isSold, setIsSold] = useState(false);
 
   const { data: mySellings } = useQuery(trpc.market.getMySellings.queryOptions());
+
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.classList.add("drawer-open");
+    } else {
+      document.body.classList.remove("drawer-open");
+    }
+
+    return () => {
+      document.body.classList.remove("drawer-open");
+    };
+  }, [open]);
 
   const availableItems = useMemo(() => {
     if (!user?.inventory) return 0;
@@ -155,7 +168,7 @@ export default function SellDrawer({
     <Drawer.Root open={open} onOpenChange={handleOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white py-4">
+        <Drawer.Content className="z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white py-4">
           <header className="flex shrink-0 items-center justify-between border-b px-4 pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-lg font-bold">Продать предмет</div>

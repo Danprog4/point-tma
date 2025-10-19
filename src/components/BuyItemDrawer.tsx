@@ -1,5 +1,5 @@
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -57,6 +57,19 @@ export default function BuyItemDrawer({
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
 
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.classList.add("drawer-open");
+    } else {
+      document.body.classList.remove("drawer-open");
+    }
+
+    return () => {
+      document.body.classList.remove("drawer-open");
+    };
+  }, [open]);
+
   const handleBuy = () => {
     setIsPurchasing(true);
 
@@ -74,7 +87,7 @@ export default function BuyItemDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Content className="z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
           {/* Header */}
           <header className="flex shrink-0 items-center justify-between border-b px-4 py-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />

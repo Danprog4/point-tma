@@ -1,5 +1,5 @@
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -52,33 +52,10 @@ export default function BuyItemDrawer({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   const maxQuantity = selling.amount || 1;
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
-
-  // Handle keyboard open/close to prevent layout shifts
-  useEffect(() => {
-    if (!open) return;
-
-    const handleResize = () => {
-      // Detect if keyboard is open (viewport height decreased)
-      if (window.visualViewport) {
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        setIsKeyboardOpen(viewportHeight < windowHeight * 0.75);
-      }
-    };
-
-    if (window.visualViewport) {
-      const viewport = window.visualViewport;
-      viewport.addEventListener("resize", handleResize);
-      return () => {
-        viewport.removeEventListener("resize", handleResize);
-      };
-    }
-  }, [open]);
 
   const handleBuy = () => {
     setIsPurchasing(true);
@@ -97,13 +74,7 @@ export default function BuyItemDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content
-          className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex flex-col rounded-t-[16px] bg-white"
-          style={{
-            height: isKeyboardOpen ? "100vh" : "85vh",
-            maxHeight: isKeyboardOpen ? "100vh" : "85vh",
-          }}
-        >
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
           {/* Header */}
           <header className="flex shrink-0 items-center justify-between border-b px-4 py-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />

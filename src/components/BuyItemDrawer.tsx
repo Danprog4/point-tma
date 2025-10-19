@@ -60,13 +60,24 @@ export default function BuyItemDrawer({
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (open) {
-      document.body.classList.add("drawer-open");
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
     } else {
-      document.body.classList.remove("drawer-open");
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
-
+    
     return () => {
-      document.body.classList.remove("drawer-open");
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
     };
   }, [open]);
 
@@ -87,7 +98,7 @@ export default function BuyItemDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
           {/* Header */}
           <header className="flex shrink-0 items-center justify-between border-b px-4 py-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />

@@ -784,7 +784,7 @@ function RouteComponent() {
           }}
         />
       )}
-      {isSellDrawerOpen && (
+      {isSellDrawerOpen && user && (
         <SellDrawer
           open={isSellDrawerOpen}
           onOpenChange={setIsSellDrawerOpen}
@@ -794,6 +794,7 @@ function RouteComponent() {
             name: name ?? "",
           }}
           eventTitle={name ?? ""}
+          user={user}
         />
       )}
     </div>

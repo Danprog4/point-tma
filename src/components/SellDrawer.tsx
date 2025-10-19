@@ -4,6 +4,7 @@ import { ArrowLeft, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
+import { User } from "~/db/schema";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 
@@ -13,6 +14,8 @@ export default function SellDrawer({
   item,
   eventTitle,
   children,
+  user,
+  maxAvailable,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +28,8 @@ export default function SellDrawer({
   };
   eventTitle?: string;
   children?: React.ReactNode;
+  user: User;
+  maxAvailable?: number;
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -32,6 +37,21 @@ export default function SellDrawer({
   const [price, setPrice] = useState("");
   const [isSelling, setIsSelling] = useState(false);
   const [isSold, setIsSold] = useState(false);
+
+  const { data: mySellings } = useQuery(trpc.market.getMySellings.queryOptions());
+
+  const availableItems = useMemo(() => {
+    if (!user?.inventory) return 0;
+    return (
+      user?.inventory?.filter(
+        (userItem) =>
+          userItem.eventId === item?.eventId &&
+          userItem.name === item?.name &&
+          !userItem.isActive &&
+          !userItem.isInSelling,
+      ).length || 0
+    );
+  }, [user?.inventory, item?.eventId, item?.name]);
 
   const { data: eventData } = useQuery({
     ...trpc.event.getEvent.queryOptions({
@@ -54,6 +74,7 @@ export default function SellDrawer({
       },
       onError: () => {
         toast.error("Ошибка при продаже предмета");
+        setIsSelling(false);
       },
     }),
   );
@@ -77,7 +98,7 @@ export default function SellDrawer({
 
     queryClient.setQueryData(trpc.market.getMySellings.queryKey(), (old: any) => {
       return [
-        ...old,
+        ...(old || []),
         {
           id: Date.now(),
           type: "ticket",
@@ -85,8 +106,31 @@ export default function SellDrawer({
           eventType: item?.name as string,
           amount,
           price: priceNum,
+          status: "selling",
         } as any,
       ];
+    });
+
+    queryClient.setQueryData(trpc.main.getUser.queryKey(), (old: any) => {
+      if (!old) return old;
+      let markedCount = 0;
+      return {
+        ...old,
+        inventory:
+          old.inventory?.map((userItem: any) => {
+            if (
+              markedCount < amount &&
+              userItem.eventId === item?.eventId &&
+              userItem.name === item?.name &&
+              !userItem.isActive &&
+              !userItem.isInSelling
+            ) {
+              markedCount++;
+              return { ...userItem, isInSelling: true };
+            }
+            return userItem;
+          }) || [],
+      };
     });
 
     toast.success("Предмет выставлен на продажу");
@@ -149,7 +193,8 @@ export default function SellDrawer({
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setAmount(Math.max(1, amount - 1))}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300"
+                      disabled={amount <= 1}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300 disabled:opacity-50"
                     >
                       −
                     </button>
@@ -157,16 +202,28 @@ export default function SellDrawer({
                       type="number"
                       value={amount}
                       onChange={(e) =>
-                        setAmount(Math.max(1, parseInt(e.target.value) || 1))
+                        setAmount(
+                          Math.min(
+                            availableItems,
+                            Math.max(1, parseInt(e.target.value) || 1),
+                          ),
+                        )
                       }
+                      min="1"
+                      max={availableItems}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
                     />
                     <button
-                      onClick={() => setAmount(amount + 1)}
-                      className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300"
+                      onClick={() => setAmount(Math.min(availableItems, amount + 1))}
+                      disabled={amount >= availableItems}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300 disabled:opacity-50"
                     >
                       +
                     </button>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Доступно для продажи:{" "}
+                    <span className="font-bold text-gray-900">{availableItems}</span>
                   </div>
                 </div>
 

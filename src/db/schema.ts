@@ -34,6 +34,7 @@ export const usersTable = pgTable("users", {
         id?: number;
         isInTrade?: boolean;
         index?: number;
+        isInSelling?: boolean;
       }>
     >()
     .default([]),
@@ -398,6 +399,7 @@ export const sellingTable = pgTable("selling", {
   eventType: varchar("event_type", { length: 255 }), // quest, conf, party, etc
   amount: integer("amount"),
   price: integer("price"),
+  status: varchar("status", { length: 255 }).default("selling"), // selling, sold, canceled
   createdAt: timestamp("created_at").defaultNow(),
 });
 

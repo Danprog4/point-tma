@@ -36,7 +36,6 @@ export const Route = createFileRoute("/inventory")({
 });
 
 function RouteComponent() {
-  useScroll();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
@@ -286,6 +285,8 @@ function RouteComponent() {
   };
 
   const isMobile = usePlatform();
+
+  useScroll();
 
   return (
     <div

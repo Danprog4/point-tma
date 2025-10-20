@@ -55,9 +55,19 @@ function RouteComponent() {
   const { data: myPurchases, isLoading: isLoadingMyPurchases } = useQuery(
     trpc.market.getMyPurchases.queryOptions(),
   );
-  const { data: events } = useQuery(trpc.event.getEvents.queryOptions());
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: events, isLoading: isLoadingEvents } = useQuery(
+    trpc.event.getEvents.queryOptions(),
+  );
+  const { data: users, isLoading: isLoadingUsers } = useQuery(
+    trpc.main.getUsers.queryOptions(),
+  );
+  const { data: user, isLoading: isLoadingUser } = useQuery(
+    trpc.main.getUser.queryOptions(),
+  );
+
+  // Проверка первоначальной загрузки всех данных
+  const isInitialLoading =
+    isLoading || isLoadingEvents || isLoadingUsers || isLoadingUser;
 
   const getEventData = (eventId: number | null, eventType: string | null) => {
     if (!eventId || !eventType) return null;
@@ -126,6 +136,37 @@ function RouteComponent() {
     },
   ] as const;
 
+  // Показываем глобальный лоадер пока данные загружаются
+  if (isInitialLoading) {
+    return (
+      <div
+        data-mobile={isMobile}
+        className="flex min-h-screen items-center justify-center bg-gradient-to-b from-purple-50 to-white"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <motion.div
+            className="h-16 w-16 rounded-full border-4 border-purple-600 border-t-transparent"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg font-semibold text-gray-700"
+          >
+            Загрузка маркетплейса...
+          </motion.p>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div
       data-mobile={isMobile}
@@ -149,8 +190,9 @@ function RouteComponent() {
               <h1 className="text-2xl font-bold text-gray-900">Маркетплейс</h1>
               <motion.p
                 key={`${activeTab}-${filteredSellings?.length}-${filteredMySellings?.length}-${filteredMyPurchases?.length}`}
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="text-sm text-gray-600"
               >
                 {activeTab === "market" && `${filteredSellings?.length || 0} на продаже`}
@@ -210,8 +252,9 @@ function RouteComponent() {
 
         {/* Search */}
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="border-t border-gray-200 bg-white px-4 py-3"
         >
           <div className="mx-auto max-w-7xl">
@@ -243,8 +286,9 @@ function RouteComponent() {
 
         {/* Filters */}
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="border-t border-gray-200 bg-white px-4 py-3"
         >
           <div className="mx-auto flex max-w-7xl gap-2">
@@ -277,13 +321,13 @@ function RouteComponent() {
       </div>
 
       {/* Content */}
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto max-w-7xl px-4 pt-68"
         >
           {currentLoading ? (
@@ -490,14 +534,15 @@ function RouteComponent() {
             </motion.div>
           ) : (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="flex h-64 flex-col items-center justify-center text-center"
             >
               <motion.div
-                initial={{ scale: 0 }}
+                initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               >
                 {activeTab === "market" ? (
                   <ShoppingBag className="mb-4 h-16 w-16 text-gray-300" />
@@ -508,9 +553,9 @@ function RouteComponent() {
                 )}
               </motion.div>
               <motion.h3
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="mb-2 text-xl font-bold text-gray-900"
               >
                 {activeTab === "market" && "Пока ничего не выставлено"}
@@ -518,9 +563,9 @@ function RouteComponent() {
                 {activeTab === "purchases" && "Вы пока ничего не покупали"}
               </motion.h3>
               <motion.p
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="text-gray-600"
               >
                 {activeTab === "market" &&

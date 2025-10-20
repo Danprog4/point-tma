@@ -57,27 +57,51 @@ export default function BuyItemDrawer({
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
 
-  // Prevent body scroll when drawer is open
+  // Prevent body scroll and viewport shifts when drawer is open
   useEffect(() => {
-    if (open) {
-      // Save current scroll position
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-    } else {
-      // Restore scroll position
-      const scrollY = document.body.style.top;
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+    if (!open) return;
+
+    // Save current scroll position
+    const scrollY = window.scrollY;
+
+    // Lock body scroll
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.body.style.height = "100%";
+
+    // Prevent viewport resize issues
+    const handleResize = () => {
+      if (window.visualViewport) {
+        // Keep drawer at bottom of visible viewport
+        const drawer = document.querySelector("[data-vaul-drawer]") as HTMLElement;
+        if (drawer) {
+          drawer.style.position = "fixed";
+          drawer.style.bottom = "0";
+        }
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      window.visualViewport.addEventListener("scroll", handleResize);
     }
 
     return () => {
+      // Restore scroll position
+      const top = document.body.style.top;
+      document.body.style.overflow = "";
       document.body.style.position = "";
       document.body.style.top = "";
       document.body.style.width = "";
+      document.body.style.height = "";
+      window.scrollTo(0, parseInt(top || "0") * -1);
+
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+        window.visualViewport.removeEventListener("scroll", handleResize);
+      }
     };
   }, [open]);
 

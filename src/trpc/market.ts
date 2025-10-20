@@ -74,7 +74,10 @@ export const marketRouter = createTRPCRouter({
     }),
 
   getSellings: procedure.query(async () => {
-    return await db.query.sellingTable.findMany();
+    return await db.query.sellingTable.findMany({
+      orderBy: [desc(sellingTable.createdAt)],
+      where: eq(sellingTable.status, "selling"),
+    });
   }),
 
   getMySellings: procedure.query(async ({ ctx }) => {
@@ -206,4 +209,12 @@ export const marketRouter = createTRPCRouter({
         newBuyerInventory: user.inventory,
       };
     }),
+
+  getMyPurchases: procedure.query(async ({ ctx }) => {
+    return await db.query.sellingTable.findMany({
+      where: (fields, { sql }) =>
+        sql`${fields.buyersIds} @> ${JSON.stringify([ctx.userId])}::jsonb`,
+      orderBy: [desc(sellingTable.createdAt)],
+    });
+  }),
 });

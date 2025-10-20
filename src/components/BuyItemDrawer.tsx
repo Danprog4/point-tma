@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
+import { motion } from "framer-motion";
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -111,20 +112,32 @@ export default function BuyItemDrawer({
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[85vh] flex-col rounded-t-[16px] bg-white">
           {/* Header */}
-          <header className="flex items-center justify-between border-b px-4 py-4">
+          <motion.header
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between border-b px-4 py-4"
+          >
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-lg font-bold">Информация о предмете</div>
-            <button onClick={() => onOpenChange(false)}>
+            <motion.button
+              onClick={() => onOpenChange(false)}
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
               <X className="h-6 w-6 text-gray-900" />
-            </button>
-          </header>
+            </motion.button>
+          </motion.header>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
             {/* Event Image */}
             <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-purple-100 to-purple-200">
               {eventData?.image ? (
-                <img
+                <motion.img
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5 }}
                   src={
                     eventData.image.startsWith("https://") ||
                     eventData.image.startsWith("/")
@@ -135,28 +148,48 @@ export default function BuyItemDrawer({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                  className="flex h-full w-full items-center justify-center"
+                >
                   <ShoppingCart className="h-16 w-16 text-purple-400" />
-                </div>
+                </motion.div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
               {/* Badges */}
-              <div className="absolute right-4 bottom-4 left-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="absolute right-4 bottom-4 left-4"
+              >
                 <h2 className="mb-2 text-2xl font-bold text-white">
                   {eventData?.title || "Предмет"}
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring" }}
+                    className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm"
+                  >
                     {selling.eventType}
-                  </span>
+                  </motion.span>
                   {eventData?.type && (
-                    <span className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.4, type: "spring" }}
+                      className="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm"
+                    >
                       {eventData.type}
-                    </span>
+                    </motion.span>
                   )}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Details */}
@@ -253,21 +286,31 @@ export default function BuyItemDrawer({
           </div>
 
           {/* Footer */}
-          <div className="border-t bg-white p-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="border-t bg-white p-4"
+          >
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm text-gray-600">
                 {quantity > 1 ? `${quantity} × ${pricePerItem.toLocaleString()}` : "Цена"}
               </span>
-              <div className="flex items-center gap-1">
+              <motion.div
+                key={totalPrice}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className="flex items-center gap-1"
+              >
                 <span className="text-2xl font-bold text-gray-900">
                   {totalPrice.toLocaleString()}
                 </span>
                 <Coin />
-              </div>
+              </motion.div>
             </div>
 
             {!isMyItem ? (
-              <button
+              <motion.button
                 onClick={() =>
                   handleBuyItem(
                     selling.id,
@@ -278,10 +321,27 @@ export default function BuyItemDrawer({
                   )
                 }
                 disabled={isPurchasing}
-                className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 font-semibold text-white shadow-md transition-all hover:shadow-lg active:scale-95 disabled:opacity-60"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:opacity-60"
               >
-                {isPurchasing ? "Покупка..." : "Купить"}
-              </button>
+                {isPurchasing ? (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="h-5 w-5 rounded-full border-2 border-white border-t-transparent"
+                    />
+                    Покупка...
+                  </motion.span>
+                ) : (
+                  "Купить"
+                )}
+              </motion.button>
             ) : (
               <button
                 disabled
@@ -290,7 +350,7 @@ export default function BuyItemDrawer({
                 Это ваш предмет
               </button>
             )}
-          </div>
+          </motion.div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

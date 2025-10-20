@@ -15,6 +15,7 @@ import {
   Repeat2,
   Settings,
   ShoppingBag,
+  ShoppingCart,
   Star,
   Target,
   Venus,
@@ -518,6 +519,18 @@ function RouteComponent() {
                 {/* Menu Items */}
                 <div className="mb-6">
                   <div className="space-y-0">
+                    <Link
+                      to="/market"
+                      preload="viewport"
+                      onClick={() => {
+                        saveScrollPosition("profile");
+                      }}
+                    >
+                      <MenuItem
+                        icon={<ShoppingCart className="h-6 w-6 text-purple-300" />}
+                        title="Маркетплейс"
+                      />
+                    </Link>
                     <Link
                       to="/shop"
                       preload="viewport"

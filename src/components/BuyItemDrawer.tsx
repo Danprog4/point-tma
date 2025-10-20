@@ -66,7 +66,7 @@ export default function BuyItemDrawer({
     trpc.market.buyItem.mutationOptions({
       onSuccess: () => {
         setIsPurchasing(false);
-        onOpenChange?.(false);
+        onOpenChange(false);
 
         toast.success("Вы успешно купили товар");
 

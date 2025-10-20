@@ -1,5 +1,5 @@
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -57,54 +57,6 @@ export default function BuyItemDrawer({
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
 
-  // Prevent body scroll and viewport shifts when drawer is open
-  useEffect(() => {
-    if (!open) return;
-
-    // Save current scroll position
-    const scrollY = window.scrollY;
-
-    // Lock body scroll
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-
-    // Prevent viewport resize issues
-    const handleResize = () => {
-      if (window.visualViewport) {
-        // Keep drawer at bottom of visible viewport
-        const drawer = document.querySelector("[data-vaul-drawer]") as HTMLElement;
-        if (drawer) {
-          drawer.style.position = "fixed";
-          drawer.style.bottom = "0";
-        }
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-      window.visualViewport.addEventListener("scroll", handleResize);
-    }
-
-    return () => {
-      // Restore scroll position
-      const top = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-      window.scrollTo(0, parseInt(top || "0") * -1);
-
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-        window.visualViewport.removeEventListener("scroll", handleResize);
-      }
-    };
-  }, [open]);
-
   const handleBuy = () => {
     setIsPurchasing(true);
 
@@ -122,9 +74,9 @@ export default function BuyItemDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[85vh] flex-col rounded-t-[16px] bg-white">
           {/* Header */}
-          <header className="flex shrink-0 items-center justify-between border-b px-4 py-4">
+          <header className="flex items-center justify-between border-b px-4 py-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-lg font-bold">Информация о предмете</div>
             <button onClick={() => onOpenChange(false)}>
@@ -235,8 +187,6 @@ export default function BuyItemDrawer({
                     </button>
                     <input
                       type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
                       value={quantity}
                       onChange={(e) =>
                         setQuantity(
@@ -246,10 +196,6 @@ export default function BuyItemDrawer({
                           ),
                         )
                       }
-                      onFocus={(e) => {
-                        // Select all text for easy editing
-                        e.target.select();
-                      }}
                       min="1"
                       max={maxQuantity}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
@@ -272,7 +218,7 @@ export default function BuyItemDrawer({
           </div>
 
           {/* Footer */}
-          <div className="shrink-0 border-t bg-white p-4">
+          <div className="border-t bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm text-gray-600">
                 {quantity > 1 ? `${quantity} × ${pricePerItem.toLocaleString()}` : "Цена"}

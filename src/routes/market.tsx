@@ -105,14 +105,8 @@ function RouteComponent() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onFocus={(e) => {
-                  // Scroll into view when focused to prevent jumping
-                  setTimeout(() => {
-                    e.target.scrollIntoView({ behavior: "smooth", block: "center" });
-                  }, 100);
-                }}
                 placeholder="Поиск..."
-                className="w-full rounded-lg border border-gray-300 py-2 pr-10 pl-10 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 py-2 pr-10 pl-10 text-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
               />
               {search && (
                 <button

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { User } from "~/db/schema";
@@ -33,60 +33,12 @@ export default function SellDrawer({
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(1);
   const [price, setPrice] = useState("");
   const [isSelling, setIsSelling] = useState(false);
   const [isSold, setIsSold] = useState(false);
 
   const { data: mySellings } = useQuery(trpc.market.getMySellings.queryOptions());
-
-  // Prevent body scroll and viewport shifts when drawer is open
-  useEffect(() => {
-    if (!open) return;
-
-    // Save current scroll position
-    const scrollY = window.scrollY;
-
-    // Lock body scroll
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-
-    // Prevent viewport resize issues
-    const handleResize = () => {
-      if (window.visualViewport) {
-        // Keep drawer at bottom of visible viewport
-        const drawer = document.querySelector("[data-vaul-drawer]") as HTMLElement;
-        if (drawer) {
-          drawer.style.position = "fixed";
-          drawer.style.bottom = "0";
-        }
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-      window.visualViewport.addEventListener("scroll", handleResize);
-    }
-
-    return () => {
-      // Restore scroll position
-      const top = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-      window.scrollTo(0, parseInt(top || "0") * -1);
-
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-        window.visualViewport.removeEventListener("scroll", handleResize);
-      }
-    };
-  }, [open]);
 
   const availableItems = useMemo(() => {
     if (!user?.inventory) return 0;
@@ -203,8 +155,8 @@ export default function SellDrawer({
     <Drawer.Root open={open} onOpenChange={handleOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[100] flex max-h-[90vh] flex-col rounded-t-[16px] bg-white py-4">
-          <header className="flex shrink-0 items-center justify-between border-b px-4 pb-4">
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[80vh] flex-col rounded-t-[16px] bg-white py-4">
+          <header className="flex items-center justify-between border-b px-4 pb-4">
             <ArrowLeft className="h-6 w-6 text-transparent" />
             <div className="text-lg font-bold">Продать предмет</div>
             <button className="z-[100]" onClick={() => handleOpenChange(false)}>
@@ -239,29 +191,24 @@ export default function SellDrawer({
                   </label>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => setAmount(Math.max(0, amount - 1))}
-                      disabled={amount <= 0}
+                      onClick={() => setAmount(Math.max(1, amount - 1))}
+                      disabled={amount <= 1}
                       className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300 disabled:opacity-50"
                     >
                       −
                     </button>
                     <input
                       type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
                       value={amount}
                       onChange={(e) =>
                         setAmount(
                           Math.min(
                             availableItems,
-                            Math.max(0, parseInt(e.target.value) || 0),
+                            Math.max(1, parseInt(e.target.value) || 1),
                           ),
                         )
                       }
-                      onFocus={(e) => {
-                        e.target.select();
-                      }}
-                      min="0"
+                      min="1"
                       max={availableItems}
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
                     />
@@ -287,13 +234,8 @@ export default function SellDrawer({
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      onFocus={(e) => {
-                        e.target.select();
-                      }}
                       placeholder="Введите цену"
                       min="1"
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-lg font-semibold focus:border-purple-600 focus:outline-none"
@@ -346,7 +288,7 @@ export default function SellDrawer({
 
           {/* Footer */}
           {!isSold && (
-            <div className="shrink-0 border-t px-4 py-4">
+            <div className="border-t px-4 py-4">
               <button
                 onClick={handleSellItem}
                 disabled={!isFormValid || isSelling}
@@ -362,7 +304,7 @@ export default function SellDrawer({
           )}
 
           {isSold && (
-            <div className="shrink-0 border-t px-4 py-4">
+            <div className="border-t px-4 py-4">
               <button
                 onClick={() => handleOpenChange(false)}
                 className="w-full rounded-2xl bg-purple-600 px-6 py-3 font-semibold text-white hover:bg-purple-700 active:scale-95"

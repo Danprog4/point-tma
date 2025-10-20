@@ -285,12 +285,13 @@ export default function SellDrawer({
                         />
                         <Coin />
                       </div>
-                      <div className="mt-2 text-sm text-gray-600">
+                      <div className="mt-2 overflow-hidden text-sm text-gray-600">
                         Сумма:{" "}
                         <motion.div
                           key={amount * priceNum}
-                          initial={{ scale: 1.2 }}
+                          initial={{ scale: 1.1 }}
                           animate={{ scale: 1 }}
+                          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                           className="flex items-center gap-1 font-bold text-gray-900"
                         >
                           {(amount * priceNum).toLocaleString()}

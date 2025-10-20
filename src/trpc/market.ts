@@ -83,4 +83,127 @@ export const marketRouter = createTRPCRouter({
       orderBy: [desc(sellingTable.createdAt)],
     });
   }),
+
+  buyItem: procedure
+    .input(
+      z.object({
+        sellingId: z.number(),
+        sellerId: z.number(),
+        eventId: z.number(),
+        eventType: z.string(),
+        amount: z.number().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const sellerUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.sellerId),
+      });
+
+      if (!sellerUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Seller user not found",
+        });
+      }
+
+      const selling = await db.query.sellingTable.findFirst({
+        where: eq(sellingTable.id, input.sellingId),
+      });
+
+      if (!selling) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Selling not found",
+        });
+      }
+
+      if (selling.amount! < input.amount) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Not enough quantity",
+        });
+      }
+
+      if (selling.price! * input.amount > user.balance!) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Not enough balance",
+        });
+      }
+
+      const isSellingFinished = selling.amount! - input.amount === 0;
+
+      await db
+        .update(sellingTable)
+        .set({
+          amount: selling.amount! - input.amount,
+          buyersIds: [...(selling.buyersIds || []), ctx.userId] as number[],
+          status: isSellingFinished ? "sold" : "selling",
+        })
+        .where(eq(sellingTable.id, input.sellingId));
+
+      await db
+        .update(usersTable)
+        .set({
+          balance: user.balance! - selling.price! * input.amount,
+          inventory: [
+            ...(user.inventory || []),
+            ...Array(input.amount)
+              .fill(0)
+              .map(() => ({
+                type: "ticket",
+                eventId: selling.eventId!,
+                eventType: selling.eventType!,
+                isActive: false,
+                id: Date.now(),
+              })),
+          ],
+        })
+        .where(eq(usersTable.id, ctx.userId!));
+
+      const matchingInventory = (sellerUser.inventory || []).filter(
+        (item) =>
+          item.eventId === selling.eventId &&
+          item.eventType === selling.eventType &&
+          item.isInSelling === true,
+      );
+
+      const itemsToRemove = matchingInventory.slice(0, input.amount);
+
+      const newSellerInventory = (sellerUser.inventory || []).filter(
+        (item) =>
+          !itemsToRemove.some(
+            (removeItem) =>
+              item.eventId === removeItem.eventId &&
+              item.eventType === removeItem.eventType &&
+              item.isInSelling === true &&
+              item.id === removeItem.id,
+          ),
+      );
+
+      await db
+        .update(usersTable)
+        .set({
+          balance: sellerUser.balance! + selling.price! * input.amount,
+          inventory: newSellerInventory,
+        })
+        .where(eq(usersTable.id, sellerUser.id!));
+
+      return {
+        success: true,
+        newSellerInventory,
+        newBuyerInventory: user.inventory,
+      };
+    }),
 });

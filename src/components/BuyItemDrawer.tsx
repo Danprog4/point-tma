@@ -1,8 +1,11 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
 
 type SellingItem = {
@@ -50,6 +53,8 @@ export default function BuyItemDrawer({
   seller: UserData | null;
   isMyItem: boolean;
 }) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(1);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -57,17 +62,46 @@ export default function BuyItemDrawer({
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
 
-  const handleBuy = () => {
+  const buyItem = useMutation(
+    trpc.market.buyItem.mutationOptions({
+      onSuccess: () => {
+        setIsPurchasing(false);
+
+        toast.success("Вы успешно купили товар");
+
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("success");
+        }
+
+        queryClient.invalidateQueries(trpc.market.getSellings.queryOptions());
+        queryClient.invalidateQueries(trpc.main.getUser.queryOptions());
+      },
+      onError: (error) => {
+        toast.error(error.message || "Something went wrong");
+
+        if (hapticFeedback.isSupported()) {
+          hapticFeedback.notificationOccurred("error");
+        }
+      },
+    }),
+  );
+
+  const handleBuyItem = (
+    sellingId: number,
+    sellerId: number,
+    eventId: number,
+    eventType: string,
+    amount: number,
+  ) => {
     setIsPurchasing(true);
 
-    // TODO: Implement backend logic for buying
-    // buyItem.mutate({ sellingId: selling.id, quantity })
-
-    setTimeout(() => {
-      toast.success(`Предмет куплен! Проверьте ваш инвентарь`);
-      setIsPurchasing(false);
-      onOpenChange(false);
-    }, 500);
+    buyItem.mutate({
+      sellingId,
+      sellerId,
+      eventId,
+      eventType,
+      amount,
+    });
   };
 
   return (
@@ -233,7 +267,15 @@ export default function BuyItemDrawer({
 
             {!isMyItem ? (
               <button
-                onClick={handleBuy}
+                onClick={() =>
+                  handleBuyItem(
+                    selling.id,
+                    seller?.id!,
+                    selling.eventId!,
+                    selling.eventType!,
+                    quantity,
+                  )
+                }
                 disabled={isPurchasing}
                 className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 font-semibold text-white shadow-md transition-all hover:shadow-lg active:scale-95 disabled:opacity-60"
               >

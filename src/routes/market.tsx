@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
@@ -30,6 +30,7 @@ type SellingItem = {
 function RouteComponent() {
   useScroll();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const isMobile = usePlatform();
   const [filter, setFilter] = useState<FilterType>("all");
   const [search, setSearch] = useState("");

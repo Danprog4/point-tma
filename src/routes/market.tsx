@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   History as HistoryIcon,
   Package,
   Search,
@@ -177,8 +178,13 @@ function RouteComponent() {
         data-mobile={isMobile}
         className="fixed top-0 right-0 left-0 z-50 bg-white shadow-sm data-[mobile=true]:pt-28"
       >
-        <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mx-auto max-w-7xl px-4 pb-6">
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
+              <button onClick={() => window.history.back()}>
+                <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+              </button>
+            </div>
             <motion.div
               className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700"
               whileHover={{ scale: 1.05, rotate: 5 }}
@@ -328,7 +334,7 @@ function RouteComponent() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto max-w-7xl px-4 pt-68"
+          className="mx-auto max-w-7xl px-4 pt-62"
         >
           {currentLoading ? (
             <motion.div

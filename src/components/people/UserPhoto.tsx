@@ -35,19 +35,19 @@ export const UserPhoto = ({
 
   return (
     <div
-      className="relative w-full"
+      className="group relative w-full overflow-hidden rounded-t-2xl shadow-md transition-all hover:shadow-xl"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       onClick={onClick}
     >
-      <div className="relative h-90 w-full overflow-hidden rounded-t-2xl">
+      <div className="relative h-90 w-full overflow-hidden">
         <AnimatePresence initial={false}>
           <motion.img
             key={currentIndex}
             src={getImage(user as any, imageToShow)}
             alt={user?.name || ""}
-            className="h-90 w-full object-cover"
+            className="h-90 w-full object-cover transition-transform group-hover:scale-105"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -78,28 +78,32 @@ export const UserPhoto = ({
             }}
           />
         </AnimatePresence>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
       {/* More button */}
       {!isFastMeet && (
-        <div
+        <motion.div
           onClick={onMoreClick}
-          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#F8F0FF] p-2"
+          className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-lg backdrop-blur-sm"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
-          <div className="pb-2 text-sm font-bold text-[#721DBD]">...</div>
-        </div>
+          <div className="pb-1 text-base font-bold text-purple-600">⋯</div>
+        </motion.div>
       )}
 
       {/* Photo indicators */}
       {allPhotos.length > 1 && (
-        <div className="absolute bottom-2 left-4 flex items-center gap-1">
+        <div className="absolute bottom-3 left-4 flex items-center gap-1.5">
           {allPhotos.map((_, idx) => (
             <span
               key={idx}
-              className={
-                "h-2 w-2 rounded-full " +
-                (idx === currentIndex ? "bg-[#9924FF]" : "bg-white/70")
-              }
+              className={`h-2 w-2 rounded-full transition-all ${
+                idx === currentIndex
+                  ? "w-6 bg-purple-600 shadow-md"
+                  : "bg-white/70 hover:bg-white"
+              }`}
             />
           ))}
         </div>

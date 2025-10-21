@@ -45,7 +45,7 @@ export const UserCard = ({
     const startX = touchStartXRef.current[user.id] ?? 0;
     const endX = touchEndXRef.current[user.id] ?? 0;
     const deltaX = endX - startX;
-    
+
     if (Math.abs(deltaX) > 50) {
       didSwipeRef.current[user.id] = true;
       if (deltaX < 0) handleSwipe(user.id, "left");
@@ -81,8 +81,8 @@ export const UserCard = ({
   };
 
   return (
-    <div key={user.id}>
-      <div className="flex flex-col items-start justify-center">
+    <div key={user.id} className="">
+      <div className="flex flex-col items-start justify-center overflow-hidden rounded-2xl">
         <UserPhoto
           user={user}
           photoData={photoData}

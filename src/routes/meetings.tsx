@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
@@ -121,37 +122,52 @@ function RouteComponent() {
 
       <PullToRefresh onRefresh={handleRefresh} className="text-white">
         {/* Page Title */}
-        <div className="flex items-center justify-between px-4 py-5">
+        <motion.div
+          className="flex items-center justify-between px-4 py-5"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-black">Встречи</h1>
           </div>
           <Link
             to="/my-meetings"
             preload="viewport"
-            className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2 text-sm font-medium text-black"
-            style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
             onClick={() => {
               saveScrollPosition("meetings");
             }}
           >
-            {activeMeetRequests && activeMeetRequests?.length > 0 ? (
-              <div className="relative">
-                Мои встречи
-                <div className="absolute top-0 right-[-10px] rounded-full bg-red-500"></div>
-              </div>
-            ) : (
-              "Мои встречи"
-            )}
+            <motion.div
+              className="flex cursor-pointer items-center justify-center rounded-full bg-[#F3E5FF] px-4 py-2 text-sm font-medium text-black"
+              style={{ boxShadow: "0px 4px 16px 0px #9924FF66" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {activeMeetRequests && activeMeetRequests?.length > 0 ? (
+                <div className="relative">
+                  Мои встречи
+                  <div className="absolute top-0 right-[-10px] rounded-full bg-red-500"></div>
+                </div>
+              ) : (
+                "Мои встречи"
+              )}
+            </motion.div>
           </Link>
-        </div>
+        </motion.div>
 
-        <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <motion.div
+          className="mb-4 flex items-center justify-center gap-6 px-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <input
             type="text"
             placeholder="Поиск встреч"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black transition-all placeholder:text-black/50 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
           />
 
           <FilterDrawer
@@ -165,11 +181,15 @@ function RouteComponent() {
               setIsOpen(open);
             }}
           >
-            <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <motion.div
+              className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <WhiteFilter />
-            </div>
+            </motion.div>
           </FilterDrawer>
-        </div>
+        </motion.div>
 
         <Calendar />
 
@@ -178,10 +198,10 @@ function RouteComponent() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap shadow-sm transition-all ${
                 activeFilter === filter
                   ? "bg-black text-white"
-                  : "border-gray-200 bg-white text-black"
+                  : "border-gray-200 bg-white text-black hover:shadow-md"
               }`}
             >
               {filter}
@@ -207,16 +227,17 @@ function RouteComponent() {
                     onClick={() => {
                       saveScrollPosition("meetings");
                     }}
-                    className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
+                    className="group h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl"
                   >
-                    <div className={`relative h-full w-full`}>
+                    <div className="relative h-full w-full">
                       <img
                         src={getImageUrl(event.image!)}
                         alt=""
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       <div className="absolute bottom-2 left-2">
-                        <span className="rounded-lg bg-yellow-100 px-2 py-1 text-xs font-bold">
+                        <span className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-bold text-gray-900 shadow-lg backdrop-blur-sm">
                           {event.name?.slice(0, 10) +
                             (event.name?.length! > 10 ? "..." : "")}
                         </span>
@@ -226,7 +247,6 @@ function RouteComponent() {
                 ))}
               </div>
             </div>
-
             {/* Featured Meetings List with alternating layout */}
             <div className="scrollbar-hidden col-span-2 space-y-4">
               {filteredMeetings?.map((meeting: any, groupIndex: number) => (
@@ -235,24 +255,24 @@ function RouteComponent() {
                     to="/meet/$id"
                     params={{ id: meeting.id?.toString() || "" }}
                     preload="viewport"
-                    className="cursor-pointer overflow-hidden rounded-2xl"
                     onClick={() => {
                       saveScrollPosition("meetings");
                     }}
                   >
-                    {/* Avatar Section */}
-                    <div className="relative h-90 w-full rounded-2xl">
-                      <img
-                        src={getImageUrl(meeting.image || "")}
-                        alt={meeting.user?.name || ""}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    {/* Text Content */}
-                    <div className="px-4">
-                      <div className="py-2">
-                        <div className="space-y-1">
+                    <div className="overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl">
+                      {/* Avatar Section */}
+                      <div className="relative h-90 w-full overflow-hidden rounded-t-2xl">
+                        <img
+                          src={getImageUrl(meeting.image || "")}
+                          alt={meeting.user?.name || ""}
+                          className="h-full w-full object-cover transition-transform hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      </div>
+                      {/* Text Content */}
+                      <div className="px-4 py-3">
+                        <div className="space-y-2">
                           <h3 className="text-lg leading-tight font-bold text-gray-900">
                             {meeting?.name}
                           </h3>
@@ -260,36 +280,38 @@ function RouteComponent() {
                             {meeting.description || "Без названия"}
                           </p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-10 w-10 rounded-full">
-                          <img
-                            src={getImageUrl(
-                              meeting.user?.photo ||
-                                meeting.user?.photoUrl ||
-                                meeting.image ||
-                                "",
-                            )}
-                            alt=""
-                            className="h-full w-full rounded-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="font-bold">
-                            {meeting.user?.name || "Неизвестно"}
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="h-10 w-10 overflow-hidden rounded-full ring-2 ring-purple-100">
+                            <img
+                              src={getImageUrl(
+                                meeting.user?.photo ||
+                                  meeting.user?.photoUrl ||
+                                  meeting.image ||
+                                  "",
+                              )}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
                           </div>
-                          <div className="text-sm text-neutral-500">Организатор</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between py-2">
-                        <div className="flex items-center">
-                          <LocationIcon />
-                          <div className="text-sm text-neutral-500">
-                            {meeting.locations?.[0]?.location || "Москва"}
+                          <div className="flex flex-col">
+                            <div className="font-semibold text-gray-900">
+                              {meeting.user?.name || "Неизвестно"}
+                            </div>
+                            <div className="text-xs text-gray-500">Организатор</div>
                           </div>
                         </div>
-                        <div className="text-sm text-neutral-500">Сегодня в 15:30</div>
+                        <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
+                          <div className="flex items-center gap-1 text-purple-600">
+                            <LocationIcon />
+                            <div className="text-sm font-medium">
+                              {meeting.locations?.[0]?.location || "Москва"}
+                            </div>
+                          </div>
+                          <div className="text-sm font-medium text-gray-600">
+                            Сегодня в 15:30
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -316,7 +338,7 @@ function RouteComponent() {
               onClick={() => {
                 saveScrollPosition("meetings");
               }}
-              className="flex w-full items-center justify-center rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+              className="flex w-full items-center justify-center rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-3 font-semibold text-white shadow-xl transition-all hover:shadow-2xl active:scale-95"
             >
               Создать встречу
             </Link>

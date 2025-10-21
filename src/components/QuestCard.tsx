@@ -30,7 +30,7 @@ export const QuestCard = memo(function QuestCard({
 
   return (
     <div
-      className="flex items-start gap-4"
+      className="group flex cursor-pointer items-start gap-4 overflow-hidden rounded-2xl bg-white p-3 shadow-md transition-all hover:shadow-xl"
       onClick={() => {
         if (onClick) {
           onClick();
@@ -47,37 +47,36 @@ export const QuestCard = memo(function QuestCard({
         }
       }}
     >
-      <img
-        src={!isMeeting ? quest.image : getImageUrl(quest.image!)}
-        alt={quest.title}
-        className="h-[98px] w-[88px] flex-shrink-0 rounded-lg object-cover"
-      />
-      <div className="flex-1 flex-col space-y-2">
-        <h3 className="w-full text-base leading-6 font-bold text-black">
+      <div className="relative h-[98px] w-[88px] flex-shrink-0 overflow-hidden rounded-xl">
+        <img
+          src={!isMeeting ? quest.image : getImageUrl(quest.image!)}
+          alt={quest.title}
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
+      <div className="flex flex-1 flex-col justify-between space-y-2">
+        <h3 className="w-full text-base leading-tight font-bold text-gray-900">
           {quest.title || quest.name}
         </h3>
 
         <div className="flex items-center gap-2">
           <span
-            className={`${getTypeColor(quest.type)} rounded-full px-2.5 py-0.5 text-xs font-medium text-black`}
+            className={`${getTypeColor(quest.type)} rounded-full px-2.5 py-1 text-xs font-medium text-gray-900 shadow-sm`}
           >
             {quest.type || ""}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <div className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-300">
-                <Clock className="h-2 w-2 text-white" />
-              </div>
-              <span className="text-xs text-black">{quest.date || "Сейчас"}</span>
+              <Clock className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs text-gray-600">{quest.date || "Сейчас"}</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="flex h-4 w-4 items-center justify-center">
-                <MapPin className="h-3 w-3 text-gray-400" />
-              </div>
-              <span className="text-xs text-black">{quest.location || "Москва"}</span>
+              <MapPin className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs text-gray-600">{quest.location || "Москва"}</span>
             </div>
           </div>
         </div>

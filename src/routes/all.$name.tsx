@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Calendar as CalendarIcon, MapPin } from "lucide-react";
 import { useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
@@ -66,25 +67,27 @@ function RouteComponent() {
     >
       <div
         data-mobile={isMobile}
-        className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+        className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white/95 p-4 backdrop-blur-sm data-[mobile=true]:pt-28"
       >
-        <button
+        <motion.button
           onClick={() => navigate({ to: "/" })}
-          className="flex h-6 w-6 items-center justify-center"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 transition-all hover:bg-gray-200 active:scale-95"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
-        </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
+        </motion.button>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-900">
           {name}
         </h1>
         {/* Empty div to balance the right side */}
-        <div className="flex h-6 w-6" />
+        <div className="flex h-9 w-9" />
       </div>
-      <div className="flex items-center gap-6 p-4 pb-6">
+      <div className="flex items-center gap-3 p-4 pb-6">
         <div className="flex items-center gap-2">
           <Selecter height="h-10" width="w-full" placeholder="Москва" />
         </div>
-        <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
+        <div className="scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto">
           {[
             { emoji: "🎉", name: "Популярное" },
             { emoji: "🆕", name: "Новое" },
@@ -94,29 +97,44 @@ function RouteComponent() {
             { emoji: "🤝", name: "Нетворкинг" },
             { emoji: "🕵️‍♂️", name: "Квесты" },
           ].map((chip) => (
-            <div
+            <motion.div
               onClick={() => {
                 navigate({ to: "/all/$name", params: { name: chip.name } });
                 setSelectedFilter(chip.name);
               }}
               key={chip.name}
-              className={`flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-medium text-nowrap transition-colors ${
+              className={`flex cursor-pointer flex-row flex-nowrap items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-nowrap shadow-sm transition-all ${
                 selectedFilter === chip.name
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
+                  ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md"
+                  : "border border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50"
               }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div>{chip.emoji}</div>
-              <div>{chip.name}</div>
-            </div>
+              <span>{chip.emoji}</span>
+              <span>{chip.name}</span>
+            </motion.div>
           ))}
         </div>
       </div>
-      <div className="mb-4 flex flex-col">
+      <div className="mb-6 px-4">
         {data.slice(0, 1).map((item) => {
           return (
-            <div>
-              <div className="relative aspect-square w-full">
+            <motion.div
+              key={item.id || item.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="group overflow-hidden rounded-3xl shadow-xl"
+              onClick={() => {
+                saveScrollPosition("all");
+                navigate({
+                  to: "/event/$name/$id",
+                  params: { name: item.category!, id: item.id!.toString()! },
+                });
+              }}
+            >
+              <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <img
                   src={
                     item.image?.startsWith("https://") || item.image?.startsWith("/")
@@ -124,25 +142,49 @@ function RouteComponent() {
                       : getImageUrl(item.image || "")
                   }
                   alt={item.title}
-                  className="h-full w-full rounded-t-3xl object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute right-0 bottom-0 left-0 flex h-[20%] flex-col items-start justify-center bg-black/50 p-2 px-4 text-white">
-                  <div className="flex flex-col items-start justify-center text-start">
-                    <div className="text-2xl font-bold">{item.title}</div>
-                    <div className="flex items-center gap-2">
-                      <div className="">{item.date}</div>
-                      <div>{item.location}</div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute right-0 bottom-0 left-0 p-6">
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-2xl font-bold text-white drop-shadow-lg">
+                      {item.title}
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                      {item.date && (
+                        <div className="flex items-center gap-1.5">
+                          <CalendarIcon className="h-4 w-4" />
+                          <span>{item.date}</span>
+                        </div>
+                      )}
+                      {item.location && (
+                        <>
+                          <span className="text-white/50">•</span>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4" />
+                            <span>{item.location}</span>
+                          </div>
+                        </>
+                      )}
+                      {item.price && (
+                        <>
+                          <span className="text-white/50">•</span>
+                          <span className="rounded-full bg-purple-600 px-3 py-1 text-xs font-bold text-white">
+                            {item.price}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
-      <div className="mb-4 flex flex-col">
+      <div className="flex flex-col">
         <Calendar />
-        <div className="mx-auto flex max-w-[145px] items-center justify-center">
+        <div className="mx-auto mb-4 flex max-w-[145px] items-center justify-center">
           <Selecter
             height="h-8"
             width="w-full"
@@ -159,42 +201,6 @@ function RouteComponent() {
             ]}
           />
         </div>
-        <div className="mt-4 flex gap-4 overflow-x-auto">
-          {[
-            {
-              title: "Пост- новогодний вечер",
-              subtitle: "15 января • Мозайка",
-              tag: "🎄 Новый год",
-              price: "3 000 ₸",
-              bg: "bg-gradient-to-br from-red-400 to-pink-400",
-            },
-            {
-              title: "Гангстеры и розы",
-              subtitle: "21 января • Алькатрас",
-              tag: "💞 Клубы знакомств",
-              price: "3 000 ₸",
-              bg: "bg-gradient-to-br from-pink-400 to-purple-400",
-            },
-            {
-              title: "KazDrilling 2024",
-              subtitle: "Renaissance Hotel",
-              tag: "💃 Концерт",
-              price: "3 000 ₸",
-              bg: "bg-gradient-to-br from-green-400 to-blue-400",
-            },
-          ].map((event, idx) => (
-            <div
-              key={idx}
-              className="h-[25vh] w-[40vw] flex-shrink-0 overflow-hidden rounded-2xl border bg-white shadow-sm"
-            >
-              <div className={`h-full w-full ${event.bg} relative`}>
-                <div className="absolute bottom-2 left-2 flex gap-1">
-                  <div>{event.tag}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {Object.entries(
@@ -207,12 +213,12 @@ function RouteComponent() {
           {} as Record<string, typeof data>,
         ),
       ).map(([type, items]) => (
-        <div key={type} className="">
-          <h2 className="px-4 text-lg font-bold text-black">
+        <div key={type} className="mb-8">
+          <h2 className="mb-4 px-4 text-xl font-bold text-gray-900">
             {getPluralCategoryName(type)}
           </h2>
 
-          <div className="grid grid-cols-2 gap-2 px-4 py-2">
+          <div className="grid grid-cols-2 gap-3 px-4">
             {(items as any[]).map((item) => (
               <div
                 key={item.id}
@@ -223,8 +229,9 @@ function RouteComponent() {
                     params: { name: item.category!, id: item.id!.toString()! },
                   });
                 }}
+                className="group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl"
               >
-                <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-2xl border bg-red-500">
+                <div className="relative aspect-square w-full overflow-hidden">
                   <img
                     src={
                       item.image?.startsWith("https://") || item.image?.startsWith("/")
@@ -232,19 +239,37 @@ function RouteComponent() {
                         : getImageUrl(item.image || "")
                     }
                     alt={item.title}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
-                  <div className="absolute bottom-2 left-2 flex gap-1 text-black">
-                    <div className="rounded-full bg-white p-1 text-sm">{item.date}</div>
-                    <div className="rounded-full bg-white p-1 text-sm">{item.price}</div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-2 left-2 flex flex-wrap gap-1.5">
+                    {item.date && (
+                      <span className="rounded-lg bg-white/95 px-2.5 py-1 text-xs font-bold text-gray-900 shadow-md backdrop-blur-sm">
+                        {item.date}
+                      </span>
+                    )}
+                    {item.price && (
+                      <span className="rounded-lg bg-purple-600 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+                        {item.price}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-col p-2">
-                  <div className="flex text-start">{item.title}</div>
-                  <div className="text-sm text-gray-500">
-                    {item.description?.slice(0, 10) +
-                      (item.description?.length > 10 ? "..." : "")}
-                  </div>
+                <div className="p-3">
+                  <h3 className="mb-1 line-clamp-2 leading-tight font-semibold text-gray-900">
+                    {item.title}
+                  </h3>
+                  {item.description && (
+                    <p className="line-clamp-2 text-xs text-gray-500">
+                      {item.description}
+                    </p>
+                  )}
+                  {item.location && (
+                    <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin className="h-3 w-3" />
+                      <span className="truncate">{item.location}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

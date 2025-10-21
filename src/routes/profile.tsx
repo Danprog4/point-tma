@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import {
   AlertTriangle,
   Award,
@@ -191,14 +192,21 @@ function RouteComponent() {
           <Header />
 
           <PullToRefresh onRefresh={handleRefresh} className="text-white">
-            <div className="flex items-center justify-between px-4 py-5">
+            <motion.div
+              className="flex items-center justify-between px-4 py-5"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-bold text-black">Профиль</h1>
               </div>
               <Link to="/profile-sett" preload="viewport">
-                <Settings className="h-5 w-5 cursor-pointer text-black" />
+                <motion.div whileHover={{ rotate: 90 }} transition={{ duration: 0.3 }}>
+                  <Settings className="h-5 w-5 cursor-pointer text-black" />
+                </motion.div>
               </Link>
-            </div>
+            </motion.div>
 
             {/* <div className="flex gap-4 px-4 pb-4">
             <button
@@ -220,33 +228,59 @@ function RouteComponent() {
           </div> */}
 
             {page === "info" && (
-              <div className="text-black">
-                <div className="relative">
-                  <div className="relative h-90 rounded-t-2xl">
-                    <img
+              <motion.div
+                className="text-black"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <motion.div
+                  className="relative"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <div className="relative h-90 overflow-hidden rounded-t-2xl">
+                    <motion.img
                       src={
                         mainPhoto && mainPhoto.startsWith("data:image/")
                           ? mainPhoto
                           : getImageUrl(mainPhoto ?? "")
                       }
                       alt=""
-                      className="absolute inset-0 h-full w-full rounded-t-2xl object-cover"
+                      className="absolute inset-0 h-full w-full cursor-pointer rounded-t-2xl object-cover"
                       onClick={() => {
                         setIsClicked(!isClicked);
                         setCurrentIndex(0);
                         setIsFullScreen(true);
                       }}
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
                     />
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="scrollbar-hidden scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4 pt-4">
+                <motion.div
+                  className="scrollbar-hidden scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4 pt-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                >
                   {galleryPhotos.map((img, idx) => (
-                    <img
+                    <motion.img
                       key={idx}
                       src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
                       alt=""
                       className="h-20 w-20 flex-shrink-0 cursor-pointer rounded-lg object-cover"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: 0.3 + idx * 0.05,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => {
                         setGalleryPhotos((prev) => {
                           const newGallery = prev.filter((i) => i !== img);
@@ -257,10 +291,15 @@ function RouteComponent() {
                       }}
                     />
                   ))}
-                </div>
+                </motion.div>
 
                 {/* User Info */}
-                <div className="flex items-center justify-center gap-4 px-4 py-4">
+                <motion.div
+                  className="flex items-center justify-center gap-4 px-4 py-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <div className="relative flex items-center">
                     {/* Круг с прогресс-баром по XP */}
                     {(() => {
@@ -303,10 +342,12 @@ function RouteComponent() {
                       const offset = circumference * (1 - progress);
 
                       return (
-                        <div
-                          className="relative flex cursor-pointer items-center justify-center transition-transform hover:scale-110"
+                        <motion.div
+                          className="relative flex cursor-pointer items-center justify-center"
                           style={{ width: size, height: size }}
                           onClick={() => setIsLevelModalOpen(true)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
                         >
                           <svg width={size} height={size}>
                             {/* Серый фон круга */}
@@ -337,7 +378,7 @@ function RouteComponent() {
                           <span className="absolute top-0 left-0 flex h-full w-full items-center justify-center text-xl font-bold text-white">
                             {user.level}
                           </span>
-                        </div>
+                        </motion.div>
                       );
                     })()}
                   </div>
@@ -348,10 +389,15 @@ function RouteComponent() {
                       </h2>
                     </div>
                   </div>
-                  <div className="flex items-center">
+                  <motion.div
+                    className="flex items-center"
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  >
                     <Star className="h-7 w-7 fill-blue-500 text-blue-500" />
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 <div className="flex items-center justify-between px-4 pb-4">
                   <div className="flex items-center gap-2 text-sm text-neutral-500">
@@ -369,28 +415,43 @@ function RouteComponent() {
                 </div>
 
                 {/* TODO: add real followers and real friends count*/}
-                <div className="flex items-center justify-center gap-4 px-4 pb-4">
-                  <div
-                    className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
+                <motion.div
+                  className="flex items-center justify-center gap-4 px-4 pb-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <motion.div
+                    className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
                     onClick={() => {
                       setIsSubscribersPage(true);
                       saveScrollPosition("profile");
                     }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div>{userSubscribers?.length || 0}</div>
                     <div className="text-sm text-neutral-500">Подписчики</div>
-                  </div>
-                  <div
-                    className="flex flex-1 flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
+                  </motion.div>
+                  <motion.div
+                    className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
                     onClick={() => {
                       setIsFriendsPage(true);
                       saveScrollPosition("profile");
                     }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div>{uniqueFriends.length || 0}</div>
                     <div className="text-sm text-neutral-500">Друзья</div>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 <div className="px-4">
                   <div className="flex flex-col items-start justify-between pb-4">
@@ -661,7 +722,7 @@ function RouteComponent() {
                     </WarningsBansDrawer>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* {page === "friends" && <Friends />} */}

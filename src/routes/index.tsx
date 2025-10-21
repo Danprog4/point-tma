@@ -11,10 +11,10 @@ import { EventCard } from "~/components/EventCard";
 import FilterDrawer from "~/components/FilterDrawer";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 
+import { motion } from "framer-motion";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { useSnapshot } from "valtio";
 import { CheckInModal } from "~/components/CheckInModal";
-import GetUpButton from "~/components/getUpButton";
 import { useFilteredEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
 import { calculateStreak } from "~/lib/utils/calculateStreak";
@@ -114,17 +114,27 @@ function Home() {
           />
         )}
 
-        <div className="flex items-center justify-between px-4 py-5">
+        <motion.div
+          className="flex items-center justify-between px-4 py-5"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <h1 className="text-3xl font-bold text-black">Афиша</h1>
-        </div>
+        </motion.div>
 
-        <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <motion.div
+          className="mb-4 flex items-center justify-center gap-6 px-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <input
             type="text"
             placeholder="Поиск событий"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black transition-all placeholder:text-black/50 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
           />
 
           <FilterDrawer
@@ -138,11 +148,15 @@ function Home() {
               setIsOpen(open);
             }}
           >
-            <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <motion.div
+              className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <WhiteFilter />
-            </div>
+            </motion.div>
           </FilterDrawer>
-        </div>
+        </motion.div>
 
         <div className="w-full flex-1 overflow-x-hidden overflow-y-auto">
           <div className="flex items-center gap-6 p-4 pb-6">
@@ -150,7 +164,7 @@ function Home() {
               <Selecter height="h-10" width="w-full" placeholder="Алматы" />
             </div>
 
-            <div className="scrollbar-hidden flex flex-nowrap gap-8 overflow-x-auto">
+            <div className="scrollbar-hidden flex flex-nowrap gap-3 overflow-x-auto">
               {[
                 { emoji: "🎉", name: "Популярное" },
                 { emoji: "🆕", name: "Новое" },
@@ -165,44 +179,45 @@ function Home() {
                   to="/all/$name"
                   params={{ name: chip.name }}
                   preload="viewport"
-                  className={`flex flex-row flex-nowrap items-center justify-center gap-1 rounded-full bg-white text-sm text-nowrap ${
+                  className={`flex flex-row flex-nowrap items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm text-nowrap shadow-sm transition-all ${
                     selectedFilter === chip.name
-                      ? "bg-black text-white"
-                      : "border-gray-200 bg-white text-black"
+                      ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md"
+                      : "border border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50"
                   }`}
                   onClick={() => {
                     setSelectedFilter(chip.name);
                   }}
                 >
-                  <div>{chip.emoji}</div>
-                  <div>{chip.name}</div>
+                  <span>{chip.emoji}</span>
+                  <span className="font-medium">{chip.name}</span>
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="relative mb-2 w-full overflow-x-hidden">
-            <div className="relative h-80 w-full overflow-hidden">
+          <div className="relative mb-4 w-full overflow-x-hidden">
+            <div className="group relative h-80 w-full overflow-hidden rounded-2xl shadow-xl">
               <video
                 src="https://cdn.pixabay.com/video/2022/03/16/110945-689949688_large.mp4"
-                className="pointer-events-none absolute top-0 left-0 z-[-1] h-[100vh] w-[100vw] object-cover select-none"
+                className="pointer-events-none absolute top-0 left-0 z-[-1] h-full w-full object-cover transition-transform select-none group-hover:scale-105"
                 autoPlay
                 muted
                 loop
                 playsInline
               />
               <div className="absolute top-4 left-4">
-                <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-medium text-black">
-                  Футбол
+                <span className="rounded-full bg-yellow-400 px-3 py-1.5 text-xs font-semibold text-black shadow-lg">
+                  ⚽ Футбол
                 </span>
               </div>
-              <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                <h2 className="mb-2 text-xl font-bold text-white">
+              <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6">
+                <h2 className="mb-2 text-xl font-bold text-white drop-shadow-lg">
                   Матч Динамо Минск и Динамо Москва
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-white">
-                  <span>15 января</span>
-                  <span>Халык Арена</span>
+                <div className="flex items-center gap-3 text-sm text-white/90">
+                  <span className="flex items-center gap-1">📅 15 января</span>
+                  <span className="text-white/50">•</span>
+                  <span className="flex items-center gap-1">📍 Халык Арена</span>
                 </div>
               </div>
             </div>
@@ -241,7 +256,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto text-black">
               {(popularEvents?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -276,7 +291,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto text-black">
               {(newEvents?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -311,7 +326,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto text-black">
               {(kinoData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -347,7 +362,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto text-black">
               {(questsData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -370,7 +385,25 @@ function Home() {
 
           {/* Banner */}
           <div className="mb-6 px-4 text-black">
-            <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              viewport={{ once: true, margin: "-100px" }}
+              className="group relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-500 via-purple-600 to-pink-500 p-8 text-white shadow-lg"
+            >
+              {/* Animated background elements */}
+              <motion.div
+                className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-3xl"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute bottom-0 -left-8 h-24 w-24 rounded-full bg-white/10 blur-2xl"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 5, repeat: Infinity, delay: 0.5 }}
+              />
+
               <Link
                 to="/all/$name"
                 params={{ name: "Квесты" }}
@@ -379,14 +412,33 @@ function Home() {
                   saveScrollPosition("home");
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold">Квесты для компании</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white">
-                    <Plus className="h-6 w-6 text-blue-500" />
-                  </div>
+                <div className="relative flex items-center justify-between">
+                  <motion.div
+                    className="flex flex-col gap-1"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                  >
+                    <span className="text-2xl font-bold">Квесты для компании</span>
+                    <span className="text-sm font-medium text-white/80">
+                      Приключения ждут вас
+                    </span>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
+                    whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-md"
+                  >
+                    <Plus className="h-6 w-6 text-purple-600" />
+                  </motion.div>
                 </div>
               </Link>
-            </div>
+            </motion.div>
           </div>
 
           {/* Top Conferences */}
@@ -404,7 +456,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex w-full gap-4 overflow-x-auto text-black">
               {(conferencesData?.slice?.(0, 5) || [])
                 .filter((conf) =>
                   conf.title?.toLowerCase().includes(search.toLowerCase()),
@@ -440,7 +492,7 @@ function Home() {
                 <ArrowRight className="h-5 w-5 cursor-pointer text-gray-500" />
               </Link>
             </div>
-            <div className="scrollbar-hidden flex gap-4 overflow-x-auto px-4 text-black">
+            <div className="scrollbar-hidden flex gap-4 overflow-x-auto text-black">
               {(partiesData?.slice?.(0, 5) || [])
                 .filter((event) =>
                   event.title?.toLowerCase().includes(search.toLowerCase()),
@@ -462,7 +514,6 @@ function Home() {
           </div>
         </div>
       </PullToRefresh>
-      <GetUpButton />
     </div>
   );
 }

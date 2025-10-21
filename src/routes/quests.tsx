@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { Settings } from "lucide-react";
 import { useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
@@ -125,21 +126,33 @@ function RouteComponent() {
     >
       <Header />
       <PullToRefresh onRefresh={handleRefresh} className="text-white">
-        <div className="flex items-center justify-between px-4 py-5">
+        <motion.div
+          className="flex items-center justify-between px-4 py-5"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-black">Квесты</h1>
             <Selecter width="20px" height="20px" />
           </div>
-          <Settings className="h-5 w-5 text-black" />
-        </div>
+          <motion.div whileHover={{ rotate: 90 }} transition={{ duration: 0.3 }}>
+            <Settings className="h-5 w-5 cursor-pointer text-black" />
+          </motion.div>
+        </motion.div>
 
-        <div className="mb-4 flex items-center justify-center gap-6 px-4">
+        <motion.div
+          className="mb-4 flex items-center justify-center gap-6 px-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             type="text"
             placeholder="Поиск квестов"
-            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black transition-all placeholder:text-black/50 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
           />
 
           <FilterDrawer
@@ -153,23 +166,27 @@ function RouteComponent() {
               setIsOpen(open);
             }}
           >
-            <div className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]">
+            <motion.div
+              className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <WhiteFilter />
-            </div>
+            </motion.div>
           </FilterDrawer>
-        </div>
+        </motion.div>
 
         <Calendar />
 
-        <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-6 overflow-x-auto px-4">
+        <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-3 overflow-x-auto px-4">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter ?? "")}
-              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap shadow-sm transition-all ${
                 activeFilter === filter
-                  ? "bg-black text-white"
-                  : "border-gray-200 bg-white text-black"
+                  ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md"
+                  : "border border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50"
               }`}
             >
               {filter}
@@ -179,56 +196,62 @@ function RouteComponent() {
 
         <div className="space-y-4">
           {userQuestsData && userQuestsData.length > 0 && (
-            <>
-              <h2 className="px-4 text-lg font-semibold text-black">Активные квесты</h2>
-              {userQuestsData
-                .filter(
-                  (quest) =>
-                    (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-                )
-                .map((quest) => {
-                  const questData = questsData?.find((q) => q.id === quest.eventId);
-                  return (
-                    <div key={quest.id} className="mb-4 px-4">
-                      <QuestCard quest={questData as any} isNavigable={true} />
-                      <p className="py-2 text-xs leading-4 text-black">
-                        {questData?.description?.slice(0, 100)}
-                        {questData?.description && questData.description.length > 100
-                          ? "..."
-                          : ""}
-                      </p>
+            <div className="mb-6">
+              <h2 className="mb-4 px-4 text-xl font-bold text-gray-900">
+                Активные квесты
+              </h2>
+              <div className="space-y-3">
+                {userQuestsData
+                  .filter(
+                    (quest) =>
+                      (activeFilter === "Все" && questsData) ||
+                      quest.type === activeFilter,
+                  )
+                  .map((quest) => {
+                    const questData = questsData?.find((q) => q.id === quest.eventId);
+                    return (
+                      <div key={quest.id} className="px-4">
+                        <div className="overflow-hidden rounded-2xl bg-white shadow-md">
+                          <QuestCard quest={questData as any} isNavigable={true} />
+                          <div className="border-t border-gray-100 px-3 pb-3">
+                            <p className="mb-3 pt-3 text-xs leading-relaxed text-gray-700">
+                              {questData?.description?.slice(0, 100)}
+                              {questData?.description &&
+                              questData.description.length > 100
+                                ? "..."
+                                : ""}
+                            </p>
 
-                      <div className="mb-6 flex w-full items-center justify-between">
-                        {questData?.hasAchievement ? (
-                          <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                            + Достижение
-                          </span>
-                        ) : (
-                          <span
-                            style={{ visibility: "hidden" }}
-                            className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                          >
-                            + Достижение
-                          </span>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <span className="text-base font-medium text-black">
-                            +
-                            {(
-                              questData?.rewards?.find(
-                                (reward) => reward.type === "point",
-                              )?.value ?? 0
-                            ).toLocaleString()}
-                          </span>
-
-                          <span className="text-base font-medium text-black">points</span>
-                          <Coin />
+                            <div className="flex items-center justify-between">
+                              {questData?.hasAchievement ? (
+                                <span className="rounded-full bg-purple-300 px-3 py-1 text-xs font-medium text-gray-900 shadow-sm">
+                                  🏆 Достижение
+                                </span>
+                              ) : (
+                                <div />
+                              )}
+                              <div className="ml-auto flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-50 to-purple-100 px-3 py-1.5 shadow-sm">
+                                <span className="text-sm font-semibold text-gray-900">
+                                  +
+                                  {(
+                                    questData?.rewards?.find(
+                                      (reward) => reward.type === "point",
+                                    )?.value ?? 0
+                                  ).toLocaleString()}
+                                </span>
+                                <span className="text-sm font-medium text-gray-600">
+                                  points
+                                </span>
+                                <Coin />
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-            </>
+                    );
+                  })}
+              </div>
+            </div>
           )}
 
           <div className="mb-6">
@@ -236,54 +259,67 @@ function RouteComponent() {
               ?.filter((quest) => quest.isSeries)
               .filter((quest) => quest.isSeries)
 
-              .map((quest) => <SeriesQuestCard key={quest.id} quest={quest as any} />)}
+              .map((quest) => (
+                <div key={quest.id}>
+                  <SeriesQuestCard quest={quest as any} />
+                </div>
+              ))}
           </div>
 
-          {questsData
-            ?.filter((quest) => !quest.isSeries)
-            .filter(
-              (quest) =>
-                (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-            )
-            .filter((quest) => {
-              return (
-                quest.title?.toLowerCase().includes(search.toLowerCase()) ||
-                quest.description?.toLowerCase().includes(search.toLowerCase())
-              );
-            })
-            .map((quest, idx) => (
-              <div key={quest.id}>
-                <h3 className="px-4 pb-2 text-xs font-normal text-black">{quest.date}</h3>
-                <div className="px-4">
-                  <QuestCard quest={quest as any} isNavigable={true} />
-                  <p className="py-2 text-xs leading-4 text-black">
-                    {quest.description?.slice(0, 100) +
-                      (quest.description?.length && quest.description.length > 100
-                        ? "..."
-                        : "")}
-                  </p>
-                  <div className="mb-6 flex items-center justify-between">
-                    {quest.hasAchievement && (
-                      <span className="rounded-full bg-purple-300 px-2.5 py-0.5 text-xs font-medium text-black">
-                        + Достижение
-                      </span>
-                    )}
-                    <div className="ml-auto flex items-center gap-1">
-                      <span className="text-base font-medium text-black">
-                        +
-                        {(
-                          quest?.rewards?.find((reward) => reward.type === "point")
-                            ?.value ?? 0
-                        ).toLocaleString()}
-                      </span>
-
-                      <span className="text-base font-medium text-black">points</span>
-                      <Coin />
+          <div className="space-y-4">
+            {questsData
+              ?.filter((quest) => !quest.isSeries)
+              .filter(
+                (quest) =>
+                  (activeFilter === "Все" && questsData) || quest.type === activeFilter,
+              )
+              .filter((quest) => {
+                return (
+                  quest.title?.toLowerCase().includes(search.toLowerCase()) ||
+                  quest.description?.toLowerCase().includes(search.toLowerCase())
+                );
+              })
+              .map((quest) => (
+                <div key={quest.id}>
+                  <h3 className="mb-2 px-4 text-xs font-medium text-gray-500">
+                    {quest.date}
+                  </h3>
+                  <div className="px-4">
+                    <div className="overflow-hidden rounded-2xl bg-white shadow-md">
+                      <QuestCard quest={quest as any} isNavigable={true} />
+                      <div className="border-t border-gray-100 px-3 pb-3">
+                        <p className="mb-3 pt-3 text-xs leading-relaxed text-gray-700">
+                          {quest.description?.slice(0, 100) +
+                            (quest.description?.length && quest.description.length > 100
+                              ? "..."
+                              : "")}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          {quest.hasAchievement && (
+                            <span className="rounded-full bg-purple-300 px-3 py-1 text-xs font-medium text-gray-900 shadow-sm">
+                              🏆 Достижение
+                            </span>
+                          )}
+                          <div className="ml-auto flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-50 to-purple-100 px-3 py-1.5 shadow-sm">
+                            <span className="text-sm font-semibold text-gray-900">
+                              +
+                              {(
+                                quest?.rewards?.find((reward) => reward.type === "point")
+                                  ?.value ?? 0
+                              ).toLocaleString()}
+                            </span>
+                            <span className="text-sm font-medium text-gray-600">
+                              points
+                            </span>
+                            <Coin />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
 
         {/* Create Quest Button */}

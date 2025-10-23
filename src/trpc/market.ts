@@ -235,7 +235,12 @@ export const marketRouter = createTRPCRouter({
         ),
       });
 
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      // Создаем массив последних 7 дней
+      const last7Days: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+        last7Days.push(date.toISOString().split("T")[0]);
+      }
 
       const pricesByDay: Record<string, number[]> = {};
       let minPrice = Infinity;
@@ -246,7 +251,7 @@ export const marketRouter = createTRPCRouter({
         const buyers = selling.buyersIds || {};
         const buyersCount = Object.keys(buyers).length;
 
-        // Если есть покупатели - группируем по датам покупок
+        // Только реальные покупки (не непроданные товары)
         if (buyersCount > 0) {
           Object.values(buyers).forEach((purchaseTimestamp) => {
             const dayKey = new Date(purchaseTimestamp).toISOString().split("T")[0];
@@ -262,29 +267,31 @@ export const marketRouter = createTRPCRouter({
 
           totalBuyers += buyersCount;
         }
-        // Если еще не куплен - считаем по дате создания для отображения в листинге
-        else {
-          const dayKey = selling.createdAt
-            ? new Date(selling.createdAt).toISOString().split("T")[0]
-            : "unknown";
-
-          if (!pricesByDay[dayKey]) {
-            pricesByDay[dayKey] = [];
-          }
-
-          pricesByDay[dayKey].push(selling.price || 0);
-          minPrice = Math.min(minPrice, selling.price || 0);
-          maxPrice = Math.max(maxPrice, selling.price || 0);
-        }
       });
 
-      const priceRangePerDay = Object.entries(pricesByDay).map(([day, prices]) => ({
-        day,
-        minPrice: Math.min(...prices),
-        maxPrice: Math.max(...prices),
-        avgPrice: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
-        soldCount: prices.length,
-      }));
+      // Создаем данные для всех 7 дней
+      const priceRangePerDay = last7Days.map((day) => {
+        const prices = pricesByDay[day] || [];
+
+        if (prices.length > 0) {
+          return {
+            day,
+            minPrice: Math.min(...prices),
+            maxPrice: Math.max(...prices),
+            avgPrice: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+            soldCount: prices.length,
+          };
+        } else {
+          // День без продаж - показываем 0
+          return {
+            day,
+            minPrice: 0,
+            maxPrice: 0,
+            avgPrice: 0,
+            soldCount: 0,
+          };
+        }
+      });
 
       return {
         minPrice: minPrice === Infinity ? 0 : minPrice,

@@ -1,13 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { hapticFeedback } from "@telegram-apps/sdk";
 import { motion } from "framer-motion";
 import { ArrowLeft, ShoppingCart, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
+import { MarketStatsChart } from "./MarketStatsChart";
 
 type SellingItem = {
   id: number;
@@ -62,6 +63,28 @@ export default function BuyItemDrawer({
   const maxQuantity = selling.amount || 1;
   const pricePerItem = selling.price || 0;
   const totalPrice = pricePerItem * quantity;
+
+  // Получаем статистику по предмету
+  const { data: itemStats } = useQuery(
+    trpc.market.getItemStats.queryOptions({
+      eventId: selling.eventId!,
+      eventType: selling.eventType!,
+    }),
+  );
+
+  // Debug логирование (можно убрать позже)
+  useEffect(() => {
+    if (itemStats && process.env.NODE_ENV === "development") {
+      console.log("📊 Статистика маркета:", {
+        eventId: selling.eventId,
+        eventType: selling.eventType,
+        totalBuyers: itemStats.totalBuyers,
+        priceRange: `${itemStats.minPrice}₽ - ${itemStats.maxPrice}₽`,
+        daysWithSales: itemStats.priceRangePerDay.filter((d) => d.soldCount > 0).length,
+        last7Days: itemStats.priceRangePerDay,
+      });
+    }
+  }, [itemStats, selling.eventId, selling.eventType]);
 
   const buyItem = useMutation(
     trpc.market.buyItem.mutationOptions({
@@ -238,6 +261,26 @@ export default function BuyItemDrawer({
                   </div>
                 </div>
               </div>
+
+              {/* Market Statistics */}
+              {itemStats && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-6"
+                >
+                  <MarketStatsChart
+                    data={itemStats}
+                    title="Статистика за неделю"
+                    description={
+                      itemStats.totalBuyers > 0
+                        ? `За всё время продано ${itemStats.totalBuyers} шт.`
+                        : undefined
+                    }
+                  />
+                </motion.div>
+              )}
 
               {/* Quantity Selector */}
               {!isMyItem && maxQuantity > 1 && (

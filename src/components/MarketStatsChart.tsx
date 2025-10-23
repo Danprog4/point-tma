@@ -39,11 +39,11 @@ const chartConfig = {
     color: "hsl(217, 91%, 60%)", // blue
   },
   minPrice: {
-    label: "Мин. цена",
+    label: " Мин. цена",
     color: "hsl(0, 72%, 51%)", // red
   },
   maxPrice: {
-    label: "Макс. цена",
+    label: " Макс. цена",
     color: "hsl(25, 95%, 53%)", // orange
   },
 } satisfies ChartConfig;

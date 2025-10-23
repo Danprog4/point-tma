@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { sellingTable, usersTable } from "~/db/schema";
@@ -151,7 +151,10 @@ export const marketRouter = createTRPCRouter({
         .update(sellingTable)
         .set({
           amount: selling.amount! - input.amount,
-          buyersIds: [...(selling.buyersIds || []), ctx.userId] as number[],
+          buyersIds: {
+            ...(selling.buyersIds || {}),
+            [ctx.userId]: Date.now(),
+          } as Record<number, number>,
           status: isSellingFinished ? "sold" : "selling",
         })
         .where(eq(sellingTable.id, input.sellingId));
@@ -212,9 +215,83 @@ export const marketRouter = createTRPCRouter({
 
   getMyPurchases: procedure.query(async ({ ctx }) => {
     return await db.query.sellingTable.findMany({
-      where: (fields, { sql }) =>
-        sql`${fields.buyersIds} @> ${JSON.stringify([ctx.userId])}::jsonb`,
+      where: (fields, { sql }) => sql`${fields.buyersIds} ? ${ctx.userId.toString()}`,
       orderBy: [desc(sellingTable.createdAt)],
     });
   }),
+
+  getItemStats: procedure
+    .input(
+      z.object({
+        eventId: z.number(),
+        eventType: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const allSellings = await db.query.sellingTable.findMany({
+        where: and(
+          eq(sellingTable.eventId, input.eventId),
+          eq(sellingTable.eventType, input.eventType),
+        ),
+      });
+
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const pricesByDay: Record<string, number[]> = {};
+      let minPrice = Infinity;
+      let maxPrice = -Infinity;
+      let totalBuyers = 0;
+
+      allSellings.forEach((selling) => {
+        const buyers = selling.buyersIds || {};
+        const buyersCount = Object.keys(buyers).length;
+
+        // Если есть покупатели - группируем по датам покупок
+        if (buyersCount > 0) {
+          Object.values(buyers).forEach((purchaseTimestamp) => {
+            const dayKey = new Date(purchaseTimestamp).toISOString().split("T")[0];
+
+            if (!pricesByDay[dayKey]) {
+              pricesByDay[dayKey] = [];
+            }
+
+            pricesByDay[dayKey].push(selling.price || 0);
+            minPrice = Math.min(minPrice, selling.price || 0);
+            maxPrice = Math.max(maxPrice, selling.price || 0);
+          });
+
+          totalBuyers += buyersCount;
+        }
+        // Если еще не куплен - считаем по дате создания для отображения в листинге
+        else {
+          const dayKey = selling.createdAt
+            ? new Date(selling.createdAt).toISOString().split("T")[0]
+            : "unknown";
+
+          if (!pricesByDay[dayKey]) {
+            pricesByDay[dayKey] = [];
+          }
+
+          pricesByDay[dayKey].push(selling.price || 0);
+          minPrice = Math.min(minPrice, selling.price || 0);
+          maxPrice = Math.max(maxPrice, selling.price || 0);
+        }
+      });
+
+      const priceRangePerDay = Object.entries(pricesByDay).map(([day, prices]) => ({
+        day,
+        minPrice: Math.min(...prices),
+        maxPrice: Math.max(...prices),
+        avgPrice: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+        soldCount: prices.length,
+      }));
+
+      return {
+        minPrice: minPrice === Infinity ? 0 : minPrice,
+        maxPrice: maxPrice === -Infinity ? 0 : maxPrice,
+        totalBuyers,
+        priceRangePerDay,
+        allSellings,
+      };
+    }),
 });

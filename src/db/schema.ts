@@ -400,7 +400,7 @@ export const sellingTable = pgTable("selling", {
   amount: integer("amount"),
   price: integer("price"),
   status: varchar("status", { length: 255 }).default("selling"), // selling, sold, canceled
-  buyersIds: jsonb("buyers_ids").$type<number[]>().default([]),
+  buyersIds: jsonb("buyers_ids").$type<Record<number, number>>().default({}),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

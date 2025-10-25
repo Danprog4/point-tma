@@ -7,14 +7,9 @@ import { useTRPC } from "~/trpc/init/react";
 interface WarningsBansDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
 }
 
-export const WarningsBansDrawer = ({
-  open,
-  onOpenChange,
-  children,
-}: WarningsBansDrawerProps) => {
+export const WarningsBansDrawer = ({ open, onOpenChange }: WarningsBansDrawerProps) => {
   const trpc = useTRPC();
   const [activeTab, setActiveTab] = useState<"warnings" | "bans">("warnings");
 
@@ -33,7 +28,6 @@ export const WarningsBansDrawer = ({
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
-      <Drawer.Trigger asChild>{children}</Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-fit flex-col rounded-t-[16px] bg-white px-4 py-4">

@@ -37,7 +37,6 @@ import { levelsConfig } from "~/config/levels";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
-import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
@@ -693,33 +692,25 @@ function RouteComponent() {
                       icon={<Repeat2 className="h-6 w-6 text-purple-300" />}
                       title="Мои обмены"
                     />
-                    <WarningsBansDrawer
-                      open={isWarningsBansOpen}
-                      onOpenChange={(open) => {
-                        if (open) {
-                          lockBodyScroll();
-                        } else {
-                          unlockBodyScroll();
-                        }
-                        setIsWarningsBansOpen(open);
-                      }}
+
+                    <div
+                      onClick={() => setIsWarningsBansOpen(true)}
+                      className="flex cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0"
                     >
-                      <div className="flex cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0">
-                        <div className="flex items-center gap-3">
-                          <AlertTriangle
-                            className={`h-6 w-6 ${
-                              (warnings?.length || 0) + (bans?.length || 0) > 0
-                                ? "text-orange-500"
-                                : "text-purple-300"
-                            }`}
-                          />
-                          <span className="text-base font-medium text-black">
-                            Модерация
-                          </span>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle
+                          className={`h-6 w-6 ${
+                            (warnings?.length || 0) + (bans?.length || 0) > 0
+                              ? "text-orange-500"
+                              : "text-purple-300"
+                          }`}
+                        />
+                        <span className="text-base font-medium text-black">
+                          Модерация
+                        </span>
                       </div>
-                    </WarningsBansDrawer>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -741,6 +732,15 @@ function RouteComponent() {
                 currentIndex={currentIndex}
                 setCurrentIndex={setCurrentIndex}
                 setIsFullScreen={setIsFullScreen}
+              />
+            )}
+
+            {isWarningsBansOpen && (
+              <WarningsBansDrawer
+                open={isWarningsBansOpen}
+                onOpenChange={(open) => {
+                  setIsWarningsBansOpen(open);
+                }}
               />
             )}
           </PullToRefresh>

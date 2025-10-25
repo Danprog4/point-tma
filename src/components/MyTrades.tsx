@@ -188,7 +188,7 @@ export default function MyTrades({ onBack }: MyTradesProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
       </div>
     );

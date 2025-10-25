@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 import { useScroll } from "./hooks/useScroll";
 
@@ -17,6 +19,7 @@ export const UserFriends = ({
   setIsFriendsPage: (isFriendsPage: boolean) => void;
 }) => {
   useScroll();
+  useScrollRestoration("user-friends");
   const trpc = useTRPC();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -47,7 +50,10 @@ export const UserFriends = ({
         className="fixed top-0 right-0 left-0 z-10 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
         <button
-          onClick={() => setIsFriendsPage(false)}
+          onClick={() => {
+            saveScrollPosition("user-friends");
+            setIsFriendsPage(false);
+          }}
           className="flex h-6 w-6 items-center justify-center"
         >
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />

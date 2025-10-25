@@ -26,7 +26,6 @@ function RouteComponent() {
   const { isSettingsSearch } = useSearch({ from: "/fill-profile" }) as {
     isSettingsSearch: boolean;
   };
-  console.log(isSettingsSearch, "isSettingsSearch");
   const [step, setStep] = useState(0);
   const [isSettings, setIsSettings] = useState(isSettingsSearch || false);
   const [cameFromSettings, setCameFromSettings] = useState(false);
@@ -71,19 +70,19 @@ function RouteComponent() {
 
   useEffect(() => {
     if (isClicked !== null) {
+      // Сохраняем интересы после каждого ответа
+      setInterestsMutation.mutate({ interests });
+
       if (cameFromSettings) {
         setIsSettings(true);
         setCameFromSettings(false);
         setIsClicked(null);
       } else {
-        setStep(step + 1);
+        setStep((prevStep) => prevStep + 1);
         setIsClicked(null);
       }
     }
-  }, [isClicked]);
-
-  console.log(step);
-  console.log(isClicked);
+  }, [isClicked, cameFromSettings, interests, setInterestsMutation]);
 
   const getPercent = () => {
     const answeredCount = Object.values(interests).filter(Boolean).length;
@@ -176,15 +175,13 @@ function RouteComponent() {
 
   useEffect(() => {
     if (step === steps.length - 1 && !isSettings) {
-      handleSetInterests();
-      setTimeout(() => {
+      setInterestsMutation.mutate({ interests });
+      const timer = setTimeout(() => {
         navigate({ to: "/profile" });
       }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [step]);
-
-  console.log(interests);
-  console.log(cameFromSettings);
+  }, [step, isSettings, interests, setInterestsMutation, navigate]);
 
   const isMobile = usePlatform();
 
@@ -255,7 +252,7 @@ function RouteComponent() {
         <>
           <div className="mt-4 flex-1 rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
             <div className="flex flex-col gap-2">
-              <div>Заполенность профиля {getPercent()}%</div>
+              <div>Заполненность профиля {getPercent()}%</div>
               <div className="h-2 w-full rounded-full bg-white">
                 <div
                   className="h-2 rounded-full bg-[#9924FF]"
@@ -273,25 +270,30 @@ function RouteComponent() {
                   {s.question}
                 </div>
                 <div className="mt-4 flex w-full flex-col gap-8">
-                  {s.options?.map((op, index) => (
-                    <div
-                      onClick={() => {
-                        setIsClicked(index);
-                        const key = getAnswerKeyByStepId(s.id);
-                        if (key) {
-                          setInterests((prev) => ({ ...prev, [key]: op }));
-                        }
-                      }}
-                      className="flex cursor-pointer items-center justify-between px-4"
-                    >
-                      <div>{op}</div>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#CDCDCD]">
-                        {isClicked === index && (
-                          <Check className="h-5 w-5 text-green-500" />
-                        )}
+                  {s.options?.map((op, index) => {
+                    const key = getAnswerKeyByStepId(s.id);
+                    const isSelected = key && interests[key] === op;
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setIsClicked(index);
+                          if (key) {
+                            setInterests((prev) => ({ ...prev, [key]: op }));
+                          }
+                        }}
+                        className="flex cursor-pointer items-center justify-between px-4"
+                      >
+                        <div>{op}</div>
+                        <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-[#CDCDCD]">
+                          {(isClicked === index || isSelected) && (
+                            <Check className="h-5 w-5 text-green-500" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}

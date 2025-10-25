@@ -137,15 +137,9 @@ function RouteComponent() {
   });
 
   const completedQuestsData = QuestsData?.filter((q) => q.isCompleted === true);
-  console.log(completedQuestsData, "completedQuestsData");
   const uncompletedQuestsData = QuestsData?.filter((q) => q.isCompleted === false);
-  console.log(uncompletedQuestsData, "uncompletedQuestsData");
 
   const pageState = uncompletedQuestsData?.length === 0 ? "completed" : "active";
-
-  console.log(pageState, "pageState");
-
-  console.log(userSubscribers, "userSubscribers");
 
   const isMobile = usePlatform();
 
@@ -469,7 +463,7 @@ function RouteComponent() {
                   <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
                     <div className="flex flex-col gap-2">
                       <div className="text-sm text-nowrap">
-                        Заполенность профиля {getPercent()}%
+                        Заполненность профиля {getPercent()}%
                       </div>
                       <div className="h-2 w-full rounded-full bg-white">
                         <div

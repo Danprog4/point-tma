@@ -32,7 +32,7 @@ export const Inventory = ({
             .filter((ticket) => !selectedInventory.includes(ticket.id?.toString() ?? ""))
             .map((ticket) => (
               <div
-                key={ticket.eventId}
+                key={ticket.id}
                 className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
                 onClick={() => {
                   setSelectedInventory([

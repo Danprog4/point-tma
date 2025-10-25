@@ -295,7 +295,6 @@ export const FastMeetInfo = ({
               user={currentUser}
               navigate={(options: any) => {
                 // For now, we don't navigate to user profiles in fast meets
-                console.log("Navigate to user profile:", options);
               }}
               chatBottomRef={chatBottomRef}
               isFastMeet={true}

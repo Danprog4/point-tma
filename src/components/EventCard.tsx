@@ -1,7 +1,6 @@
 import { getImageUrl } from "~/lib/utils/getImageURL";
 
 export const EventCard = ({ event }: { event: any }) => {
-  console.log(event);
   return (
     <div className="group w-45 flex-shrink-0 overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl">
       <div className={`relative h-32 overflow-hidden ${event.bg || ""}`}>

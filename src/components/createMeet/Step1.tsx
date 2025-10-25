@@ -83,8 +83,6 @@ export const Step1 = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
 
-  console.log(calendarDate, "calendatDate ");
-
   const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
 
   const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
@@ -97,7 +95,6 @@ export const Step1 = ({
       break;
     case "Квесты":
       data = eventsData?.filter((event) => event.category === "Квест") || [];
-      console.log(data);
       break;
     case "Кино":
       data = eventsData?.filter((event) => event.category === "Кино") || [];
@@ -114,8 +111,6 @@ export const Step1 = ({
     default:
       data = [];
   }
-
-  console.log(date, "date");
 
   useEffect(() => {
     if (calendarDate) {
@@ -229,7 +224,7 @@ export const Step1 = ({
       setSelectedFile(null);
     }
   };
-  console.log(gallery, "gallery");
+
   useEffect(() => {
     if (title && description && type && base64 && date) {
       setIsDisabled(false);
@@ -237,8 +232,6 @@ export const Step1 = ({
       setIsDisabled(true);
     }
   }, [title, description, type, base64, date]);
-
-  console.log(isExtra, "isExtra");
 
   return (
     <div className="scrollbar-hidden w-full overflow-y-auto pb-4">

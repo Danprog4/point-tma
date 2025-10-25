@@ -83,9 +83,6 @@ export default function GiveDrawer({
   };
 
   const handleSendGift = () => {
-    console.log(selectedUser, "selectedUser");
-    console.log(item, "item");
-
     if (selectedUser && item) {
       // Оптимистично обновляем кэш - удаляем только конкретный билет
       // queryClient.setQueryData<User>(trpc.main.getUser.queryKey(), (old) => {

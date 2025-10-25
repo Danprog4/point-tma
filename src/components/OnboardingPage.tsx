@@ -180,10 +180,6 @@ export const OnboardingPage = () => {
       !base64 ||
       !selectedFile);
 
-  console.log(base64);
-  console.log(selectedFile);
-
-  console.log(step);
   const Card = ({
     category,
     text,

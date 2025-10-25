@@ -32,8 +32,6 @@ function FullCalendar({
         duration: 0.2,
         ease: "easeOut",
       }}
-      onAnimationStart={() => console.log("Animation started")}
-      onAnimationComplete={() => console.log("Animation completed")}
       className="fixed top-[20vh] right-4 z-[9999] w-[70vw]"
       style={{ position: "fixed", zIndex: 9999 }}
     >

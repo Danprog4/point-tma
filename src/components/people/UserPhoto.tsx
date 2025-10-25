@@ -53,28 +53,16 @@ export const UserPhoto = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             onError={(e) => {
-              console.log(`Image failed to load for user ${user?.id}:`, {
-                src: getImage(user as any, imageToShow),
-                originalSrc: e.currentTarget.src,
-              });
               // First try Telegram avatar, then default image
               if (
                 user?.photoUrl &&
                 user.photoUrl.trim() !== "" &&
                 e.currentTarget.src !== user.photoUrl
               ) {
-                console.log(`Falling back to Telegram avatar for user ${user?.id}`);
                 e.currentTarget.src = user.photoUrl.trim();
               } else {
-                console.log(`Using default image for user ${user?.id}`);
                 e.currentTarget.src = user?.sex === "male" ? "/men.jpeg" : "/women.jpeg";
               }
-            }}
-            onLoad={() => {
-              console.log(
-                `Image loaded successfully for user ${user?.id}:`,
-                getImage(user as any, imageToShow),
-              );
             }}
           />
         </AnimatePresence>

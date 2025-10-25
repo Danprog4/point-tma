@@ -36,8 +36,6 @@ export const Step4 = ({
     return foundItem;
   };
 
-  console.log(selectedInventory, "selectedInventory");
-
   return (
     <div className="px-4">
       {isInventoryOpen ? (

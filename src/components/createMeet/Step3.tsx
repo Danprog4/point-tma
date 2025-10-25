@@ -84,10 +84,6 @@ export const Step3 = ({
     }
   }, [participants, tags, important, setIsDisabled]);
 
-  console.log(selectedIds, "selectedIds");
-
-  console.log(tags, "tags");
-
   return (
     <div className="px-4">
       {isInvite ? (

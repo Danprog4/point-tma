@@ -139,7 +139,6 @@ export const Step2 = ({
 
       return null;
     } catch (e) {
-      console.warn("Ошибка при извлечении координат:", e);
       return null;
     }
   };
@@ -245,16 +244,12 @@ export const Step2 = ({
 
   const extractMarkersFromSuggest = (): Array<[number, number]> => {
     try {
-      console.log("🗺️ Step2: extracting markers from", searchAddress.data);
       if (!searchAddress.data || !Array.isArray(searchAddress.data.results)) {
-        console.log("🗺️ Step2: no search data or results");
         return [];
       }
 
       const coords: Array<[number, number]> = [];
       for (const r of searchAddress.data.results) {
-        console.log("🗺️ Step2: full result structure", JSON.stringify(r, null, 2));
-
         // Try different possible paths for coordinates
         let pos =
           r?.geocode?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject?.Point
@@ -265,34 +260,28 @@ export const Step2 = ({
           const featureMember =
             r?.geocode?.response?.GeoObjectCollection?.featureMember?.[0];
           if (featureMember) {
-            console.log("🗺️ Step2: featureMember", featureMember);
             pos = featureMember?.GeoObject?.Point?.pos;
           }
         }
 
         if (!pos && r?.coordinates) {
           // Maybe coordinates are directly in result
-          console.log("🗺️ Step2: using direct coordinates", r.coordinates);
           if (Array.isArray(r.coordinates) && r.coordinates.length === 2) {
             coords.push([r.coordinates[0], r.coordinates[1]]);
             continue;
           }
         }
 
-        console.log("🗺️ Step2: found pos", pos);
         if (typeof pos === "string") {
           const parts = pos.split(/\s+/).map((x: string) => parseFloat(x));
           if (parts.length === 2 && parts.every((n: number) => Number.isFinite(n))) {
             // Yandex returns "lon lat" string; keep [lon, lat]
             coords.push([parts[0], parts[1]]);
-            console.log("🗺️ Step2: added coordinate", [parts[0], parts[1]]);
           }
         }
       }
-      console.log("🗺️ Step2: final extracted markers", coords);
       return coords;
     } catch (e) {
-      console.warn("extractMarkersFromSuggest error", e);
       return [];
     }
   };
@@ -307,20 +296,15 @@ export const Step2 = ({
     const avgLon = markers.reduce((sum, [lon]) => sum + lon, 0) / markers.length;
     const avgLat = markers.reduce((sum, [, lat]) => sum + lat, 0) / markers.length;
 
-    console.log("🗺️ Step2: calculated center", [avgLon, avgLat]);
     return [avgLon, avgLat];
   };
 
   // When new results arrive, center map to markers
   useEffect(() => {
-    console.log("🗺️ Step2: search data changed", searchAddress.data);
     const ms = extractMarkersFromSuggest();
     const center = calculateMarkersCenter(ms);
     if (center) {
-      console.log("🗺️ Step2: setting map center to", center);
       setMapCenter(center);
-    } else {
-      console.log("🗺️ Step2: no center calculated, markers:", ms);
     }
   }, [searchAddress.data]);
 
@@ -328,7 +312,6 @@ export const Step2 = ({
   const handleYandexSearch = (locationIndex: number) => {
     const searchValue = locations[locationIndex]?.location;
     if (searchValue?.trim()) {
-      console.log("🗺️ Step2: searching with", { query: searchValue, city: city });
       setShowYandexResults((prev) => ({ ...prev, [locationIndex]: true }));
       searchAddress.mutate({
         query: searchValue,
@@ -381,7 +364,6 @@ export const Step2 = ({
           setGeocodeLoading((prev) => ({ ...prev, [locationIndex]: false }));
         },
         onError: (err) => {
-          console.error("reverseGeocode error", err);
           const newLocations = [...locations];
           if (!newLocations[locationIndex]) {
             newLocations[locationIndex] = { location: "", address: "" };
@@ -440,12 +422,6 @@ export const Step2 = ({
     // Сохраняем координаты для isFastMeet
     if (isFastMeet && result.coordinates) {
       newLocations[locationIndex].coordinates = result.coordinates;
-      console.log(
-        "🗺️ FastMeet: сохранили координаты",
-        result.coordinates,
-        "для места",
-        title,
-      );
     }
 
     setLocations(newLocations);
@@ -553,14 +529,12 @@ export const Step2 = ({
       // Проверяем основные поля (обязательны для всех)
       const hasBasicInfo = loc.location?.trim() && loc.address?.trim();
       if (!hasBasicInfo) {
-        console.log(`❌ Location ${idx}: Missing basic info`, loc);
         return false;
       }
 
       // Для isFastMeet: обязательно должен быть выбран адрес из карты (isCustom=true) И время
       if (isFastMeet) {
         if (!loc.isCustom) {
-          console.log(`❌ FastMeet Location ${idx}: Must be selected from map`, loc);
           return false;
         }
 
@@ -569,22 +543,16 @@ export const Step2 = ({
         const hasEndTime = loc.endtime?.trim();
 
         if (!hasStartTime || !hasEndTime) {
-          console.log(`❌ FastMeet Location ${idx}: Missing time`, {
-            hasStartTime: !!hasStartTime,
-            hasEndTime: !!hasEndTime,
-          });
           return false;
         }
 
         // Проверяем валидность времени
         if (!isValidTime(loc.starttime) || !isValidTime(loc.endtime)) {
-          console.log(`❌ FastMeet Location ${idx}: Invalid time format`);
           return false;
         }
 
         // Проверяем порядок времени
         if (!isStartBeforeEnd(loc.starttime, loc.endtime)) {
-          console.log(`❌ FastMeet Location ${idx}: Start time must be before end time`);
           return false;
         }
 
@@ -595,13 +563,6 @@ export const Step2 = ({
       const hasSelectedItem = selectedItems.some((item) => item.index === idx);
       const hasStartTime = loc.starttime?.trim();
       const hasEndTime = loc.endtime?.trim();
-
-      console.log(`🔍 Location ${idx}:`, {
-        hasSelectedItem,
-        hasStartTime: !!hasStartTime,
-        hasEndTime: !!hasEndTime,
-        location: loc,
-      });
 
       if (hasSelectedItem) {
         // Для мест из афиши: время не обязательно, но если указано - должно быть валидным
@@ -638,13 +599,6 @@ export const Step2 = ({
 
     setIsDisabled(!valid);
   }, [locations, selectedItems, city, isFastMeet, requireCity]);
-
-  console.log("🔍 Step2 Debug:", {
-    selectedItems,
-    locations,
-    isDisabled,
-    city,
-  });
 
   return (
     <>
@@ -732,7 +686,6 @@ export const Step2 = ({
                         }
                         onGeolocationSuccess={(coords) => {
                           // При успешной геолокации просто центрируем карту, но не выбираем адрес
-                          console.log("🗺️ Step2: геолокация получена", coords);
                           // Можно добавить логику для центрирования карты или другие действия
                         }}
                         markers={extractMarkersFromSuggest()}

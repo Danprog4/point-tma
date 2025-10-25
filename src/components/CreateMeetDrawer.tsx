@@ -30,7 +30,7 @@ export function CreateMeetDrawer({
   }, [open, type]);
 
   const handleEventTypeSelect = (eventType: string) => {
-    console.log("Selected event type:", eventType);
+    // Event type selected
   };
 
   const getSubType = (type: string) => {

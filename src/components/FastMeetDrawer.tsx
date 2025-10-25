@@ -111,7 +111,6 @@ export default function FastMeetDrawer({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!organizerUser) {
-      console.log("no user in handleTouchStart");
       return;
     }
     touchStartXRef.current[organizerUser.id] = e.touches[0].clientX;
@@ -121,7 +120,6 @@ export default function FastMeetDrawer({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!organizerUser) {
-      console.log("no user in handleTouchMove");
       return;
     }
     touchEndXRef.current[organizerUser.id] = e.touches[0].clientX;
@@ -129,7 +127,6 @@ export default function FastMeetDrawer({
 
   const handleTouchEnd = () => {
     if (!organizerUser) {
-      console.log("no user in handleTouchEnd");
       return;
     }
     const startX = touchStartXRef.current[organizerUser.id] ?? 0;

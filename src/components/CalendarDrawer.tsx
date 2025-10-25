@@ -119,8 +119,6 @@ export default function CalendarDrawer({
     onOpenChange(false);
   };
 
-  console.log(events, "events");
-
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>
@@ -145,8 +143,6 @@ export default function CalendarDrawer({
                       (q) =>
                         q.id === Number(event.eventId) && q.category === event.eventType,
                     );
-
-                console.log(event.isPlanned);
 
                 const hasInactiveTicket = !!user?.inventory?.some(
                   (t: any) =>

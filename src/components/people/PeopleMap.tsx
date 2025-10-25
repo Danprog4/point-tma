@@ -88,17 +88,6 @@ export const PeopleMap = ({
     }
 
     const isUsersMeet = meet.userId === currentUser?.id;
-    console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
-      id: meet.id,
-      name: meet.name,
-      description: meet.description,
-      coordinates: meet.coordinates,
-      author: meet.author,
-      createdAt: meet.createdAt,
-      locations: meet.locations,
-      isUsersMeet,
-      meetingsAtSameLocation: meetingsAtSameLocation.length,
-    });
   };
 
   const handleButtonClick = (meet: FastMeet) => {
@@ -107,15 +96,6 @@ export const PeopleMap = ({
     setCameFromList(false); // Reset flag when coming from button
 
     const isUsersMeet = meet?.userId === currentUser?.id;
-    console.log(`${isUsersMeet ? "🟢" : "🟣"} Клик на быструю встречу:`, {
-      id: meet.id,
-      name: meet.name,
-      description: meet.description,
-      coordinates: meet.coordinates,
-      createdAt: meet.createdAt,
-      locations: meet.locations,
-      isUsersMeet,
-    });
   };
 
   // Handle meeting selection from list
@@ -278,47 +258,6 @@ export const PeopleMap = ({
   // Get current user location for centering and showing blue dot
   const currentLocation = currentUser?.coordinates as [number, number] | undefined;
 
-  // Debug info
-  console.log("🗺️ PeopleMap Debug:", {
-    currentUser: currentUser?.photo,
-
-    currentLocation,
-    fastMeetsWithCoords: fastMeets?.filter((m) => m?.coordinates).length,
-    totalMarkers: allMarkers.length,
-    userFastMeet: userFastMeet
-      ? {
-          id: userFastMeet.id,
-          name: userFastMeet.name,
-          isOrganizer: userFastMeet.userId === currentUser?.id,
-          participationStatus: allParticipants?.find(
-            (p) => p.userId === currentUser?.id && p.meetId === userFastMeet.id,
-          )?.status,
-        }
-      : null,
-    buttonConfig: {
-      text: buttonConfig.text,
-      className: buttonConfig.className,
-    },
-  });
-
-  // Debug markers with userPhoto
-  console.log("🗺️ PeopleMap Markers Debug:", {
-    fastMeetMarkers: fastMeetMarkers.map((marker) => ({
-      coordinates: marker.coordinates,
-      label: marker.label,
-      hasUserPhoto: !!marker.userPhoto,
-      userPhoto: marker.userPhoto,
-      color: marker.color,
-    })),
-    allMarkers: allMarkers.map((marker) => ({
-      coordinates: marker.coordinates,
-      label: marker.label,
-      hasUserPhoto: !!marker.userPhoto,
-      userPhoto: marker.userPhoto,
-      color: marker.color,
-    })),
-  });
-
   return (
     <div className={className}>
       <YandexMap
@@ -333,7 +272,6 @@ export const PeopleMap = ({
         clusterGridSize={80} // Размер сетки кластеризации в пикселях
         onGeolocationSuccess={(coords) => {
           // This could trigger saving user location to backend
-          console.log("🔵 User location detected for blue dot:", coords);
         }}
       />
 

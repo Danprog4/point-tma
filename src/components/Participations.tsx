@@ -51,8 +51,6 @@ export const Participations = ({
     };
   });
 
-  console.log(userRating, "userRating");
-
   useEffect(() => {
     if (userRating && userRating.length > 0) {
       const ratingsMap = userRating.reduce(
@@ -88,8 +86,6 @@ export const Participations = ({
       });
     }
   };
-
-  console.log(participantsWithUsers, "participants");
 
   const isMobile = usePlatform();
 

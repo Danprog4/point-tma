@@ -82,7 +82,6 @@ export default function KeyDrawer({
             <button
               onClick={() => {
                 // TODO: Переход в магазин
-                console.log("Переход в магазин");
               }}
               className="flex w-full items-center justify-center space-x-2 rounded-2xl bg-gradient-to-r from-[#9924FF] to-[#7C1ED9] px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:from-[#7C1ED9] hover:to-[#5A1A9E] hover:shadow-xl"
             >

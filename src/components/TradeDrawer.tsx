@@ -206,8 +206,6 @@ export default function TradeDrawer({
     ).length;
   };
 
-  console.log(cameFromGiveOrTrade, "cameFromGiveOrTrade");
-
   const handleBackClick = () => {
     if (showConfirmation) {
       // From confirmation back to inventory
@@ -283,12 +281,9 @@ export default function TradeDrawer({
       setIsTradeSent(true);
       toast.success("Запрос на обмен успешно отправлен!");
     } catch (error) {
-      console.error("Error sending trade:", error);
       toast.error("Ошибка при отправке запроса на обмен");
     }
   };
-
-  console.log(selectedItems, "selectedItems");
 
   return (
     <Drawer.Root open={open} onOpenChange={handleDrawerClose}>

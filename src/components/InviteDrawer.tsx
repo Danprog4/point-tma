@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { shareURL } from "@telegram-apps/sdk";
 import { ArrowLeft, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Drawer } from "vaul";
 import { useTRPC } from "~/trpc/init/react";
 import { ShareIcon } from "./Icons/Share";
@@ -36,18 +36,6 @@ export default function InviteDrawer({
   const trpc = useTRPC();
   const logShareMeet = useMutation(trpc.main.logShareMeet.mutationOptions());
   const [friendName, setFriendName] = useState("");
-
-  // Log friends data only when it actually changes to avoid spam in the console
-  useEffect(() => {
-    if (friends && friends.length) {
-      console.log(friends, "friends");
-    }
-  }, [friends]);
-
-  // Log selectedIds changes only when the value actually updates
-  useEffect(() => {
-    console.log(selectedIds, "selectedIds");
-  }, [selectedIds]);
 
   const link = useMemo((): string => {
     return `https://t.me/pointTMA_bot/meet${meeting?.id}?startapp=ref_${user?.id || ""}`;

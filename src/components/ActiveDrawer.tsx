@@ -28,7 +28,6 @@ export default function ActiveDrawer({
   );
 
   const handleActivateTicket = () => {
-    console.log("activateQuest", id, name);
     setIsActive(true);
     queryClient.setQueryData(trpc.event.getMyEvents.queryKey(), (old: any) => {
       if (!old) return old;

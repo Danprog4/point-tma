@@ -19,7 +19,6 @@ export default function FilterDrawer({
   const [theme, setTheme] = useState("Все");
   const [city, setCity] = useState("Все");
 
-  console.log(type);
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Trigger asChild>{children}</Drawer.Trigger>

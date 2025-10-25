@@ -26,7 +26,6 @@ function TimePicker({
         placeholder={placeholder}
         value={value}
         onChange={(e) => {
-          console.log(e.value);
           setTime(e.value as Date);
         }}
       />

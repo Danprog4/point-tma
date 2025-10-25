@@ -4,11 +4,9 @@ import { ArrowLeft, Clock, Repeat2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
-import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImage } from "~/lib/utils/getImage";
 import { getImageUrl } from "~/lib/utils/getImageURL";
-import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 
 type Trade = {
@@ -32,8 +30,6 @@ interface MyTradesProps {
 }
 
 export default function MyTrades({ onBack }: MyTradesProps) {
-  useScrollRestoration("my-trades");
-
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const isMobile = usePlatform();
@@ -190,11 +186,6 @@ export default function MyTrades({ onBack }: MyTradesProps) {
     }
   };
 
-  const handleBack = () => {
-    saveScrollPosition("my-trades");
-    onBack();
-  };
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -216,7 +207,7 @@ export default function MyTrades({ onBack }: MyTradesProps) {
         data-mobile={isMobile}
         className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
       >
-        <button onClick={handleBack} className="flex h-6 w-6 items-center justify-center">
+        <button onClick={onBack} className="flex h-6 w-6 items-center justify-center">
           <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
         </button>
         <div className="flex items-center justify-center">

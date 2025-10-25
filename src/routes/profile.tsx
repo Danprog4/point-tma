@@ -40,7 +40,7 @@ import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
-import { getScrollPosition, saveScrollPosition } from "~/lib/utils/scrollPosition";
+import { saveScrollPosition } from "~/lib/utils/scrollPosition";
 import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile")({
   component: RouteComponent,
@@ -87,21 +87,6 @@ function RouteComponent() {
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Восстанавливаем скролл при возврате из других страниц
-  useEffect(() => {
-    if (!isTradesPage && !isFriendsPage && !isSubscribersPage) {
-      const savedPosition = getScrollPosition("profile");
-      if (savedPosition !== null) {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, savedPosition);
-        });
-        setTimeout(() => {
-          window.scrollTo(0, savedPosition);
-        }, 100);
-      }
-    }
-  }, [isTradesPage, isFriendsPage, isSubscribersPage]);
 
   const allPhotos = useMemo(() => {
     return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];

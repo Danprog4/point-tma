@@ -538,7 +538,7 @@ export const OnboardingPage = () => {
 
                 <div className="relative mb-4 w-full">
                   <Selecter
-                    cities={["Москва", "Санкт-Петербург", "Новосибирск"]}
+                    cities={["Москва", "Санкт-Петербург", "Новосибирск", "Алматы"]}
                     setValue={(value) => setCity(value)}
                   />
                 </div>

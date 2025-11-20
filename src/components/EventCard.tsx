@@ -1,9 +1,10 @@
+import { Calendar, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 
 export const EventCard = ({ event }: { event: any }) => {
   return (
-    <div className="group w-45 flex-shrink-0 overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:shadow-xl">
-      <div className={`relative h-32 overflow-hidden ${event.bg || ""}`}>
+    <div className="group w-[200px] flex-shrink-0 overflow-hidden rounded-[24px] bg-white transition-all duration-300 hover:-translate-y-1">
+      <div className={`relative h-[160px] overflow-hidden rounded-[24px] ${event.bg || "bg-gray-100"}`}>
         {event.image && (
           <>
             <img
@@ -13,35 +14,47 @@ export const EventCard = ({ event }: { event: any }) => {
                   : getImageUrl(event.image)
               }
               alt={event.title}
-              className="h-full w-full rounded-t-2xl object-cover transition-transform group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-90" />
           </>
         )}
-        <div className="absolute bottom-2 left-2 flex gap-1.5">
+        <div className="absolute top-3 left-3">
           {event.category && (
-            <span className="rounded-lg bg-white/95 px-2.5 py-1 text-xs font-bold text-gray-900 shadow-md backdrop-blur-sm">
+            <span className="inline-block rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
               {event.category}
             </span>
           )}
+        </div>
+        <div className="absolute right-3 bottom-3 left-3 flex items-end justify-between">
           {event.price && (
-            <span className="rounded-lg bg-purple-600 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-black shadow-sm backdrop-blur-sm">
               {event.price}
             </span>
           )}
         </div>
       </div>
-      <div className="p-3">
-        <h3 className="mb-1 leading-tight font-semibold text-gray-900">
-          {event.title && event.title.length > 10
-            ? event.title.slice(0, 20) + "..."
-            : event.title}
+      <div className="pt-3 pb-2 px-1">
+        <h3 className="mb-1.5 line-clamp-2 h-[40px] text-[15px] leading-[20px] font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+          {event.title}
         </h3>
-        {event.description && (
-          <p className="line-clamp-2 text-xs text-gray-500">
-            {event.description.slice(0, 40) + "..."}
-          </p>
-        )}
+        <div className="flex flex-col gap-1.5">
+          {event.date && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <Calendar className="h-3.5 w-3.5 text-gray-400" />
+              <span>{event.date}</span>
+            </div>
+          )}
+          {event.location && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <MapPin className="h-3.5 w-3.5 text-gray-400" />
+              <span className="line-clamp-1">{event.location}</span>
+            </div>
+          )}
+          {!event.date && !event.location && event.description && (
+            <p className="line-clamp-2 h-8 text-xs text-gray-500">{event.description}</p>
+          )}
+        </div>
       </div>
     </div>
   );

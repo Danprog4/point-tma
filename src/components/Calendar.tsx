@@ -1,7 +1,8 @@
-import { AnimatePresence } from "framer-motion";
-import { Calendar1 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Calendar1, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FullCalendar } from "./ui/calendar";
+
 export const Calendar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
@@ -32,22 +33,17 @@ export const Calendar = () => {
     for (let monthOffset = 0; monthOffset <= 6; monthOffset++) {
       const year = today.getFullYear();
       const month = today.getMonth() + monthOffset;
-
       const targetDate = new Date(year, month, 1);
       const targetYear = targetDate.getFullYear();
       const targetMonth = targetDate.getMonth();
-
       const daysInMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
 
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(targetYear, targetMonth, day);
-
         if (monthOffset === 0 && day < today.getDate()) {
           continue;
         }
-
         const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-
         days.push({
           day: day.toString(),
           weekday: weekdays[date.getDay()],
@@ -58,7 +54,6 @@ export const Calendar = () => {
         });
       }
     }
-
     return days;
   };
 
@@ -67,7 +62,7 @@ export const Calendar = () => {
   const handleScroll = () => {
     if (scrollRef.current) {
       const scrollLeft = scrollRef.current.scrollLeft;
-      const dayWidth = 48 + 8;
+      const dayWidth = 56; // Width + gap
       const visibleDayIndex = Math.round(
         (scrollLeft + scrollRef.current.clientWidth / 2) / dayWidth,
       );
@@ -93,28 +88,44 @@ export const Calendar = () => {
       );
 
       if (todayIndex !== -1) {
-        const dayWidth = 48 + 8;
-        const scrollPosition = todayIndex * dayWidth - scrollRef.current.clientWidth / 2;
+        const dayWidth = 56;
+        const scrollPosition =
+          todayIndex * dayWidth - scrollRef.current.clientWidth / 2 + 28;
         scrollRef.current.scrollLeft = Math.max(0, scrollPosition);
       }
     }
-  }, [allDays]);
+  }, []);
 
   return (
-    <div className="w-full overflow-x-hidden px-4">
-      {isOpen && <div className="fixed inset-0" onClick={() => setIsOpen(false)}></div>}
-      <div className="mb-2 flex items-center justify-start">
-        <h3 className="text-sm font-medium text-gray-600">
-          {months[currentMonth]} {currentYear}
-        </h3>
-        <Calendar1
-          className="ml-2 h-4 w-4 text-gray-600"
+    <div className="w-full overflow-x-hidden px-0">
+      {isOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+      )}
+
+      <div className="mb-4 flex items-center justify-between px-4">
+        <button
           onClick={() => setIsOpen(!isOpen)}
-        />
+          className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-1.5 transition-colors active:scale-95"
+        >
+          <span className="text-base font-bold text-gray-900">
+            {months[currentMonth]} {currentYear}
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="rounded-full p-2 hover:bg-gray-100"
+        >
+          <Calendar1 className="h-5 w-5 text-purple-600" />
+        </button>
       </div>
+
       <div
         ref={scrollRef}
-        className="scrollbar-hidden mb-2 flex gap-2 overflow-x-auto"
+        className="scrollbar-hidden mb-6 flex gap-3 overflow-x-auto px-4 pb-2"
         onScroll={handleScroll}
       >
         {allDays.map((date, idx) => {
@@ -124,28 +135,41 @@ export const Calendar = () => {
             date.date.getFullYear() === new Date().getFullYear();
 
           return (
-            <div
+            <motion.div
               key={idx}
-              className="flex w-10 flex-shrink-0 flex-col items-center rounded-lg p-1"
+              initial={false}
+              animate={{
+                scale: isToday ? 1.05 : 1,
+              }}
+              className={`flex h-[70px] w-[48px] flex-shrink-0 flex-col items-center justify-center gap-1 rounded-[16px] border transition-colors ${
+                isToday
+                  ? "border-purple-600 bg-purple-600 text-white shadow-lg shadow-purple-200"
+                  : "border-transparent bg-gray-50 text-gray-600"
+              }`}
             >
               <span
-                className={`text-lg font-medium ${isToday ? "text-red-500" : "text-gray-900"}`}
-              >
-                {date.day}
-              </span>
-              <span
-                className={`text-xs font-bold ${
-                  isToday ? "text-red-500" : "text-gray-500"
+                className={`text-[10px] font-medium uppercase ${
+                  isToday ? "text-white/80" : "text-gray-400"
                 }`}
               >
                 {date.weekday}
               </span>
-            </div>
+              <span
+                className={`text-xl font-bold ${isToday ? "text-white" : "text-gray-900"}`}
+              >
+                {date.day}
+              </span>
+            </motion.div>
           );
         })}
       </div>
+
       <AnimatePresence mode="wait">
-        {isOpen && <FullCalendar key="calendar" />}
+        {isOpen && (
+          <div className="relative z-50">
+            <FullCalendar key="calendar" />
+          </div>
+        )}
       </AnimatePresence>
     </div>
   );

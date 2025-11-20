@@ -62,7 +62,9 @@ function Home() {
   function ConferenceCard({ conf }: { conf: any }) {
     return (
       <div className="group relative flex w-[160px] flex-col gap-3 overflow-hidden rounded-2xl transition-all hover:scale-[1.02]">
-        <div className={`relative h-[220px] w-full overflow-hidden rounded-2xl ${conf.bg || "bg-gray-100"}`}>
+        <div
+          className={`relative h-[220px] w-full overflow-hidden rounded-2xl ${conf.bg || "bg-gray-100"}`}
+        >
           {conf.image && (
             <img
               src={conf.image}
@@ -71,22 +73,22 @@ function Home() {
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          
+
           <div className="absolute top-3 left-3">
             <span className="rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
               Конференция
             </span>
           </div>
-          
+
           <div className="absolute right-3 bottom-3 left-3">
-            <h3 className="line-clamp-3 text-sm font-bold text-white leading-tight">
+            <h3 className="line-clamp-3 text-sm leading-tight font-bold text-white">
               {conf.title}
             </h3>
             {conf.date && (
-               <div className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-white/80">
-                 <CalendarIcon className="h-3 w-3" />
-                 <span>{conf.date}</span>
-               </div>
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-white/80">
+                <CalendarIcon className="h-3 w-3" />
+                <span>{conf.date}</span>
+              </div>
             )}
           </div>
         </div>
@@ -128,7 +130,9 @@ function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="text-[32px] font-extrabold tracking-tight text-gray-900">Афиша</h1>
+          <h1 className="text-[32px] font-extrabold tracking-tight text-gray-900">
+            Афиша
+          </h1>
         </motion.div>
 
         <motion.div
@@ -145,7 +149,7 @@ function Home() {
                 placeholder="Поиск событий, мест..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-12 w-full rounded-2xl border-none bg-white pl-11 pr-4 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-100 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-11 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-100 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
@@ -174,48 +178,48 @@ function Home() {
 
         <div className="w-full flex-1 overflow-x-hidden">
           <div className="mb-8">
-             <div className="flex items-center gap-4 px-5 pb-2">
-               <div className="w-[140px]">
-                  <Selecter height="h-10" width="w-full" placeholder="Алматы" />
-               </div>
+            <div className="flex items-center gap-4 px-5 pb-2">
+              <div className="w-[140px]">
+                <Selecter height="h-10" width="w-full" placeholder="Алматы" />
+              </div>
 
-                <div className="scrollbar-hidden flex flex-1 gap-2 overflow-x-auto py-2">
-                  {[
-                    { emoji: "🔥", name: "Популярное" },
-                    { emoji: "🆕", name: "Новое" },
-                    { emoji: "🎬", name: "Кино" },
-                    { emoji: "💃", name: "Вечеринки" },
-                    { emoji: "🎤", name: "Конференции" },
-                    { emoji: "🤝", name: "Нетворкинг" },
-                    { emoji: "🧩", name: "Квесты" },
-                  ].map((chip) => (
-                    <Link
-                      key={chip.name}
-                      to="/all/$name"
-                      params={{ name: chip.name }}
-                      preload="viewport"
-                      className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                        selectedFilter === chip.name
-                          ? "bg-gray-900 text-white shadow-md"
-                          : "bg-white text-gray-600 shadow-sm hover:bg-gray-50"
-                      }`}
-                      onClick={() => {
-                        setSelectedFilter(chip.name);
-                      }}
-                    >
-                      <span>{chip.emoji}</span>
-                      <span>{chip.name}</span>
-                    </Link>
-                  ))}
-                </div>
-             </div>
+              <div className="scrollbar-hidden flex flex-1 gap-2 overflow-x-auto py-2">
+                {[
+                  { emoji: "🔥", name: "Популярное" },
+                  { emoji: "🆕", name: "Новое" },
+                  { emoji: "🎬", name: "Кино" },
+                  { emoji: "💃", name: "Вечеринки" },
+                  { emoji: "🎤", name: "Конференции" },
+                  { emoji: "🤝", name: "Нетворкинг" },
+                  { emoji: "🧩", name: "Квесты" },
+                ].map((chip) => (
+                  <Link
+                    key={chip.name}
+                    to="/all/$name"
+                    params={{ name: chip.name }}
+                    preload="viewport"
+                    className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      selectedFilter === chip.name
+                        ? "bg-gray-900 text-white shadow-md"
+                        : "bg-white text-gray-600 shadow-sm hover:bg-gray-50"
+                    }`}
+                    onClick={() => {
+                      setSelectedFilter(chip.name);
+                    }}
+                  >
+                    <span>{chip.emoji}</span>
+                    <span>{chip.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="relative mb-8 w-full px-5">
             <div className="group relative h-[280px] w-full overflow-hidden rounded-[32px] shadow-2xl shadow-gray-200">
               <video
                 src="https://cdn.pixabay.com/video/2022/03/16/110945-689949688_large.mp4"
-                className="pointer-events-none absolute top-0 left-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="pointer-events-none absolute top-0 left-0 z-[-1] h-full w-full object-cover transition-transform select-none group-hover:scale-105"
                 autoPlay
                 muted
                 loop
@@ -228,8 +232,8 @@ function Home() {
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute right-0 bottom-0 left-0 p-6">
-                <h2 className="mb-2 text-2xl font-bold text-white leading-tight">
-                  Динамо Минск vs <br/> Динамо Москва
+                <h2 className="mb-2 text-2xl leading-tight font-bold text-white">
+                  Динамо Минск vs <br /> Динамо Москва
                 </h2>
                 <div className="flex items-center gap-4 text-sm font-medium text-white/90">
                   <span className="flex items-center gap-1.5">
@@ -245,8 +249,8 @@ function Home() {
           </div>
 
           <Calendar />
-          
-          <div className="mx-auto mb-8 mt-4 flex w-[160px] items-center justify-center">
+
+          <div className="mx-auto mt-4 mb-8 flex w-[160px] items-center justify-center">
             <Selecter
               height="h-9"
               width="w-full"
@@ -377,7 +381,7 @@ function Home() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 via-transparent to-blue-600/30 opacity-50" />
               <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
-              
+
               <Link
                 to="/all/$name"
                 params={{ name: "Квесты" }}
@@ -387,7 +391,11 @@ function Home() {
               >
                 <div className="flex flex-col gap-2">
                   <span className="text-lg font-medium text-purple-300">Приключения</span>
-                  <span className="text-3xl font-extrabold leading-tight">Квесты для<br/>компании</span>
+                  <span className="text-3xl leading-tight font-extrabold">
+                    Квесты для
+                    <br />
+                    компании
+                  </span>
                   <div className="mt-4 flex items-center gap-2 text-sm font-medium text-white/70 group-hover:text-white">
                     <span>Выбрать квест</span>
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -400,7 +408,7 @@ function Home() {
             </motion.div>
           </div>
 
-           {/* Quests List */}
+          {/* Quests List */}
           <div className="mb-10">
             <div className="mb-5 flex items-center justify-between px-5">
               <h2 className="text-[22px] font-bold text-gray-900">Квесты</h2>

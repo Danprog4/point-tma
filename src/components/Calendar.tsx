@@ -125,7 +125,7 @@ export const Calendar = () => {
 
       <div
         ref={scrollRef}
-        className="scrollbar-hidden mb-6 flex gap-3 overflow-x-auto px-4 pb-2"
+        className="scrollbar-hidden flex gap-3 overflow-x-auto px-4 pb-2"
         onScroll={handleScroll}
       >
         {allDays.map((date, idx) => {

@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
 import { List, Map } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
@@ -157,7 +156,7 @@ function RouteComponent() {
           />
 
           {/* View Toggle */}
-          <div className="shrink-0 px-4">
+          <div className="px-4">
             <div className="relative flex h-12 w-full items-center rounded-2xl bg-white p-1 shadow-sm ring-1 ring-gray-200">
               <div
                 className={cn(
@@ -190,49 +189,36 @@ function RouteComponent() {
             </div>
           </div>
 
-          <AnimatePresence mode="wait">
-            {isList ? (
-              <motion.div
-                key="list"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="scrollbar-hidden overflow-hidden px-4"
-              >
-                <UsersList
+          {isList ? (
+            <div key="list" className="scrollbar-hidden overflow-hidden px-4">
+              <UsersList
+                users={sortedUsers || []}
+                galleryData={galleryData}
+                isFavorite={isFavorite}
+                onFavoriteClick={(userId) =>
+                  handleToFavorites(userId, isFavorite(userId))
+                }
+                onMoreClick={handleUserMoreClick}
+              />
+            </div>
+          ) : (
+            <div
+              key="map"
+              className="w-full flex-1 overflow-hidden overscroll-none px-4 pb-24" // Fill remaining space
+            >
+              <div className="h-full w-full overflow-hidden rounded-3xl shadow-md ring-1 ring-gray-200">
+                <PeopleMap
                   users={sortedUsers || []}
-                  galleryData={galleryData}
-                  isFavorite={isFavorite}
-                  onFavoriteClick={(userId) =>
-                    handleToFavorites(userId, isFavorite(userId))
-                  }
-                  onMoreClick={handleUserMoreClick}
+                  currentUser={user}
+                  fastMeets={fastMeets || []}
+                  className="h-full w-full"
+                  preOpenFastMeetId={preOpenFastMeetId ?? undefined}
+                  preOpenCameFromList={cameFromList ?? false}
+                  isFetchingMore={isFetchingMore}
                 />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="map"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="w-full flex-1 overflow-hidden overscroll-none px-4 pb-24" // Fill remaining space
-              >
-                <div className="h-full w-full overflow-hidden rounded-3xl shadow-md ring-1 ring-gray-200">
-                  <PeopleMap
-                    users={sortedUsers || []}
-                    currentUser={user}
-                    fastMeets={fastMeets || []}
-                    className="h-full w-full"
-                    preOpenFastMeetId={preOpenFastMeetId ?? undefined}
-                    preOpenCameFromList={cameFromList ?? false}
-                    isFetchingMore={isFetchingMore}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
+          )}
         </div>
 
         <PeopleDrawer

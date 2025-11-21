@@ -216,10 +216,7 @@ function RouteComponent() {
                   preload="viewport"
                   onClick={() => saveScrollPosition("meetings")}
                 >
-                  <motion.div
-                    className="relative h-[200px] w-[280px] flex-shrink-0 overflow-hidden rounded-3xl bg-white shadow-md"
-                    whileTap={{ scale: 0.98 }}
-                  >
+                  <div className="relative h-[200px] w-[280px] flex-shrink-0 overflow-hidden rounded-3xl bg-white shadow-md transition-transform duration-200 active:scale-[0.98]">
                     <img
                       src={getImageUrl(event.image!)}
                       alt=""
@@ -237,7 +234,7 @@ function RouteComponent() {
                         {event.name || "Без названия"}
                       </h3>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -255,13 +252,7 @@ function RouteComponent() {
                   onClick={() => saveScrollPosition("meetings")}
                   className="block"
                 >
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    whileTap={{ scale: 0.98 }}
-                    className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100"
-                  >
+                  <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-transform duration-200 active:scale-[0.98]">
                     <div className="flex gap-4">
                       {/* Left: Image */}
                       <div className="relative h-32 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
@@ -318,7 +309,7 @@ function RouteComponent() {
                       </div>
                       <span className="text-xs font-medium text-violet-600">15:30</span>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               ))}
             </div>

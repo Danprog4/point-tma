@@ -1,5 +1,4 @@
 import { useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { Heart, MoreHorizontal, MapPin } from "lucide-react";
 import { usePeopleGallery } from "~/hooks/usePeopleGallery";
 import { saveScrollPosition } from "~/lib/utils/scrollPosition";
@@ -85,13 +84,9 @@ export const UserCard = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileTap={{ scale: 0.98 }}
+    <div
       onClick={handleCardClick}
-      className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md"
+      className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md active:scale-[0.98] transition-transform duration-200"
     >
       {/* Photo Section */}
       <div 
@@ -110,24 +105,22 @@ export const UserCard = ({
         
         {/* Top Actions */}
         <div className="absolute top-4 right-4 flex gap-2">
-             <motion.button
-                whileTap={{ scale: 0.9 }}
+             <button
                 onClick={handleFavoriteClick}
                 className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md transition-colors",
+                    "flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md transition-colors active:scale-90 transition-transform",
                     isFavorite ? "bg-red-500/90 text-white" : "bg-black/20 text-white hover:bg-black/30"
                 )}
              >
                 <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
-             </motion.button>
+             </button>
              
-             <motion.button
-                whileTap={{ scale: 0.9 }}
+             <button
                 onClick={handleMoreClick}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md hover:bg-black/30"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md hover:bg-black/30 active:scale-90 transition-transform"
              >
                 <MoreHorizontal className="h-5 w-5" />
-             </motion.button>
+             </button>
         </div>
 
         {/* Bottom Info Overlay */}
@@ -179,6 +172,6 @@ export const UserCard = ({
             )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

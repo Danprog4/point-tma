@@ -34,7 +34,7 @@ export const Navbar = () => {
   return (
     <>
       {isRender ? (
-        <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white px-4 py-2">
+        <div className="fixed right-0 bottom-0 left-0 z-[1000000] border-t border-gray-200 bg-white px-4 py-2">
           <div className="grid grid-cols-5 gap-2">
             <Link to="/" className="flex flex-col items-center py-2" preload="viewport">
               <div className="mb-1 h-6 w-6">

@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { Settings, Search } from "lucide-react";
 import { useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { Calendar } from "~/components/Calendar";
@@ -16,6 +15,7 @@ import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
 import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { usePlatform } from "~/hooks/usePlatform";
+import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
 
@@ -122,231 +122,212 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto bg-white pt-14 pb-30 data-[mobile=true]:pt-39"
+      className="min-h-screen bg-gray-50/50 pt-14 pb-30 data-[mobile=true]:pt-39"
     >
       <Header />
-      <PullToRefresh onRefresh={handleRefresh} className="text-white">
-        <motion.div
-          className="flex items-center justify-between px-4 py-5"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-black">Квесты</h1>
-            <Selecter width="20px" height="20px" />
-          </div>
-          <motion.div whileHover={{ rotate: 90 }} transition={{ duration: 0.3 }}>
-            <Settings className="h-5 w-5 cursor-pointer text-black" />
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className="mb-4 flex items-center justify-center gap-6 px-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            type="text"
-            placeholder="Поиск квестов"
-            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black transition-all placeholder:text-black/50 focus:border-purple-600 focus:ring-2 focus:ring-purple-600/20 focus:outline-none"
-          />
-
-          <FilterDrawer
-            open={isOpen}
-            onOpenChange={(open) => {
-              if (open) {
-                lockBodyScroll();
-              } else {
-                unlockBodyScroll();
-              }
-              setIsOpen(open);
-            }}
-          >
-            <motion.div
-              className="flex min-h-8 min-w-8 items-center justify-center rounded-lg bg-[#9924FF]"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <WhiteFilter />
-            </motion.div>
-          </FilterDrawer>
-        </motion.div>
-
-        <Calendar />
-
-        <div className="scrollbar-hidden mb-4 flex w-full flex-1 items-center gap-3 overflow-x-auto px-4">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter ?? "")}
-              className={`rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap shadow-sm transition-all ${
-                activeFilter === filter
-                  ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-md"
-                  : "border border-gray-200 bg-white text-gray-700 hover:border-purple-200 hover:bg-purple-50"
-              }`}
-            >
-              {filter}
+      <PullToRefresh onRefresh={handleRefresh} className={cn("min-h-screen")}>
+        <div className="flex flex-col space-y-6">
+          {/* Title */}
+          <div className="flex items-center justify-between px-5 pt-4">
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Квесты
+              </h1>
+              <Selecter width="24px" height="24px" />
+            </div>
+            <button className="rounded-full p-2 transition-colors hover:bg-gray-100 active:scale-90 transition-transform">
+              <Settings className="h-6 w-6 text-gray-900" />
             </button>
-          ))}
-        </div>
+          </div>
 
-        <div className="space-y-4">
-          {userQuestsData && userQuestsData.length > 0 && (
-            <div className="mb-6">
-              <h2 className="mb-4 px-4 text-xl font-bold text-gray-900">
-                Активные квесты
-              </h2>
-              <div className="space-y-3">
-                {userQuestsData
-                  .filter(
-                    (quest) =>
-                      (activeFilter === "Все" && questsData) ||
-                      quest.type === activeFilter,
-                  )
-                  .map((quest) => {
-                    const questData = questsData?.find((q) => q.id === quest.eventId);
-                    return (
-                      <div key={quest.id} className="px-4">
-                        <div className="overflow-hidden rounded-2xl bg-white shadow-md">
-                          <QuestCard quest={questData as any} isNavigable={true} />
-                          <div className="border-t border-gray-100 px-3 pb-3">
-                            <p className="mb-3 pt-3 text-xs leading-relaxed text-gray-700">
-                              {questData?.description?.slice(0, 100)}
-                              {questData?.description &&
-                              questData.description.length > 100
-                                ? "..."
-                                : ""}
+          {/* Search */}
+          <div className="px-5">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  type="text"
+                  placeholder="Поиск квестов..."
+                  className="h-12 w-full rounded-2xl border-none bg-white pl-11 pr-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 outline-none"
+                />
+              </div>
+
+              <FilterDrawer
+                open={isOpen}
+                onOpenChange={(open) => {
+                  if (open) lockBodyScroll();
+                  else unlockBodyScroll();
+                  setIsOpen(open);
+                }}
+              >
+                <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-transform active:scale-95 hover:bg-violet-700">
+                  <WhiteFilter />
+                </button>
+              </FilterDrawer>
+            </div>
+          </div>
+
+          {/* Calendar */}
+          <div className="px-1">
+            <Calendar />
+          </div>
+
+          {/* Filters */}
+          <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-5 pb-2">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter ?? "")}
+                className={cn(
+                  "rounded-full px-5 py-2.5 text-sm font-medium transition-all active:scale-95",
+                  activeFilter === filter
+                    ? "bg-gray-900 text-white shadow-lg shadow-gray-200"
+                    : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="space-y-8 pb-24">
+            {/* Active Quests */}
+            {userQuestsData && userQuestsData.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="px-5 text-lg font-bold text-gray-900">
+                  Активные квесты
+                </h2>
+                <div className="flex flex-col gap-4 px-5">
+                  {userQuestsData
+                    .filter(
+                      (quest) =>
+                        (activeFilter === "Все" && questsData) ||
+                        quest.type === activeFilter
+                    )
+                    .map((quest) => {
+                      const questData = questsData?.find(
+                        (q) => q.id === quest.eventId
+                      );
+                      return (
+                        <div
+                          key={quest.id}
+                          className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md"
+                        >
+                          <QuestCard
+                            quest={questData as any}
+                            isNavigable={true}
+                          />
+                          <div className="border-t border-gray-50 px-4 pb-4">
+                            <p className="mb-4 pt-3 text-sm leading-relaxed text-gray-600 line-clamp-2">
+                              {questData?.description}
                             </p>
 
                             <div className="flex items-center justify-between">
                               {questData?.hasAchievement ? (
-                                <span className="rounded-full bg-purple-300 px-3 py-1 text-xs font-medium text-gray-900 shadow-sm">
+                                <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
                                   🏆 Достижение
                                 </span>
                               ) : (
                                 <div />
                               )}
-                              <div className="ml-auto flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-50 to-purple-100 px-3 py-1.5 shadow-sm">
-                                <span className="text-sm font-semibold text-gray-900">
-                                  +
+                              <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
+                                <span>+</span>
+                                <span>
                                   {(
                                     questData?.rewards?.find(
-                                      (reward) => reward.type === "point",
+                                      (reward) => reward.type === "point"
                                     )?.value ?? 0
                                   ).toLocaleString()}
                                 </span>
-                                <span className="text-sm font-medium text-gray-600">
-                                  points
-                                </span>
+                                <span className="text-gray-500">points</span>
                                 <Coin />
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          <div className="mb-6">
-            {questsData
-              ?.filter((quest) => quest.isSeries)
-              .filter((quest) => quest.isSeries)
-
-              .map((quest) => (
-                <div key={quest.id}>
-                  <SeriesQuestCard quest={quest as any} />
+                      );
+                    })}
                 </div>
-              ))}
-          </div>
+              </div>
+            )}
 
-          <div className="space-y-4">
-            {questsData
-              ?.filter((quest) => !quest.isSeries)
-              .filter(
-                (quest) =>
-                  (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-              )
-              .filter((quest) => {
-                return (
-                  quest.title?.toLowerCase().includes(search.toLowerCase()) ||
-                  quest.description?.toLowerCase().includes(search.toLowerCase())
-                );
-              })
-              .map((quest) => (
-                <div key={quest.id}>
-                  <h3 className="mb-2 px-4 text-xs font-medium text-gray-500">
-                    {quest.date}
-                  </h3>
-                  <div className="px-4">
-                    <div className="overflow-hidden rounded-2xl bg-white shadow-md">
+            {/* Series Quests */}
+            {questsData?.some((q) => q.isSeries) && (
+              <div className="space-y-4">
+                {questsData
+                  .filter((quest) => quest.isSeries)
+                  .map((quest) => (
+                    <div key={quest.id} className="px-1">
+                      <SeriesQuestCard quest={quest as any} />
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* All Quests List */}
+            <div className="space-y-4 px-5">
+              {questsData
+                ?.filter((quest) => !quest.isSeries)
+                .filter(
+                  (quest) =>
+                    (activeFilter === "Все" && questsData) ||
+                    quest.type === activeFilter
+                )
+                .filter((quest) => {
+                  return (
+                    quest.title
+                      ?.toLowerCase()
+                      .includes(search.toLowerCase()) ||
+                    quest.description
+                      ?.toLowerCase()
+                      .includes(search.toLowerCase())
+                  );
+                })
+                .map((quest) => (
+                  <div key={quest.id} className="space-y-2">
+                    <h3 className="px-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {quest.date}
+                    </h3>
+                    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
                       <QuestCard quest={quest as any} isNavigable={true} />
-                      <div className="border-t border-gray-100 px-3 pb-3">
-                        <p className="mb-3 pt-3 text-xs leading-relaxed text-gray-700">
-                          {quest.description?.slice(0, 100) +
-                            (quest.description?.length && quest.description.length > 100
-                              ? "..."
-                              : "")}
+                      <div className="border-t border-gray-50 px-4 pb-4">
+                        <p className="mb-4 pt-3 text-sm leading-relaxed text-gray-600 line-clamp-2">
+                          {quest.description}
                         </p>
                         <div className="flex items-center justify-between">
-                          {quest.hasAchievement && (
-                            <span className="rounded-full bg-purple-300 px-3 py-1 text-xs font-medium text-gray-900 shadow-sm">
+                          {quest.hasAchievement ? (
+                            <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
                               🏆 Достижение
                             </span>
+                          ) : (
+                            <div />
                           )}
-                          <div className="ml-auto flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-50 to-purple-100 px-3 py-1.5 shadow-sm">
-                            <span className="text-sm font-semibold text-gray-900">
-                              +
+                          <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
+                            <span>+</span>
+                            <span>
                               {(
-                                quest?.rewards?.find((reward) => reward.type === "point")
-                                  ?.value ?? 0
+                                quest?.rewards?.find(
+                                  (reward) => reward.type === "point"
+                                )?.value ?? 0
                               ).toLocaleString()}
                             </span>
-                            <span className="text-sm font-medium text-gray-600">
-                              points
-                            </span>
+                            <span className="text-gray-500">points</span>
                             <Coin />
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Create Quest Button */}
-
-        {/* <div className="fixed right-0 bottom-20 left-0 flex items-center gap-2 bg-white">
-        <div className="mx-auto flex w-full items-center gap-2 px-4">
-          <button
-            onClick={() =>
-              navigate({ to: "/createMeet/$name", params: { name: "Квест" } })
-            }
-            className="w-full rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
-          >
-            Создать квест
-          </button>
-          <div className="flex flex-col items-center">
-            <div
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-              onClick={() => setIsMoreOpen(!isMoreOpen)}
-            >
-              <WhitePlusIcon />
+                ))}
             </div>
-            <span className="text-xs">Ещё</span>
           </div>
         </div>
-      </div> */}
 
-        {/* TODO: Add handleSaveEventorMeet */}
         {isMoreOpen && (
           <More
             setIsMoreOpen={setIsMoreOpen}

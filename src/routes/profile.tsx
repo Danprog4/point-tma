@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import {
   AlertTriangle,
   Award,
@@ -37,6 +36,7 @@ import { levelsConfig } from "~/config/levels";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
+import { cn } from "~/lib/utils/cn";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
@@ -180,537 +180,459 @@ function RouteComponent() {
       ) : (
         <div
           data-mobile={isMobile}
-          className="min-h-screen overflow-y-auto bg-white pt-14 pb-20 text-black data-[mobile=true]:pt-39"
+          className="min-h-screen bg-gray-50/50 pt-14 pb-20 text-black data-[mobile=true]:pt-39"
         >
           <Header />
 
-          <PullToRefresh onRefresh={handleRefresh} className="text-white">
-            <motion.div
-              className="flex items-center justify-between px-4 py-5"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold text-black">Профиль</h1>
-              </div>
+          <PullToRefresh onRefresh={handleRefresh} className={cn("min-h-screen")}>
+            {/* Header Section */}
+            <div className="flex items-center justify-between px-5 py-4">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Профиль</h1>
               <Link to="/profile-sett" preload="viewport">
-                <motion.div whileHover={{ rotate: 90 }} transition={{ duration: 0.3 }}>
-                  <Settings className="h-5 w-5 cursor-pointer text-black" />
-                </motion.div>
+                <button className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90">
+                  <Settings className="h-6 w-6 text-gray-900" />
+                </button>
               </Link>
-            </motion.div>
-
-            {/* <div className="flex gap-4 px-4 pb-4">
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "info" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("info")}
-            >
-              Информация
-            </button>
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "friends" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("friends")}
-            >
-              Друзья
-            </button>
-          </div> */}
+            </div>
 
             {page === "info" && (
-              <motion.div
-                className="text-black"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <motion.div
-                  className="relative"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <div className="relative h-90 overflow-hidden rounded-t-2xl">
-                    <motion.img
-                      src={
-                        mainPhoto && mainPhoto.startsWith("data:image/")
-                          ? mainPhoto
-                          : getImageUrl(mainPhoto ?? "")
-                      }
-                      alt=""
-                      className="absolute inset-0 h-full w-full cursor-pointer rounded-t-2xl object-cover"
-                      onClick={() => {
-                        setIsClicked(!isClicked);
-                        setCurrentIndex(0);
-                        setIsFullScreen(true);
-                      }}
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-                </motion.div>
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Main Photo Card */}
+                <div className="px-5">
+                  <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+                    <div className="relative h-96 w-full">
+                      <img
+                        src={
+                          mainPhoto && mainPhoto.startsWith("data:image/")
+                            ? mainPhoto
+                            : getImageUrl(mainPhoto ?? "")
+                        }
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 active:scale-105"
+                        onClick={() => {
+                          setIsClicked(!isClicked);
+                          setCurrentIndex(0);
+                          setIsFullScreen(true);
+                        }}
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                <motion.div
-                  className="scrollbar-hidden scrollbar-hidden flex flex-nowrap gap-2 overflow-x-auto px-4 pt-4"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {galleryPhotos.map((img, idx) => (
-                    <motion.img
-                      key={idx}
-                      src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
-                      alt=""
-                      className="h-20 w-20 flex-shrink-0 cursor-pointer rounded-lg object-cover"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{
-                        duration: 0.3,
-                        delay: 0.3 + idx * 0.05,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setGalleryPhotos((prev) => {
-                          const newGallery = prev.filter((i) => i !== img);
-                          if (mainPhoto) newGallery.push(mainPhoto);
-                          return newGallery;
-                        });
-                        setMainPhoto(img);
-                      }}
-                    />
-                  ))}
-                </motion.div>
-
-                {/* User Info */}
-                <motion.div
-                  className="flex items-center justify-center gap-4 px-4 py-4"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <div className="relative flex items-center">
-                    {/* Круг с прогресс-баром по XP */}
-                    {(() => {
-                      // Импортируем уровни и XP
-                      // levelsConfig: [{level, xpToNextLevel}, ...]
-                      // user?.level, user?.xp
-                      // Если нет данных, просто рендерим круг
-                      if (!user?.level || user.xp == null) {
-                        return (
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 bg-purple-600">
-                            <span className="text-xl font-bold text-white">
-                              {user?.level}
-                            </span>
-                          </div>
-                        );
-                      }
-                      // Получаем данные о текущем и следующем уровне
-                      // levelsConfig[0] - level 1, ...
-                      const currentLevelIdx = Math.max(
-                        0,
-                        levelsConfig.findIndex((l) => l.level === user.level),
-                      );
-                      const currentLevel = levelsConfig[currentLevelIdx];
-                      const nextLevel = levelsConfig[currentLevelIdx + 1];
-                      // Сколько XP нужно для следующего уровня
-                      const xpToNext = nextLevel
-                        ? nextLevel.xpToNextLevel
-                        : currentLevel.xpToNextLevel;
-                      // Сколько XP у пользователя на этом уровне
-                      // Если есть поле user.xp, считаем прогресс
-                      // Если нет, показываем полностью закрашенный круг
-                      const progress =
-                        nextLevel && xpToNext ? Math.min(1, user.xp / xpToNext) : 1;
-
-                      // SVG круг с прогрессом
-                      const size = 40;
-                      const strokeWidth = 4;
-                      const radius = (size - strokeWidth) / 2;
-                      const circumference = 2 * Math.PI * radius;
-                      const offset = circumference * (1 - progress);
-
-                      return (
-                        <motion.div
-                          className="relative flex cursor-pointer items-center justify-center"
-                          style={{ width: size, height: size }}
-                          onClick={() => setIsLevelModalOpen(true)}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <svg width={size} height={size}>
-                            {/* Серый фон круга */}
-                            <circle
-                              cx={size / 2}
-                              cy={size / 2}
-                              r={radius}
-                              stroke="#E5E7EB"
-                              strokeWidth={strokeWidth}
-                              fill="#7C3AED"
-                            />
-                            {/* Синий прогресс */}
-                            <circle
-                              cx={size / 2}
-                              cy={size / 2}
-                              r={radius}
-                              stroke="#2563EB"
-                              strokeWidth={strokeWidth}
-                              fill="none"
-                              strokeDasharray={circumference}
-                              strokeDashoffset={offset}
-                              strokeLinecap="round"
-                              style={{
-                                transition: "stroke-dashoffset 0.5s",
+                      {/* Photo Gallery Strip (Overlaid at bottom) */}
+                      <div className="absolute right-0 bottom-4 left-0 px-4">
+                        <div className="scrollbar-hidden flex gap-2 overflow-x-auto py-2">
+                          {galleryPhotos.map((img, idx) => (
+                            <img
+                              key={idx}
+                              src={
+                                img.startsWith("data:image/")
+                                  ? img
+                                  : getImageUrl(img || "")
+                              }
+                              alt=""
+                              className="h-14 w-14 flex-shrink-0 cursor-pointer rounded-xl border-2 border-white/20 object-cover shadow-sm transition-transform active:scale-90"
+                              onClick={() => {
+                                setGalleryPhotos((prev) => {
+                                  const newGallery = prev.filter((i) => i !== img);
+                                  if (mainPhoto) newGallery.push(mainPhoto);
+                                  return newGallery;
+                                });
+                                setMainPhoto(img);
                               }}
                             />
-                          </svg>
-                          <span className="absolute top-0 left-0 flex h-full w-full items-center justify-center text-xl font-bold text-white">
-                            {user.level}
-                          </span>
-                        </motion.div>
-                      );
-                    })()}
-                  </div>
-                  <div className="text-center">
-                    <div className="mb-1 flex items-center justify-center gap-2">
-                      <h2 className="text-xl font-bold text-black">
-                        {user?.name} {user?.surname}
-                      </h2>
-                    </div>
-                  </div>
-                  <motion.div
-                    className="flex items-center"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <Star className="h-7 w-7 fill-blue-500 text-blue-500" />
-                  </motion.div>
-                </motion.div>
-
-                <div className="flex items-center justify-between px-4 pb-4">
-                  <div className="flex items-center gap-2 text-sm text-neutral-500">
-                    г. {user?.city}, {userAge}
-                    <div>
-                      {user?.sex === "male" ? (
-                        <Mars className="h-4 w-4 text-blue-600" />
-                      ) : (
-                        <Venus className="h-4 w-4 text-pink-600" />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg bg-[#FFF2BD] px-2 text-sm">Рейтинг 4.5</div>
-                </div>
-
-                {/* TODO: add real followers and real friends count*/}
-                <motion.div
-                  className="flex items-center justify-center gap-4 px-4 pb-4"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <motion.div
-                    className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
-                    onClick={() => {
-                      setIsSubscribersPage(true);
-                      saveScrollPosition("profile");
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div>{userSubscribers?.length || 0}</div>
-                    <div className="text-sm text-neutral-500">Подписчики</div>
-                  </motion.div>
-                  <motion.div
-                    className="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-gray-200 p-4"
-                    onClick={() => {
-                      setIsFriendsPage(true);
-                      saveScrollPosition("profile");
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div>{uniqueFriends.length || 0}</div>
-                    <div className="text-sm text-neutral-500">Друзья</div>
-                  </motion.div>
-                </motion.div>
-
-                <div className="px-4">
-                  <div className="flex flex-col items-start justify-between pb-4">
-                    <h3 className="text-xl font-bold text-black">Обо мне</h3>
-                    {user?.bio ? (
-                      <div className="text-sm text-black">{user.bio}</div>
-                    ) : (
-                      <div className="text-sm text-black">
-                        Расскажите о себе, чтобы другие пользователи могли узнать вас
+                          ))}
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex w-full items-center justify-start gap-1 px-4">
-                  <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
-                    <div className="flex flex-col gap-2">
-                      <div className="text-sm text-nowrap">
-                        Заполненность профиля {getPercent()}%
+                {/* User Info & Level */}
+                <div className="relative -mt-6 px-5 pb-6">
+                  <div className="relative z-10 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                    <div className="flex flex-col items-center gap-4">
+                      {/* Avatar/Level Circle */}
+                      <div className="relative -mt-12">
+                        <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-white p-1 shadow-lg ring-1 ring-gray-100">
+                          {(() => {
+                            if (!user?.level || user.xp == null) {
+                              return (
+                                <div className="flex h-full w-full items-center justify-center rounded-full bg-violet-600 text-2xl font-bold text-white">
+                                  {user?.level}
+                                </div>
+                              );
+                            }
+                            const currentLevelIdx = Math.max(
+                              0,
+                              levelsConfig.findIndex((l) => l.level === user.level),
+                            );
+                            const currentLevel = levelsConfig[currentLevelIdx];
+                            const nextLevel = levelsConfig[currentLevelIdx + 1];
+                            const xpToNext = nextLevel
+                              ? nextLevel.xpToNextLevel
+                              : currentLevel.xpToNextLevel;
+                            const progress =
+                              nextLevel && xpToNext ? Math.min(1, user.xp / xpToNext) : 1;
+
+                            const size = 88;
+                            const strokeWidth = 6;
+                            const radius = (size - strokeWidth) / 2;
+                            const circumference = 2 * Math.PI * radius;
+                            const offset = circumference * (1 - progress);
+
+                            return (
+                              <div
+                                className="relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-full transition-transform active:scale-95"
+                                onClick={() => setIsLevelModalOpen(true)}
+                              >
+                                <svg
+                                  width={size}
+                                  height={size}
+                                  className="-rotate-90 transform"
+                                >
+                                  <circle
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    stroke="#F3F4F6"
+                                    strokeWidth={strokeWidth}
+                                    fill="white"
+                                  />
+                                  <circle
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    stroke="#7C3AED"
+                                    strokeWidth={strokeWidth}
+                                    fill="none"
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={offset}
+                                    strokeLinecap="round"
+                                    className="transition-all duration-1000 ease-out"
+                                  />
+                                </svg>
+                                <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-gray-900">
+                                  {user.level}
+                                </span>
+                              </div>
+                            );
+                          })()}
+                          <div className="absolute -bottom-2 rounded-full bg-yellow-400 p-1 shadow-sm ring-2 ring-white">
+                            <Star className="h-4 w-4 fill-white text-white" />
+                          </div>
+                        </div>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-white">
+
+                      {/* Name & Stats */}
+                      <div className="text-center">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                          {user?.name} {user?.surname}
+                        </h2>
+                        <div className="mt-1 flex items-center justify-center gap-2 text-sm font-medium text-gray-500">
+                          <span>г. {user?.city}</span>
+                          <span>•</span>
+                          <span>{userAge} лет</span>
+                          {user?.sex === "male" ? (
+                            <Mars className="h-4 w-4 text-blue-500" />
+                          ) : (
+                            <Venus className="h-4 w-4 text-pink-500" />
+                          )}
+                        </div>
+                        <div className="mt-2 inline-flex items-center rounded-full bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700 ring-1 ring-yellow-200 ring-inset">
+                          Рейтинг 4.5
+                        </div>
+                      </div>
+
+                      {/* Stats Cards */}
+                      <div className="grid w-full grid-cols-2 gap-3">
                         <div
-                          className="h-2 rounded-full bg-[#9924FF]"
-                          style={{ width: `${getPercent()}%` }}
-                        ></div>
+                          className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl bg-gray-50 p-4 transition-colors transition-transform hover:bg-gray-100 active:scale-[0.98]"
+                          onClick={() => {
+                            setIsSubscribersPage(true);
+                            saveScrollPosition("profile");
+                          }}
+                        >
+                          <span className="text-xl font-bold text-gray-900">
+                            {userSubscribers?.length || 0}
+                          </span>
+                          <span className="text-xs font-medium text-gray-500">
+                            Подписчики
+                          </span>
+                        </div>
+                        <div
+                          className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl bg-gray-50 p-4 transition-colors transition-transform hover:bg-gray-100 active:scale-[0.98]"
+                          onClick={() => {
+                            setIsFriendsPage(true);
+                            saveScrollPosition("profile");
+                          }}
+                        >
+                          <span className="text-xl font-bold text-gray-900">
+                            {uniqueFriends.length || 0}
+                          </span>
+                          <span className="text-xs font-medium text-gray-500">
+                            Друзья
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <Link
-                    to="/fill-profile"
-                    search={{
-                      isSettingsSearch: getPercent() === "100" ? "true" : "false",
-                    }}
-                    preload="viewport"
-                    className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
-                  >
-                    <div className="text-white">
-                      {getPercent() === "100" ? "Изменить" : "Заполнить"}
-                    </div>
-                  </Link>
                 </div>
 
-                <div className="mx-4">
-                  <div className="flex flex-col items-start justify-between py-3">
-                    <h3 className="text-xl font-bold text-black">Интересы</h3>
+                {/* About */}
+                <div className="px-5 pb-6">
+                  <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                    <h3 className="mb-3 text-lg font-bold text-gray-900">Обо мне</h3>
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      {user?.bio ||
+                        "Расскажите о себе, чтобы другие пользователи могли узнать вас"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Profile Completion */}
+                <div className="px-5 pb-6">
+                  <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+                    <div className="flex items-center p-2">
+                      <div className="flex-1 rounded-2xl bg-violet-50 p-4">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between text-xs font-medium">
+                            <span className="text-violet-900">Заполненность</span>
+                            <span className="text-violet-700">{getPercent()}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-white/50">
+                            <div
+                              className="h-full rounded-full bg-violet-600"
+                              style={{ width: `${getPercent()}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <Link
+                        to="/fill-profile"
+                        search={{
+                          isSettingsSearch: getPercent() === "100" ? "true" : "false",
+                        }}
+                        preload="viewport"
+                        className="ml-2 flex h-full items-center justify-center rounded-2xl bg-gray-900 px-6 py-4 font-medium text-white transition-colors transition-transform hover:bg-gray-800 active:scale-95"
+                      >
+                        {getPercent() === "100" ? "Изменить" : "Заполнить"}
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interests */}
+                <div className="px-5 pb-6">
+                  <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                    <h3 className="mb-3 text-lg font-bold text-gray-900">Интересы</h3>
                     {user?.interests &&
-                    Object.entries(user.interests).filter(([key, value]) => value)
-                      .length > 0 ? (
-                      <div className="mt-2 grid w-full grid-cols-2 gap-2">
+                    Object.entries(user.interests).filter(([_, v]) => v).length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
                         {Object.entries(user.interests)
-                          .filter(([key, value]) => value)
+                          .filter(([_, value]) => value)
                           .map(([key, value]) => (
-                            <div key={key} className="flex flex-col">
-                              <div className="text-xs text-gray-500 capitalize">
+                            <div key={key} className="rounded-2xl bg-gray-50 p-3">
+                              <div className="mb-1 text-xs text-gray-500 capitalize">
                                 {getInterestLabel(key)}
                               </div>
-                              <div className="text-sm font-medium text-black">
+                              <div className="text-sm font-bold text-gray-900">
                                 {value}
                               </div>
                             </div>
                           ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-black">
-                        Расскажите о себе, чтобы другие пользователи могли узнать вас
-                      </div>
+                      <p className="text-sm text-gray-500">Нет интересов</p>
                     )}
                   </div>
                 </div>
 
-                <div className="px-4 py-4">
-                  <div className="flex items-center justify-between">
+                {/* Digital Avatar (Placeholder) */}
+                <div className="px-5 pb-6">
+                  <div className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-violet-600 to-indigo-600 p-5 text-white shadow-lg shadow-violet-200">
                     <div className="flex items-center gap-3">
-                      <Crown className="h-6 w-6 text-purple-600" />
-                      <span className="text-base font-medium text-black">
-                        Цифровой аватар
-                      </span>
+                      <div className="rounded-full bg-white/20 p-2 backdrop-blur-sm">
+                        <Crown className="h-6 w-6 text-white" />
+                      </div>
+                      <span className="font-bold">Цифровой аватар</span>
                     </div>
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-white/60" />
                   </div>
                 </div>
 
-                <div className="mt-4 mb-6 px-4">
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Quests & Meetings Stats */}
+                <div className="px-5 pb-6">
+                  <div className="grid grid-cols-2 gap-3">
                     <Link
                       to="/user-quests/$id"
                       params={{ id: user?.id!.toString()! }}
                       preload="viewport"
-                      className="rounded-xl bg-yellow-400 p-3 shadow-sm"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
+                      className="group relative overflow-hidden rounded-3xl bg-yellow-400 p-5 shadow-sm transition-transform active:scale-[0.98]"
                     >
-                      <div className="mb-1 text-center text-xl font-bold text-black">
-                        {activeQuests?.length || 0}
-                      </div>
-                      <div className="flex items-center justify-center gap-1">
-                        <div className="flex h-4 w-4 items-center justify-center rounded bg-[#FFF2BD]">
-                          !
+                      <div className="relative z-10">
+                        <div className="mb-1 text-3xl font-bold text-gray-900">
+                          {activeQuests?.length || 0}
                         </div>
-                        <span className="text-sm text-black">Квесты</span>
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-gray-900/80">
+                          <span>!</span>
+                          <span>Квесты</span>
+                        </div>
                       </div>
+                      <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/20 blur-2xl transition-transform group-hover:scale-150" />
                     </Link>
+
                     <Link
                       to="/user-meetings/$id"
                       params={{ id: user?.id!.toString()! }}
                       preload="viewport"
-                      className="rounded-xl bg-purple-600 p-3 shadow-sm"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
+                      className="group relative overflow-hidden rounded-3xl bg-violet-600 p-5 shadow-sm transition-transform active:scale-[0.98]"
                     >
-                      <div className="mb-1 text-center text-xl font-bold text-white">
-                        {userMeetings?.length || 0}
+                      <div className="relative z-10">
+                        <div className="mb-1 text-3xl font-bold text-white">
+                          {userMeetings?.length || 0}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-white/90">
+                          <Calendar1 className="h-4 w-4" />
+                          <span>Встречи</span>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-center gap-1">
-                        <Calendar1 className="h-4 w-4 text-white" />
-                        <span className="text-sm text-white">Встречи</span>
-                      </div>
+                      <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/20 blur-2xl transition-transform group-hover:scale-150" />
                     </Link>
                   </div>
                 </div>
 
-                {/* Interests Section */}
-
-                {/* Menu Items */}
-                <div className="mb-6">
-                  <div className="space-y-0">
+                {/* Menu */}
+                <div className="px-5 pb-24">
+                  <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
                     <Link
                       to="/market"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<ShoppingCart className="h-6 w-6 text-purple-300" />}
+                        icon={<ShoppingCart className="h-5 w-5 text-violet-500" />}
                         title="Маркетплейс"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/shop"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<ShoppingBag className="h-6 w-6 text-purple-300" />}
+                        icon={<ShoppingBag className="h-5 w-5 text-violet-500" />}
                         title="Магазин"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/skills"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<BarChart3 className="h-6 w-6 text-purple-300" />}
+                        icon={<BarChart3 className="h-5 w-5 text-violet-500" />}
                         title="Ваши навыки"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/achievments"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<Award className="h-6 w-6 text-purple-300" />}
+                        icon={<Award className="h-5 w-5 text-violet-500" />}
                         title="Достижения"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/calendar"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<Calendar className="h-6 w-6 text-purple-300" />}
+                        icon={<Calendar className="h-5 w-5 text-violet-500" />}
                         title="Календарь"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/favourites"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem icon={<FavIcon />} title="Избранное" />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/history"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<History className="h-6 w-6 text-purple-300" />}
+                        icon={<History className="h-5 w-5 text-violet-500" />}
                         title="История"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/inventory"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<Package className="h-6 w-6 text-purple-300" />}
+                        icon={<Package className="h-5 w-5 text-violet-500" />}
                         title="Инвентарь"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <Link
                       to="/tasks"
                       preload="viewport"
-                      onClick={() => {
-                        saveScrollPosition("profile");
-                      }}
+                      onClick={() => saveScrollPosition("profile")}
                     >
                       <MenuItem
-                        icon={<Target className="h-6 w-6 text-purple-300" />}
+                        icon={<Target className="h-5 w-5 text-violet-500" />}
                         title="Задания"
                       />
                     </Link>
+                    <div className="h-px bg-gray-50" />
                     <MenuItem
                       onClick={() => {
                         saveScrollPosition("profile");
                         setIsTradesPage(true);
                       }}
-                      icon={<Repeat2 className="h-6 w-6 text-purple-300" />}
+                      icon={<Repeat2 className="h-5 w-5 text-violet-500" />}
                       title="Мои обмены"
                     />
-
+                    <div className="h-px bg-gray-50" />
                     <div
                       onClick={() => setIsWarningsBansOpen(true)}
-                      className="flex cursor-pointer items-center justify-between border-b border-gray-100 px-4 py-5 last:border-b-0"
+                      className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-gray-50 active:bg-gray-100"
                     >
                       <div className="flex items-center gap-3">
                         <AlertTriangle
-                          className={`h-6 w-6 ${
+                          className={cn(
+                            "h-5 w-5",
                             (warnings?.length || 0) + (bans?.length || 0) > 0
                               ? "text-orange-500"
-                              : "text-purple-300"
-                          }`}
+                              : "text-violet-500",
+                          )}
                         />
-                        <span className="text-base font-medium text-black">
+                        <span className="text-base font-medium text-gray-900">
                           Модерация
                         </span>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <ChevronRight className="h-5 w-5 text-gray-300" />
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
-
-            {/* {page === "friends" && <Friends />} */}
 
             {/* Level Info Modal */}
             <LevelInfoModal

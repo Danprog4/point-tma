@@ -102,13 +102,13 @@ export function LevelInfoModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100000000] bg-black/60 backdrop-blur-sm"
             onClick={onClose}
             style={{ touchAction: "none" }}
           />
 
           {/* Модальное окно */}
-          <div className="fixed inset-0 z-[101] flex items-center justify-center overflow-hidden p-4">
+          <div className="fixed inset-0 z-[100000001] flex items-center justify-center overflow-hidden p-4">
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}

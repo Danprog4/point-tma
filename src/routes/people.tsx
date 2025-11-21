@@ -138,10 +138,7 @@ function RouteComponent() {
 
       <PullToRefresh
         onRefresh={handleRefresh}
-        className={cn(
-          "min-h-screen",
-          !isList && "fixed inset-0 z-0 h-full overflow-hidden",
-        )}
+        className={cn(!isList && "fixed inset-0 z-0 h-full overflow-hidden")}
         pullDownThreshold={isList ? 67 : 9999} // Disable pull-to-refresh on map view by setting high threshold
         isPullable={isList}
       >
@@ -201,7 +198,7 @@ function RouteComponent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="px-4"
+                className="scrollbar-hidden overflow-hidden px-4"
               >
                 <UsersList
                   users={sortedUsers || []}

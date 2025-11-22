@@ -1,14 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import imageCompression from "browser-image-compression";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ImagePlus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DatePicker2 from "~/components/DatePicker2";
-import { AddPhoto } from "~/components/Icons/AddPhoto";
-import { PlusIcon } from "~/components/Icons/Plus";
 import { steps } from "~/config/steps";
 import { usePlatform } from "~/hooks/usePlatform";
+import { cn } from "~/lib/utils";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
 import { convertToBase64 } from "~/lib/utils/convertToBase64";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -149,7 +148,7 @@ function RouteComponent() {
         city: city || "",
       };
       await updateProfile.mutateAsync(payload);
-      toast.success("✅ Профиль сохранен!");
+      toast.success("Профиль сохранен!");
     } catch (error: any) {
       toast.error(`❌ Сохранение не удалось: ${error.message || "Неизвестная ошибка"}`);
     }
@@ -268,227 +267,250 @@ function RouteComponent() {
   const isMobile = usePlatform();
 
   return (
-    <div
-      data-mobile={isMobile}
-      className="h-full overflow-y-auto pb-24 data-[mobile=true]:pt-32"
-    >
+    <div data-mobile={isMobile} className="min-h-screen bg-gray-50/50 pb-32">
+      {/* Fixed Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
       >
         <button
           disabled={updateProfile.isPending}
           onClick={() => navigate({ to: "/profile" })}
-          className="flex h-6 w-6 items-center justify-center"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:bg-gray-100 active:scale-90"
         >
-          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+          <ArrowLeft className="h-6 w-6 text-gray-900" />
         </button>
-        <div className="flex-1">
-          <h1 className="text-center text-base font-bold text-gray-800">
-            Настройки профиля
-          </h1>
-        </div>
+        <h1 className="text-lg font-bold text-gray-900">Настройки профиля</h1>
+        <div className="w-10" /> {/* Spacer for alignment */}
       </div>
-      <div className="mt-8 flex w-full flex-col items-center gap-4">
-        <label
-          htmlFor="profile-photo-upload"
-          className="flex w-full cursor-pointer flex-col items-center gap-2 rounded-t-2xl"
-        >
-          {base64 ? (
-            <div className="relative w-full rounded-t-2xl">
-              <img
-                src={base64}
-                alt="Аватар"
-                className="mb-2 h-90 w-full rounded-t-2xl object-cover"
-              />
-              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 bg-[#12121280] px-4 py-2 text-white">
-                <div className="z-[10000]" onClick={handleDeletePhoto}>
-                  Удалить
+
+      <div className="space-y-8 px-5 pt-28" data-mobile={isMobile}>
+        {/* Main Photo Section */}
+        <div className="flex flex-col items-center gap-4">
+          <label
+            htmlFor="profile-photo-upload"
+            className="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md active:scale-[0.99]"
+          >
+            {base64 ? (
+              <div className="relative w-full">
+                <img
+                  src={base64}
+                  alt="Аватар"
+                  className="h-96 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute right-0 bottom-0 left-0 flex items-center justify-between p-6">
+                  <button
+                    onClick={handleDeletePhoto}
+                    className="rounded-full bg-white/20 p-3 backdrop-blur-md transition-colors hover:bg-white/30 active:scale-90"
+                  >
+                    <Trash2 className="h-5 w-5 text-white" />
+                  </button>
+                  <span className="font-medium text-white">Изменить фото</span>
                 </div>
-                <div>Изменить</div>
               </div>
-            </div>
-          ) : (
-            <div className="mb-2 flex h-90 w-full items-center justify-center rounded-t-2xl bg-[#F0F0F0]">
-              <div className="flex flex-col items-center gap-2">
-                <AddPhoto />
-                <div className="text-sm text-[#9924FF]">Загрузить фото профиля</div>
+            ) : (
+              <div className="flex h-96 w-full flex-col items-center justify-center bg-gray-50">
+                <div className="mb-4 rounded-full bg-violet-100 p-6">
+                  <ImagePlus className="h-10 w-10 text-violet-600" />
+                </div>
+                <span className="text-base font-semibold text-gray-900">
+                  Добавить фото
+                </span>
+                <span className="mt-1 text-sm text-gray-500">
+                  Рекомендуемый размер 1080x1080
+                </span>
               </div>
-            </div>
-          )}
+            )}
+            <input
+              id="profile-photo-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
+        </div>
 
-          <input
-            id="profile-photo-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        </label>
-      </div>
-      <div className="mb-4 px-4 text-2xl font-bold">Галерея</div>
-      <div className="mb-4 flex flex-wrap gap-4 px-4">
-        {gallery.map((item, idx) => {
-          const isBase64 = typeof item === "string" && item.startsWith("data:image/");
-          return (
-            <div
-              key={item || idx}
-              onClick={() => handleGalleryClick(item)}
-              className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+        {/* Gallery Section */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Галерея</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {gallery.map((item, idx) => {
+              const isBase64 = typeof item === "string" && item.startsWith("data:image/");
+              return (
+                <div
+                  key={item || idx}
+                  onClick={() => handleGalleryClick(item)}
+                  className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl bg-gray-100 shadow-sm ring-1 ring-gray-200 transition-transform active:scale-95"
+                >
+                  <img
+                    src={isBase64 ? item : getImageUrl(item)}
+                    alt={`Галерея ${idx + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              );
+            })}
+
+            <label
+              htmlFor="gallery-upload"
+              className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 transition-colors hover:bg-gray-50 active:scale-95"
             >
-              <img
-                src={isBase64 ? item : getImageUrl(item)}
-                alt={`Галерея ${idx + 1}`}
-                className="h-full w-full rounded-lg object-cover"
+              <ImagePlus className="mb-1 h-6 w-6 text-violet-500" />
+              <span className="text-[10px] font-medium text-violet-600">Добавить</span>
+              <input
+                id="gallery-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAddGallery}
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Personal Info Form */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Личная информация</h2>
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="border-b border-gray-50 p-4">
+              <label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                Имя
+              </label>
+              <input
+                placeholder="Ваше имя"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
               />
             </div>
-          );
-        })}
+            <div className="border-b border-gray-50 p-4">
+              <label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                Фамилия
+              </label>
+              <input
+                placeholder="Ваша фамилия"
+                type="text"
+                value={surname || ""}
+                onChange={(e) => setSurname(e.target.value)}
+                className="mt-1 w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+              />
+            </div>
+            <div className="border-b border-gray-50">
+              {/* DatePicker usually has its own padding, wrapping it to match style */}
+              <div className="p-0">
+                <DatePicker2 value={birthday} setDate={setBirthday} />
+              </div>
+            </div>
+            <div className="p-4">
+              <label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                Город
+              </label>
+              <input
+                placeholder="Ваш город"
+                type="text"
+                value={city || ""}
+                onChange={(e) => setCity(e.target.value)}
+                className="mt-1 w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
 
-        <label
-          htmlFor="gallery-upload"
-          className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
-        >
-          <div className="flex flex-col items-center gap-1 px-2">
-            <PlusIcon />
-            <div className="text-center text-xs text-[#9924FF]">добавить еще</div>
-          </div>
-        </label>
-        <input
-          id="gallery-upload"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleAddGallery}
-        />
-      </div>
-      <div className="flex flex-col items-center justify-center gap-4 px-4">
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Имя</div>
-            <input
-              placeholder="Введите имя"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Фамилия</div>
-            <input
-              placeholder="Введите фамилию"
-              type="text"
-              value={surname || ""}
-              onChange={(e) => setSurname(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
+        {/* Contact Info */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Контакты</h2>
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+            <div className="border-b border-gray-50 p-4">
+              <label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                Email
+              </label>
+              <input
+                placeholder="example@mail.com"
+                type="text"
+                value={email || ""}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+              />
+            </div>
+            <div className="p-4">
+              <label className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                Телефон
+              </label>
+              <input
+                placeholder="+7 000 000 00 00"
+                type="text"
+                value={phone || ""}
+                onChange={(e) => setPhone(e.target.value)}
+                className="mt-1 w-full bg-transparent text-base font-semibold text-gray-900 placeholder:text-gray-300 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
-        <div className="w-full">
-          <DatePicker2 value={birthday} setDate={setBirthday} />
-        </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Город</div>
-            <input
-              placeholder="Введите город"
-              type="text"
-              value={city || ""}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Email</div>
-            <input
-              placeholder="example@mail.com"
-              type="text"
-              value={email || ""}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
-          </div>
-        </div>
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Номер телефона</div>
-            <input
-              placeholder="+7 000 000 00 00"
-              type="text"
-              value={phone || ""}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
-            />
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col px-4 py-4">
-        <div className="flex w-full items-center justify-between rounded-3xl border border-[#ABABAB] px-4 py-2">
-          <div className="flex w-full flex-col items-start text-sm">
-            <div className="text-[#ABABAB]">Обо мне</div>
+
+        {/* Bio */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Обо мне</h2>
+          <div className="overflow-hidden rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
             <textarea
-              placeholder="Введите описание"
+              placeholder="Расскажите немного о себе..."
               value={bio || ""}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full border-none bg-transparent text-black outline-none"
+              rows={4}
+              className="w-full resize-none bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
             />
+          </div>
+        </div>
+
+        {/* Profile Completion Bar */}
+        <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
+          <div className="flex items-center p-2">
+            <div className="flex-1 rounded-2xl bg-violet-50 p-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-xs font-medium">
+                  <span className="text-violet-900">Заполненность профиля</span>
+                  <span className="text-violet-700">{getPercent()}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/50">
+                  <div
+                    className="h-full rounded-full bg-violet-600"
+                    style={{ width: `${getPercent()}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() =>
+                navigate({
+                  to: "/fill-profile",
+                  search: { isSettingsSearch: getPercent() === "100" ? "true" : "false" },
+                })
+              }
+              className="ml-2 flex h-full items-center justify-center rounded-2xl bg-gray-900 px-6 py-4 font-medium text-white transition-colors transition-transform hover:bg-gray-800 active:scale-95"
+            >
+              {getPercent() === "100" ? "Изменить" : "Заполнить"}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="flex w-full items-center justify-start gap-1 px-4">
-        <div className="flex h-14 flex-1 flex-col justify-center rounded-sm rounded-tl-2xl bg-[#DEB8FF] px-4 py-2">
-          <div className="flex flex-col gap-2">
-            <div className="text-sm text-nowrap">
-              Заполенность профиля {getPercent()}%
-            </div>
-            <div className="h-2 w-full rounded-full bg-white">
-              <div
-                className="h-2 rounded-full bg-[#9924FF]"
-                style={{ width: `${getPercent()}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-        <div
-          className="flex h-14 cursor-pointer items-center justify-center rounded-sm rounded-br-2xl bg-[#9924FF] px-4 py-2"
-          onClick={() =>
-            navigate({
-              to: "/fill-profile",
-              search: { isSettingsSearch: getPercent() === "100" ? "true" : "false" },
-            })
-          }
+      {/* Floating Save Button */}
+      <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white p-4">
+        <button
+          disabled={isDisabled || updateProfile.isPending}
+          onClick={handleUpdateProfile}
+          className={cn(
+            "w-full rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all active:scale-[0.98]",
+            isDisabled || updateProfile.isPending
+              ? "cursor-not-allowed bg-gray-200 text-gray-400 shadow-none"
+              : "bg-gray-900 shadow-gray-200 hover:bg-gray-800",
+          )}
         >
-          <div className="text-white">
-            {getPercent() === "100" ? "Изменить" : "Заполнить"}
-          </div>
-        </div>
+          {updateProfile.isPending ? "Сохраняем..." : "Сохранить изменения"}
+        </button>
       </div>
-      {/* <div className="flex flex-col">
-        <div className="flex items-center justify-between px-4 py-4">
-          <div className="text-2xl font-bold">Социальные сети</div>
-          <div className="flex flex-col items-center">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]">
-              <PlusIcon />
-            </div>
-          </div>
-        </div>
-        <div className="px-4 text-start text-sm text-gray-500">
-          У вас пока нет социальных сетей
-        </div>
-      </div> */}
-      <button
-        disabled={isDisabled}
-        onClick={handleUpdateProfile}
-        className={`fixed right-0 bottom-4 left-0 mx-4 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white ${isDisabled && "bg-gray-300"}`}
-      >
-        {updateProfile.isPending ? "Сохраняем..." : "Сохранить изменения"}
-      </button>
     </div>
   );
 }

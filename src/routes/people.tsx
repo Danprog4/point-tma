@@ -232,14 +232,13 @@ function RouteComponent() {
           isComplained={selectedUser ? isComplained(selectedUser) : false}
         />
 
-        {galleryData.isFullScreen && galleryData.fullScreenPhotos.length > 0 && (
-          <FullScreenPhoto
-            allPhotos={galleryData.fullScreenPhotos}
-            currentIndex={galleryData.fullScreenIndex}
-            setCurrentIndex={galleryData.setFullScreenIndex}
-            setIsFullScreen={galleryData.setIsFullScreen}
-          />
-        )}
+        <FullScreenPhoto
+          allPhotos={galleryData.fullScreenPhotos}
+          currentIndex={galleryData.fullScreenIndex}
+          setCurrentIndex={galleryData.setFullScreenIndex}
+          setIsFullScreen={galleryData.setIsFullScreen}
+          isOpen={galleryData.isFullScreen && galleryData.fullScreenPhotos.length > 0}
+        />
 
         {isComplaintOpen && (
           <ComplaintDrawer

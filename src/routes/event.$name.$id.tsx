@@ -1,7 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { openTelegramLink } from "@telegram-apps/sdk";
-import { ArrowLeft } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Calendar,
+  Info,
+  MapPin,
+  MessageCircle,
+  Plus,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import ActiveDrawer from "~/components/ActiveDrawer";
@@ -11,7 +21,6 @@ import { useScroll } from "~/components/hooks/useScroll";
 import { BlueTelegram } from "~/components/Icons/BlueTelegram";
 import { Coin } from "~/components/Icons/Coin";
 import { Star } from "~/components/Icons/Star";
-import { WhitePlusIcon } from "~/components/Icons/WhitePlus";
 import InviteDrawer from "~/components/InviteDrawer";
 import { More } from "~/components/More";
 import QrDrawer from "~/components/QrDrawer";
@@ -23,6 +32,7 @@ import TradeDrawer from "~/components/TradeDrawer";
 import { User } from "~/db/schema";
 import { useEventsCache } from "~/hooks/useEventsCache";
 import { usePlatform } from "~/hooks/usePlatform";
+import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
@@ -256,7 +266,7 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen overflow-y-auto data-[mobile=true]:pt-39"
+      className="min-h-screen bg-[#FAFAFA] pb-8 data-[mobile=true]:pt-0"
     >
       {isOpen ? (
         <>
@@ -268,21 +278,21 @@ function RouteComponent() {
               count={count}
               setCount={setCount}
             />
-            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+            <div className="pb-safe fixed right-0 bottom-0 left-0 flex items-center gap-2 border-t border-gray-100 bg-white/80 backdrop-blur-md">
               {!isBought ? (
                 <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                   <button
                     onClick={handleBuyEvent}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     disabled={isDisabled}
                   >
-                    <div>
+                    <span>
                       {isDisabled
                         ? "Недостаточно средств"
                         : buyEvent.isPending
                           ? "Покупка..."
                           : `Купить за ${event?.price! * count}`}
-                    </div>
+                    </span>
                     <Coin />
                   </button>
                 </div>
@@ -291,41 +301,41 @@ function RouteComponent() {
               )}
             </div>
           </>
-          <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+          <div className="pb-safe fixed right-0 bottom-0 left-0 flex items-center gap-2 border-t border-gray-100 bg-white/80 backdrop-blur-md">
             {!isBought ? (
               <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
                 <button
                   onClick={handleBuyEvent}
-                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                   disabled={isDisabled}
                 >
-                  <div>
+                  <span>
                     {isDisabled
                       ? "Недостаточно средств"
                       : buyEvent.isPending
                         ? "Покупка..."
                         : `Купить за ${event?.price! * count}`}
-                  </div>
+                  </span>
                   <Coin />
                 </button>
               </div>
             ) : (
-              <div className="mx-auto flex w-full flex-col items-center gap-2 px-4 py-4">
+              <div className="mx-auto flex w-full flex-col items-center gap-3 px-4 py-4">
                 <button
                   onClick={() => {
                     navigate({ to: "/" });
                   }}
-                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 font-bold text-gray-900 shadow-sm transition-transform active:scale-95"
                 >
-                  <div>Вернуться на главную</div>
+                  Вернуться на главную
                 </button>
                 <button
                   onClick={() => {
                     navigate({ to: "/inventory" });
                   }}
-                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md px-6 py-3 font-medium text-black"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 py-4 font-bold text-gray-900 shadow-sm transition-transform active:scale-95"
                 >
-                  <div>В инвентарь</div>
+                  В инвентарь
                 </button>
                 <ActiveDrawer
                   id={Number(id)}
@@ -334,7 +344,7 @@ function RouteComponent() {
                   name={name}
                 >
                   {event?.category === "Квест" ? (
-                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
+                    <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95">
                       {showActivatedLabel ? "Билет активирован" : "Активировать билет"}
                     </button>
                   ) : (
@@ -346,261 +356,354 @@ function RouteComponent() {
           </div>
         </>
       ) : (
-        <div data-mobile={isMobile} className="pb-24">
-          <div
-            data-mobile={isMobile}
-            className="fixed top-0 left-0 z-10 flex w-full items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
-          >
-            <div className="relative flex w-full max-w-md items-center justify-between">
+        <div className="pb-32">
+          {/* Modern Header with Back Button */}
+          <div className="pt-safe pointer-events-none fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-4">
+            <button
+              onClick={() => window.history.back()}
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/20 shadow-sm backdrop-blur-md transition-all active:scale-95"
+            >
+              <ArrowLeft className="h-5 w-5 text-white" strokeWidth={2.5} />
+            </button>
+
+            <div className="pointer-events-auto flex gap-2">
               <button
-                onClick={() => window.history.back()}
-                className="flex h-6 w-6 items-center justify-center"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/20 shadow-sm backdrop-blur-md transition-all active:scale-95"
+                onClick={() => {
+                  // Share logic
+                }}
               >
-                <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+                <Share2 className="h-4 w-4 text-white" />
               </button>
-              <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-800">
-                {event?.category}
-              </h1>
-              <div className="flex h-6 w-6" />
             </div>
           </div>
-          <div className="relative">
-            <img
+
+          <div className="relative h-[45vh] w-full overflow-hidden">
+            <motion.img
+              initial={{ scale: 1.1 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.8 }}
               src={
                 event?.image?.startsWith("https://") || event?.image?.startsWith("/")
                   ? event?.image
                   : getImageUrl(event?.image || "")
               }
               alt={event?.title ?? ""}
-              className="h-[30vh] w-full rounded-t-xl object-cover"
+              className="h-full w-full object-cover"
             />
-            <div className="absolute bottom-4 left-4 flex flex-col gap-2 text-white">
-              <div className="text-2xl font-bold">{event?.title}</div>
-              <div className="flex items-center justify-start gap-2">
-                <div className="flex items-center justify-center rounded-full bg-black/25 px-2">
-                  {event?.type}
-                </div>
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+            <div className="absolute bottom-0 left-0 w-full p-6 pb-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-3 flex items-center gap-2"
+              >
+                <span className="rounded-full border border-white/10 bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
+                  {event?.category}
+                </span>
+                {event?.type && (
+                  <span className="rounded-full border border-white/10 bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
+                    {event?.type}
+                  </span>
+                )}
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mb-2 text-3xl leading-tight font-extrabold text-white drop-shadow-lg"
+              >
+                {event?.title}
+              </motion.h1>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="flex items-center gap-4 text-sm font-medium text-white/90"
+              >
+                {event?.date && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
+                    {event.date}
+                  </div>
+                )}
+                {event?.location && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    {event.location}
+                  </div>
+                )}
+              </motion.div>
             </div>
           </div>
-          <div className="flex gap-4 px-4 pt-4">
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "info" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("info")}
-            >
-              Информация
-            </button>
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "reviews" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("reviews")}
-            >
-              Отзывы
-            </button>
-          </div>
-          {page === "info" ? (
-            <>
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Описание</div>
-                <div>
-                  {event?.description?.split(/\n{2,}/).map((paragraph, idx) => (
-                    <p key={idx} className="mb-3 last:mb-0">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Локация</div>
-                <div>{event?.location}</div>
-              </div>
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Организатор</div>
-                <div className="text-l font-bold">{event?.organizer}</div>
-              </div>
-              {event?.stages && event?.stages?.length > 0 ? (
-                <div className="flex flex-col gap-4 px-4 py-4">
-                  <div className="text-2xl font-bold">Этапы квеста</div>
-                  <div className="relative">
-                    {event?.stages?.map((stage, idx) => (
-                      <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
-                        <div className="relative flex w-8 flex-none items-start justify-center">
-                          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
-                            {idx + 1}
-                          </span>
-                        </div>
 
-                        <div className="flex flex-col gap-1">
-                          <div className="font-bold text-black">{stage.title}</div>
-                          <div className="text-sm text-black/80">{stage.desc}</div>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2 px-4 py-4">
-                  {event?.quests?.map((quest) => (
-                    <>
-                      <QuestCard key={quest.id} quest={quest as any} isNavigable={true} />
-                      {event?.description?.slice(0, 100)}
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center justify-center rounded-full bg-[#DEB8FF] px-3 text-black">
-                          + Достижение
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-base font-medium text-black">
-                            +{pointRewards?.[0]?.value?.toLocaleString() || 0}
-                          </span>
-                          <span className="text-base font-medium text-black">points</span>
-                          <Coin />
-                        </div>
-                      </div>
-                    </>
-                  ))}
-                </div>
-              )}
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Расписание</div>
-                <div className="text-l font-bold">{event?.date}</div>
+          {/* Content Container with Overlap */}
+          <div className="relative z-10 -mt-6 min-h-[50vh] rounded-t-[32px] bg-[#FAFAFA] px-5 pt-8">
+            {/* Tabs */}
+            <div className="mb-6 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-gray-100">
+              <div className="relative flex h-10 items-center">
+                <div
+                  className={cn(
+                    "absolute h-full w-1/2 rounded-xl bg-gray-900 transition-all duration-300 ease-in-out",
+                    page === "reviews" ? "translate-x-[100%]" : "translate-x-0",
+                  )}
+                />
+                <button
+                  onClick={() => setPage("info")}
+                  className={cn(
+                    "relative z-10 flex flex-1 items-center justify-center gap-2 text-sm font-bold transition-colors duration-200",
+                    page === "info" ? "text-white" : "text-gray-500",
+                  )}
+                >
+                  <Info className="h-4 w-4" />
+                  Информация
+                </button>
+                <button
+                  onClick={() => setPage("reviews")}
+                  className={cn(
+                    "relative z-10 flex flex-1 items-center justify-center gap-2 text-sm font-bold transition-colors duration-200",
+                    page === "reviews" ? "text-white" : "text-gray-500",
+                  )}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Отзывы
+                </button>
               </div>
-              <div className="flex flex-col justify-center gap-2 px-4 py-4">
-                <div className="flex flex-col items-start justify-start text-2xl font-bold">
-                  <div className="flex items-center">
-                    <div className="text-2xl font-bold">Награда </div>
-                    <div className="text-l pl-2 font-bold">
-                      +{pointRewards?.[0]?.value?.toLocaleString() || 0}
+            </div>
+
+            <AnimatePresence mode="wait">
+              {page === "info" ? (
+                <motion.div
+                  key="info"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex flex-col gap-4"
+                >
+                  <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 className="mb-3 text-lg font-bold text-gray-900">Описание</h3>
+                    <div className="space-y-3 text-sm leading-relaxed text-gray-600">
+                      {event?.description
+                        ?.split(/\n{2,}/)
+                        .map((paragraph, idx) => <p key={idx}>{paragraph}</p>)}
                     </div>
-                    <Coin />
                   </div>
-                </div>
 
-                <div>За успешное выполнение квеста</div>
-
-                {/* Case rewards */}
-                {caseRewards && caseRewards.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {caseRewards.map((reward: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-blue-200 px-4"
-                      >
-                        <img
-                          src={cases?.find((c) => c.id === reward.eventId)?.photo || ""}
-                          alt="case"
-                          className="h-10 w-10"
-                        />
-                        <span className="mt-1 text-center text-sm">
-                          {cases?.find((c) => c.id === reward.eventId)?.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Key rewards */}
-                {keyRewards && keyRewards.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {keyRewards.map((reward: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-yellow-200 px-4"
-                      >
-                        <img
-                          src={cases?.find((c) => c.id === reward.caseId)?.photo || ""}
-                          alt="key"
-                          className="h-10 w-10"
-                        />
-                        <span className="mt-1 text-center text-sm">
-                          Ключ от {cases?.find((c) => c.id === reward.caseId)?.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <div className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-blue-200 px-4">
-                    <img src="/shit.png" alt="coin" className="h-10 w-10" />
-                    <span className="mt-1 text-center text-sm">Кепка BUCS</span>
-                  </div>
-                  <div className="flex h-28 w-28 flex-col items-center justify-center rounded-lg bg-red-200 px-4">
-                    <img src="/cap.png" alt="coin" className="h-10 w-10" />
-                    <span className="mt-1 text-center text-sm">Любитель к...</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 px-4 py-4">
-                <div className="text-2xl font-bold">Достижение</div>
-                <div>+1 Активный участник</div>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col">
-              {filteredReviews?.map((review) => {
-                const user = users?.find((user) => user.id === review.userId);
-                return (
-                  <div key={review.id} className="flex flex-col gap-2 px-4 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-10 w-10 rounded-full bg-gray-200"></div>
-                        <div className="flex flex-col">
-                          <div className="text-lg font-bold">
-                            {user?.name} {user?.surname}
+                  {(event?.location || event?.organizer) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {event?.location && (
+                        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                            <MapPin className="h-5 w-5" />
                           </div>
-                          <div className="text-sm text-gray-500">участник</div>
+                          <div className="text-xs font-medium text-gray-500">Локация</div>
+                          <div className="text-sm font-bold text-gray-900">
+                            {event.location}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="text-lg font-bold">{review.rating}</div>
-                        <Star />
+                      )}
+                      {event?.organizer && (
+                        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <Info className="h-5 w-5" />
+                          </div>
+                          <div className="text-xs font-medium text-gray-500">
+                            Организатор
+                          </div>
+                          <div className="text-sm font-bold text-gray-900">
+                            {event.organizer}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {event?.stages && event?.stages?.length > 0 ? (
+                    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                      <h3 className="mb-4 text-lg font-bold text-gray-900">
+                        Этапы квеста
+                      </h3>
+                      <div className="relative pl-2">
+                        <div className="absolute top-2 bottom-6 left-[15px] w-0.5 bg-gray-100" />
+                        {event?.stages?.map((stage, idx) => (
+                          <div
+                            key={idx}
+                            className="relative flex items-start gap-4 pb-6 last:pb-0"
+                          >
+                            <div className="relative z-10 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white ring-4 ring-white">
+                              {idx + 1}
+                            </div>
+                            <div className="pt-1">
+                              <div className="font-bold text-gray-900">{stage.title}</div>
+                              <div className="mt-1 text-sm text-gray-500">
+                                {stage.desc}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div>{review.review}</div>
-                    <div className="h-0.5 w-full bg-gray-200"></div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  ) : (
+                    // Sub-quests logic
+                    <div className="flex flex-col gap-3">
+                      {event?.quests?.map((quest) => (
+                        <div
+                          key={quest.id}
+                          className="rounded-3xl bg-white p-2 shadow-sm ring-1 ring-gray-100"
+                        >
+                          <QuestCard quest={quest as any} isNavigable={true} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
+                  {/* Rewards Section */}
+                  <div className="rounded-3xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] p-6 text-white shadow-lg">
+                    <div className="mb-6 flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-yellow-400" />
+                      <h3 className="text-lg font-bold">Награды</h3>
+                    </div>
+
+                    <div className="mb-6">
+                      <div className="mb-1 text-xs font-medium text-white/60">
+                        Основная награда
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-3xl font-bold text-white">
+                          +{pointRewards?.[0]?.value?.toLocaleString() || 0}
+                        </span>
+                        <Coin />
+                      </div>
+                    </div>
+
+                    {((caseRewards && caseRewards.length > 0) ||
+                      (keyRewards && keyRewards.length > 0)) && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {caseRewards?.map((reward: any, index: number) => (
+                          <div
+                            key={`case-${index}`}
+                            className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/10 p-4 backdrop-blur-sm"
+                          >
+                            <img
+                              src={
+                                cases?.find((c) => c.id === reward.eventId)?.photo || ""
+                              }
+                              alt="case"
+                              className="mb-2 h-12 w-12 object-contain"
+                            />
+                            <span className="text-center text-xs font-medium text-white/80">
+                              {cases?.find((c) => c.id === reward.eventId)?.name}
+                            </span>
+                          </div>
+                        ))}
+                        {keyRewards?.map((reward: any, index: number) => (
+                          <div
+                            key={`key-${index}`}
+                            className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/10 p-4 backdrop-blur-sm"
+                          >
+                            <img
+                              src={
+                                cases?.find((c) => c.id === reward.caseId)?.photo || ""
+                              }
+                              alt="key"
+                              className="mb-2 h-12 w-12 object-contain"
+                            />
+                            <span className="text-center text-xs font-medium text-white/80">
+                              Ключ от {cases?.find((c) => c.id === reward.caseId)?.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="reviews"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex flex-col gap-3"
+                >
+                  {filteredReviews && filteredReviews.length > 0 ? (
+                    filteredReviews.map((review) => {
+                      const user = users?.find((user) => user.id === review.userId);
+                      return (
+                        <div
+                          key={review.id}
+                          className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+                        >
+                          <div className="mb-3 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg">
+                                {user?.name?.[0] || "?"}
+                              </div>
+                              <div>
+                                <div className="font-bold text-gray-900">
+                                  {user?.name} {user?.surname}
+                                </div>
+                                <div className="text-xs text-gray-500">Участник</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 rounded-full bg-yellow-50 px-2.5 py-1">
+                              <span className="font-bold text-yellow-600">
+                                {review.rating}
+                              </span>
+                              <Star />
+                            </div>
+                          </div>
+                          <p className="text-sm leading-relaxed text-gray-600">
+                            {review.review}
+                          </p>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                      <MessageCircle className="mb-2 h-12 w-12 opacity-20" />
+                      <p>Нет отзывов</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom Sticky Bar */}
           {!isTicketAvailable ||
           (hasActiveTicket && !hasInactiveTicket && isCompleted) ? (
-            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+            <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-100 bg-white/80 px-5 py-4 pb-8 backdrop-blur-xl">
+              <div className="mx-auto flex w-full max-w-md items-center gap-3">
                 <button
                   onClick={() => setIsOpen(true)}
-                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95"
                 >
-                  <div>Купить за {event?.price}</div>
+                  <span>Купить за {event?.price}</span>
                   <Coin />
                 </button>
-                <div className="flex flex-col items-center">
-                  <div
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-                    onClick={() => setIsMoreOpen(!isMoreOpen)}
-                  >
-                    <WhitePlusIcon />
-                  </div>
-                  <span className="text-xs">Ещё</span>
-                </div>
+                <button
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform active:scale-95"
+                  onClick={() => setIsMoreOpen(!isMoreOpen)}
+                >
+                  <Plus className="h-6 w-6 text-gray-900" />
+                </button>
               </div>
             </div>
           ) : hasInactiveTicket ? (
-            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
+            <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-100 bg-white/80 px-5 py-4 pb-4 backdrop-blur-xl">
               {event?.category === "Квест" ? (
-                <div className="mx-auto flex w-full flex-col gap-2 px-4 py-4">
-                  <div className="flex gap-2">
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
                     {!itemData?.isInTrade ? (
                       <button
                         onClick={() => setIsGiveOrTradeOpen(true)}
-                        className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white shadow-lg"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-orange-100 px-4 py-3.5 text-sm font-bold text-orange-600 transition-transform active:scale-95"
                       >
-                        <div className="text-sm">Подарить/Обменять</div>
+                        Подарить/Обменять
                       </button>
                     ) : (
                       <button
@@ -609,75 +712,79 @@ function RouteComponent() {
                             "Вы уже обмениваетесь этим предметом. Сначала завершите обмен",
                           )
                         }
-                        className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-red-300 px-6 py-3 font-medium text-white opacity-50 shadow-lg"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gray-100 px-4 py-3.5 text-sm font-bold text-gray-400"
                       >
-                        <div className="text-sm">Подарить/Обменять</div>
+                        Подарить/Обменять
                       </button>
                     )}
 
-                    <ActiveDrawer
-                      id={Number(id)}
-                      name={name}
-                      open={isActiveDrawerOpen}
-                      onOpenChange={(open) => {
-                        if (open) {
-                          lockBodyScroll();
-                        } else {
-                          unlockBodyScroll();
-                        }
-                        setIsActiveDrawerOpen(open);
-                      }}
+                    <button
+                      onClick={() => setIsSellDrawerOpen(true)}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-purple-600 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95"
                     >
-                      <button className="flex min-h-12 flex-1 items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                        <div>Активировать</div>
-                      </button>
-                    </ActiveDrawer>
+                      Продать
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => setIsSellDrawerOpen(true)}
-                    className="flex min-h-12 w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-green-500 px-6 py-3 font-medium text-white shadow-lg"
+                  <ActiveDrawer
+                    id={Number(id)}
+                    name={name}
+                    open={isActiveDrawerOpen}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        lockBodyScroll();
+                      } else {
+                        unlockBodyScroll();
+                      }
+                      setIsActiveDrawerOpen(open);
+                    }}
                   >
-                    <div>Продать</div>
-                  </button>
+                    <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-200 transition-transform active:scale-95">
+                      Активировать
+                    </button>
+                  </ActiveDrawer>
                 </div>
               ) : (
-                <div className="flex w-full items-center gap-2 px-4 py-4">
+                <div className="flex w-full items-center gap-3">
                   <button
                     onClick={() => setIsGiveDrawerOpen(true)}
-                    className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-[#DEB8FF] px-6 py-3 font-medium text-white shadow-lg"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#DEB8FF] px-6 py-4 font-bold text-white shadow-lg transition-transform active:scale-95"
                   >
-                    <div>Подарить</div>
+                    Подарить
                   </button>
                   <QrDrawer open={isQrOpen} onOpenChange={setIsQrOpen}>
-                    <button className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg">
-                      <div>QR CODE</div>
+                    <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95">
+                      QR CODE
                     </button>
                   </QrDrawer>
                 </div>
               )}
             </div>
           ) : (
-            <div className="fixed right-0 bottom-0 left-0 flex items-center gap-2 bg-white">
-              <div className="mx-auto flex w-full items-center gap-2 px-4 py-4">
+            <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-gray-100 bg-white/80 px-5 py-4 pb-8 backdrop-blur-xl">
+              <div className="mx-auto flex w-full items-center gap-3">
                 <button
                   onClick={handleEndQuest}
-                  className="flex w-full items-center justify-center gap-1 rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-md bg-purple-600 px-6 py-3 font-medium text-white shadow-lg"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-purple-600 px-6 py-4 font-bold text-white shadow-lg shadow-purple-200 transition-transform active:scale-95"
                 >
-                  <div>{isCompleted ? "Вернуться на главную" : "Завершить этап"}</div>
+                  {isCompleted ? "Вернуться на главную" : "Завершить этап"}
                 </button>
-                <div
-                  className="flex flex-col items-center justify-center"
+                <button
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition-transform active:scale-95"
                   onClick={() => {
                     openTelegramLink("https://t.me/joinchat/uyQGDiDmRsc0YTcy");
                   }}
                 >
                   <BlueTelegram />
-                  <div className="text-[#2462FF]">Чат</div>
-                </div>
+                </button>
               </div>
             </div>
           )}
+
+          {/* More Menu Drawer needs to be triggered manually or via its own logic. 
+              The previous implementation had it conditionally rendered. 
+              We'll keep it conditional but ensure the button toggles it. 
+          */}
           {isMoreOpen && (
             <More
               setIsMoreOpen={setIsMoreOpen}
@@ -697,6 +804,7 @@ function RouteComponent() {
           )}
         </div>
       )}
+
       {isReviewOpen && (
         <ReviewEventDrawer
           open={isReviewOpen}

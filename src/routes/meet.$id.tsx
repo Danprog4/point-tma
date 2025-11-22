@@ -417,14 +417,13 @@ function RouteComponent() {
             />
           )}
 
-          {isFullScreen && allPhotos.length > 0 && (
-            <FullScreenPhoto
-              allPhotos={allPhotos}
-              currentIndex={currentIndex}
-              setCurrentIndex={setCurrentIndex}
-              setIsFullScreen={setIsFullScreen}
-            />
-          )}
+          <FullScreenPhoto
+            allPhotos={allPhotos}
+            currentIndex={currentIndex}
+            setCurrentIndex={setCurrentIndex}
+            setIsFullScreen={setIsFullScreen}
+            isOpen={isFullScreen && allPhotos.length > 0}
+          />
         </div>
       )}
       {isDrawerOpen && (

@@ -645,14 +645,14 @@ function RouteComponent() {
                 </div>
               </div>
 
-              {isFullScreen && allPhotos.length > 0 && (
-                <>
-                  <FullScreenPhoto
-                    allPhotos={allPhotos}
-                    currentIndex={currentIndex}
-                    setCurrentIndex={setCurrentIndex}
-                    setIsFullScreen={setIsFullScreen}
-                  />
+              <FullScreenPhoto
+                allPhotos={allPhotos}
+                currentIndex={currentIndex}
+                setCurrentIndex={setCurrentIndex}
+                setIsFullScreen={setIsFullScreen}
+                isOpen={isFullScreen && allPhotos.length > 0}
+              >
+                {allPhotos.length > 0 && (
                   <Heart
                     className={cn(
                       "absolute right-4 bottom-4 z-[100001] h-10 w-10 cursor-pointer rounded-lg bg-neutral-500 p-2 text-white",
@@ -662,8 +662,8 @@ function RouteComponent() {
                       handlePhotoToFavorites({ photo: allPhotos[currentIndex] });
                     }}
                   />
-                </>
-              )}
+                )}
+              </FullScreenPhoto>
               {user?.id !== me?.id && (
                 <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
                   <Link

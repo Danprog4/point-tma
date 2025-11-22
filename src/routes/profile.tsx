@@ -6,7 +6,6 @@ import {
   BarChart3,
   Calendar,
   Calendar1,
-  ChevronRight,
   Crown,
   History,
   Lock,
@@ -218,7 +217,7 @@ function RouteComponent() {
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                       {/* Photo Gallery Strip (Overlaid at bottom) */}
-                      <div className="absolute right-0 bottom-4 left-0 px-4">
+                      <div className="absolute right-0 bottom-5 left-0 px-4">
                         <div className="scrollbar-hidden flex gap-2 overflow-x-auto py-2">
                           {galleryPhotos.map((img, idx) => (
                             <img
@@ -612,11 +611,9 @@ function RouteComponent() {
                       title="Мои обмены"
                     />
                     <div className="h-px bg-gray-50" />
-                    <div
+                    <MenuItem
                       onClick={() => setIsWarningsBansOpen(true)}
-                      className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-gray-50 active:bg-gray-100"
-                    >
-                      <div className="flex items-center gap-3">
+                      icon={
                         <AlertTriangle
                           className={cn(
                             "h-5 w-5",
@@ -625,12 +622,9 @@ function RouteComponent() {
                               : "text-violet-500",
                           )}
                         />
-                        <span className="text-base font-medium text-gray-900">
-                          Модерация
-                        </span>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-300" />
-                    </div>
+                      }
+                      title="Модерация"
+                    />
                   </div>
                 </div>
               </div>
@@ -644,14 +638,13 @@ function RouteComponent() {
               currentXp={user?.xp ?? undefined}
             />
 
-            {isFullScreen && allPhotos.length > 0 && (
-              <FullScreenPhoto
-                allPhotos={allPhotos}
-                currentIndex={currentIndex}
-                setCurrentIndex={setCurrentIndex}
-                setIsFullScreen={setIsFullScreen}
-              />
-            )}
+            <FullScreenPhoto
+              allPhotos={allPhotos}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              setIsFullScreen={setIsFullScreen}
+              isOpen={isFullScreen && allPhotos.length > 0}
+            />
 
             {isWarningsBansOpen && (
               <WarningsBansDrawer

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { Settings, Search } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Search, Settings } from "lucide-react";
 import { useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { Calendar } from "~/components/Calendar";
@@ -65,6 +65,7 @@ export function getTypeColor(type: string) {
 function RouteComponent() {
   useScrollRestoration("quests");
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -130,12 +131,10 @@ function RouteComponent() {
           {/* Title */}
           <div className="flex items-center justify-between px-5 pt-4">
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                Квесты
-              </h1>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Квесты</h1>
               <Selecter width="24px" height="24px" />
             </div>
-            <button className="rounded-full p-2 transition-colors hover:bg-gray-100 active:scale-90 transition-transform">
+            <button className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-100 active:scale-90">
               <Settings className="h-6 w-6 text-gray-900" />
             </button>
           </div>
@@ -152,7 +151,7 @@ function RouteComponent() {
                   onChange={(e) => setSearch(e.target.value)}
                   type="text"
                   placeholder="Поиск квестов..."
-                  className="h-12 w-full rounded-2xl border-none bg-white pl-11 pr-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 outline-none"
+                  className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-11 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500"
                 />
               </div>
 
@@ -164,7 +163,7 @@ function RouteComponent() {
                   setIsOpen(open);
                 }}
               >
-                <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-transform active:scale-95 hover:bg-violet-700">
+                <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-transform hover:bg-violet-700 active:scale-95">
                   <WhiteFilter />
                 </button>
               </FilterDrawer>
@@ -186,7 +185,7 @@ function RouteComponent() {
                   "rounded-full px-5 py-2.5 text-sm font-medium transition-all active:scale-95",
                   activeFilter === filter
                     ? "bg-gray-900 text-white shadow-lg shadow-gray-200"
-                    : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"
+                    : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50",
                 )}
               >
                 {filter}
@@ -199,31 +198,24 @@ function RouteComponent() {
             {/* Active Quests */}
             {userQuestsData && userQuestsData.length > 0 && (
               <div className="space-y-4">
-                <h2 className="px-5 text-lg font-bold text-gray-900">
-                  Активные квесты
-                </h2>
+                <h2 className="px-5 text-lg font-bold text-gray-900">Активные квесты</h2>
                 <div className="flex flex-col gap-4 px-5">
                   {userQuestsData
                     .filter(
                       (quest) =>
                         (activeFilter === "Все" && questsData) ||
-                        quest.type === activeFilter
+                        quest.type === activeFilter,
                     )
                     .map((quest) => {
-                      const questData = questsData?.find(
-                        (q) => q.id === quest.eventId
-                      );
+                      const questData = questsData?.find((q) => q.id === quest.eventId);
                       return (
                         <div
                           key={quest.id}
                           className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md"
                         >
-                          <QuestCard
-                            quest={questData as any}
-                            isNavigable={true}
-                          />
+                          <QuestCard quest={questData as any} isNavigable={true} />
                           <div className="border-t border-gray-50 px-4 pb-4">
-                            <p className="mb-4 pt-3 text-sm leading-relaxed text-gray-600 line-clamp-2">
+                            <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
                               {questData?.description}
                             </p>
 
@@ -240,7 +232,7 @@ function RouteComponent() {
                                 <span>
                                   {(
                                     questData?.rewards?.find(
-                                      (reward) => reward.type === "point"
+                                      (reward) => reward.type === "point",
                                     )?.value ?? 0
                                   ).toLocaleString()}
                                 </span>
@@ -275,28 +267,23 @@ function RouteComponent() {
                 ?.filter((quest) => !quest.isSeries)
                 .filter(
                   (quest) =>
-                    (activeFilter === "Все" && questsData) ||
-                    quest.type === activeFilter
+                    (activeFilter === "Все" && questsData) || quest.type === activeFilter,
                 )
                 .filter((quest) => {
                   return (
-                    quest.title
-                      ?.toLowerCase()
-                      .includes(search.toLowerCase()) ||
-                    quest.description
-                      ?.toLowerCase()
-                      .includes(search.toLowerCase())
+                    quest.title?.toLowerCase().includes(search.toLowerCase()) ||
+                    quest.description?.toLowerCase().includes(search.toLowerCase())
                   );
                 })
                 .map((quest) => (
                   <div key={quest.id} className="space-y-2">
-                    <h3 className="px-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
                       {quest.date}
                     </h3>
                     <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
                       <QuestCard quest={quest as any} isNavigable={true} />
                       <div className="border-t border-gray-50 px-4 pb-4">
-                        <p className="mb-4 pt-3 text-sm leading-relaxed text-gray-600 line-clamp-2">
+                        <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
                           {quest.description}
                         </p>
                         <div className="flex items-center justify-between">
@@ -311,9 +298,8 @@ function RouteComponent() {
                             <span>+</span>
                             <span>
                               {(
-                                quest?.rewards?.find(
-                                  (reward) => reward.type === "point"
-                                )?.value ?? 0
+                                quest?.rewards?.find((reward) => reward.type === "point")
+                                  ?.value ?? 0
                               ).toLocaleString()}
                             </span>
                             <span className="text-gray-500">points</span>

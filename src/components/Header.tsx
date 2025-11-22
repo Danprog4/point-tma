@@ -29,7 +29,7 @@ export const Header = () => {
   return (
     <header
       data-mobile={isMobile}
-      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 backdrop-blur-xl px-5 py-4 data-[mobile=true]:pt-28 supports-[backdrop-filter]:bg-[#FAFAFA]/60"
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 px-5 py-4 backdrop-blur-xl data-[mobile=true]:pt-28 supports-[backdrop-filter]:bg-[#FAFAFA]/60"
     >
       <div className="flex w-20 items-center gap-4">
         <div className="flex items-center">
@@ -50,7 +50,7 @@ export const Header = () => {
             onClick={() => navigate({ to: "/notif" })}
           >
             <Bell className="h-5 w-5 text-gray-700" />
-            <div className="absolute top-0 right-0 flex h-4 w-4 -translate-y-1 translate-x-1 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-[#FAFAFA]">
+            <div className="absolute top-0 right-0 flex h-4 w-4 translate-x-1 -translate-y-1 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-[#FAFAFA]">
               {activeNotifications.length > 9 ? "9+" : activeNotifications.length}
             </div>
           </button>

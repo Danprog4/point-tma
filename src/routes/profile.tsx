@@ -198,7 +198,7 @@ function RouteComponent() {
             {page === "info" && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Main Photo Card */}
-                <div className="px-5">
+                <div>
                   <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
                     <div className="relative h-96 w-full">
                       <img
@@ -474,7 +474,9 @@ function RouteComponent() {
                           {activeQuests?.length || 0}
                         </div>
                         <div className="flex items-center gap-1.5 text-sm font-bold text-gray-900/80">
-                          <span>!</span>
+                          <span>
+                            <Star className="h-4 w-4 fill-white text-white" />
+                          </span>
                           <span>Квесты</span>
                         </div>
                       </div>

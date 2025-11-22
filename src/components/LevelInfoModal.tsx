@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Crown, HelpCircle, Sparkles, Star, Trophy, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { levelsConfig } from "~/config/levels";
 
 interface LevelInfoModalProps {
@@ -17,6 +18,11 @@ export function LevelInfoModal({
   currentXp = 0,
 }: LevelInfoModalProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Блокировка скролла при открытии модалки
   useEffect(() => {
@@ -92,7 +98,9 @@ export function LevelInfoModal({
     return "from-green-400 to-emerald-500";
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -344,6 +352,7 @@ export function LevelInfoModal({
           </div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

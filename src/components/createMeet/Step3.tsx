@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Minus, Plus, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
-import { Thrash } from "../Icons/Thrash";
 import { Invite } from "../Invite";
 import { TagsDrawer } from "../TagsDrawer";
 
@@ -42,38 +40,14 @@ export const Step3 = ({
   category: string;
 }) => {
   const trpc = useTRPC();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
-  const { data: requests } = useQuery(trpc.friends.getRequests.queryOptions());
-  const activeRequests = requests?.filter((request) => request.status === "pending");
-  const predefinedTags = ["Свидание", "Культурный вечер", "Театр", "Вслепую", "Ужин"];
-  const [tagInput, setTagInput] = useState("");
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
 
-  const filteredSuggestions = predefinedTags.filter(
-    (tag) => tag.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(tag),
-  );
-
-  const addTag = (tag: string) => {
-    if (!tag) return;
-    if (!tags.includes(tag)) {
-      setTags([...tags, tag]);
-    }
-    setTagInput("");
-  };
-
   const removeTag = (tag: string) => {
     setTags(tags.filter((t) => t !== tag));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTag(tagInput.trim());
-    }
   };
 
   useEffect(() => {
@@ -85,7 +59,7 @@ export const Step3 = ({
   }, [participants, tags, important, setIsDisabled]);
 
   return (
-    <div className="px-4">
+    <div className="px-4 pb-20">
       {isInvite ? (
         <Invite
           friendName={friendName}
@@ -98,122 +72,124 @@ export const Step3 = ({
           getImageUrl={getImageUrl}
         />
       ) : (
-        <>
-          <div className="mb-2 flex w-full gap-2 text-xl font-bold">
-            Количество участников *
-          </div>
-          <div className="mb-4 flex flex-col items-start gap-2">
-            <input
-              type="number"
-              min="1"
-              value={participants || ""}
-              placeholder="Введите количество участников"
-              className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-              onChange={(e) => {
-                const value = e.target.value;
-                setParticipants(value === "" ? 0 : Number(value));
-              }}
-            />
-            <div className="px-4 text-xs text-gray-500">Для свидания нужно двое</div>
-          </div>
-          {selectedIds &&
-            selectedIds.length > 0 &&
-            selectedIds.map((id) => {
-              const user = users?.find((user) => user.id === id);
-              if (!user) return null;
-
-              return (
-                <div key={user.id}>
-                  <div className="flex items-center justify-between pb-4">
-                    <div className="flex items-center justify-start gap-2">
-                      <img
-                        src={getImageUrl(user?.photo || "")}
-                        alt=""
-                        className="h-14 w-14 rounded-lg"
-                      />
-                      <div className="flex flex-col items-start justify-between gap-2">
-                        <div className="text-lg">
-                          {user?.name} {user?.surname}
-                        </div>
-                        <div>{user?.birthday}</div>
-                      </div>
-                    </div>
-                    {selectedIds.includes(user?.id || 0) ? (
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedIds(selectedIds.filter((id) => id !== user?.id));
-                        }}
-                      >
-                        <Thrash />
-                      </div>
-                    ) : (
-                      <div
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F3E5FF]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-
-                          setSelectedIds([...selectedIds, user?.id || 0]);
-                        }}
-                      >
-                        <div className="pb-1 text-2xl leading-none font-bold text-[#721DBD]">
-                          +
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          <div
-            className="text-center text-lg text-[#9924FF]"
-            onClick={() => setIsInvite(true)}
-          >
-            Пригласить из списка друзей
-          </div>
-          <div className="flex flex-col items-start pt-2">
-            <div className="text-xl font-bold">Тэги</div>
-            <div className="mb-4 w-full">
-              <div className="mb-2 flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <div
-                    key={tag}
-                    className="flex items-center gap-1 rounded-full bg-[#F1F1F1] px-3 py-1 text-sm text-black"
-                  >
-                    {tag}
-                    <span
-                      className="cursor-pointer text-xs text-gray-500"
-                      onClick={() => removeTag(tag)}
-                    >
-                      ×
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                onClick={() => {
-                  setOpen(true);
-                }}
-                className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
+        <div className="flex flex-col gap-6">
+          {/* Participants Counter */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-gray-900" />
+              <div className="text-lg font-bold text-gray-900">Участники *</div>
+            </div>
+            
+            <div className="flex items-center justify-between rounded-2xl bg-white p-2 shadow-sm ring-1 ring-gray-100">
+              <button
+                onClick={() => setParticipants(Math.max(0, participants - 1))}
+                className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 active:scale-95"
               >
-                <div>Выберите тэги</div>
-                <ChevronDown className="h-4 w-4" />
+                <Minus className="h-5 w-5" />
+              </button>
+              
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-bold text-gray-900">{participants || 0}</span>
+                <span className="text-xs text-gray-500">человек</span>
+              </div>
+
+              <button
+                onClick={() => setParticipants((participants || 0) + 1)}
+                className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 active:scale-95"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 text-center">Для свидания нужно минимум двое</p>
+          </div>
+
+          {/* Invited Friends List */}
+          {selectedIds.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <h3 className="text-sm font-bold text-gray-900">Приглашенные друзья</h3>
+              <div className="flex flex-col gap-2">
+                {selectedIds.map((id) => {
+                  const user = users?.find((user) => user.id === id);
+                  if (!user) return null;
+
+                  return (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getImageUrl(user?.photo || "")}
+                          alt=""
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900 text-sm">
+                            {user?.name} {user?.surname}
+                          </span>
+                          <span className="text-xs text-gray-500">{user?.birthday}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSelectedIds(selectedIds.filter((fid) => fid !== user?.id))}
+                        className="rounded-full bg-gray-50 p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <div className="flex w-full flex-col items-start pt-2">
-              <div className="mb-2 flex w-full gap-2 text-xl font-bold">Важно *</div>
-              <div className="mb-4 flex w-full flex-col items-start gap-2">
-                <textarea
-                  value={important}
-                  onChange={(e) => setImportant(e.target.value)}
-                  placeholder="Важное уточнение для встречи. Это может быть требование к партнёру(-ам)"
-                  className="h-20 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-2 text-sm text-black placeholder:text-black/50"
-                />
-              </div>
+          )}
+
+          <button
+            onClick={() => setIsInvite(true)}
+            className="flex w-full items-center justify-center rounded-2xl bg-violet-50 py-4 font-bold text-violet-600 transition-colors hover:bg-violet-100 active:scale-[0.99]"
+          >
+            Пригласить друзей
+          </button>
+
+          {/* Tags Section */}
+          <div className="flex flex-col gap-3">
+            <div className="text-lg font-bold text-gray-900">Тэги</div>
+            
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <div
+                  key={tag}
+                  className="flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1.5 text-sm font-medium text-violet-700"
+                >
+                  {tag}
+                  <button
+                    onClick={() => removeTag(tag)}
+                    className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-200 text-violet-700 hover:bg-violet-300"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => setOpen(true)}
+                className="flex items-center gap-1.5 rounded-full border border-dashed border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-500 hover:border-violet-300 hover:text-violet-600"
+              >
+                <Plus className="h-3 w-3" />
+                Добавить
+              </button>
             </div>
           </div>
-        </>
+
+          {/* Important Info */}
+          <div className="flex flex-col gap-3">
+            <div className="text-lg font-bold text-gray-900">Важно *</div>
+            <textarea
+              value={important}
+              onChange={(e) => setImportant(e.target.value)}
+              placeholder="Укажите важные детали, дресс-код или требования к участникам..."
+              className="min-h-[120px] w-full resize-none rounded-2xl border-none bg-white px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
+            />
+          </div>
+        </div>
       )}
       <TagsDrawer
         open={open}

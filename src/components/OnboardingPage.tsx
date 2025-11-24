@@ -265,7 +265,7 @@ export const OnboardingPage = () => {
       exit={{ opacity: 0, y: 50 }}
       className="absolute inset-0 flex flex-col overflow-hidden bg-neutral-950"
     >
-      <div className="scrollbar-hide flex-1 overflow-y-auto px-4 py-8 pb-32">
+      <div className="scrollbar-hide flex-1 overflow-y-auto px-4 py-8 pt-20 pb-32">
         <h2 className="mb-8 text-center text-2xl font-bold text-white">
           Создание профиля
         </h2>

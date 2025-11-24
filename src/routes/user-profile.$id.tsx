@@ -6,6 +6,7 @@ import {
   Briefcase,
   Calendar1,
   Dumbbell,
+  Flag,
   Heart,
   Mars,
   Star,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { useScroll } from "~/components/hooks/useScroll";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
@@ -21,6 +23,7 @@ import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
 import { UserSubscribers } from "~/components/UserSubscribers";
 import { levelsConfig } from "~/config/levels";
+import { usePeopleComplaints } from "~/hooks/usePeopleComplaints";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
 import { getImage } from "~/lib/utils/getImage";
@@ -258,6 +261,29 @@ function RouteComponent() {
     await queryClient.invalidateQueries({
       queryKey: trpc.main.getUserFavorites.queryKey(),
     });
+    await queryClient.invalidateQueries({
+      queryKey: trpc.main.getComplaints.queryKey(),
+    });
+  };
+
+  const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
+
+  const {
+    isComplaintOpen,
+    setIsComplaintOpen,
+    complaint,
+    setComplaint,
+    openComplaintDrawer,
+    handleSubmitComplaint,
+  } = usePeopleComplaints(me);
+
+  const isUserComplained = useMemo(() => {
+    return Boolean(complaints?.some((c) => c.type === "user" && c.toUserId === user?.id));
+  }, [complaints, user?.id]);
+
+  const handleComplaintAction = () => {
+    if (!user?.id) return;
+    openComplaintDrawer(user.id, isUserComplained);
   };
 
   return (
@@ -289,7 +315,24 @@ function RouteComponent() {
             <h1 className="text-lg font-bold text-gray-900">
               {isMore ? `Об ${user?.name} ${user?.surname}` : "Профиль"}
             </h1>
-            <div className="w-10" />
+            <div className="flex w-10 items-center justify-center">
+              {!isOwner && !isMore && (
+                <button
+                  onClick={handleComplaintAction}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-90",
+                    isUserComplained
+                      ? "bg-red-50 text-red-500"
+                      : "text-gray-400 hover:bg-gray-100 hover:text-gray-600",
+                  )}
+                >
+                  <Flag
+                    className="h-5 w-5"
+                    fill={isUserComplained ? "currentColor" : "none"}
+                  />
+                </button>
+              )}
+            </div>
           </div>
 
           <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-32">
@@ -757,6 +800,24 @@ function RouteComponent() {
                 currentLevel={user?.level ?? undefined}
                 currentXp={user?.xp ?? undefined}
               />
+
+              {/* Complaint Drawer */}
+              {isComplaintOpen && (
+                <ComplaintDrawer
+                  handleSendComplaint={() => {
+                    if (user?.id) {
+                      handleSubmitComplaint(user.id);
+                    }
+                  }}
+                  complaint={complaint}
+                  setComplaint={setComplaint}
+                  open={isComplaintOpen}
+                  onOpenChange={setIsComplaintOpen}
+                  userId={user?.id as number}
+                  type="user"
+                  isComplained={isUserComplained}
+                />
+              )}
             </PullToRefresh>
           </div>
         </div>

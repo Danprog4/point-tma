@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import imageCompression from "browser-image-compression";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Image as ImageIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { convertHeicToPng } from "~/lib/utils/convertHeicToPng";
@@ -9,7 +9,6 @@ import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useTRPC } from "~/trpc/init/react";
 import { CreateMeetDrawer } from "../CreateMeetDrawer";
 import DatePicker2 from "../DatePicker2";
-import { AddPhoto } from "../Icons/AddPhoto";
 import { PlusIcon } from "../Icons/Plus";
 import TimePicker from "../TimePicker";
 
@@ -83,34 +82,7 @@ export const Step1 = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("Все");
 
-  const filters = ["Все", "Кино", "Вечеринки", "Конференции", "Нетворкинг", "Квесты"];
-
   const { data: eventsData } = useQuery(trpc.event.getEvents.queryOptions());
-
-  let data: any[] = [];
-
-  switch (activeFilter) {
-    case "Все":
-      data = eventsData || [];
-      break;
-    case "Квесты":
-      data = eventsData?.filter((event) => event.category === "Квест") || [];
-      break;
-    case "Кино":
-      data = eventsData?.filter((event) => event.category === "Кино") || [];
-      break;
-    case "Конференции":
-      data = eventsData?.filter((event) => event.category === "Конференция") || [];
-      break;
-    case "Вечеринки":
-      data = eventsData?.filter((event) => event.category === "Вечеринка") || [];
-      break;
-    case "Нетворкинг":
-      data = eventsData?.filter((event) => event.category === "Нетворкинг") || [];
-      break;
-    default:
-      data = [];
-  }
 
   useEffect(() => {
     if (calendarDate) {
@@ -206,25 +178,6 @@ export const Step1 = ({
     setSelectedFile(null);
   };
 
-  // Handler to delete main photo without triggering input
-  const handleDeletePhoto = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (gallery.length > 0) {
-      const [first, ...rest] = gallery;
-      // Promote first gallery photo to main in UI
-      setGallery(rest);
-      setMainPhotoRaw(first);
-      setBase64(first.startsWith("data:image/") ? first : getImageUrl(first));
-      setSelectedFile(null);
-    } else {
-      // No gallery photos, just clear main photo in UI
-      setBase64("");
-      setMainPhotoRaw("");
-      setSelectedFile(null);
-    }
-  };
-
   useEffect(() => {
     if (title && description && type && base64 && date) {
       setIsDisabled(false);
@@ -234,24 +187,30 @@ export const Step1 = ({
   }, [title, description, type, base64, date]);
 
   return (
-    <div className="scrollbar-hidden w-full overflow-y-auto pb-4">
-      <div className="mt-8 flex w-full flex-col items-center gap-4">
+    <div className="scrollbar-hidden w-full overflow-y-auto px-4 pb-8">
+      {/* Photo Upload Section */}
+      <div className="mt-4 flex w-full flex-col items-center gap-4">
         <label
           htmlFor="photo-upload"
-          className="flex w-full cursor-pointer flex-col items-center gap-2"
+          className="group relative flex w-full cursor-pointer flex-col items-center gap-2 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-all hover:ring-violet-200 active:scale-[0.99]"
         >
           {base64 ? (
-            <div className="relative w-full">
-              <img src={base64} alt="photo" className="mb-2 h-90 w-full object-cover" />
-              <div className="absolute right-0 bottom-2 flex w-full items-center justify-center gap-20 bg-[#12121280] px-4 py-2 text-white">
-                <div>Изменить</div>
+            <div className="relative h-64 w-full">
+              <img src={base64} alt="photo" className="h-full w-full object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="rounded-full bg-white/20 px-4 py-2 font-medium text-white backdrop-blur-md">
+                  Изменить обложку
+                </div>
               </div>
             </div>
           ) : (
-            <div className="mb-2 flex h-90 w-full items-center justify-center rounded-t-2xl bg-[#F0F0F0]">
-              <div className="flex flex-col items-center gap-2">
-                <AddPhoto />
-                <div className="text-sm text-[#9924FF]">Загрузить фото/афишу *</div>
+            <div className="flex h-64 w-full flex-col items-center justify-center bg-gray-50 text-gray-400 transition-colors group-hover:bg-gray-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100">
+                <ImageIcon className="h-8 w-8 text-violet-500" />
+              </div>
+              <div className="mt-3 font-medium text-gray-900">Добавить обложку</div>
+              <div className="mt-1 text-sm text-gray-500">
+                Рекомендуемый размер 1920x1080
               </div>
             </div>
           )}
@@ -265,87 +224,94 @@ export const Step1 = ({
         </label>
       </div>
 
-      <div className="px-4">
-        <div className="mb-4 text-2xl font-bold">Галерея</div>
-        <div className="mb-4 flex flex-wrap gap-4">
+      {/* Gallery Section */}
+      <div className="mt-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900">Галерея</h3>
+          <span className="text-sm text-gray-500">{gallery.length} фото</span>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          <label
+            htmlFor="gallery-upload"
+            className="flex h-20 w-20 flex-shrink-0 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 transition-colors hover:border-violet-300 hover:bg-violet-50"
+          >
+            <PlusIcon />
+            <input
+              id="gallery-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAddGallery}
+            />
+          </label>
           {gallery.map((item, idx) => {
             const isBase64 = typeof item === "string" && item.startsWith("data:image/");
             return (
               <div
                 key={item || idx}
                 onClick={() => handleGalleryClick(item)}
-                className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
+                className="relative h-20 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl shadow-sm ring-1 ring-gray-100 transition-transform active:scale-95"
               >
                 <img
                   src={isBase64 ? item : getImageUrl(item)}
                   alt={`Галерея ${idx + 1}`}
-                  className="h-full w-full rounded-lg object-cover"
+                  className="h-full w-full object-cover"
                 />
+                <div className="absolute inset-0 bg-black/0 transition-colors hover:bg-black/10" />
               </div>
             );
           })}
+        </div>
+      </div>
 
-          <label
-            htmlFor="gallery-upload"
-            className="flex aspect-square w-[21.5%] cursor-pointer items-center justify-center rounded-lg bg-[#F3E5FF]"
-          >
-            <div className="flex flex-col items-center gap-1 px-2">
-              <PlusIcon />
-              <div className="text-center text-xs text-[#9924FF]">добавить еще</div>
+      {/* Inputs Section */}
+      <div className="mt-6 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-gray-700">Дата *</label>
+            <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
+              <DatePicker2 value={date} setDate={setDate} />
             </div>
-          </label>
-          <input
-            id="gallery-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAddGallery}
-          />
-        </div>
-
-        <div className="flex w-full flex-col items-start gap-2 pb-4">
-          <div className="text-xl font-bold">Дата *</div>
-          <div className="w-full">
-            <DatePicker2 value={date} setDate={setDate} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-gray-700">Время *</label>
+            <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
+              <TimePicker value={time} setTime={setTime} placeholder="00:00" />
+            </div>
           </div>
         </div>
 
-        <div className="flex w-full flex-col items-start gap-2 pb-4">
-          <div className="text-xl font-bold">Время *</div>
-          <div className="w-full">
-            <TimePicker value={time} setTime={setTime} placeholder="Выберите время" />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-start gap-2 py-4 pb-4">
-          <div className="text-xl font-bold">Тип встречи *</div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-bold text-gray-700">Тип встречи *</label>
           <div
-            onClick={() => {
-              setIsDrawerOpen(true);
-            }}
-            className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black opacity-50 placeholder:text-black/50"
+            onClick={() => setIsDrawerOpen(true)}
+            className="flex h-12 w-full cursor-pointer items-center justify-between rounded-2xl bg-white px-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-shadow hover:ring-violet-200 active:scale-[0.99]"
           >
-            <div>{subType || type || "Выберите тип"}</div>
-            <ChevronDown className="h-4 w-4" />
+            <span className={!subType && !type ? "text-gray-400" : ""}>
+              {subType || type || "Выберите тип"}
+            </span>
+            <ChevronDown className="h-4 w-4 text-gray-400" />
           </div>
         </div>
-        <div className="flex flex-col items-start gap-2 py-4 pb-4">
-          <div className="text-xl font-bold">Название *</div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-bold text-gray-700">Название *</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             type="text"
-            placeholder={`Введите название`}
-            className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+            placeholder="Придумайте название"
+            className="h-12 w-full rounded-2xl border-none bg-white px-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
           />
         </div>
-        <div className="flex flex-col items-start gap-2 pb-4">
-          <div className="text-xl font-bold">Описание *</div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-bold text-gray-700">Описание *</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={`Введите описание`}
-            className="h-28 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 py-3 text-sm text-black placeholder:text-black/50"
+            placeholder="Расскажите подробнее о встрече..."
+            className="min-h-[120px] w-full resize-none rounded-2xl border-none bg-white px-4 py-3 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
           />
         </div>
       </div>

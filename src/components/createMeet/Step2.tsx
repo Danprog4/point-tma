@@ -12,6 +12,7 @@ import {
   formatDistance,
 } from "~/lib/utils/calculateDistance";
 
+import { Plus, X } from "lucide-react";
 import { useTRPC } from "~/trpc/init/react";
 import TimePicker from "../TimePicker";
 // Предустановленные тэги, которые будут предлагаться при вводе
@@ -603,547 +604,293 @@ export const Step2 = ({
   return (
     <>
       <div className="scrollbar-hidden flex flex-col overflow-y-auto px-4 pb-20">
-        <div className="flex flex-col">
-          <div className="flex flex-col items-start gap-2 pb-4">
-            <div className="text-xl font-bold">Город *</div>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-gray-700">Город *</label>
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
               type="text"
-              placeholder={`Введите город`}
-              className="h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
+              placeholder="Введите город"
+              className="h-12 w-full rounded-2xl border-none bg-white px-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500 focus:outline-none"
             />
           </div>
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: length }).map((_, index) => (
-              <div key={index}>
-                <div className="text-xl font-bold">Этапы встречи *</div>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <input
-                    value={locations[index]?.location || ""}
-                    type="text"
-                    placeholder="Название"
-                    className="h-11 flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-                    onChange={(e) => {
-                      const newLocations = [...locations];
-                      if (!newLocations[index]) {
-                        newLocations[index] = { location: "", address: "" };
-                      }
-                      newLocations[index].location = e.target.value;
-                      // Mark as custom when user manually edits
-                      newLocations[index].isCustom = true;
-                      setLocations(newLocations);
 
-                      // Clear selectedItems for this index if user starts manual input
-                      if (
-                        e.target.value.trim() &&
-                        selectedItems.some((item) => item.index === index)
-                      ) {
-                        setSelectedItems(
-                          (prev: { id: number; type: string; index: number }[]) =>
-                            prev.filter(
-                              (item: { id: number; type: string; index: number }) =>
-                                item.index !== index,
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: length }).map((_, index) => (
+              <div
+                key={index}
+                className="relative rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-600">
+                      {index + 1}
+                    </div>
+                    <span className="font-bold text-gray-900">Этап встречи</span>
+                  </div>
+                  {length > 1 && (
+                    <button
+                      onClick={() => {
+                        // Remove from locations
+                        const newLocations = locations.filter((_, i) => i !== index);
+                        setLocations(newLocations);
+
+                        // Remove and reindex selectedItems after the removed index
+                        setSelectedItems((prev) =>
+                          prev
+                            .filter((si) => si.index !== index)
+                            .map((si) =>
+                              si.index > index ? { ...si, index: si.index - 1 } : si,
                             ),
                         );
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleYandexSearch(index)}
-                    disabled={
-                      !locations[index]?.location?.trim() || searchAddress.isPending
-                    }
-                    className="flex h-11 items-center gap-2 rounded-[14px] bg-blue-500 px-3 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
-                    title="Поиск в Яндекс картах"
-                  >
-                    {searchAddress.isPending ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    ) : (
-                      <Map />
-                    )}
-                    <span className="text-sm">
-                      {searchAddress.isPending ? "Поиск..." : "Maps"}
-                    </span>
-                  </button>
+
+                        // Decrease steps count
+                        setLength(length - 1);
+                      }}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <Bin />
+                    </button>
+                  )}
                 </div>
 
-                {/* Map + Search results */}
-                {showYandexResults[index] && (
-                  <div className="mt-3 rounded-lg bg-gray-50 p-3">
-                    <div className="mb-3">
-                      <YandexMap
-                        center={mapCenter || undefined}
-                        zoom={10}
-                        className="h-60 w-full overflow-hidden rounded-lg"
-                        enableGeolocation={true}
-                        autoGeolocation={!mapCenter} // Только если центр не задан
-                        preventClickSelection={true} // Отключаем автовыбор при клике
-                        showSelectButton={true} // Показываем кнопку выбора
-                        onLocationSelect={(coords) =>
-                          handleMapLocationSelect(index, coords)
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <input
+                      value={locations[index]?.location || ""}
+                      type="text"
+                      placeholder="Название места"
+                      className="h-12 flex-1 rounded-2xl border-none bg-gray-50 px-4 text-sm text-gray-900 ring-1 ring-gray-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                      onChange={(e) => {
+                        const newLocations = [...locations];
+                        if (!newLocations[index]) {
+                          newLocations[index] = { location: "", address: "" };
                         }
-                        onGeolocationSuccess={(coords) => {
-                          // При успешной геолокации просто центрируем карту, но не выбираем адрес
-                          // Можно добавить логику для центрирования карты или другие действия
-                        }}
-                        markers={extractMarkersFromSuggest()}
-                      />
-                    </div>
-                    {searchAddress.data && (
-                      <div className="mb-2 flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-700">
-                          Результаты поиска
-                          {searchResultsWithDistances.length > 0 && (
-                            <span className="ml-2 text-xs text-gray-500">
-                              ({searchResultsWithDistances.length} найдено
-                              {userLocation &&
-                                `, ${searchResultsWithDistances.filter((r) => r.distance !== null).length} с расстоянием`}
-                              )
-                            </span>
-                          )}
-                        </h3>
+                        newLocations[index].location = e.target.value;
+                        newLocations[index].isCustom = true;
+                        setLocations(newLocations);
+
+                        if (
+                          e.target.value.trim() &&
+                          selectedItems.some((item) => item.index === index)
+                        ) {
+                          setSelectedItems(
+                            (prev: { id: number; type: string; index: number }[]) =>
+                              prev.filter(
+                                (item: { id: number; type: string; index: number }) =>
+                                  item.index !== index,
+                              ),
+                          );
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleYandexSearch(index)}
+                      disabled={
+                        !locations[index]?.location?.trim() || searchAddress.isPending
+                      }
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500 text-white transition-all hover:bg-blue-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-200"
+                    >
+                      {searchAddress.isPending ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      ) : (
+                        <Map />
+                      )}
+                    </button>
+                  </div>
+
+                  {showYandexResults[index] && (
+                    <div className="overflow-hidden rounded-2xl bg-gray-50 ring-1 ring-gray-200">
+                      <div className="relative h-60 w-full">
+                        <YandexMap
+                          center={mapCenter || undefined}
+                          zoom={10}
+                          className="h-full w-full"
+                          enableGeolocation={true}
+                          autoGeolocation={!mapCenter}
+                          preventClickSelection={true}
+                          showSelectButton={true}
+                          onLocationSelect={(coords) =>
+                            handleMapLocationSelect(index, coords)
+                          }
+                          onGeolocationSuccess={() => {}}
+                          markers={extractMarkersFromSuggest()}
+                        />
                         <button
                           onClick={() =>
                             setShowYandexResults((prev) => ({ ...prev, [index]: false }))
                           }
-                          className="text-xs text-gray-500 hover:text-gray-700"
+                          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md active:scale-95"
                         >
-                          ✕
+                          <X className="h-4 w-4 text-gray-600" />
                         </button>
                       </div>
-                    )}
-                    {searchAddress.data ? (
-                      <div className="space-y-3">
-                        {searchResultsWithDistances.length > 0 ? (
-                          <>
-                            {userLocation && (
-                              <div className="mb-3 border-b pb-2 text-xs text-gray-500">
-                                📍 Результаты отсортированы по расстоянию от вас
-                              </div>
-                            )}
-                            {searchResultsWithDistances.map(
-                              (result: any, resultIndex: number) => (
-                                <div
-                                  key={resultIndex}
-                                  className={`cursor-pointer rounded-lg border p-4 shadow-sm transition-colors hover:bg-gray-50 ${
-                                    resultIndex === 0 && result.distance !== null
-                                      ? "border-green-200 bg-green-50"
-                                      : "bg-white"
-                                  }`}
-                                  onClick={() => handleResultSelect(result, index)}
-                                >
-                                  <div className="mb-2">
-                                    <div className="flex items-start justify-between">
-                                      <div className="flex-1">
-                                        <h4 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-                                          {typeof result.title === "string"
-                                            ? result.title
-                                            : result.title?.text || "Название не найдено"}
-                                          {resultIndex === 0 &&
-                                            result.distance !== null && (
-                                              <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
-                                                🎯 Ближайший
-                                              </span>
-                                            )}
-                                        </h4>
-                                        {result.subtitle && (
-                                          <p className="text-sm text-gray-600">
-                                            {typeof result.subtitle === "string"
-                                              ? result.subtitle
-                                              : result.subtitle?.text || ""}
-                                          </p>
-                                        )}
-                                      </div>
-                                      <div className="ml-2 flex-shrink-0">
-                                        {result.distance !== null ? (
-                                          <span className="rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600">
-                                            📍 {formatDistance(result.distance)}
-                                          </span>
-                                        ) : (
-                                          <span className="text-xs text-gray-400">
-                                            📍 н/д
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
 
-                                  {/* Теги */}
-                                  {result.tags && result.tags.length > 0 && (
-                                    <div className="mb-3 flex flex-wrap gap-1">
-                                      {result.tags.map(
-                                        (tag: string, tagIndex: number) => (
-                                          <span
-                                            key={tagIndex}
-                                            className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800"
-                                          >
-                                            {tag}
-                                          </span>
-                                        ),
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Адрес */}
-                                  {result.address?.formatted_address && (
-                                    <div className="mb-2">
-                                      <p className="mb-1 text-xs text-gray-500">
-                                        📍 Адрес:
-                                      </p>
-                                      <p className="text-sm text-gray-700">
+                      {searchAddress.data && (
+                        <div className="max-h-60 overflow-y-auto p-2">
+                          <div className="space-y-2">
+                            {searchResultsWithDistances.length > 0 ? (
+                              searchResultsWithDistances.map(
+                                (result: any, resultIndex: number) => (
+                                  <div
+                                    key={resultIndex}
+                                    className="cursor-pointer rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-all hover:ring-blue-200 active:scale-[0.98]"
+                                    onClick={() => handleResultSelect(result, index)}
+                                  >
+                                    <h4 className="font-bold text-gray-900 text-sm">
+                                      {typeof result.title === "string"
+                                        ? result.title
+                                        : result.title?.text || "Без названия"}
+                                    </h4>
+                                    {result.address?.formatted_address && (
+                                      <p className="mt-1 text-xs text-gray-500">
                                         {result.address.formatted_address}
                                       </p>
-                                    </div>
-                                  )}
-
-                                  {/* Расстояние */}
-                                  {result.distance?.text && (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-gray-500">
-                                        📏 Расстояние:
-                                      </span>
-                                      <span className="text-sm font-medium text-gray-700">
-                                        {result.distance.text}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              ),
+                                    )}
+                                  </div>
+                                ),
+                              )
+                            ) : (
+                              <div className="p-4 text-center text-sm text-gray-500">
+                                Ничего не найдено
+                              </div>
                             )}
-                          </>
-                        ) : (
-                          <div className="rounded-lg border bg-white p-4 shadow-sm">
-                            <p className="text-sm text-gray-500">
-                              Попробуйте изменить запрос
-                            </p>
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border bg-white p-4 text-center">
-                        <p className="text-sm text-gray-500">Ничего не найдено</p>
-                        <p className="mt-1 text-xs text-gray-400">
-                          Попробуйте изменить запрос
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div className="mt-2 flex items-center justify-between">
-                  <div className="mb-2 text-xl font-bold">Адрес *</div>
-                  {!isFastMeet && (
-                    <>
-                      <div
-                        className="cursor-pointer text-sm text-blue-500"
-                        onClick={() => {
-                          if (
-                            selectedItems.length > 0 &&
-                            selectedItems.map((item) => item.index).includes(index)
-                          ) {
-                            // Переключаемся на ручной ввод
-                            setSelectedItems(
-                              selectedItems.filter((item) => item.index !== index),
-                            );
-                            // Очищаем данные локации для ручного ввода
-                            const newLocations = [...locations];
-                            if (!newLocations[index]) {
-                              newLocations[index] = { location: "", address: "" };
-                            } else {
-                              newLocations[index] = {
-                                location: "",
-                                address: "",
-                                starttime: "",
-                                endtime: "",
-                                isCustom: true,
-                              };
-                            }
-                            setLocations(newLocations);
-                          } else {
-                            // Переключаемся на выбор из афиши
-                            setIsOpen(true);
-                            setIndex(index);
-                          }
-                        }}
-                      >
-                        {selectedItems.length > 0 &&
-                        selectedItems.map((item) => item.index).includes(index)
-                          ? "Указать свою локацию"
-                          : "Выбрать из афишы"}
-                      </div>
-                    </>
-                  )}
-                </div>
-                {selectedItems.length > 0 &&
-                selectedItems.map((item) => item.index).includes(index) ? (
-                  getItems
-                    .filter((item) => item.index === index)
-                    .map((item) => (
-                      <div className="flex items-center justify-start gap-2 py-4">
-                        <div
-                          className="flex h-6 w-6 items-start"
-                          onClick={() => {
-                            // Remove only the selected афиша item and clear all fields; keep the step empty
-                            const newLocations = [...locations];
-                            newLocations[index] = {
-                              location: "",
-                              address: "",
-                              starttime: "",
-                              endtime: "",
-                            };
-                            setLocations(newLocations);
-                            setSelectedItems((prev) =>
-                              prev.filter((si) => si.index !== index),
-                            );
-                          }}
-                        >
-                          <Bin />
-                        </div>
-                        <img
-                          src={item.image ?? ""}
-                          alt="image"
-                          className="h-16 w-16 rounded-lg"
-                        />
-                        <div className="flex flex-col items-start justify-center">
-                          <div className="text-sm font-bold">{item.title}</div>
-                          <div className="text-sm">{item.type}</div>
-                          <div className="flex items-center gap-2 text-sm text-neutral-500">
-                            <div>{item.date}</div>
-                            <div>{item.location}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                ) : (
-                  <div
-                    key={index}
-                    className="items-between flex flex-col justify-between gap-2"
-                  >
-                    {/* Показываем поле адреса только если это не FastMeet */}
-                    {!isFastMeet && (
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
-                        <input
-                          type="text"
-                          value={locations[index]?.address || ""}
-                          placeholder="Адрес"
-                          onChange={(e) => {
-                            const newLocations = [...locations];
-                            if (!newLocations[index]) {
-                              newLocations[index] = { location: "", address: "" };
-                            }
-                            newLocations[index].address = e.target.value;
-                            // Mark as custom when user manually edits
-                            newLocations[index].isCustom = true;
-                            setLocations(newLocations);
-
-                            // Clear selectedItems for this index if user starts manual input
-                            if (
-                              e.target.value.trim() &&
-                              selectedItems.some((item) => item.index === index)
-                            ) {
-                              setSelectedItems(
-                                (prev: { id: number; type: string; index: number }[]) =>
-                                  prev.filter(
-                                    (item: { id: number; type: string; index: number }) =>
-                                      item.index !== index,
-                                  ),
-                              );
-                            }
-                          }}
-                          className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50 md:min-w-[300px]"
-                        />
-                      </div>
-                    )}
-
-                    {/* Для FastMeet показываем только выбранный адрес (если есть) */}
-                    {isFastMeet && locations[index]?.address && (
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
-                        <div className="h-11 w-full flex-1 rounded-[14px] border border-[#DBDBDB] bg-gray-100 px-4 py-3 text-sm text-gray-700 md:min-w-[300px]">
-                          📍{" "}
-                          {locations[index]?.address?.length > 30
-                            ? `${locations[index]?.address.slice(0, 30)}...`
-                            : locations[index]?.address}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Сообщение для FastMeet когда адрес не выбран */}
-                    {isFastMeet && !locations[index]?.address && (
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="shrink-0 text-2xl font-bold">{index + 1}</div>
-                        <div className="h-11 w-full flex-1 rounded-[14px] border border-dashed border-[#DBDBDB] bg-yellow-50 px-4 py-3 text-sm text-gray-600 md:min-w-[300px]">
-                          🔍 Введите название места выше
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex w-[calc(100%-40px)] flex-nowrap items-center gap-2">
-                      <div
-                        className=""
-                        onClick={() => {
-                          // Delete this step location cleanly
-                          if (length <= 1) {
-                            // If it's the only one, just clear fields and selection
-                            const newLocations = [...locations];
-                            newLocations[index] = {
-                              location: "",
-                              address: "",
-                              starttime: "",
-                              endtime: "",
-                            };
-                            setLocations(newLocations);
-                            setSelectedItems((prev) =>
-                              prev.filter((si) => si.index !== index),
-                            );
-                            return;
-                          }
-
-                          // Remove from locations
-                          const newLocations = locations.filter((_, i) => i !== index);
-                          setLocations(newLocations);
-
-                          // Remove and reindex selectedItems after the removed index
-                          setSelectedItems((prev) =>
-                            prev
-                              .filter((si) => si.index !== index)
-                              .map((si) =>
-                                si.index > index ? { ...si, index: si.index - 1 } : si,
-                              ),
-                          );
-
-                          // Decrease steps count
-                          setLength(length - 1);
-                        }}
-                      >
-                        <Bin />
-                      </div>
-                      <div className="flex w-full flex-1 gap-2">
-                        <div className="flex-1">
-                          <TimePicker
-                            value={parseTimeToDate(locations[index]?.starttime)}
-                            setTime={(time) => {
-                              const timeString = time.toTimeString().slice(0, 5);
-
-                              // Only update if the time actually changed
-                              if (locations[index]?.starttime === timeString) {
-                                return;
-                              }
-
-                              const newLocations = [...locations];
-                              if (!newLocations[index]) {
-                                newLocations[index] = {
-                                  location: "",
-                                  address: "",
-                                  starttime: "",
-                                  endtime: "",
-                                };
-                              }
-                              newLocations[index].starttime = timeString;
-                              // Don't mark as custom when editing time in afisha location
-                              setLocations(newLocations);
-                            }}
-                            placeholder={
-                              selectedItems.some((item) => item.index === index) ||
-                              isFastMeet
-                                ? "Начало *"
-                                : "Начало *"
-                            }
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <TimePicker
-                            value={parseTimeToDate(locations[index]?.endtime)}
-                            setTime={(time) => {
-                              const timeString = time.toTimeString().slice(0, 5);
-
-                              // Only update if the time actually changed
-                              if (locations[index]?.endtime === timeString) {
-                                return;
-                              }
-
-                              const newLocations = [...locations];
-                              if (!newLocations[index]) {
-                                newLocations[index] = {
-                                  location: "",
-                                  address: "",
-                                  starttime: "",
-                                  endtime: "",
-                                };
-                              }
-                              newLocations[index].endtime = timeString;
-                              // Don't mark as custom when editing time in afisha location
-                              setLocations(newLocations);
-                            }}
-                            placeholder={
-                              selectedItems.some((item) => item.index === index) ||
-                              isFastMeet
-                                ? "Завершение *"
-                                : "Завершение *"
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    {/* Показываем ошибки валидации времени */}
-
-                    {locations[index]?.starttime &&
-                      locations[index]?.endtime &&
-                      isValidTime(locations[index].starttime) &&
-                      isValidTime(locations[index].endtime) &&
-                      !isStartBeforeEnd(
-                        locations[index].starttime,
-                        locations[index].endtime,
-                      ) && (
-                        <div className="mt-1 text-sm text-red-500">
-                          Время завершения должно быть позже начала
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {!isFastMeet && (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={locations[index]?.address || ""}
+                        placeholder="Адрес"
+                        onChange={(e) => {
+                          const newLocations = [...locations];
+                          if (!newLocations[index]) {
+                            newLocations[index] = { location: "", address: "" };
+                          }
+                          newLocations[index].address = e.target.value;
+                          newLocations[index].isCustom = true;
+                          setLocations(newLocations);
+
+                          if (
+                            e.target.value.trim() &&
+                            selectedItems.some((item) => item.index === index)
+                          ) {
+                            setSelectedItems(
+                              (prev: { id: number; type: string; index: number }[]) =>
+                                prev.filter(
+                                  (item: { id: number; type: string; index: number }) =>
+                                    item.index !== index,
+                                ),
+                            );
+                          }
+                        }}
+                        className="h-12 w-full rounded-2xl border-none bg-gray-50 px-4 text-sm text-gray-900 ring-1 ring-gray-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <div className="flex-1 overflow-hidden rounded-2xl bg-gray-50 ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-violet-500 focus-within:bg-white">
+                      <TimePicker
+                        value={parseTimeToDate(locations[index]?.starttime)}
+                        setTime={(time) => {
+                          const timeString = time.toTimeString().slice(0, 5);
+                          if (locations[index]?.starttime === timeString) return;
+                          const newLocations = [...locations];
+                          if (!newLocations[index])
+                            newLocations[index] = {
+                              location: "",
+                              address: "",
+                              starttime: "",
+                              endtime: "",
+                            };
+                          newLocations[index].starttime = timeString;
+                          setLocations(newLocations);
+                        }}
+                        placeholder="Начало *"
+                        className="w-full border-none bg-transparent h-12 px-3 text-center outline-none"
+                      />
+                    </div>
+                    <div className="flex-1 overflow-hidden rounded-2xl bg-gray-50 ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-violet-500 focus-within:bg-white">
+                      <TimePicker
+                        value={parseTimeToDate(locations[index]?.endtime)}
+                        setTime={(time) => {
+                          const timeString = time.toTimeString().slice(0, 5);
+                          if (locations[index]?.endtime === timeString) return;
+                          const newLocations = [...locations];
+                          if (!newLocations[index])
+                            newLocations[index] = {
+                              location: "",
+                              address: "",
+                              starttime: "",
+                              endtime: "",
+                            };
+                          newLocations[index].endtime = timeString;
+                          setLocations(newLocations);
+                        }}
+                        placeholder="Конец *"
+                        className="w-full border-none bg-transparent h-12 px-3 text-center outline-none"
+                      />
+                    </div>
                   </div>
-                )}
+
+                  {!isFastMeet && (
+                    <div className="flex justify-end">
+                      <button
+                        className="text-sm font-medium text-violet-600 hover:text-violet-700"
+                        onClick={() => {
+                          setIsOpen(true);
+                          setIndex(index);
+                        }}
+                      >
+                        Выбрать из афиши
+                      </button>
+                    </div>
+                  )}
+
+                  {selectedItems.some((item) => item.index === index) && (
+                    <div className="mt-2 rounded-xl bg-violet-50 p-3">
+                      {getItems
+                        .filter((item) => item.index === index)
+                        .map((item) => (
+                          <div
+                            key={`${item.id}-${item.type}`}
+                            className="flex items-center gap-3"
+                          >
+                            <img
+                              src={item.image ?? ""}
+                              alt=""
+                              className="h-12 w-12 rounded-lg object-cover"
+                            />
+                            <div>
+                              <div className="font-bold text-sm text-gray-900">
+                                {item.title}
+                              </div>
+                              <div className="text-xs text-gray-500">{item.location}</div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
-          <div
-            className="mt-2 text-center text-[#9924FF]"
+
+          <button
             onClick={() => setLength(length + 1)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50 py-4 font-bold text-violet-600 transition-colors hover:border-violet-300 hover:bg-violet-100 active:scale-[0.99]"
           >
+            <Plus className="h-5 w-5" />
             Добавить место
-          </div>
-
-          {/* {getItems.length > 0 && (
-            <div className="flex flex-col items-start justify-center gap-2 py-4">
-              {getItems.map((item) => (
-                <div className="flex items-center justify-center gap-2">
-                  <div
-                    className="flex h-6 w-6 items-start"
-
-                    onClick={() => {
-                      const newSelectedItems = [...selectedItems];
-                      const filteredItems = newSelectedItems.filter(
-                        (selectedItem) =>
-                          selectedItem.id !== item.id && selectedItem.type !== item.type,
-                      );
-                      setSelectedItems(filteredItems);
-                    }}
-                  >
-                    <Bin />
-                  </div>
-                  <img src={item.image} alt="image" className="h-16 w-16 rounded-lg" />
-                  <div className="flex flex-col items-start justify-center">
-                    <div className="text-sm font-bold">{item.title}</div>
-                    <div className="text-sm">{item.type}</div>
-                    <div className="flex items-center gap-2 text-sm text-neutral-500">
-                      <div>{item.date}</div>
-                      <div>{item.location}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )} */}
+          </button>
         </div>
       </div>
       <EventsDrawer

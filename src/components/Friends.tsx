@@ -6,6 +6,7 @@ import { useFriendsData } from "~/hooks/useFriendsData";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { useScrollRestoration } from "./hooks/useScrollRes";
 import { CloseRed } from "./Icons/CloseRed";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const Friends = ({
   isDrawer = false,
@@ -26,55 +27,65 @@ export const Friends = ({
 
   return (
     <div className="relative px-4 pb-4">
-      <input
-        onChange={(e) => {
-          setSearch(e.target.value);
-        }}
-        value={search}
-        type="text"
-        placeholder="Поиск друзей"
-        className="mb-4 h-11 w-full rounded-[14px] border border-[#DBDBDB] bg-white px-4 text-sm text-black placeholder:text-black/50"
-      />
-      <div className="absolute top-3 right-7">
-        <Search className="h-5 w-5 text-gray-400" />
+      <div className="relative mb-6">
+        <input
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+          value={search}
+          type="text"
+          placeholder="Поиск друзей"
+          className="h-12 w-full rounded-2xl border-none bg-gray-100 pl-11 pr-4 text-sm font-medium text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all"
+        />
+        <div className="absolute top-1/2 left-4 -translate-y-1/2">
+          <Search className="h-5 w-5 text-gray-400" />
+        </div>
       </div>
 
-      {search && (
-        <div className="flex flex-col gap-4">
-          <div className="text-lg font-medium">Пользователи</div>
-          {users
-            ?.filter(
-              (user: any) =>
-                user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-                user?.surname?.toLowerCase().includes(search.toLowerCase()),
-            )
-            .map((user: any) => (
-              <div
-                key={user.id}
-                onClick={() => {
-                  navigate({
-                    to: "/user-profile/$id",
-                    params: { id: user.id.toString() },
-                  });
-                }}
-              >
-                <div className="flex items-center justify-between pb-4">
-                  <div className="flex items-center justify-start gap-2">
+      <AnimatePresence>
+        {search && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex flex-col gap-4 mb-6"
+          >
+            <div className="text-lg font-bold text-gray-900">Пользователи</div>
+            <div className="flex flex-col gap-3">
+            {users
+              ?.filter(
+                (user: any) =>
+                  user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+                  user?.surname?.toLowerCase().includes(search.toLowerCase()),
+              )
+              .map((user: any) => (
+                <motion.div
+                  layout
+                  key={user.id}
+                  onClick={() => {
+                    navigate({
+                      to: "/user-profile/$id",
+                      params: { id: user.id.toString() },
+                    });
+                  }}
+                  className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm active:scale-[0.98] transition-transform"
+                >
+                  <div className="flex items-center justify-start gap-3">
                     <img
                       src={getImageUrl(user?.photo || "")}
                       alt=""
-                      className="h-14 w-14 rounded-lg"
+                      className="h-12 w-12 rounded-full object-cover bg-gray-200"
                     />
-                    <div className="flex flex-col items-start justify-between gap-2">
-                      <div className="text-lg">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-base font-bold text-gray-900 leading-none">
                         {user?.name} {user?.surname}
                       </div>
-                      <div>{user?.birthday}</div>
+                      <div className="text-xs font-medium text-gray-500">{user?.birthday}</div>
                     </div>
                   </div>
                   {isDrawer && (
-                    <div
-                      className="text-[#9924FF]"
+                    <button
+                      className="rounded-xl bg-purple-50 px-4 py-2 text-sm font-bold text-purple-600 hover:bg-purple-100 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
 
@@ -87,22 +98,30 @@ export const Friends = ({
                       }}
                     >
                       Подарить
-                    </div>
+                    </button>
                   )}
-                </div>
+                </motion.div>
+              ))}
               </div>
-            ))}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {!isDrawer && (
         <>
           {activeRequests && activeRequests?.length > 0 && (
-            <div className="flex flex-col gap-4">
-              <div className="text-lg font-medium">Запросы</div>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-4 mb-6"
+            >
+              <div className="text-lg font-bold text-gray-900">Запросы</div>
+              <div className="flex flex-col gap-3">
               {activeRequests.map((request: any) => {
                 const requestUser = users?.find((u: any) => u.id === request.fromUserId);
                 return (
-                  <div
+                  <motion.div
+                    layout
                     key={request.id}
                     onClick={() => {
                       navigate({
@@ -110,44 +129,56 @@ export const Friends = ({
                         params: { id: requestUser?.id.toString() || "" },
                       });
                     }}
+                    className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm active:scale-[0.98] transition-transform"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center justify-start gap-2">
-                        <div
-                          className="mr-4 p-2"
-                          onClick={() => declineRequest(request.fromUserId!)}
-                        >
-                          <CloseRed />
-                        </div>
-                        <img
-                          src={getImageUrl(requestUser?.photo || "")}
-                          alt=""
-                          className="h-14 w-14 rounded-lg"
-                        />
-                        <div className="flex flex-col items-start justify-between gap-2">
-                          <div className="text-lg">
-                            {requestUser?.name} {requestUser?.surname}
-                          </div>
-                          <div>{requestUser?.birthday}</div>
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-start gap-3">
                       <div
-                        className="flex items-center justify-center rounded-lg bg-green-500 p-2 text-white"
-                        onClick={() => acceptRequest(request.fromUserId!)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 active:scale-90 transition-transform"
+                        onClick={(e) => {
+                           e.stopPropagation();
+                           declineRequest(request.fromUserId!);
+                        }}
                       >
-                        <Check className="h-5 w-5 text-white" />
+                        <CloseRed />
+                      </div>
+                      <img
+                        src={getImageUrl(requestUser?.photo || "")}
+                        alt=""
+                        className="h-12 w-12 rounded-full object-cover bg-gray-200"
+                      />
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-base font-bold text-gray-900 leading-none">
+                          {requestUser?.name} {requestUser?.surname}
+                        </div>
+                        <div className="text-xs font-medium text-gray-500">{requestUser?.birthday}</div>
                       </div>
                     </div>
-                  </div>
+                    <div
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-200 active:scale-90 transition-transform"
+                      onClick={(e) => {
+                         e.stopPropagation();
+                         acceptRequest(request.fromUserId!);
+                      }}
+                    >
+                      <Check className="h-5 w-5 stroke-[3px]" />
+                    </div>
+                  </motion.div>
                 );
               })}
-            </div>
+              </div>
+            </motion.div>
           )}
         </>
       )}
+
       {uniqueFriends && uniqueFriends.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <div className="text-lg font-medium">Друзья</div>
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-4"
+        >
+          {!search && <div className="text-lg font-bold text-gray-900">Друзья</div>}
+          <div className="flex flex-col gap-3">
           {uniqueFriends.map((request: any) => {
             const requestUser = users?.find(
               (u: any) =>
@@ -155,7 +186,8 @@ export const Friends = ({
                 (request.fromUserId === user?.id ? request.toUserId : request.fromUserId),
             );
             return (
-              <div
+              <motion.div
+                layout
                 key={request.id}
                 onClick={() => {
                   navigate({
@@ -163,43 +195,43 @@ export const Friends = ({
                     params: { id: requestUser?.id.toString() || "" },
                   });
                 }}
+                className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm active:scale-[0.98] transition-transform"
               >
-                <div className="flex items-center justify-between pb-4">
-                  <div className="flex items-center justify-start gap-2">
-                    <img
-                      src={getImageUrl(requestUser?.photo || "")}
-                      alt=""
-                      className="h-14 w-14 rounded-lg"
-                    />
-                    <div className="flex flex-col items-start justify-between gap-2">
-                      <div className="text-lg">
-                        {requestUser?.name} {requestUser?.surname}
-                      </div>
-                      <div>{requestUser?.birthday}</div>
+                <div className="flex items-center justify-start gap-3">
+                  <img
+                    src={getImageUrl(requestUser?.photo || "")}
+                    alt=""
+                    className="h-12 w-12 rounded-full object-cover bg-gray-200"
+                  />
+                  <div className="flex flex-col gap-0.5">
+                    <div className="text-base font-bold text-gray-900 leading-none">
+                      {requestUser?.name} {requestUser?.surname}
                     </div>
+                    <div className="text-xs font-medium text-gray-500">{requestUser?.birthday}</div>
                   </div>
-                  {isDrawer && (
-                    <div
-                      className="text-[#9924FF]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isGift) {
-                          setSelectedUser?.(requestUser as any);
-                          handleBuyEvent?.();
-
-                          return;
-                        }
-                        setSelectedUser?.(requestUser as any);
-                      }}
-                    >
-                      Подарить
-                    </div>
-                  )}
                 </div>
-              </div>
+                {isDrawer && (
+                  <button
+                    className="rounded-xl bg-purple-50 px-4 py-2 text-sm font-bold text-purple-600 hover:bg-purple-100 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isGift) {
+                        setSelectedUser?.(requestUser as any);
+                        handleBuyEvent?.();
+
+                        return;
+                      }
+                      setSelectedUser?.(requestUser as any);
+                    }}
+                  >
+                    Подарить
+                  </button>
+                )}
+              </motion.div>
             );
           })}
-        </div>
+          </div>
+        </motion.div>
       )}
     </div>
   );

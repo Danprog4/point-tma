@@ -179,7 +179,7 @@ function RouteComponent() {
       ) : (
         <div
           data-mobile={isMobile}
-          className="min-h-screen bg-gray-50/50 pt-14 pb-20 text-black data-[mobile=true]:pt-39"
+          className="min-h-screen bg-gray-50/50 pt-14 pb-4 text-black data-[mobile=true]:pt-39"
         >
           <Header />
 

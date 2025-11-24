@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Step1 } from "~/components/createMeet/Step1";
@@ -9,6 +10,7 @@ import { Step4 } from "~/components/createMeet/Step4";
 import { Step5 } from "~/components/createMeet/Step5";
 import { Event, User } from "~/db/schema";
 import { usePlatform } from "~/hooks/usePlatform";
+import { cn } from "~/lib/utils/cn";
 import { useTRPC } from "~/trpc/init/react";
 import { eventTypes } from "~/types/events";
 
@@ -29,7 +31,6 @@ function RouteComponent() {
     selectedIds?: number[];
   };
 
-  console.log({ search }, "search");
   const [selectedInventory, setSelectedInventory] = useState<string[]>([]);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isInvite, setIsInvite] = useState(false);
@@ -109,12 +110,8 @@ function RouteComponent() {
     }),
   );
 
-  console.log(search, "search");
-
   useEffect(() => {
-    console.log(search.idOfEvent, "search.idOfEvent");
     if (search.typeOfEvent && event && isValidEventId) {
-      console.log(event, "event");
       setSelectedItems([
         ...selectedItems,
         { id: event?.id || 0, type: event?.type || "", index: 0 },
@@ -148,21 +145,18 @@ function RouteComponent() {
   }, [search.event]);
 
   const handleNext = () => {
-    setStep(step + 1);
+    if (step < 4) {
+      setStep(step + 1);
+    }
 
     if (step === 2 && !isBasic) {
       setIsForAll(true);
     }
 
     if (step === 3) {
-      console.log("step 3");
       handleCreateMeeting();
     }
   };
-
-  console.log(locations);
-
-  console.log(search.calendarDate, "search.calendarDate");
 
   const createMeeting = useMutation(trpc.meetings.createMeeting.mutationOptions());
   const inviteUsers = useMutation(trpc.meetings.inviteUsers.mutationOptions());
@@ -196,15 +190,6 @@ function RouteComponent() {
     const validatedLocations = locations.filter(
       (loc) => loc.location?.trim() && loc.address?.trim(),
     );
-
-    // Логируем данные перед отправкой
-    console.log("📤 Creating meeting with data:", {
-      title,
-      date: date.toLocaleDateString("ru-RU"),
-      time: time && !isNaN(time.getTime()) ? time.toTimeString().split(" ")[0] : "",
-      locations: validatedLocations,
-      selectedItems,
-    });
 
     await createMeeting.mutateAsync(
       {
@@ -261,188 +246,252 @@ function RouteComponent() {
     );
   };
 
-  console.log(base64, "base64");
-
-  console.log(createMeeting.data);
-
-  console.log(step);
-
   const isMobile = usePlatform();
+
+  const getStepTitle = () => {
+    if (isInvite) return "Приглашение";
+    if (isInventoryOpen) return "Выберите награду";
+    if (step === 0) return "Основная информация";
+    if (step === 1) return "Место встречи";
+    if (step === 2) return "Участники";
+    if (step === 3) return "Вознаграждение";
+    return "Создание встречи";
+  };
 
   return (
     <div
       data-mobile={isMobile}
-      className="relative flex h-screen w-screen flex-col pb-20 data-[mobile=true]:pt-39"
+      className="relative flex min-h-screen w-screen flex-col bg-[#FAFAFA] pb-20 data-[mobile=true]:pt-18"
     >
+      {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-10 flex items-center justify-center bg-white p-4 data-[mobile=true]:pt-28"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
       >
         {isInvite ? (
           <button
             onClick={() => setIsInvite(false)}
-            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:bg-gray-100 active:scale-95"
           >
-            <X className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            <X className="h-6 w-6 text-gray-900" strokeWidth={2} />
           </button>
         ) : isInventoryOpen ? (
           <button
             onClick={() => setIsInventoryOpen(false)}
-            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:bg-gray-100 active:scale-95"
           >
-            <X className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            <X className="h-6 w-6 text-gray-900" strokeWidth={2} />
           </button>
         ) : step < 4 ? (
           <button
             onClick={() => (step > 0 ? setStep(step - 1) : window.history.back())}
-            className="absolute left-4 flex h-6 w-6 items-center justify-center"
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:bg-gray-100 active:scale-95"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+            <ArrowLeft className="h-6 w-6 text-gray-900" strokeWidth={2} />
           </button>
         ) : (
-          <div></div>
+          <div className="w-10" />
         )}
-        <h1 className="text-base font-bold text-gray-800">
-          {isInvite
-            ? "Приглашение"
-            : isInventoryOpen
-              ? "Выберите награду"
-              : "Создание встречи"}
+
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-900">
+          {getStepTitle()}
         </h1>
+
+        <div className="w-10" />
       </div>
-      {step < 4 && (
-        <div className="flex items-center justify-center gap-2 pb-6">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className={`h-1 w-[25%] ${index <= step ? "bg-[#9924FF]" : "bg-gray-200"}`}
+
+      {/* Progress Bar */}
+      {step < 4 && !isInvite && !isInventoryOpen && (
+        <div className="fixed top-[112px] right-0 left-0 z-40 bg-white px-4 pt-2 pb-4 data-[mobile=true]:top-[104px]">
+          <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+            <motion.div
+              className="absolute top-0 bottom-0 left-0 bg-violet-600"
+              initial={{ width: "0%" }}
+              animate={{ width: `${((step + 1) / 4) * 100}%` }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             />
-          ))}
+          </div>
+          <div className="mt-2 flex justify-between text-xs font-medium text-gray-400">
+            <span className={cn(step >= 0 && "text-violet-600")}>Инфо</span>
+            <span className={cn(step >= 1 && "text-violet-600")}>Место</span>
+            <span className={cn(step >= 2 && "text-violet-600")}>Участники</span>
+            <span className={cn(step >= 3 && "text-violet-600")}>Награда</span>
+          </div>
         </div>
       )}
 
-      {step === 0 && (
-        <Step1
-          name={title}
-          subType={subType}
-          setSubType={setSubType}
-          isDisabled={isDisabled}
-          setIsDisabled={setIsDisabled}
-          isBasic={isBasic}
-          date={date}
-          setDate={setDate}
-          type={type}
-          setType={setType}
-          setStep={setStep}
-          setTypeOfEvent={setTypeOfEvent}
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          selectedFile={selectedFile}
-          setSelectedFile={setSelectedFile}
-          base64={base64}
-          setBase64={setBase64}
-          gallery={gallery}
-          setGallery={setGallery}
-          mainPhotoRaw={mainPhotoRaw}
-          setMainPhotoRaw={setMainPhotoRaw}
-          isHeicFile={isHeicFile}
-          isExtra={isExtra}
-          setIsExtra={setIsExtra}
-          typeOfEvent={search.typeOfEvent || ""}
-          time={time}
-          calendarDate={search.calendarDate || ""}
-          setTime={setTime}
-          city={city}
-          setCity={setCity}
-        />
-      )}
-      {step === 1 && (
-        <Step2
-          index={index}
-          setIndex={setIndex}
-          isDisabled={isDisabled}
-          setIsDisabled={setIsDisabled}
-          locations={locations}
-          setLocations={setLocations}
-          selectedItems={selectedItems}
-          setSelectedItems={setSelectedItems}
-          length={length}
-          setLength={setLength}
-          city={city}
-          setCity={setCity}
-          user={user as User}
-        />
-      )}
-      {step === 2 && (
-        <Step3
-          important={important}
-          setImportant={setImportant}
-          isDisabled={isDisabled}
-          setIsDisabled={setIsDisabled}
-          isInvite={isInvite}
-          setIsInvite={setIsInvite}
-          selectedIds={selectedIds}
-          setSelectedIds={setSelectedIds}
-          friendName={friendName}
-          setFriendName={setFriendName}
-          setParticipants={setParticipants}
-          participants={participants}
-          tags={tags}
-          setTags={setTags}
-          category={type}
-        />
-      )}
-      {step === 3 && (
-        <Step4
-          event={event as Event}
-          isDisabled={isDisabled}
-          reward={reward}
-          setReward={setReward}
-          isInventoryOpen={isInventoryOpen}
-          setIsInventoryOpen={setIsInventoryOpen}
-          setSelectedInventory={setSelectedInventory}
-          selectedInventory={selectedInventory}
-          user={user}
-        />
-      )}
+      {/* Content */}
+      <div
+        className={cn(
+          "flex-1 px-0 pt-24 data-[mobile=true]:pt-36",
+          step === 4 && "pt-0 data-[mobile=true]:pt-0",
+        )}
+      >
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Step1
+                name={title}
+                subType={subType}
+                setSubType={setSubType}
+                isDisabled={isDisabled}
+                setIsDisabled={setIsDisabled}
+                isBasic={isBasic}
+                date={date}
+                setDate={setDate}
+                type={type}
+                setType={setType}
+                setStep={setStep}
+                setTypeOfEvent={setTypeOfEvent}
+                title={title}
+                setTitle={setTitle}
+                description={description}
+                setDescription={setDescription}
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+                base64={base64}
+                setBase64={setBase64}
+                gallery={gallery}
+                setGallery={setGallery}
+                mainPhotoRaw={mainPhotoRaw}
+                setMainPhotoRaw={setMainPhotoRaw}
+                isHeicFile={isHeicFile}
+                isExtra={isExtra}
+                setIsExtra={setIsExtra}
+                typeOfEvent={search.typeOfEvent || ""}
+                time={time}
+                calendarDate={search.calendarDate || ""}
+                setTime={setTime}
+                city={city}
+                setCity={setCity}
+              />
+            </motion.div>
+          )}
+          {step === 1 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Step2
+                index={index}
+                setIndex={setIndex}
+                isDisabled={isDisabled}
+                setIsDisabled={setIsDisabled}
+                locations={locations}
+                setLocations={setLocations}
+                selectedItems={selectedItems}
+                setSelectedItems={setSelectedItems}
+                length={length}
+                setLength={setLength}
+                city={city}
+                setCity={setCity}
+                user={user as User}
+              />
+            </motion.div>
+          )}
+          {step === 2 && (
+            <motion.div
+              key="step3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Step3
+                important={important}
+                setImportant={setImportant}
+                isDisabled={isDisabled}
+                setIsDisabled={setIsDisabled}
+                isInvite={isInvite}
+                setIsInvite={setIsInvite}
+                selectedIds={selectedIds}
+                setSelectedIds={setSelectedIds}
+                friendName={friendName}
+                setFriendName={setFriendName}
+                setParticipants={setParticipants}
+                participants={participants}
+                tags={tags}
+                setTags={setTags}
+                category={type}
+              />
+            </motion.div>
+          )}
+          {step === 3 && (
+            <motion.div
+              key="step4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Step4
+                event={event as Event}
+                isDisabled={isDisabled}
+                reward={reward}
+                setReward={setReward}
+                isInventoryOpen={isInventoryOpen}
+                setIsInventoryOpen={setIsInventoryOpen}
+                setSelectedInventory={setSelectedInventory}
+                selectedInventory={selectedInventory}
+                user={user}
+              />
+            </motion.div>
+          )}
+          {step === 4 && (
+            <motion.div
+              key="step5"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="h-full"
+            >
+              <Step5
+                isLoading={createMeeting.isPending}
+                title={title}
+                type={type}
+                eventType={search.typeOfEvent || ""}
+                isBasic={isBasic}
+                reward={reward}
+                setReward={setReward}
+                base64={base64}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {step === 4 && (
-        <Step5
-          isLoading={createMeeting.isPending}
-          title={title}
-          type={type}
-          eventType={search.typeOfEvent || ""}
-          isBasic={isBasic}
-          reward={reward}
-          setReward={setReward}
-          base64={base64}
-        />
-      )}
-      {!isInvite && step < 4 ? (
-        <div className="fixed right-0 bottom-4 left-0 z-[100] flex w-full items-center justify-between px-4">
+      {/* Footer Buttons */}
+      {!isInvite && step < 4 && (
+        <div className="fixed right-0 bottom-0 left-0 z-[100] border-t border-gray-100 bg-white/80 p-4 pb-8 backdrop-blur-xl">
           <button
             onClick={handleNext}
             disabled={isDisabled}
-            className="z-[100] mx-auto flex-1 rounded-tl-lg rounded-br-lg bg-[#9924FF] px-4 py-3 text-center text-white disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-4 font-bold text-white shadow-lg shadow-violet-200 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:scale-100"
           >
-            Продолжить
+            {step === 3 ? "Создать встречу" : "Продолжить"}
           </button>
         </div>
-      ) : (
-        <div></div>
       )}
+
       {step === 4 && (
-        <div className="flx-1 fixed right-0 bottom-4 left-0 z-[100] flex w-full flex-col items-center justify-between gap-2 px-4">
+        <div className="fixed right-0 bottom-0 left-0 z-[100] flex flex-col gap-3 border-t border-gray-100 bg-white/80 p-4 pb-8 backdrop-blur-xl">
           <button
-            className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-2xl bg-violet-600 px-6 py-4 font-bold text-white shadow-lg shadow-violet-200 transition-transform active:scale-95"
             onClick={() => navigate({ to: "/meetings" })}
           >
             Вернуться ко встречам
           </button>
           <button
-            className="z-[100] mx-auto w-full flex-1 rounded-tl-lg rounded-br-lg px-4 py-3 text-center text-black disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded-2xl border border-gray-200 bg-white px-6 py-4 font-bold text-gray-900 shadow-sm transition-transform active:scale-95"
             onClick={() => navigate({ to: "/my-meetings" })}
           >
             Мои встречи

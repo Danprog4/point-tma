@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, History } from "lucide-react";
 import { useMemo, useState } from "react";
 import { iconByType, labelByType } from "~/config/history";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -98,34 +99,34 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-sm bg-white pb-24 data-[mobile=true]:pt-42"
+      className="mx-auto min-h-screen w-full max-w-md bg-[#FAFAFA] pb-24 data-[mobile=true]:pt-12"
     >
       {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
       >
         <button
           onClick={() => navigate({ to: "/profile" })}
-          className="flex h-6 w-6 items-center justify-center"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm transition-transform active:scale-95"
         >
-          <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+          <ArrowLeft className="h-5 w-5 text-gray-900" strokeWidth={2.5} />
         </button>
-        <h1 className="text-base font-bold text-gray-800">История</h1>
-        <div className="flex items-center justify-center p-4 pb-2"></div>
+        <h1 className="text-lg font-extrabold text-gray-900">История</h1>
+        <div className="w-10"></div>
       </div>
 
       {/* Filter Chips */}
-      <div className="scrollbar-hidden overflow-x-auto px-4 pb-4">
-        <div className="flex gap-4">
+      <div className="scrollbar-hidden overflow-x-auto px-4 pt-20 pb-6 data-[mobile=true]:pt-4">
+        <div className="flex gap-2.5">
           {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`flex-shrink-0 rounded-[20px] px-4 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 rounded-2xl px-5 py-2.5 text-sm font-bold transition-all active:scale-95 ${
                 activeFilter === filter
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                  ? "bg-gray-900 text-white shadow-md shadow-gray-200"
+                  : "bg-white text-gray-600 shadow-sm hover:bg-gray-50"
               }`}
             >
               {filter}
@@ -136,15 +137,25 @@ function RouteComponent() {
 
       {/* History List */}
       {(!groups || groups.length === 0) && (
-        <div className="px-4 text-gray-500">Ваша история пока пуста</div>
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="mb-6 rounded-full bg-white p-8 shadow-sm">
+            <History className="h-16 w-16 text-gray-300" />
+          </div>
+          <div className="text-center text-gray-500">
+            <p className="mb-2 text-xl font-bold text-gray-900">История пуста</p>
+            <p className="text-sm text-gray-500">
+              Здесь будут отображаться ваши действия
+            </p>
+          </div>
+        </div>
       )}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 space-y-6 px-4">
         {groups.map((group) => (
-          <div key={group.key} className="pb-4">
-            <div className="px-4 pt-2 pb-2 text-xs font-semibold text-gray-500 uppercase">
+          <div key={group.key}>
+            <div className="mb-3 px-1 text-xs font-bold tracking-wider text-gray-400 uppercase">
               {group.title}
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="flex flex-col gap-3">
               {group.items.map((log) => {
                 const label = labelByType[log.type ?? ""] || log.type;
                 const Icon = iconByType[log.type ?? ""];
@@ -155,12 +166,14 @@ function RouteComponent() {
                 });
                 const dateWithTime = `${created.toLocaleDateString()} ${time}`;
                 return (
-                  <button
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     key={log.id}
                     onClick={() => {
                       if (log.route) navigate({ to: log.route as any });
                     }}
-                    className="flex w-full items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                    className="flex w-full items-center gap-4 rounded-3xl bg-white p-4 shadow-sm transition-transform active:scale-[0.98]"
                   >
                     {log.entityImage ? (
                       <img
@@ -170,19 +183,23 @@ function RouteComponent() {
                             : getImageUrl(log.entityImage)
                         }
                         alt=""
-                        className="h-8 w-8 rounded-full object-cover"
+                        className="h-12 w-12 rounded-2xl bg-gray-100 object-cover"
                       />
                     ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-900">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-900">
                         {Icon}
                       </div>
                     )}
-                    <div className="flex-1 text-left">
-                      <div className="text-sm font-medium text-gray-900">{label}</div>
+                    <div className="flex-1 overflow-hidden text-left">
+                      <div className="truncate text-sm font-bold text-gray-900">
+                        {label}
+                      </div>
                       {log.entityTitle && (
-                        <div className="text-xs text-gray-700">{log.entityTitle}</div>
+                        <div className="truncate text-xs font-medium text-gray-500">
+                          {log.entityTitle}
+                        </div>
                       )}
-                      <div className="text-xs text-gray-500">
+                      <div className="mt-0.5 text-[10px] font-medium text-gray-400">
                         {log.meetId
                           ? `Встреча #${log.meetId}`
                           : log.caseId
@@ -192,10 +209,10 @@ function RouteComponent() {
                               : ""}
                       </div>
                     </div>
-                    <div className="text-xs font-medium text-gray-900">
+                    <div className="pl-2 text-xs font-bold whitespace-nowrap text-gray-400">
                       {group.key === "30days" ? dateWithTime : time}
                     </div>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>

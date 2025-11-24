@@ -4,8 +4,10 @@ import { useScroll } from "./hooks/useScroll";
 
 interface ProfileMoreProps {
   user?: any;
-  mainPhoto?: string;
-  galleryPhotos: string[];
+  allPhotos: string[];
+  currentIndex: number;
+  setCurrentIndex: (value: number) => void;
+  setIsFullScreen: (value: boolean) => void;
   age?: number;
   userSubscribersCount?: number;
   uniqueFriends: any[];
@@ -16,10 +18,6 @@ interface ProfileMoreProps {
   activeQuests?: any[];
   isClicked: boolean;
   setIsClicked: (value: boolean) => void;
-  setCurrentIndex: (value: number) => void;
-  setIsFullScreen: (value: boolean) => void;
-  setGalleryPhotos: (updater: (prev: string[]) => string[]) => void;
-  setMainPhoto: (photo: string) => void;
   handleToFavorites: () => void;
   handleSubscribe: () => void;
   handleRemoveFriend: () => void;
@@ -28,17 +26,17 @@ interface ProfileMoreProps {
 
 export const ProfileMore = ({
   user,
-  mainPhoto,
-  galleryPhotos,
-
-  isClicked,
-  setIsClicked,
+  allPhotos,
+  currentIndex,
   setCurrentIndex,
   setIsFullScreen,
-  setGalleryPhotos,
-  setMainPhoto,
+  
+  isClicked,
+  setIsClicked,
 }: ProfileMoreProps) => {
   useScroll();
+  const mainPhoto = allPhotos[currentIndex];
+
   return (
     <>
       <div className="relative">
@@ -56,29 +54,24 @@ export const ProfileMore = ({
             className="h-90 w-full rounded-t-2xl object-cover"
             onClick={() => {
               setIsClicked(!isClicked);
-              setCurrentIndex(0);
               setIsFullScreen(true);
             }}
           />
         </div>
       </div>
       <div className="scrollbar-hidden mb-4 flex gap-2 overflow-x-auto px-4 pt-4">
-        {galleryPhotos.map((img, idx) => (
-          <img
-            key={idx}
-            src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
-            alt=""
-            className="h-20 w-20 cursor-pointer rounded-lg object-cover"
-            onClick={() => {
-              setGalleryPhotos((prev) => {
-                const newGallery = prev.filter((i) => i !== img);
-                if (mainPhoto) newGallery.push(mainPhoto);
-                return newGallery;
-              });
-              setMainPhoto(img);
-            }}
-          />
-        ))}
+        {allPhotos.map((img, idx) => {
+          if (idx === currentIndex) return null;
+          return (
+            <img
+              key={idx}
+              src={img.startsWith("data:image/") ? img : getImageUrl(img || "")}
+              alt=""
+              className="h-20 w-20 cursor-pointer rounded-lg object-cover"
+              onClick={() => setCurrentIndex(idx)}
+            />
+          );
+        })}
       </div>
 
       <div className="w-full px-4">

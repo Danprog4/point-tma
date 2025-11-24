@@ -13,7 +13,7 @@ import {
   Users,
   Venus,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
@@ -25,6 +25,7 @@ import { UserSubscribers } from "~/components/UserSubscribers";
 import { levelsConfig } from "~/config/levels";
 import { usePeopleComplaints } from "~/hooks/usePeopleComplaints";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useSwipeableGallery } from "~/hooks/useSwipeableGallery";
 import { cn } from "~/lib/utils/cn";
 import { getImage } from "~/lib/utils/getImage";
 import { getImageUrl } from "~/lib/utils/getImageURL";
@@ -50,26 +51,25 @@ function RouteComponent() {
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const user = users?.find((user) => user.id === Number(id));
 
-  // Gallery & photo state
-  const [mainPhoto, setMainPhoto] = useState<string | undefined>(
-    user?.photo || undefined,
-  );
-  const [galleryPhotos, setGalleryPhotos] = useState<string[]>(user?.gallery ?? []);
   const [isClicked, setIsClicked] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+
   const { data: userMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({ userId: Number(id) }),
   );
-  const allPhotos = useMemo(() => {
-    return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
-  }, [mainPhoto, galleryPhotos]);
 
-  // Sync local state when fetched user changes
-  useEffect(() => {
-    setMainPhoto(user?.photo || undefined);
-    setGalleryPhotos(user?.gallery ?? []);
+  const allPhotos = useMemo(() => {
+    return [user?.photo, ...(user?.gallery ?? [])].filter(Boolean) as string[];
   }, [user]);
+
+  const {
+    currentIndex,
+    setCurrentIndex,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    didSwipe,
+  } = useSwipeableGallery(allPhotos);
 
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
@@ -341,41 +341,56 @@ function RouteComponent() {
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div>
                     <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
-                      <div className="relative h-96 w-full">
+                      <div
+                        className="relative h-96 w-full touch-pan-y"
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                      >
                         <img
-                          src={getImage(user as any, mainPhoto || "")}
+                          src={getImage(user as any, allPhotos[currentIndex] || "")}
                           alt={user?.name || ""}
                           className="h-full w-full object-cover transition-transform duration-500 active:scale-105"
                           onClick={() => {
+                            if (didSwipe.current) return;
                             setIsClicked(!isClicked);
-                            setCurrentIndex(0);
                             setIsFullScreen(true);
                           }}
                         />
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                        <div className="absolute right-0 bottom-5 left-0 px-4">
-                          <div className="scrollbar-hidden flex gap-2 overflow-x-auto py-2">
-                            {galleryPhotos.map((img, idx) => (
-                              <img
-                                key={idx}
-                                src={
-                                  img.startsWith("data:image/")
-                                    ? img
-                                    : getImageUrl(img || "")
-                                }
-                                alt=""
-                                className="h-14 w-14 flex-shrink-0 cursor-pointer rounded-xl border-2 border-white/20 object-cover shadow-sm transition-transform active:scale-90"
-                                onClick={() => {
-                                  setGalleryPhotos((prev) => {
-                                    const newGallery = prev.filter((i) => i !== img);
-                                    if (mainPhoto) newGallery.push(mainPhoto);
-                                    return newGallery;
-                                  });
-                                  setMainPhoto(img);
-                                }}
+                        {allPhotos.length > 1 && (
+                          <div className="absolute bottom-15 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+                            {allPhotos.map((_, i) => (
+                              <div
+                                key={i}
+                                className={cn(
+                                  "h-1 rounded-full transition-all duration-300",
+                                  i === currentIndex ? "w-6 bg-white" : "w-2 bg-white/40",
+                                )}
                               />
                             ))}
+                          </div>
+                        )}
+
+                        <div className="absolute right-0 bottom-5 left-0 px-4">
+                          <div className="scrollbar-hidden flex gap-2 overflow-x-auto py-2">
+                            {allPhotos.map((img, idx) => {
+                              if (idx === currentIndex) return null;
+                              return (
+                                <img
+                                  key={idx}
+                                  src={
+                                    img.startsWith("data:image/")
+                                      ? img
+                                      : getImageUrl(img || "")
+                                  }
+                                  alt=""
+                                  className="h-14 w-14 flex-shrink-0 cursor-pointer rounded-xl border-2 border-white/20 object-cover shadow-sm transition-transform active:scale-90"
+                                  onClick={() => setCurrentIndex(idx)}
+                                />
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -770,8 +785,8 @@ function RouteComponent() {
               ) : (
                 <ProfileMore
                   user={user}
-                  mainPhoto={mainPhoto}
-                  galleryPhotos={galleryPhotos}
+                  allPhotos={allPhotos}
+                  currentIndex={currentIndex}
                   age={Number(age)}
                   userSubscribersCount={userSubscribers?.length}
                   uniqueFriends={uniqueFriends}
@@ -784,8 +799,6 @@ function RouteComponent() {
                   setIsClicked={setIsClicked}
                   setCurrentIndex={setCurrentIndex}
                   setIsFullScreen={setIsFullScreen}
-                  setGalleryPhotos={setGalleryPhotos}
-                  setMainPhoto={setMainPhoto}
                   handleToFavorites={handleToFavorites}
                   handleSubscribe={handleSubscribe}
                   handleRemoveFriend={handleRemoveFriend}

@@ -19,7 +19,7 @@ import {
   Target,
   Venus,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
@@ -35,6 +35,7 @@ import { levelsConfig } from "~/config/levels";
 import { steps } from "~/config/steps";
 import { useFriendsData } from "~/hooks/useFriendsData";
 import { usePlatform } from "~/hooks/usePlatform";
+import { useSwipeableGallery } from "~/hooks/useSwipeableGallery";
 import { cn } from "~/lib/utils/cn";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
@@ -60,10 +61,19 @@ function RouteComponent() {
   const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const [page, setPage] = useState<"info" | "friends">("info");
-  const [mainPhoto, setMainPhoto] = useState<string | undefined>(
-    user?.photo || undefined,
-  );
-  const [galleryPhotos, setGalleryPhotos] = useState<string[]>(user?.gallery ?? []);
+
+  const allPhotos = useMemo(() => {
+    return [user?.photo, ...(user?.gallery ?? [])].filter(Boolean) as string[];
+  }, [user]);
+
+  const {
+    currentIndex,
+    setCurrentIndex,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    didSwipe,
+  } = useSwipeableGallery(allPhotos);
 
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
@@ -85,16 +95,6 @@ function RouteComponent() {
   };
 
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const allPhotos = useMemo(() => {
-    return [mainPhoto, ...galleryPhotos].filter(Boolean) as string[];
-  }, [mainPhoto, galleryPhotos]);
-
-  useEffect(() => {
-    setMainPhoto(user?.photo || undefined);
-    setGalleryPhotos(user?.gallery ?? []);
-  }, [user]);
 
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
   const [isClicked, setIsClicked] = useState(false);
@@ -199,46 +199,63 @@ function RouteComponent() {
                 {/* Main Photo Card */}
                 <div>
                   <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100">
-                    <div className="relative h-96 w-full">
+                    <div
+                      className="relative h-96 w-full touch-pan-y"
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
+                    >
                       <img
                         src={
-                          mainPhoto && mainPhoto.startsWith("data:image/")
-                            ? mainPhoto
-                            : getImageUrl(mainPhoto ?? "")
+                          allPhotos[currentIndex] &&
+                          allPhotos[currentIndex].startsWith("data:image/")
+                            ? allPhotos[currentIndex]
+                            : getImageUrl(allPhotos[currentIndex] ?? "")
                         }
                         alt=""
                         className="h-full w-full object-cover transition-transform duration-500 active:scale-105"
                         onClick={() => {
+                          if (didSwipe.current) return;
                           setIsClicked(!isClicked);
-                          setCurrentIndex(0);
                           setIsFullScreen(true);
                         }}
                       />
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
+                      {/* Photo Indicators */}
+                      {allPhotos.length > 1 && (
+                        <div className="absolute bottom-15 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+                          {allPhotos.map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "h-1 rounded-full transition-all duration-300",
+                                i === currentIndex ? "w-6 bg-white" : "w-2 bg-white/40",
+                              )}
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       {/* Photo Gallery Strip (Overlaid at bottom) */}
                       <div className="absolute right-0 bottom-5 left-0 px-4">
                         <div className="scrollbar-hidden flex gap-2 overflow-x-auto py-2">
-                          {galleryPhotos.map((img, idx) => (
-                            <img
-                              key={idx}
-                              src={
-                                img.startsWith("data:image/")
-                                  ? img
-                                  : getImageUrl(img || "")
-                              }
-                              alt=""
-                              className="h-14 w-14 flex-shrink-0 cursor-pointer rounded-xl border-2 border-white/20 object-cover shadow-sm transition-transform active:scale-90"
-                              onClick={() => {
-                                setGalleryPhotos((prev) => {
-                                  const newGallery = prev.filter((i) => i !== img);
-                                  if (mainPhoto) newGallery.push(mainPhoto);
-                                  return newGallery;
-                                });
-                                setMainPhoto(img);
-                              }}
-                            />
-                          ))}
+                          {allPhotos.map((img, idx) => {
+                            if (idx === currentIndex) return null;
+                            return (
+                              <img
+                                key={idx}
+                                src={
+                                  img.startsWith("data:image/")
+                                    ? img
+                                    : getImageUrl(img || "")
+                                }
+                                alt=""
+                                className="h-14 w-14 flex-shrink-0 cursor-pointer rounded-xl border-2 border-white/20 object-cover shadow-sm transition-transform active:scale-90"
+                                onClick={() => setCurrentIndex(idx)}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     </div>

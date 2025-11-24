@@ -165,7 +165,7 @@ export const UserCard = ({
 
           {/* Photo Indicators */}
           {photoData.allPhotos.length > 1 && (
-            <div className="absolute top-4 left-4 flex gap-1">
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
               {Array.from({ length: photoData.allPhotos.length }).map((_, i) => (
                 <div
                   key={i}

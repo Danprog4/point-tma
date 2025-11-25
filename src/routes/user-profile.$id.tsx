@@ -388,7 +388,7 @@ function RouteComponent() {
           {/* Fixed Header */}
           <div
             data-mobile={isMobile}
-            className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
+            className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
           >
             <button
               onClick={() => (isMore ? setIsMore(false) : window.history.back())}
@@ -419,7 +419,7 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-32">
+          <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-43">
             <PullToRefresh onRefresh={handleRefresh} className={cn("min-h-screen")}>
               {!isMore ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -444,13 +444,13 @@ function RouteComponent() {
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                         {allPhotos.length > 1 && (
-                          <div className="absolute bottom-15 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+                          <div className="absolute top-0 right-0 left-0 z-20 flex gap-1 bg-gradient-to-b from-black/40 to-transparent px-4 py-4">
                             {allPhotos.map((_, i) => (
                               <div
                                 key={i}
                                 className={cn(
-                                  "h-1 rounded-full transition-all duration-300",
-                                  i === currentIndex ? "w-6 bg-white" : "w-2 bg-white/40",
+                                  "h-1 flex-1 rounded-full transition-all duration-300",
+                                  i === currentIndex ? "bg-white" : "bg-white/40",
                                 )}
                               />
                             ))}

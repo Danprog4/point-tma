@@ -32,12 +32,20 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: user, isLoading: isLoadingUser } = useQuery(trpc.main.getUser.queryOptions());
-  const { data: meetings, refetch: refetchMeetings, isLoading: isLoadingMeetings } = useQuery({
+  const { data: user, isLoading: isLoadingUser } = useQuery(
+    trpc.main.getUser.queryOptions(),
+  );
+  const {
+    data: meetings,
+    refetch: refetchMeetings,
+    isLoading: isLoadingMeetings,
+  } = useQuery({
     ...trpc.meetings.getMeetings.queryOptions(),
     staleTime: 0,
   });
-  const { data: users, isLoading: isLoadingUsers } = useQuery(trpc.main.getUsers.queryOptions());
+  const { data: users, isLoading: isLoadingUsers } = useQuery(
+    trpc.main.getUsers.queryOptions(),
+  );
   const [search, setSearch] = useState<string>("");
 
   const {
@@ -47,7 +55,11 @@ function RouteComponent() {
     decline: handleDeclineRequest,
   } = useRequests(user?.id, meetings || [], users || []);
 
-  const { data: participants, refetch: refetchParticipants, isLoading: isLoadingParticipants } = useQuery({
+  const {
+    data: participants,
+    refetch: refetchParticipants,
+    isLoading: isLoadingParticipants,
+  } = useQuery({
     ...trpc.meetings.getParticipants.queryOptions(),
     staleTime: 0,
   });
@@ -305,11 +317,7 @@ function RouteComponent() {
                           new Date(a.createdAt!).getTime(),
                       )
                       .map((quest: any) => (
-                        <MeetingListItem
-                          key={quest?.id}
-                          item={quest}
-                          type="completed"
-                        />
+                        <MeetingListItem key={quest?.id} item={quest} type="completed" />
                       ))}
                     {completedMeetings?.length === 0 && (
                       <div className="py-20 text-center text-sm text-gray-500">

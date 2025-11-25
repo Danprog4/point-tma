@@ -18,6 +18,9 @@ import PullToRefresh from "react-simple-pull-to-refresh";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { useScroll } from "~/components/hooks/useScroll";
+import { InventoryItem } from "~/components/InventoryItem";
+import { InventoryItemPreview } from "~/components/InventoryItemPreview";
+import KeyDrawer from "~/components/KeyDrawer";
 import { LevelInfoModal } from "~/components/LevelInfoModal";
 import { ProfileMore } from "~/components/ProfileMore";
 import { UserFriends } from "~/components/UserFriends";
@@ -32,6 +35,7 @@ import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
+import type { GroupedTicket } from "~/types/inventory";
 export const Route = createFileRoute("/user-profile/$id")({
   component: RouteComponent,
 });
@@ -74,6 +78,8 @@ function RouteComponent() {
   const { data: userSubscribers } = useQuery(
     trpc.main.getUserSubscribers.queryOptions({ userId: user?.id }),
   );
+
+  console.log(userSubscribers, "userSubscribers");
 
   const sendRequest = useMutation(trpc.friends.sendRequest.mutationOptions());
   const unSendRequest = useMutation(trpc.friends.unSendRequest.mutationOptions());
@@ -143,15 +149,21 @@ function RouteComponent() {
   };
 
   const handleSubscribe = () => {
+    if (!me?.id || !user?.id) return;
+    const queryKey = trpc.main.getUserSubscribers.queryOptions({
+      userId: user.id,
+    }).queryKey;
+
     if (isSubscribed) {
-      unsubscribe.mutate({ userId: user?.id! });
-      queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), (old: any) => {
-        return old.filter((s: any) => s.targetUserId !== user?.id);
+      unsubscribe.mutate({ userId: user.id });
+      queryClient.setQueryData(queryKey, (old: any) => {
+        if (!old) return [];
+        return old.filter((s: any) => s.subscriberId !== me.id);
       });
     } else {
-      subscribe.mutate({ userId: user?.id! });
-      queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), (old: any) => {
-        return [...(old || []), { subscriberId: user?.id!, targetUserId: user?.id! }];
+      subscribe.mutate({ userId: user.id });
+      queryClient.setQueryData(queryKey, (old: any) => {
+        return [...(old || []), { subscriberId: me.id, targetUserId: user.id }];
       });
     }
   };
@@ -204,10 +216,8 @@ function RouteComponent() {
   };
 
   const isSubscribed = useMemo(() => {
-    return userSubscribers?.some(
-      (s) => s.targetUserId === user?.id && s.subscriberId === user?.id,
-    );
-  }, [userSubscribers, user?.id]);
+    return userSubscribers?.some((s) => s.subscriberId === me?.id);
+  }, [userSubscribers, me?.id]);
 
   const age = getUserAge(user?.birthday || "");
 
@@ -284,6 +294,80 @@ function RouteComponent() {
   const handleComplaintAction = () => {
     if (!user?.id) return;
     openComplaintDrawer(user.id, isUserComplained);
+  };
+
+  const { data: cases } = useQuery(trpc.cases.getCases.queryOptions());
+  const { data: allEvents } = useQuery(trpc.event.getEvents.queryOptions());
+
+  const [selectedKey, setSelectedKey] = useState<any>(null);
+  const [isKeyDrawerOpen, setIsKeyDrawerOpen] = useState(false);
+  const [previewTicket, setPreviewTicket] = useState<GroupedTicket | null>(null);
+  const [previewEventData, setPreviewEventData] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const getCase = (caseId: number) => {
+    return cases?.find((c) => c.id === caseId);
+  };
+
+  const getEvent = (eventId?: number, name?: string, type?: string, caseId?: number) => {
+    if (type === "case") {
+      const actualCaseId = caseId || eventId;
+      return cases?.find((c) => c.id === actualCaseId);
+    }
+    if (type === "key" && caseId) {
+      return cases?.find((c) => c.id === caseId);
+    }
+    if (eventId && name) {
+      return allEvents?.find((event) => event.id === eventId && event.category === name);
+    }
+    return null;
+  };
+
+  const groupTickets = (tickets: any[]): GroupedTicket[] => {
+    const sortedByIndex = [...(tickets || [])].sort((a, b) => {
+      const indexA = a.index ?? Infinity;
+      const indexB = b.index ?? Infinity;
+      return indexA - indexB;
+    });
+
+    const groupedMap = new Map<string, GroupedTicket>();
+
+    sortedByIndex.forEach((ticket) => {
+      let key: string;
+      if (ticket.type === "case") {
+        const caseId = ticket.caseId || ticket.id;
+        key = `${ticket.type}-${caseId || "no-case"}`;
+      } else if (ticket.type === "key") {
+        key = `${ticket.type}-${ticket.caseId || "no-case"}`;
+      } else {
+        key = `${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}`;
+      }
+
+      if (groupedMap.has(key)) {
+        const existing = groupedMap.get(key)!;
+        existing.count += 1;
+      } else {
+        groupedMap.set(key, {
+          eventId: ticket.eventId,
+          name: ticket.name,
+          caseId: ticket.caseId || ticket.id,
+          type: ticket.type,
+          count: 1,
+          isActive: ticket.isActive || false,
+        });
+      }
+    });
+
+    return Array.from(groupedMap.values());
+  };
+
+  const userInventory = user?.inventory?.filter((ticket) => !ticket.isActive) || [];
+  const groupedTickets = useMemo(() => groupTickets(userInventory), [userInventory]);
+
+  const handleLongPress = (ticket: GroupedTicket, eventData: any) => {
+    setPreviewTicket(ticket);
+    setPreviewEventData(eventData);
+    setIsPreviewOpen(true);
   };
 
   return (
@@ -480,7 +564,7 @@ function RouteComponent() {
                           <div className="mt-1 flex items-center justify-center gap-2 text-sm font-medium text-gray-500">
                             <span>г. {user?.city}</span>
                             <span>•</span>
-                            <span>{age} лет</span>
+                            <span>{age}</span>
                             {user?.sex === "male" ? (
                               <Mars className="h-4 w-4 text-blue-500" />
                             ) : (
@@ -726,27 +810,33 @@ function RouteComponent() {
                   <div className="px-5 pb-24">
                     <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
                       <h3 className="mb-3 text-lg font-bold text-gray-900">Инвентарь</h3>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { img: "/green-cap.png", name: "Fly Eagle!" },
-                          { img: "/knife.png", name: "Меч берсерка" },
-                          { img: "/shit.png", name: "Стальной щит" },
-                        ].map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-50 p-3 text-center"
-                          >
-                            <img
-                              src={item.img}
-                              alt={item.name}
-                              className="h-16 w-16 object-contain"
-                            />
-                            <span className="text-xs leading-tight font-medium text-gray-900">
-                              {item.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      {groupedTickets.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-3">
+                          {groupedTickets.map((ticket, index) => {
+                            const eventData = getEvent(
+                              ticket.eventId,
+                              ticket.name,
+                              ticket.type,
+                              ticket.caseId,
+                            );
+
+                            return (
+                              <InventoryItem
+                                key={`${ticket.type}-${ticket.eventId || "no-event"}-${ticket.name || "no-name"}-${ticket.caseId || "no-case"}-${index}`}
+                                ticket={ticket}
+                                eventData={eventData}
+                                onKeyClick={(ticket) => {
+                                  setSelectedKey(ticket);
+                                  setIsKeyDrawerOpen(true);
+                                }}
+                                onLongPress={handleLongPress}
+                              />
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">Инвентарь пуст</p>
+                      )}
                     </div>
                   </div>
 
@@ -831,6 +921,26 @@ function RouteComponent() {
                   isComplained={isUserComplained}
                 />
               )}
+
+              {/* KeyDrawer */}
+              {selectedKey && (
+                <KeyDrawer
+                  open={isKeyDrawerOpen}
+                  onOpenChange={setIsKeyDrawerOpen}
+                  keyData={selectedKey}
+                  caseData={selectedKey.caseId ? getCase(selectedKey.caseId) : undefined}
+                >
+                  <div />
+                </KeyDrawer>
+              )}
+
+              {/* Preview Modal */}
+              <InventoryItemPreview
+                isOpen={isPreviewOpen}
+                ticket={previewTicket}
+                eventData={previewEventData}
+                onClose={() => setIsPreviewOpen(false)}
+              />
             </PullToRefresh>
           </div>
         </div>

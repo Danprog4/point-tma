@@ -67,9 +67,7 @@ export default function KeyDrawer({
 
             {/* Текст */}
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Вы получили ключ для кейса
-              </h2>
+              <h2 className="text-2xl font-bold text-gray-900">Ключ для кейса</h2>
               <p className="text-lg font-semibold text-[#9924FF]">
                 "{caseData?.name || "Неизвестный кейс"}"
               </p>

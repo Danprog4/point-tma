@@ -736,9 +736,15 @@ export const router = {
           message: "User not found",
         });
       }
-      return await db.query.subscriptionsTable.findMany({
+      const subscribers = await db.query.subscriptionsTable.findMany({
         where: eq(subscriptionsTable.targetUserId, user.id),
       });
+
+      const uniqueSubscribers = Array.from(
+        new Map(subscribers.map((sub) => [sub.subscriberId, sub])).values(),
+      );
+
+      return uniqueSubscribers;
     }),
 
   sendReview: procedure

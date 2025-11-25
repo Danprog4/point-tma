@@ -378,7 +378,7 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="relative h-[45vh] w-full overflow-hidden">
+          <div className="relative h-[55vh] w-full overflow-hidden">
             <motion.img
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}

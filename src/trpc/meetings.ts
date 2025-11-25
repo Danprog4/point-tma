@@ -223,8 +223,6 @@ export const meetingRouter = createTRPCRouter({
           participantsIds: meetTable.participantsIds,
           maxParticipants: meetTable.maxParticipants,
           reward: meetTable.reward,
-          items: meetTable.items,
-          gallery: meetTable.gallery,
           important: meetTable.important,
           time: meetTable.time,
           createdAt: meetTable.createdAt,

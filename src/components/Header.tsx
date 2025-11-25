@@ -31,12 +31,15 @@ export const Header = () => {
       data-mobile={isMobile}
       className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 px-5 py-4 backdrop-blur-xl data-[mobile=true]:pt-28 supports-[backdrop-filter]:bg-[#FAFAFA]/60"
     >
-      <div className="flex w-20 items-center gap-4">
+      <div className="absolute left-2 flex w-32 items-center gap-4">
         <div className="flex items-center">
-          <Logo />
+          <img src="/logo.png" alt="logo" className="h-32 w-32 object-contain" />
         </div>
       </div>
-      <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-black/5">
+      <div className="flex w-20 items-center gap-4">
+        <Logo />
+      </div>
+      <div className="ml-7 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-black/5">
         <Coin />
         <span className="text-sm font-bold text-gray-900">
           {splitBalanceToK()}

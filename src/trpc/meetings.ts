@@ -666,7 +666,12 @@ export const meetingRouter = createTRPCRouter({
     }),
 
   getRequests: procedure.query(async ({ ctx }) => {
-    const requests = await db.query.meetParticipantsTable.findMany({});
+    const requests = await db.query.meetParticipantsTable.findMany({
+      where: or(
+        eq(meetParticipantsTable.fromUserId, ctx.userId),
+        eq(meetParticipantsTable.toUserId, ctx.userId),
+      ),
+    });
 
     return requests;
   }),

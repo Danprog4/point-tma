@@ -7,7 +7,7 @@ export const Logo = () => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_442_167)">
+      {/* <g clip-path="url(#clip0_442_167)">
         <g clip-path="url(#clip1_442_167)">
           <path d="M37.2227 0H32.192V3.69173H37.2227V0Z" fill="#9924FF" />
           <path d="M36.2162 5.53948H32.192V18.4624H36.2162V5.53948Z" fill="#9924FF" />
@@ -44,7 +44,7 @@ export const Logo = () => {
         <clipPath id="clip1_442_167">
           <rect width="80.4" height="24" fill="white" />
         </clipPath>
-      </defs>
+      </defs> */}
     </svg>
   );
 };

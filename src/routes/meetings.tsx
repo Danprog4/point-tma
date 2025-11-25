@@ -9,6 +9,7 @@ import FilterDrawer from "~/components/FilterDrawer";
 import { Header } from "~/components/Header";
 import { useInfiniteScroll, useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
+import { Spinner } from "~/components/Spinner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -25,21 +26,22 @@ function RouteComponent() {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery(
-    trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
-      {
-        limit: 8,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-        staleTime: 2 * 60 * 1000,
-        gcTime: 5 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-      },
-    ),
-  );
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery(
+      trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
+        {
+          limit: 8,
+        },
+        {
+          getNextPageParam: (lastPage) => lastPage.nextCursor,
+          staleTime: 2 * 60 * 1000,
+          gcTime: 5 * 60 * 1000,
+          refetchOnWindowFocus: false,
+          refetchOnMount: false,
+          refetchOnReconnect: false,
+        },
+      ),
+    );
 
   const handleRefresh = async () => {
     setIsFetchingMore(true);
@@ -243,75 +245,85 @@ function RouteComponent() {
           {/* Main Meetings Feed */}
           <div className="px-5 pb-24">
             <div className="space-y-4">
-              {filteredMeetings?.map((meeting: any) => (
-                <Link
-                  key={meeting.id}
-                  to="/meet/$id"
-                  params={{ id: meeting.id?.toString() || "" }}
-                  preload="viewport"
-                  onClick={() => saveScrollPosition("meetings")}
-                  className="block"
-                >
-                  <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-transform duration-200 active:scale-[0.98]">
-                    <div className="flex gap-4">
-                      {/* Left: Image */}
-                      <div className="relative h-32 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
-                        <img
-                          src={getImageUrl(meeting.image || "")}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Right: Content */}
-                      <div className="flex flex-1 flex-col justify-between py-1">
-                        <div>
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="line-clamp-2 text-base leading-tight font-bold text-gray-900">
-                              {meeting.name || "Без названия"}
-                            </h3>
+              {isLoading ? (
+                <div className="flex justify-center py-10">
+                  <Spinner />
+                </div>
+              ) : (
+                <>
+                  {filteredMeetings?.map((meeting: any) => (
+                    <Link
+                      key={meeting.id}
+                      to="/meet/$id"
+                      params={{ id: meeting.id?.toString() || "" }}
+                      preload="viewport"
+                      onClick={() => saveScrollPosition("meetings")}
+                      className="block"
+                    >
+                      <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-transform duration-200 active:scale-[0.98]">
+                        <div className="flex gap-4">
+                          {/* Left: Image */}
+                          <div className="relative h-32 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                            <img
+                              src={getImageUrl(meeting.image || "")}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
                           </div>
-                          <p className="mt-1 line-clamp-2 text-xs text-gray-500">
-                            {meeting.description}
-                          </p>
+
+                          {/* Right: Content */}
+                          <div className="flex flex-1 flex-col justify-between py-1">
+                            <div>
+                              <div className="flex items-start justify-between gap-2">
+                                <h3 className="line-clamp-2 text-base leading-tight font-bold text-gray-900">
+                                  {meeting.name || "Без названия"}
+                                </h3>
+                              </div>
+                              <p className="mt-1 line-clamp-2 text-xs text-gray-500">
+                                {meeting.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="h-6 w-6 overflow-hidden rounded-full ring-2 ring-gray-50">
+                                  <img
+                                    src={getImageUrl(meeting.user?.photo || "")}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <span className="max-w-[100px] truncate text-xs font-medium text-gray-700">
+                                  {meeting.user?.name}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+                                <Users className="h-3 w-3" />
+                                <span>{meeting.participantsCount || 0}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 overflow-hidden rounded-full ring-2 ring-gray-50">
-                              <img
-                                src={getImageUrl(meeting.user?.photo || "")}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                            <span className="max-w-[100px] truncate text-xs font-medium text-gray-700">
-                              {meeting.user?.name}
+                        {/* Bottom Info */}
+                        <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
+                          <div className="flex items-center gap-1.5 text-gray-500">
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span className="text-xs font-medium">
+                              {meeting.locations?.[0]?.location || "Москва"}
                             </span>
                           </div>
-
-                          <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
-                            <Users className="h-3 w-3" />
-                            <span>{meeting.participantsCount || 0}</span>
-                          </div>
+                          <span className="text-xs font-medium text-violet-600">
+                            15:30
+                          </span>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Bottom Info */}
-                    <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
-                      <div className="flex items-center gap-1.5 text-gray-500">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span className="text-xs font-medium">
-                          {meeting.locations?.[0]?.location || "Москва"}
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium text-violet-600">15:30</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                    </Link>
+                  ))}
+                </>
+              )}
             </div>
 
             {/* Loader */}

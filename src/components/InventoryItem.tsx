@@ -108,7 +108,7 @@ export function InventoryItem({
       style={{
         touchAction: "none", // Важно! Отключает браузерные жесты на самом элементе
       }}
-      className={`relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 select-none shadow-md transition-transform active:scale-95`}
+      className={`relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 shadow-md transition-transform select-none active:scale-95`}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -151,4 +151,3 @@ export function InventoryItem({
     </div>
   );
 }
-

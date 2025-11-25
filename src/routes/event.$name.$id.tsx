@@ -356,9 +356,9 @@ function RouteComponent() {
           </div>
         </>
       ) : (
-        <div className="pb-32">
+        <div className="pb-24">
           {/* Modern Header with Back Button */}
-          <div className="pt-safe pointer-events-none fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-4">
+          <div className="pt-safe pointer-events-none fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-4 pt-28">
             <button
               onClick={() => window.history.back()}
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/20 shadow-sm backdrop-blur-md transition-all active:scale-95"

@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { hapticFeedback } from "@telegram-apps/sdk";
-import React, { useRef } from "react";
+import { Key as KeyIcon, Package, Star, Ticket } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { cn } from "~/lib/utils/cn";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import type { GroupedTicket } from "~/types/inventory";
 
@@ -18,6 +20,7 @@ export function InventoryItem({
   onLongPress,
 }: InventoryItemProps) {
   const navigate = useNavigate();
+  const [imageError, setImageError] = useState(false);
 
   const isCase = ticket.type === "case";
   const isKey = ticket.type === "key";
@@ -27,7 +30,6 @@ export function InventoryItem({
   const longPressTimer = useRef<number | null>(null);
   const startPos = useRef<{ x: number; y: number } | null>(null);
 
-  // Отменяем long press таймер
   const cancelLongPress = () => {
     if (longPressTimer.current) {
       window.clearTimeout(longPressTimer.current);
@@ -35,14 +37,11 @@ export function InventoryItem({
     }
   };
 
-  // Запускаем long press при pointerdown
   const handlePointerDown = (e: React.PointerEvent) => {
     startPos.current = { x: e.clientX, y: e.clientY };
     isLongPress.current = false;
 
-    // Запускаем таймер на 300ms
     longPressTimer.current = window.setTimeout(() => {
-      // Проверяем что не двигались (с небольшим допуском)
       if (startPos.current) {
         isLongPress.current = true;
         onLongPress(ticket, eventData);
@@ -54,13 +53,11 @@ export function InventoryItem({
     }, 300);
   };
 
-  // Отслеживаем движение - если двигаем, отменяем long press
   const handlePointerMove = (e: React.PointerEvent) => {
     if (startPos.current && longPressTimer.current) {
       const deltaX = Math.abs(e.clientX - startPos.current.x);
       const deltaY = Math.abs(e.clientY - startPos.current.y);
 
-      // Если сдвинули больше 8px - это drag/scroll, отменяем long press
       if (deltaX > 8 || deltaY > 8) {
         cancelLongPress();
         startPos.current = null;
@@ -68,11 +65,8 @@ export function InventoryItem({
     }
   };
 
-  // При отпускании - отменяем таймер
   const handlePointerUp = () => {
     cancelLongPress();
-
-    // Сбрасываем флаг long press через небольшую задержку
     setTimeout(() => {
       startPos.current = null;
       isLongPress.current = false;
@@ -80,20 +74,14 @@ export function InventoryItem({
   };
 
   const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent click when long pressing
     if (isLongPress.current) {
       isLongPress.current = false;
       return;
     }
 
-    // Prevent default touch behavior
-    // e.preventDefault(); // Might block scrolling if called on touchstart, but this is click
-
     if (isKey) {
-      // For keys, open KeyDrawer
       onKeyClick(ticket);
     } else if (isCase) {
-      // For cases, use correct ID
       const actualCaseId = ticket.caseId || ticket.eventId;
       if (actualCaseId) {
         navigate({ to: `/case/${actualCaseId}` });
@@ -103,50 +91,87 @@ export function InventoryItem({
     }
   };
 
+  const getTicketTypeLabel = () => {
+    if (ticket.type === "ticket" && (eventData as any)?.category === "Квест")
+      return "Квест";
+    if (isCase) return "Кейс";
+    if (isKey) return "Ключ";
+    return "Ваучер";
+  };
+
+  const getTicketIcon = () => {
+    if (ticket.type === "ticket" && (eventData as any)?.category === "Квест")
+      return <Star className="h-3 w-3" />;
+    if (isCase) return <Package className="h-3 w-3" />;
+    if (isKey) return <KeyIcon className="h-3 w-3" />;
+    return <Ticket className="h-3 w-3" />;
+  };
+
+  const imageUrl =
+    isCase || isKey
+      ? (eventData as any)?.photo?.startsWith("/")
+        ? (eventData as any).photo
+        : getImageUrl((eventData as any)?.photo)
+      : (eventData as any)?.image;
+
+  const finalImageSrc = !imageError && imageUrl ? imageUrl : "/fallback.png"; // Replace with a real placeholder if available, or just use a generic icon/color
+
+  // Type-based styling
+  const typeLabel = getTicketTypeLabel();
+  const typeColor =
+    typeLabel === "Квест"
+      ? "text-amber-600 bg-amber-50 ring-amber-200"
+      : typeLabel === "Кейс"
+        ? "text-blue-600 bg-blue-50 ring-blue-200"
+        : typeLabel === "Ключ"
+          ? "text-purple-600 bg-purple-50 ring-purple-200"
+          : "text-emerald-600 bg-emerald-50 ring-emerald-200";
+
   return (
     <div
-      style={{
-        touchAction: "none", // Важно! Отключает браузерные жесты на самом элементе
-      }}
-      className={`relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4 shadow-md transition-transform select-none active:scale-95`}
+      style={{ touchAction: "none" }}
+      className="group relative flex aspect-square cursor-pointer flex-col justify-between overflow-hidden rounded-[24px] bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md active:scale-95"
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
-      {/* Badge with ticket count */}
+      {/* Count Badge */}
       {ticket.count > 1 && (
-        <div className="absolute -top-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+        <div className="absolute top-2 right-2 z-10 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gray-900 px-1.5 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
           {ticket.count}
         </div>
       )}
 
-      <img
-        src={
-          isCase || isKey
-            ? (eventData as any)?.photo?.startsWith("/")
-              ? (eventData as any).photo
-              : (getImageUrl((eventData as any)?.photo) ?? "/fallback.png")
-            : ((eventData as any)?.image ?? "/fallback.png")
-        }
-        alt={
-          isCase || isKey
-            ? ((eventData as any)?.name ?? "Кейс")
-            : ((eventData as any)?.title ?? "Предмет")
-        }
-        className="pointer-events-none h-[61px] w-[61px] rounded-lg object-cover"
-        draggable={false}
-      />
+      {/* Image Container */}
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-xl bg-gray-50">
+        {!imageError && imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={typeLabel}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={() => setImageError(true)}
+            draggable={false}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-gray-300">
+            {getTicketIcon()}
+          </div>
+        )}
+      </div>
 
-      <div className="pointer-events-none text-center text-xs font-bold text-[#A35700]">
-        {ticket.type === "ticket" && (eventData as any)?.category === "Квест"
-          ? "Квест"
-          : isCase
-            ? "Кейс"
-            : isKey
-              ? "Ключ"
-              : "Ваучер"}
+      {/* Label */}
+      <div className="mt-2 flex items-center justify-center">
+        <div
+          className={cn(
+            "flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold tracking-wide uppercase ring-1 ring-inset",
+            typeColor,
+          )}
+        >
+          {getTicketIcon()}
+          <span>{typeLabel}</span>
+        </div>
       </div>
     </div>
   );

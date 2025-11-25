@@ -30,7 +30,7 @@ function RouteComponent() {
     useInfiniteQuery(
       trpc.meetings.getMeetingsPagination.infiniteQueryOptions(
         {
-          limit: 8,
+          limit: 5,
         },
         {
           getNextPageParam: (lastPage) => lastPage.nextCursor,

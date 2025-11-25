@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { Coin } from "~/components/Icons/Coin";
 import { MeetCard } from "~/components/MeetCard";
+import { Spinner } from "~/components/Spinner";
 import { usePlatform } from "~/hooks/usePlatform";
 import { useRequests } from "~/hooks/useRequests";
 import { cn } from "~/lib/utils/cn";
@@ -31,12 +32,12 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: user } = useQuery(trpc.main.getUser.queryOptions());
-  const { data: meetings, refetch: refetchMeetings } = useQuery({
+  const { data: user, isLoading: isLoadingUser } = useQuery(trpc.main.getUser.queryOptions());
+  const { data: meetings, refetch: refetchMeetings, isLoading: isLoadingMeetings } = useQuery({
     ...trpc.meetings.getMeetings.queryOptions(),
     staleTime: 0,
   });
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  const { data: users, isLoading: isLoadingUsers } = useQuery(trpc.main.getUsers.queryOptions());
   const [search, setSearch] = useState<string>("");
 
   const {
@@ -46,7 +47,7 @@ function RouteComponent() {
     decline: handleDeclineRequest,
   } = useRequests(user?.id, meetings || [], users || []);
 
-  const { data: participants, refetch: refetchParticipants } = useQuery({
+  const { data: participants, refetch: refetchParticipants, isLoading: isLoadingParticipants } = useQuery({
     ...trpc.meetings.getParticipants.queryOptions(),
     staleTime: 0,
   });
@@ -247,7 +248,11 @@ function RouteComponent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col gap-4"
               >
-                {activeMeetings?.length === 0 ? (
+                {isLoadingUser || isLoadingMeetings || isLoadingParticipants ? (
+                  <div className="flex justify-center py-10">
+                    <Spinner />
+                  </div>
+                ) : activeMeetings?.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="mb-4 rounded-full bg-gray-50 p-6">
                       <CalendarDays className="h-12 w-12 text-gray-300" />
@@ -284,21 +289,34 @@ function RouteComponent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col gap-4"
               >
-                {completedMeetings
-                  ?.filter((meeting: any) =>
-                    meeting?.name?.toLowerCase().includes(search.toLowerCase()),
-                  )
-                  ?.sort(
-                    (a, b) =>
-                      new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
-                  )
-                  .map((quest: any) => (
-                    <MeetingListItem key={quest?.id} item={quest} type="completed" />
-                  ))}
-                {completedMeetings?.length === 0 && (
-                  <div className="py-20 text-center text-sm text-gray-500">
-                    История встреч пуста
+                {isLoadingUser || isLoadingMeetings || isLoadingParticipants ? (
+                  <div className="flex justify-center py-10">
+                    <Spinner />
                   </div>
+                ) : (
+                  <>
+                    {completedMeetings
+                      ?.filter((meeting: any) =>
+                        meeting?.name?.toLowerCase().includes(search.toLowerCase()),
+                      )
+                      ?.sort(
+                        (a, b) =>
+                          new Date(b.createdAt!).getTime() -
+                          new Date(a.createdAt!).getTime(),
+                      )
+                      .map((quest: any) => (
+                        <MeetingListItem
+                          key={quest?.id}
+                          item={quest}
+                          type="completed"
+                        />
+                      ))}
+                    {completedMeetings?.length === 0 && (
+                      <div className="py-20 text-center text-sm text-gray-500">
+                        История встреч пуста
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}
@@ -311,56 +329,64 @@ function RouteComponent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col gap-4"
               >
-                {invitesWithInfo?.map((request: any) => (
-                  <div
-                    key={request?.id}
-                    className="relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
-                  >
-                    <div className="mb-4 flex items-center gap-3">
-                      <img
-                        src={getImageUrl(
-                          request.fromUser?.photo || request.fromUser?.photoUrl,
-                        )}
-                        alt=""
-                        className="h-10 w-10 rounded-full object-cover ring-2 ring-violet-100"
-                      />
-                      <div>
-                        <div className="text-sm font-bold text-gray-900">
-                          {request.fromUser?.name} {request.fromUser?.surname}
+                {isLoadingUser || isLoadingMeetings || isLoadingUsers ? (
+                  <div className="flex justify-center py-10">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <>
+                    {invitesWithInfo?.map((request: any) => (
+                      <div
+                        key={request?.id}
+                        className="relative overflow-hidden rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+                      >
+                        <div className="mb-4 flex items-center gap-3">
+                          <img
+                            src={getImageUrl(
+                              request.fromUser?.photo || request.fromUser?.photoUrl,
+                            )}
+                            alt=""
+                            className="h-10 w-10 rounded-full object-cover ring-2 ring-violet-100"
+                          />
+                          <div>
+                            <div className="text-sm font-bold text-gray-900">
+                              {request.fromUser?.name} {request.fromUser?.surname}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Приглашает вас на встречу
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Приглашает вас на встречу
+
+                        <div className="mb-4 rounded-2xl bg-gray-50 p-3">
+                          <MeetCard
+                            meet={request.meeting || ({} as Quest)}
+                            isNavigable={true}
+                          />
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-200 active:scale-95"
+                            onClick={() => handleDeclineRequest(request)}
+                          >
+                            Отклонить
+                          </button>
+                          <button
+                            className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 transition-all hover:bg-violet-700 active:scale-95"
+                            onClick={() => handleAcceptRequest(request)}
+                          >
+                            Принять
+                          </button>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="mb-4 rounded-2xl bg-gray-50 p-3">
-                      <MeetCard
-                        meet={request.meeting || ({} as Quest)}
-                        isNavigable={true}
-                      />
-                    </div>
-
-                    <div className="flex gap-3">
-                      <button
-                        className="flex-1 rounded-xl bg-gray-100 py-3 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-200 active:scale-95"
-                        onClick={() => handleDeclineRequest(request)}
-                      >
-                        Отклонить
-                      </button>
-                      <button
-                        className="flex-1 rounded-xl bg-violet-600 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 transition-all hover:bg-violet-700 active:scale-95"
-                        onClick={() => handleAcceptRequest(request)}
-                      >
-                        Принять
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {invitesWithInfo?.length === 0 && (
-                  <div className="py-20 text-center text-sm text-gray-500">
-                    Нет новых приглашений
-                  </div>
+                    ))}
+                    {invitesWithInfo?.length === 0 && (
+                      <div className="py-20 text-center text-sm text-gray-500">
+                        Нет новых приглашений
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}
@@ -373,65 +399,73 @@ function RouteComponent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col gap-4"
               >
-                {requestsWithInfo?.map((request: any) => (
-                  <div
-                    key={request?.id}
-                    className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
-                  >
-                    <div className="mb-4 flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
-                      <img
-                        src={getImageUrl(request.meeting?.image || "")}
-                        alt=""
-                        className="h-12 w-12 rounded-xl object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="line-clamp-1 text-sm font-bold text-gray-900">
-                          {request.meeting?.name}
-                        </h4>
-                        <span className="mt-1 inline-flex rounded-lg bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
-                          {request.meeting?.type}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={getImageUrl(request.fromUser?.photo || "")}
-                          alt=""
-                          className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100"
-                        />
-                        <div>
-                          <div className="text-sm font-bold text-gray-900">
-                            {request.fromUser?.name} {request.fromUser?.surname}
+                {isLoadingUser || isLoadingMeetings || isLoadingUsers ? (
+                  <div className="flex justify-center py-10">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <>
+                    {requestsWithInfo?.map((request: any) => (
+                      <div
+                        key={request?.id}
+                        className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100"
+                      >
+                        <div className="mb-4 flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
+                          <img
+                            src={getImageUrl(request.meeting?.image || "")}
+                            alt=""
+                            className="h-12 w-12 rounded-xl object-cover"
+                          />
+                          <div className="flex-1">
+                            <h4 className="line-clamp-1 text-sm font-bold text-gray-900">
+                              {request.meeting?.name}
+                            </h4>
+                            <span className="mt-1 inline-flex rounded-lg bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                              {request.meeting?.type}
+                            </span>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {request.fromUser?.birthday}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getImageUrl(request.fromUser?.photo || "")}
+                              alt=""
+                              className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100"
+                            />
+                            <div>
+                              <div className="text-sm font-bold text-gray-900">
+                                {request.fromUser?.name} {request.fromUser?.surname}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {request.fromUser?.birthday}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
+                              className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100 active:scale-95"
+                              onClick={() => handleDeclineRequest(request)}
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                            <button
+                              className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors hover:bg-green-100 active:scale-95"
+                              onClick={() => handleAcceptRequest(request)}
+                            >
+                              <Check className="h-5 w-5" />
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100 active:scale-95"
-                          onClick={() => handleDeclineRequest(request)}
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                        <button
-                          className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors hover:bg-green-100 active:scale-95"
-                          onClick={() => handleAcceptRequest(request)}
-                        >
-                          <Check className="h-5 w-5" />
-                        </button>
+                    ))}
+                    {requestsWithInfo?.length === 0 && (
+                      <div className="py-20 text-center text-sm text-gray-500">
+                        Нет активных заявок
                       </div>
-                    </div>
-                  </div>
-                ))}
-                {requestsWithInfo?.length === 0 && (
-                  <div className="py-20 text-center text-sm text-gray-500">
-                    Нет активных заявок
-                  </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}

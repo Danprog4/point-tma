@@ -20,7 +20,9 @@ function RouteComponent() {
   const trpc = useTRPC();
   const navigate = useNavigate();
 
-  const { data: viewedUser } = useQuery(trpc.main.getUserById.queryOptions({ id }));
+  const { data: viewedUser, isLoading: isLoadingUser } = useQuery(
+    trpc.main.getUserById.queryOptions({ id }),
+  );
   const { data: meetings, isLoading: isLoadingMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({ userId: userId }),
   );
@@ -65,6 +67,8 @@ function RouteComponent() {
 
   const isMobile = usePlatform();
 
+  console.log(isLoadingMeetings, isLoadingUser, "isLoadingMeetings, isLoadingUser");
+
   return (
     <div
       data-mobile={isMobile}
@@ -102,8 +106,8 @@ function RouteComponent() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {isLoadingMeetings ? (
-          <div className="flex justify-center py-8">
+        {isLoadingMeetings || isLoadingUser ? (
+          <div className="flex justify-center py-10">
             <Spinner />
           </div>
         ) : (
@@ -156,7 +160,7 @@ function RouteComponent() {
                 </div>
               ))}
 
-            {displayMeetings?.length === 0 && (
+            {!isLoadingMeetings && !isLoadingUser && displayMeetings?.length === 0 && (
               <div className="flex flex-col items-center justify-center px-4 py-16">
                 <div className="text-center text-gray-500">
                   <p className="mb-2 text-lg font-medium">

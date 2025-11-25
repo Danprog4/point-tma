@@ -829,7 +829,6 @@ function RouteComponent() {
                                   setSelectedKey(ticket);
                                   setIsKeyDrawerOpen(true);
                                 }}
-                                onLongPress={handleLongPress}
                               />
                             );
                           })}

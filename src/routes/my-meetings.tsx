@@ -167,12 +167,12 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen bg-[#FAFAFA] pb-20 data-[mobile=true]:pt-8"
+      className="min-h-screen bg-[#FAFAFA] pb-20 data-[mobile=true]:pt-24"
     >
       {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => window.history.back()}

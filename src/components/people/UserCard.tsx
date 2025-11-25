@@ -71,6 +71,7 @@ export const UserCard = ({
       params: { id: user.id.toString() },
     });
     saveScrollPosition("people");
+    sessionStorage.setItem("people-view-mode", "list");
   };
 
   const handleMoreClick = (e: React.MouseEvent) => {

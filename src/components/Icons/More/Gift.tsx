@@ -1,11 +1,12 @@
-export const Gift = () => {
+export const Gift = ({ width = 32, height = 32, className }: { width?: number | string; height?: number | string; className?: string }) => {
   return (
     <svg
-      width="32"
-      height="32"
+      width={width}
+      height={height}
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
       <rect x="2.66675" y="8" width="26.6667" height="6.66667" rx="2" fill="#F3F3F3" />
       <path

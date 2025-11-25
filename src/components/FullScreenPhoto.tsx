@@ -60,7 +60,7 @@ export const FullScreenPhoto = ({
           )}
 
           <XIcon
-            className="absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
+            className="absolute top-28 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
             onClick={() => setIsFullScreen(false)}
           />
 

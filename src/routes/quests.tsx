@@ -13,7 +13,6 @@ import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
-import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -80,26 +79,17 @@ function RouteComponent() {
 
   console.log(activeFilter);
 
-  const filters = [
-    "Все",
-    ...Array.from(
-      new Set(
-        questsData?.filter((quest) => !quest.isSeries).map((quest) => quest.type) ?? [],
-      ),
-    ),
-  ];
-
   const filteredEvents = activeEvents
     ?.filter((event) => event.type === "Квест")
     .filter((q) => !q.isCompleted);
   const userQuestsData = filteredEvents?.map((event) => {
-    const quest = questsData?.find((q) => q.id === event.eventId);
+    const quest = questsData?.find((q: any) => q.id === event.eventId);
     return quest
       ? {
           ...event,
           description: quest?.description,
           hasAchievement: quest?.hasAchievement,
-          reward: quest?.rewards?.find((reward) => reward.type === "point")?.value || 0,
+          rewards: quest?.rewards,
           title: quest?.title,
           date: quest?.date,
           location: quest?.location,
@@ -111,6 +101,12 @@ function RouteComponent() {
         }
       : event;
   });
+
+  const filters = [
+    "Все",
+    "Активные",
+    ...Array.from(new Set(questsData?.map((quest) => quest.type).filter(Boolean) ?? [])),
+  ];
 
   const isMobile = usePlatform();
 
@@ -194,123 +190,125 @@ function RouteComponent() {
           </div>
 
           {/* Content */}
-          <div className="space-y-8 pb-24">
-            {/* Active Quests */}
-            {userQuestsData && userQuestsData.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="px-5 text-lg font-bold text-gray-900">Активные квесты</h2>
-                <div className="flex flex-col gap-4 px-5">
-                  {userQuestsData
-                    .filter(
-                      (quest) =>
-                        (activeFilter === "Все" && questsData) ||
-                        quest.type === activeFilter,
-                    )
-                    .map((quest) => {
-                      const questData = questsData?.find((q) => q.id === quest.eventId);
-                      return (
-                        <div
-                          key={quest.id}
-                          className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md"
-                        >
-                          <QuestCard quest={questData as any} isNavigable={true} />
-                          <div className="border-t border-gray-50 px-4 pb-4">
-                            <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
-                              {questData?.description}
-                            </p>
 
-                            <div className="flex items-center justify-between">
-                              {questData?.hasAchievement ? (
-                                <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
-                                  🏆 Достижение
-                                </span>
-                              ) : (
-                                <div />
-                              )}
-                              <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
-                                <span>+</span>
-                                <span>
-                                  {(
-                                    questData?.rewards?.find(
-                                      (reward) => reward.type === "point",
-                                    )?.value ?? 0
-                                  ).toLocaleString()}
-                                </span>
-                                <span className="text-gray-500">points</span>
-                                <Coin />
-                              </div>
+          {/* Active Quests */}
+          {/* {userQuestsData && userQuestsData.length > 0 && (
+            <>
+              <h2 className="px-5 text-lg font-bold text-gray-900">Активные квесты</h2>
+              <div className="flex flex-col gap-4 px-5">
+                {userQuestsData
+                  .filter(
+                    (quest) =>
+                      (activeFilter === "Все") ||
+                      quest.category === activeFilter,
+                  )
+                  .map((quest) => {
+                    const questData = questsData?.find((q) => q.id === quest.eventId);
+                    return (
+                      <div
+                        key={quest.id}
+                        className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md"
+                      >
+                        <QuestCard quest={questData as any} isNavigable={true} />
+                        <div className="border-t border-gray-50 px-4 pb-4">
+                          <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
+                            {questData?.description}
+                          </p>
+
+                          <div className="flex items-center justify-between">
+                            {questData?.hasAchievement ? (
+                              <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
+                                🏆 Достижение
+                              </span>
+                            ) : (
+                              <div />
+                            )}
+                            <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
+                              <span>+</span>
+                              <span>
+                                {(
+                                  questData?.rewards?.find(
+                                    (reward) => reward.type === "point",
+                                  )?.value ?? 0
+                                ).toLocaleString()}
+                              </span>
+                              <span className="text-gray-500">points</span>
+                              <Coin />
                             </div>
                           </div>
                         </div>
-                      );
-                    })}
-                </div>
+                      </div>
+                    );
+                  })}
               </div>
-            )}
+            </>
+          )} */}
 
-            {/* Series Quests */}
-            {questsData?.some((q) => q.isSeries) && (
-              <div className="space-y-4">
-                {questsData
-                  .filter((quest) => quest.isSeries)
-                  .map((quest) => (
-                    <div key={quest.id} className="px-1">
-                      <SeriesQuestCard quest={quest as any} />
-                    </div>
-                  ))}
-              </div>
-            )}
-
-            {/* All Quests List */}
-            <div className="space-y-4 px-5">
+          {/* Series Quests */}
+          {/* {questsData?.some((q) => q.isSeries) && (
+            <>
               {questsData
-                ?.filter((quest) => !quest.isSeries)
-                .filter(
-                  (quest) =>
-                    (activeFilter === "Все" && questsData) || quest.type === activeFilter,
-                )
-                .filter((quest) => {
-                  return (
-                    quest.title?.toLowerCase().includes(search.toLowerCase()) ||
-                    quest.description?.toLowerCase().includes(search.toLowerCase())
-                  );
-                })
+                .filter((quest) => quest.isSeries)
                 .map((quest) => (
-                  <div key={quest.id} className="space-y-2">
-                    <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                      {quest.date}
-                    </h3>
-                    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
-                      <QuestCard quest={quest as any} isNavigable={true} />
-                      <div className="border-t border-gray-50 px-4 pb-4">
-                        <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
-                          {quest.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          {quest.hasAchievement ? (
-                            <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
-                              🏆 Достижение
-                            </span>
-                          ) : (
-                            <div />
-                          )}
-                          <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
-                            <span>+</span>
-                            <span>
-                              {(
-                                quest?.rewards?.find((reward) => reward.type === "point")
-                                  ?.value ?? 0
-                              ).toLocaleString()}
-                            </span>
-                            <span className="text-gray-500">points</span>
-                            <Coin />
-                          </div>
+                  <div key={quest.id} className="px-1">
+                    <SeriesQuestCard quest={quest as any} />
+                  </div>
+                ))}
+            </>
+          )} */}
+
+          {/* All Quests List */}
+          <div className="space-y-4 px-5">
+            {questsData
+              ?.filter((quest) => !quest.isSeries)
+              .filter((quest) => {
+                if (activeFilter === "Все") return true;
+                if (activeFilter === "Активные") {
+                  return userQuestsData?.some((uq) => uq.eventId === quest.id);
+                }
+                return quest.type === activeFilter;
+              })
+              .filter((quest) => {
+                return (
+                  quest.title?.toLowerCase().includes(search.toLowerCase()) ||
+                  quest.description?.toLowerCase().includes(search.toLowerCase())
+                );
+              })
+              .map((quest) => (
+                <div key={quest.id} className="space-y-2">
+                  <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                    {quest.date}
+                  </h3>
+                  <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
+                    <QuestCard quest={quest as any} isNavigable={true} />
+                    <div className="border-t border-gray-50 px-4 pb-4">
+                      <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
+                        {quest.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        {quest.hasAchievement ? (
+                          <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
+                            🏆 Достижение
+                          </span>
+                        ) : (
+                          <div />
+                        )}
+                        <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
+                          <span>+</span>
+                          <span>
+                            {(
+                              quest?.rewards?.find((reward) => reward.type === "point")
+                                ?.value ?? 0
+                            ).toLocaleString()}
+                          </span>
+                          <span className="text-gray-500">points</span>
+                          <Coin />
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
-            </div>
+                </div>
+              ))}
           </div>
         </div>
 

@@ -99,12 +99,12 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="mx-auto min-h-screen w-full max-w-md bg-[#FAFAFA] pb-24 data-[mobile=true]:pt-12"
+      className="mx-auto min-h-screen w-full max-w-md bg-[#FAFAFA] pb-24 data-[mobile=true]:pt-24"
     >
       {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between bg-[#FAFAFA]/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
       >
         <button
           onClick={() => navigate({ to: "/profile" })}

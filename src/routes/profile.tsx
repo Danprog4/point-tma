@@ -224,13 +224,13 @@ function RouteComponent() {
 
                       {/* Photo Indicators */}
                       {allPhotos.length > 1 && (
-                        <div className="absolute bottom-15 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+                        <div className="absolute top-0 right-0 left-0 z-20 flex gap-1 bg-gradient-to-b from-black/40 to-transparent px-4 py-4">
                           {allPhotos.map((_, i) => (
                             <div
                               key={i}
                               className={cn(
-                                "h-1 rounded-full transition-all duration-300",
-                                i === currentIndex ? "w-6 bg-white" : "w-2 bg-white/40",
+                                "h-1 flex-1 rounded-full transition-all duration-300",
+                                i === currentIndex ? "bg-white" : "bg-white/40",
                               )}
                             />
                           ))}

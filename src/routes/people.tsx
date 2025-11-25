@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { List, Map } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
@@ -45,18 +45,17 @@ function RouteComponent() {
     openFastMeetId ?? null,
   );
 
-  // Initialize view mode from sessionStorage to persist state across navigation
+  // Initialize view mode from sessionStorage to persist state ONLY when returning from profile
   const [isList, setIsList] = useState(() => {
     if (typeof sessionStorage !== "undefined") {
-      return sessionStorage.getItem("people-view-mode") === "list";
+      const saved = sessionStorage.getItem("people-view-mode");
+      if (saved === "list") {
+        sessionStorage.removeItem("people-view-mode");
+        return true;
+      }
     }
     return false;
   });
-
-  // Persist view mode changes
-  useEffect(() => {
-    sessionStorage.setItem("people-view-mode", isList ? "list" : "map");
-  }, [isList]);
 
   // Custom hooks
   const {

@@ -8,7 +8,7 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
   const navigate = useNavigate();
 
   return (
-    <div className="relative mx-4 mb-6">
+    <div className="relative mx-4">
       <div className="absolute inset-x-2 top-[180px] h-4 rounded-b-2xl bg-purple-50 shadow-sm"></div>
       <div className="absolute inset-x-4 top-[190px] h-4 rounded-b-2xl bg-purple-100 shadow-sm"></div>
       <div

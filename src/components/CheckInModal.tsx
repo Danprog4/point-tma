@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { hapticFeedback } from "@telegram-apps/sdk";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -6,7 +7,6 @@ import { DAILY_REWARDS, getRewardForStreak } from "~/config/checkin";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 import { useTRPC } from "~/trpc/init/react";
 import { Coin } from "./Icons/Coin";
-import { hapticFeedback } from "@telegram-apps/sdk";
 
 export function CheckInModal({
   onClose,
@@ -65,7 +65,7 @@ export function CheckInModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50"
+        className="fixed inset-0 z-[1000001] flex items-center justify-center bg-black/50"
       >
         <motion.div
           initial={{ y: 50, scale: 0.95, opacity: 0 }}

@@ -167,8 +167,8 @@ function RouteComponent() {
                 const dateWithTime = `${created.toLocaleDateString()} ${time}`;
                 return (
                   <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     key={log.id}
                     onClick={() => {
                       if (log.route) navigate({ to: log.route as any });

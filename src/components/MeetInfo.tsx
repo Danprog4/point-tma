@@ -83,12 +83,12 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
   };
 
   return (
-    <div className="flex flex-col pb-20">
+    <div className="flex flex-col gap-4 px-4 pb-24">
       {organizer && (
-        <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Организатор</div>
+        <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md">
+          <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Организатор</div>
           <div
-            className="relative flex cursor-pointer items-center gap-4"
+            className="flex cursor-pointer items-center gap-4"
             onClick={() => {
               navigate({
                 to: "/user-profile/$id",
@@ -96,7 +96,7 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
               });
             }}
           >
-            <div className="relative h-10 w-10 rounded-full bg-gray-200">
+            <div className="relative h-12 w-12 flex-none rounded-full bg-gray-100 ring-2 ring-white">
               <img
                 src={
                   organizer?.photo
@@ -104,85 +104,104 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                     : organizer?.photoUrl || ""
                 }
                 alt={organizer?.name || ""}
-                className="h-10 w-10 cursor-pointer rounded-full"
+                className="h-full w-full rounded-full object-cover"
               />
             </div>
-            <div>
-              {organizer?.name} {organizer?.surname}
+            <div className="flex flex-col">
+              <div className="text-lg font-bold text-gray-900">
+                {organizer?.name} {organizer?.surname}
+              </div>
+              <div className="text-sm text-purple-600 font-medium">Посмотреть профиль</div>
             </div>
           </div>
         </div>
       )}
 
-      {meeting?.description && (
-        <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Описание</div>
-          <div>{meeting?.description}</div>
+      {(meeting?.description || meeting?.important) && (
+        <div className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+            {meeting?.description && (
+                <div className="flex flex-col gap-2">
+                <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Описание</div>
+                <div className="text-gray-700 leading-relaxed">{meeting?.description}</div>
+                </div>
+            )}
+            {meeting?.description && meeting?.important && <div className="h-px w-full bg-gray-100" />}
+            {meeting?.important && (
+                <div className="flex flex-col gap-2">
+                <div className="text-sm font-semibold text-red-500 uppercase tracking-wide flex items-center gap-2">
+                    Важное
+                </div>
+                <div className="rounded-xl bg-red-50 p-3 text-red-800 text-sm font-medium border border-red-100">
+                    {meeting?.important}
+                </div>
+                </div>
+            )}
         </div>
       )}
-      {meeting?.important && (
-        <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Важное</div>
-          <div>{meeting?.important}</div>
-        </div>
-      )}
-      {/* {meeting?.date && (
-        <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Дата начала</div>
-          <div>{meeting?.date}</div>
-        </div>
-      )} */}
 
-      {meeting?.locations && meeting?.locations?.length > 0 ? (
-        <div className="flex flex-col gap-4 px-4 py-4">
-          <div className="text-xl font-bold">Этапы встречи</div>
-          <div className="relative">
+      {/* Locations / Stages */}
+      <div className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+        <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Этапы встречи</div>
+        
+        {meeting?.locations && meeting?.locations?.length > 0 ? (
+          <div className="relative pl-2">
+             {/* Timeline Line */}
+            <div className="absolute top-4 bottom-4 left-[15px] w-0.5 bg-gray-100" />
+            
             {meeting?.locations?.map((location, idx) => (
-              <div key={idx} className="flex items-start gap-4 pb-4 last:pb-0">
-                <div className="relative flex w-8 flex-none items-start justify-center">
-                  <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 font-bold text-black">
+              <div key={idx} className="relative flex gap-4 pb-8 last:pb-0">
+                {/* Timeline Dot */}
+                <div className="relative z-10 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-white ring-4 ring-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700 ring-1 ring-purple-200">
                     {idx + 1}
                   </span>
                 </div>
+
                 {!location.isCustom ? (
-                  <div className="flex flex-col items-start">
-                    <div className="flex items-center justify-start gap-2">
-                      <img
-                        src={
-                          events?.find((event) => event.title === location.location)
-                            ?.image ?? ""
-                        }
-                        alt="image"
-                        className="h-16 w-16 rounded-lg"
-                      />
-                      <div className="flex flex-col items-start justify-center">
-                        <div className="text-sm font-bold">{location.location}</div>
-                        <div className="text-sm">{location.address}</div>
-                        <div className="flex items-center gap-2 text-sm text-neutral-500">
-                          <div>{location.starttime}</div>
-                        </div>
+                  <div className="flex flex-1 flex-col gap-3 rounded-xl bg-gray-50 p-3 transition-colors hover:bg-gray-100">
+                    <div className="flex items-start gap-3">
+                      {events?.find((event) => event.title === location.location)?.image && (
+                         <img
+                            src={events?.find((event) => event.title === location.location)?.image ?? ""}
+                            alt="location"
+                            className="h-16 w-16 rounded-lg object-cover bg-gray-200"
+                          />
+                      )}
+                      <div className="flex flex-col">
+                        <div className="font-bold text-gray-900">{location.location}</div>
+                        <div className="text-sm text-gray-500">{location.address}</div>
+                        {location.starttime && (
+                            <div className="text-xs font-medium text-gray-400 mt-1">
+                                {location.starttime}
+                            </div>
+                        )}
                       </div>
                     </div>
+                    
                     {isUserHave(location) ? (
-                      <div className="text-sm text-green-500">Билет получен</div>
+                      <div className="flex items-center gap-2 text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-100">
+                        <Check className="w-4 h-4" /> Билет получен
+                      </div>
                     ) : (
-                      <div className="text-sm font-bold text-red-500">
-                        Билет не получен!{" "}
-                        <Link
-                          className="font-bold text-blue-500"
+                      <div className="flex flex-col gap-2">
+                         <div className="text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-100">
+                            Билет не получен
+                         </div>
+                         <Link
+                          className="text-sm font-semibold text-blue-600 hover:text-blue-700 px-1"
                           to={getLinkToEvent(location)}
                         >
-                          Приобрести билет
+                          Приобрести билет →
                         </Link>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-1">
-                    <div className="font-bold text-black">{location.location}</div>
-                    <div className="text-sm text-black/80">{location.address}</div>
+                  <div className="flex flex-1 flex-col gap-1 rounded-xl bg-gray-50 p-3">
+                    <div className="font-bold text-gray-900">{location.location}</div>
+                    <div className="text-sm text-gray-500">{location.address}</div>
                     {location.starttime && location.endtime && (
-                      <div className="text-xs text-black/60">
+                      <div className="text-xs font-medium text-gray-400">
                         {location.starttime} - {location.endtime}
                       </div>
                     )}
@@ -190,37 +209,28 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                 )}
               </div>
             ))}
-            <div className="absolute top-8 bottom-4 left-4 w-px -translate-x-1/2 bg-gray-300" />
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2 px-4 py-4">
-          <div className="text-xl font-bold">Этапы встречи</div>
-          <div>Этапы не указаны</div>
-        </div>
-      )}
+        ) : (
+          <div className="text-gray-400 text-sm italic py-2">Этапы не указаны</div>
+        )}
+      </div>
 
-      <div className="flex flex-col justify-center gap-2 px-4 py-4">
-        <div className="flex flex-col items-start justify-start text-2xl font-bold">
-          <div className="flex items-center">
-            <div className="text-xl font-bold">Награда </div>
-          </div>
-        </div>
-
+      {/* Rewards */}
+      <div className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
         <div className="flex items-center justify-between">
-          <div>За успешное посещение вы получите:</div>
-          <div className="text-l pl-4 font-bold">
-            +{meeting?.reward?.toLocaleString() || 0}
-          </div>
-          <Coin />
+             <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Награда</div>
+             <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                <span className="font-bold text-yellow-700">+{meeting?.reward?.toLocaleString() || 0}</span>
+                <Coin />
+             </div>
         </div>
 
         {meeting?.items && meeting.items.length > 0 ? (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {meeting.items.map((item, index) => (
               <div
                 key={index}
-                className="flex aspect-square flex-col items-center justify-center rounded-2xl bg-[#DEB8FF] p-4"
+                className="flex flex-col items-center justify-center gap-2 rounded-xl bg-purple-50 p-3 ring-1 ring-purple-100"
               >
                 <img
                   src={
@@ -229,28 +239,26 @@ export const MeetInfo: React.FC<MeetInfoProps> = ({
                         event.id === item.eventId && event.category === item.name,
                     )?.image ?? ""
                   }
-                  alt={
-                    events?.find(
-                      (event) =>
-                        event.id === item.eventId && event.category === item.name,
-                    )?.title ?? "Предмет"
-                  }
-                  className="h-[61px] w-[61px] rounded-lg"
+                  alt={item.name}
+                  className="h-12 w-12 object-contain"
                 />
-                <div className="text-center text-sm font-bold text-nowrap text-[#A35700]">
+                <div className="text-center text-xs font-bold text-purple-900 line-clamp-1">
                   {item.name || "Предмет"}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-start text-gray-500">Предметы не указаны</div>
+          <div className="text-sm text-gray-400 italic">Предметы не указаны</div>
         )}
       </div>
-
-      <div className="flex flex-col gap-2 px-4 py-4">
-        <div className="text-xl font-bold">Достижения</div>
-        <div>+1 Активный участник</div>
+      
+      {/* Achievements Section */}
+      <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 p-4 text-white shadow-md">
+         <div className="font-bold">Достижения</div>
+         <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-lg backdrop-blur-md">
+            <span className="text-sm font-medium">+1 Активный участник</span>
+         </div>
       </div>
     </div>
   );

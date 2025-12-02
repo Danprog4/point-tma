@@ -356,7 +356,7 @@ function RouteComponent() {
           </div>
         </>
       ) : (
-        <div className="pb-24">
+        <div className="pb-32">
           {/* Modern Header with Back Button */}
           <div className="pt-safe pointer-events-none fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-4 pt-28">
             <button

@@ -22,7 +22,6 @@ import { Participations } from "~/components/Participations";
 import { useMeetPage } from "~/hooks/useMeetPage";
 import { usePlatform } from "~/hooks/usePlatform";
 import { getImageUrl } from "~/lib/utils/getImageURL";
-import ManageDrawer from "~/ManageDrawer";
 import { useTRPC } from "~/trpc/init/react";
 
 export const Route = createFileRoute("/meet/$id")({
@@ -163,75 +162,81 @@ function RouteComponent() {
           organizer={organizer}
         />
       ) : (
-        <div className={`h-screen ${page === "chat" ? "overflow-y-hidden" : ""}`}>
+        <div
+          className={`flex h-full flex-col bg-gray-50 ${page === "chat" ? "overflow-y-hidden" : "overflow-y-auto"}`}
+        >
+          {/* Top Navigation Bar */}
           <div
-            data-mobile={isMobile}
-            className="fixed top-0 left-0 z-10 flex w-full items-center justify-between bg-white p-4 data-[mobile=true]:pt-28"
+            className={`fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-3 transition-all duration-200 ${
+              isMobile ? "pt-12" : "pt-4"
+            } ${page === "info" && !isMobile ? "bg-transparent" : "bg-white/80 shadow-sm backdrop-blur-md"}`}
           >
             <button
               onClick={() => handleBack()}
-              className="flex h-6 w-6 items-center justify-center"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/50 text-gray-800 transition-colors hover:bg-white"
             >
-              <ArrowLeft className="h-5 w-5 text-gray-800" strokeWidth={2} />
+              <ArrowLeft className="h-6 w-6" strokeWidth={2.5} />
             </button>
-            <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-800">
-              Встреча
+            <h1 className={`text-lg font-bold text-gray-900 transition-opacity`}>
+              {page === "chat"
+                ? "Чат"
+                : page === "participants"
+                  ? "Участники"
+                  : "Встреча"}
             </h1>
-            {isOwner ? (
-              <button
-                onClick={() => {
-                  navigate({ to: "/meeting-edit", search: { meetId: id } });
-                }}
-                className="text-sm text-[#9924FF]"
-              >
-                Редактировать
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  if (isComplaint) {
-                    toast.error("Вы уже пожаловались на эту встречу");
-                    return;
-                  }
-                  setIsComplaintOpen(true);
-                }}
-              >
-                <ComplaintIcon />
-              </button>
-            )}
+            <div className="flex h-10 items-center justify-center">
+              {isOwner ? (
+                <button
+                  onClick={() => {
+                    navigate({ to: "/meeting-edit", search: { meetId: id } });
+                  }}
+                  className="text-sm font-semibold text-[#9924FF] transition-colors hover:text-[#7a1bcc]"
+                >
+                  Изменить
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (isComplaint) {
+                      toast.error("Вы уже пожаловались на эту встречу");
+                      return;
+                    }
+                    setIsComplaintOpen(true);
+                  }}
+                  className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                >
+                  <ComplaintIcon />
+                </button>
+              )}
+            </div>
           </div>
-          <div
-            data-mobile={isMobile}
-            className="flex gap-4 overflow-y-hidden px-4 pb-4 data-[mobile=true]:pt-38"
-          >
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "info" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("info")}
-            >
-              Информация
-            </button>
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "participants" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("participants")}
-            >
-              Участники
-            </button>
-            <button
-              className={`flex-1 rounded-3xl px-4 py-2.5 text-sm font-medium ${
-                page === "chat" ? "bg-black text-white" : "bg-white text-black"
-              }`}
-              onClick={() => setPage("chat")}
-            >
-              Чат
-            </button>
+
+          {/* Spacer for fixed header */}
+          <div className={`${isMobile ? "h-28" : "h-20"} shrink-0`} />
+
+          {/* Tabs - Segmented Control */}
+          <div className="sticky top-[calc(var(--header-height,60px))] z-10 px-4 pb-4">
+            <div className="flex w-full items-center rounded-2xl bg-gray-200/80 p-1">
+              {["info", "participants", "chat"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all duration-200 ${
+                    page === tab
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  onClick={() => setPage(tab as "info" | "participants" | "chat")}
+                >
+                  {tab === "info" ? "Инфо" : tab === "participants" ? "Участники" : "Чат"}
+                </button>
+              ))}
+            </div>
           </div>
-          <div>
+
+          {/* Content Area */}
+          <div className={`flex-1 ${page === "chat" ? "overflow-hidden" : ""}`}>
             {page === "info" && (
-              <>
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <MeetHeader
                   isMobile={isMobile}
                   page={page}
@@ -251,54 +256,60 @@ function RouteComponent() {
                   users={users as any}
                   getImageUrl={getImageUrl}
                 />
-              </>
+              </div>
             )}
             {page === "participants" && (
-              <MeetParticipations
-                isOwner={isOwner}
-                handleDeleteParticipant={handleDeleteParticipant}
-                meeting={meeting}
-                users={users}
-                user={user}
-                getImageUrl={getImageUrl}
-                handleAcceptRequest={handleAcceptInvite}
-                handleDeclineRequest={handleDeclineRequest}
-                filteredRequests={filteredRequests}
-                invitedUsers={invitedUsers}
-                organizer={organizer}
-                handleInvite={() => {}}
-                setIsDrawerOpen={setIsDrawerOpen}
-              />
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <MeetParticipations
+                  isOwner={isOwner}
+                  handleDeleteParticipant={handleDeleteParticipant}
+                  meeting={meeting}
+                  users={users}
+                  user={user}
+                  getImageUrl={getImageUrl}
+                  handleAcceptRequest={handleAcceptInvite}
+                  handleDeclineRequest={handleDeclineRequest}
+                  filteredRequests={filteredRequests}
+                  invitedUsers={invitedUsers}
+                  organizer={organizer}
+                  handleInvite={() => {}}
+                  setIsDrawerOpen={setIsDrawerOpen}
+                />
+              </div>
             )}
             {page === "chat" && (
-              <Chat
-                meeting={meeting}
-                chatMessages={chatMessages}
-                users={users}
-                user={user}
-                navigate={navigate}
-                chatBottomRef={chatBottomRef}
-              />
+              <div className="h-full">
+                <Chat
+                  meeting={meeting}
+                  chatMessages={chatMessages}
+                  users={users}
+                  user={user}
+                  navigate={navigate}
+                  chatBottomRef={chatBottomRef}
+                />
+              </div>
             )}
           </div>
 
+          {/* Bottom Actions */}
           {meeting?.isCompleted ? (
-            <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
-              <div
-                className="z-[10001] cursor-pointer px-4 py-5 text-[#9924FF]"
-                onClick={() => {
-                  setIsParticipantPage(true);
-                }}
-              >
-                {isOwner ? "Оценить участников" : "Оценить встречу"}
-              </div>
-              <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
-                <Info />
-                Встреча уже завершена
+            <div className="fixed right-0 bottom-0 left-0 z-50 p-4">
+              <div className="flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5">
+                <div
+                  className="flex w-full cursor-pointer items-center justify-center py-4 font-semibold text-[#9924FF] transition-colors hover:bg-gray-50"
+                  onClick={() => setIsParticipantPage(true)}
+                >
+                  {isOwner ? "Оценить участников" : "Оценить встречу"}
+                </div>
+                <div className="flex w-full items-center justify-center gap-2 bg-red-50 py-3 text-sm font-medium text-red-600">
+                  <Info />
+                  Встреча завершена
+                </div>
               </div>
             </div>
           ) : (
             <>
+              {/* Chat Specific Bottom Elements */}
               {selectedCategory && page === "chat" && (
                 <ChatMessages
                   selectedCategory={selectedCategory}
@@ -306,81 +317,83 @@ function RouteComponent() {
                   handleSendChatMessage={handleSendChatMessage}
                 />
               )}
-
               {page === "chat" && (
                 <ChatNav
                   selectedCategory={selectedCategory}
                   setSelectedCategory={setSelectedCategory}
                 />
               )}
-              {isOwner ? (
-                <div className="fixed right-0 bottom-0 left-0 z-[10000] mx-auto mt-4 flex w-auto items-center justify-center bg-white px-4 py-4 text-center font-semibold text-white">
-                  <div
-                    className="z-[1000] flex-1 px-8 py-3 text-[#9924FF]"
-                    onClick={() => {
-                      setIsEndOpen(true);
-                    }}
-                  >
-                    Завершить
-                  </div>
-                </div>
-              ) : isInvited ? (
-                <div className="fixed right-0 bottom-0 left-0 z-50 mx-auto flex w-full items-center justify-around bg-white px-4 py-4 font-semibold text-black">
-                  <button
-                    className="px-6 py-2 text-[#00A349]"
-                    onClick={() => handleAcceptInvite(invitesForUser[0])}
-                  >
-                    Принять приглашение
-                  </button>
-                  <button
-                    className="px-6 py-2 text-[#FF4D4F]"
-                    onClick={() => handleDeclineRequest(invitesForUser[0])}
-                  >
-                    Отклонить
-                  </button>
-                </div>
-              ) : isComplaint ? (
-                <div>
-                  <div className="fixed right-0 bottom-0 left-0 mx-auto mt-4 flex w-full flex-col items-center justify-center rounded-lg bg-white text-center font-semibold text-white">
-                    <div className="z-[10000] flex w-full items-center justify-center gap-2 bg-[#FFE5E5] px-8 py-6 text-black">
-                      <Info />
-                      Вы пожаловались на эту встречу
+
+              {/* Main Action Bar (Only show if NOT in chat, or adjust logic if needed) */}
+              {page !== "chat" && (
+                <div className="fixed right-0 bottom-0 left-0 z-40 p-4">
+                  {isOwner ? (
+                    <div className="flex justify-center">
+                      <button
+                        className="w-full max-w-md rounded-2xl bg-white/90 px-6 py-4 font-bold text-[#9924FF] shadow-lg ring-1 ring-black/5 backdrop-blur-md transition-transform active:scale-95"
+                        onClick={() => setIsEndOpen(true)}
+                      >
+                        Завершить встречу
+                      </button>
                     </div>
-                    <button
-                      className="z-[10000] w-full rounded-tl-2xl rounded-br-2xl px-8 py-6 text-[#9924FF] disabled:opacity-50"
-                      onClick={() => handleUnsendComplaint("event")}
-                    >
-                      Отозвать жалобу
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-center gap-10 rounded-2xl bg-white px-4 py-3 text-white">
-                  <div
-                    className="flex flex-1 items-center justify-center rounded-tl-2xl rounded-tr-lg rounded-br-2xl rounded-bl-lg bg-[#9924FF] px-3 py-3 text-white"
-                    onClick={() => handleJoin()}
-                  >
-                    {isOwner ? (
-                      <ManageDrawer open={isManageOpen} onOpenChange={setIsManageOpen}>
-                        <div>Управление</div>
-                      </ManageDrawer>
-                    ) : isParticipant ? (
-                      "Выйти"
-                    ) : isRequestParticipant ? (
-                      "Отменить запрос"
-                    ) : (
-                      "Откликнуться"
-                    )}
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div
-                      className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600"
-                      onClick={() => setIsMoreOpen(!isMoreOpen)}
-                    >
-                      <WhitePlusIcon />
+                  ) : isInvited ? (
+                    <div className="flex items-center justify-center gap-4 rounded-2xl bg-white/90 p-2 shadow-lg ring-1 ring-black/5 backdrop-blur-md">
+                      <button
+                        className="flex-1 rounded-xl bg-green-50 px-4 py-3 text-sm font-bold text-green-600 transition-colors hover:bg-green-100"
+                        onClick={() => handleAcceptInvite(invitesForUser[0])}
+                      >
+                        Принять
+                      </button>
+                      <button
+                        className="flex-1 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-colors hover:bg-red-100"
+                        onClick={() => handleDeclineRequest(invitesForUser[0])}
+                      >
+                        Отклонить
+                      </button>
                     </div>
-                    <span className="text-xs text-black">Ещё</span>
-                  </div>
+                  ) : isComplaint ? (
+                    <div className="flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-black/5">
+                      <div className="flex w-full items-center justify-center gap-2 bg-red-50 py-3 text-sm font-medium text-red-600">
+                        <Info />
+                        Вы пожаловались
+                      </div>
+                      <button
+                        className="w-full py-4 font-semibold text-[#9924FF] transition-colors hover:bg-gray-50"
+                        onClick={() => handleUnsendComplaint("event")}
+                      >
+                        Отозвать жалобу
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <button
+                        className={`flex-1 rounded-2xl px-6 py-4 text-center font-bold text-white shadow-lg transition-transform active:scale-95 ${
+                          isParticipant
+                            ? "bg-red-500"
+                            : isRequestParticipant
+                              ? "bg-gray-500"
+                              : "bg-[#9924FF]"
+                        }`}
+                        onClick={() => handleJoin()}
+                      >
+                        {isParticipant
+                          ? "Выйти"
+                          : isRequestParticipant
+                            ? "Отменить запрос"
+                            : "Откликнуться"}
+                      </button>
+
+                      <button
+                        className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-white text-gray-700 shadow-lg ring-1 ring-black/5 transition-transform active:scale-95"
+                        onClick={() => setIsMoreOpen(!isMoreOpen)}
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9924FF]/10 text-[#9924FF]">
+                          <WhitePlusIcon />
+                        </div>
+                        {/* Icon color fix needed if WhitePlusIcon is strictly white */}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </>

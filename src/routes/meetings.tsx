@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-quer
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Plus, Search, Users } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { Calendar } from "~/components/Calendar";
 import FilterDrawer from "~/components/FilterDrawer";
@@ -10,6 +10,8 @@ import { Header } from "~/components/Header";
 import { useInfiniteScroll, useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { Spinner } from "~/components/Spinner";
+import { useMeetingsFilter } from "~/config/meetingsFilter";
+import { useFilteredMeetings } from "~/hooks/useFilteredMeetings";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -74,36 +76,49 @@ function RouteComponent() {
 
   const allMeetings = data?.pages.flatMap((page) => page.items) ?? [];
 
-  const [activeFilter, setActiveFilter] = useState("Все");
+  const [filters, setFilters] = useState({
+    sortBy: "Сначала новые",
+    category: "Все",
+    type: "Все",
+    maxParticipants: 100,
+  });
+
+  const filterConfig = useMeetingsFilter(filters.category);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const filters = ["Все", "Конференции", "Вечеринки", "Квесты", "Кино", "Нетворкинг"];
-  const filterMap = {
-    Все: null,
-    Конференции: "Конференция",
-    Вечеринки: "Вечеринка",
-    Квесты: "Квест",
-    Кино: "Кино",
-    Нетворкинг: "Нетворкинг",
+  const filterChips = [
+    { name: "Все", value: "Все", emoji: null },
+    { name: "Конференции", value: "Конференция", emoji: null },
+    { name: "Вечеринки", value: "Вечеринка", emoji: null },
+    { name: "Квесты", value: "Квест", emoji: null },
+    { name: "Кино", value: "Кино", emoji: null },
+    { name: "Нетворкинг", value: "Нетворкинг", emoji: null },
+  ];
+
+  const filterOptions = {
+    category: filters.category === "Все" ? undefined : filters.category,
+    type: filters.type === "Все" ? undefined : filters.type,
+    search,
+    maxParticipants:
+      filters.maxParticipants === 100 ? undefined : filters.maxParticipants,
+    sortBy: filters.sortBy,
   };
 
-  const filteredMeetings = useMemo(() => {
-    return allMeetings
-      ?.filter((m: any) => !m.isCompleted)
-      ?.filter((meeting: any) => {
-        if (activeFilter === "Все") return true;
-        return meeting.type === filterMap[activeFilter as keyof typeof filterMap];
-      })
-      .filter((meeting: any) => {
-        const eventTitle = meeting.name || "Без названия";
-        const organizerName = meeting.user?.name || "Неизвестно";
-        return (
-          eventTitle.toLowerCase().includes(search.toLowerCase()) ||
-          organizerName.toLowerCase().includes(search.toLowerCase())
-        );
-      });
-  }, [allMeetings, activeFilter, search]);
+  const { meetings: filteredMeetings } = useFilteredMeetings(allMeetings, filterOptions);
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters((prev) => {
+      const newFilters = { ...prev, [key]: value };
+
+      // Reset type when category changes
+      if (key === "category" && value !== prev.category) {
+        newFilters.type = "Все";
+      }
+
+      return newFilters;
+    });
+  };
 
   const isMobile = usePlatform();
 
@@ -158,7 +173,7 @@ function RouteComponent() {
                   placeholder="Поиск встреч..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-11 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500"
+                  className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500"
                 />
               </div>
 
@@ -169,10 +184,23 @@ function RouteComponent() {
                   else unlockBodyScroll();
                   setIsOpen(open);
                 }}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onReset={() => {
+                  setFilters({
+                    sortBy: "Сначала новые",
+                    category: "Все",
+                    type: "Все",
+                    maxParticipants: 100,
+                  });
+                  setSearch("");
+                }}
+                config={filterConfig.main}
               >
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-colors hover:bg-violet-700"
+                  onClick={() => setIsOpen(true)}
                 >
                   <WhiteFilter />
                 </motion.button>
@@ -187,18 +215,18 @@ function RouteComponent() {
 
           {/* Categories */}
           <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-5 pb-2">
-            {filters.map((filter) => (
+            {filterChips.map((chip) => (
               <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
+                key={chip.name}
+                onClick={() => setFilters((prev) => ({ ...prev, category: chip.value }))}
                 className={cn(
                   "rounded-full px-5 py-2.5 text-sm font-medium transition-all active:scale-95",
-                  activeFilter === filter
+                  filters.category === chip.value
                     ? "bg-gray-900 text-white shadow-lg shadow-gray-200"
                     : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50",
                 )}
               >
-                {filter}
+                {chip.name}
               </button>
             ))}
           </div>
@@ -251,77 +279,103 @@ function RouteComponent() {
                 </div>
               ) : (
                 <>
-                  {filteredMeetings?.map((meeting: any) => (
-                    <Link
-                      key={meeting.id}
-                      to="/meet/$id"
-                      params={{ id: meeting.id?.toString() || "" }}
-                      preload="viewport"
-                      onClick={() => saveScrollPosition("meetings")}
-                      className="block"
-                    >
-                      <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-transform duration-200 active:scale-[0.98]">
-                        <div className="flex gap-4">
-                          {/* Left: Image */}
-                          <div className="relative h-32 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
-                            <img
-                              src={getImageUrl(meeting.image || "")}
-                              alt=""
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-
-                          {/* Right: Content */}
-                          <div className="flex flex-1 flex-col justify-between py-1">
-                            <div>
-                              <div className="flex items-start justify-between gap-2">
-                                <h3 className="line-clamp-2 text-base leading-tight font-bold text-gray-900">
-                                  {meeting.name || "Без названия"}
-                                </h3>
-                              </div>
-                              <p className="mt-1 line-clamp-2 text-xs text-gray-500">
-                                {meeting.description}
-                              </p>
+                  {filteredMeetings.length > 0 ? (
+                    filteredMeetings.map((meeting: any) => (
+                      <Link
+                        key={meeting.id}
+                        to="/meet/$id"
+                        params={{ id: meeting.id?.toString() || "" }}
+                        preload="viewport"
+                        onClick={() => saveScrollPosition("meetings")}
+                        className="block"
+                      >
+                        <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm ring-1 ring-gray-100 transition-transform duration-200 active:scale-[0.98]">
+                          <div className="flex gap-4">
+                            {/* Left: Image */}
+                            <div className="relative h-32 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                              <img
+                                src={getImageUrl(meeting.image || "")}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                              />
                             </div>
 
-                            <div className="mt-3 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 overflow-hidden rounded-full ring-2 ring-gray-50">
-                                  <img
-                                    src={getImageUrl(meeting.user?.photo || "")}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                  />
+                            {/* Right: Content */}
+                            <div className="flex flex-1 flex-col justify-between py-1">
+                              <div>
+                                <div className="flex items-start justify-between gap-2">
+                                  <h3 className="line-clamp-2 text-base leading-tight font-bold text-gray-900">
+                                    {meeting.name || "Без названия"}
+                                  </h3>
                                 </div>
-                                <span className="max-w-[100px] truncate text-xs font-medium text-gray-700">
-                                  {meeting.user?.name}
-                                </span>
+                                <p className="mt-1 line-clamp-2 text-xs text-gray-500">
+                                  {meeting.description}
+                                </p>
                               </div>
 
-                              <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
-                                <Users className="h-3 w-3" />
-                                <span>{meeting.participantsCount || 0}</span>
+                              <div className="mt-3 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-6 w-6 overflow-hidden rounded-full ring-2 ring-gray-50">
+                                    <img
+                                      src={getImageUrl(meeting.user?.photo || "")}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <span className="max-w-[100px] truncate text-xs font-medium text-gray-700">
+                                    {meeting.user?.name}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+                                  <Users className="h-3 w-3" />
+                                  <span>{meeting.participantsCount || 0}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Bottom Info */}
-                        <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
-                          <div className="flex items-center gap-1.5 text-gray-500">
-                            <MapPin className="h-3.5 w-3.5" />
-                            <span className="text-xs font-medium">
-                              {meeting.locations?.[0]?.location || "Москва"}
+                          {/* Bottom Info */}
+                          <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
+                            <div className="flex items-center gap-1.5 text-gray-500">
+                              <MapPin className="h-3.5 w-3.5" />
+                              <span className="text-xs font-medium">
+                                {meeting.locations?.[0]?.location || "Москва"}
+                              </span>
+                            </div>
+                            <span className="text-xs font-medium text-violet-600">
+                              15:30
                             </span>
                           </div>
-                          <span className="text-xs font-medium text-violet-600">
-                            15:30
-                          </span>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <div className="mb-4 text-6xl">😔</div>
+                      <h3 className="mb-2 text-xl font-bold text-gray-900">
+                        Встреч не найдено
+                      </h3>
+                      <p className="max-w-[300px] text-gray-500">
+                        Попробуйте изменить фильтры или поискать что-то другое
+                      </p>
+                      <button
+                        onClick={() => {
+                          setFilters({
+                            sortBy: "Сначала новые",
+                            category: "Все",
+                            type: "Все",
+                            maxParticipants: 100,
+                          });
+                          setSearch("");
+                        }}
+                        className="mt-6 rounded-2xl bg-violet-600 px-6 py-3 font-medium text-white transition-colors hover:bg-violet-700"
+                      >
+                        Сбросить фильтры
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>

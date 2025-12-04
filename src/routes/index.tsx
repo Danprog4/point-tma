@@ -204,7 +204,7 @@ function Home() {
                 placeholder="Поиск событий, мест..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-11 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-100 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-4 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-gray-100 transition-all placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
             </div>
 
@@ -220,6 +220,19 @@ function Home() {
               }}
               filters={filters}
               onFilterChange={handleFilterChange}
+              onReset={() => {
+                setFilters({
+                  sortBy: "Сначала новые",
+                  category: "Все",
+                  location: "Все",
+                  type: "Все",
+                  organizer: "Все",
+                  isSeries: false,
+                  hasAchievement: "Все",
+                  price: { min: 0, max: 1000000 },
+                });
+                setSearch("");
+              }}
               config={filterConfig.main}
             >
               <motion.button
@@ -237,9 +250,9 @@ function Home() {
         <div className="w-full flex-1 overflow-x-hidden">
           <div className="mb-8">
             <div className="flex items-center gap-4 px-5 pb-2">
-              <div className="w-[140px]">
+              {/* <div className="w-[140px]">
                 <Selecter height="h-10" width="w-full" placeholder="Алматы" />
-              </div>
+              </div> */}
 
               <div className="scrollbar-hidden flex flex-1 gap-2 overflow-x-auto py-2">
                 {[
@@ -256,11 +269,7 @@ function Home() {
                     to="/all/$name"
                     params={{ name: chip.name }}
                     preload="viewport"
-                    className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                      filters.category === chip.name
-                        ? "bg-gray-900 text-white shadow-md"
-                        : "bg-white text-gray-600 shadow-sm hover:bg-gray-50"
-                    }`}
+                    className="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-all hover:bg-gray-50"
                     onClick={() => {
                       if (chip.name === "Популярное" || chip.name === "Новое") {
                         setFilters((prev) => ({ ...prev, category: "Все" }));

@@ -20,6 +20,7 @@ interface FilterDrawerProps {
   onFilterChange: (key: string, value: any) => void;
   config: FilterOption[];
   children: React.ReactNode;
+  onReset?: () => void;
 }
 
 function SelectFilter({
@@ -107,6 +108,7 @@ export default function FilterDrawer({
   onOpenChange,
   filters,
   onFilterChange,
+  onReset,
   config,
   children,
 }: FilterDrawerProps) {
@@ -208,10 +210,18 @@ export default function FilterDrawer({
               return null;
             })}
           </div>
-          <div className="mt-4 border-t pt-4">
+          <div className="mt-4 flex gap-3 border-t pt-4">
+            {onReset && (
+              <button
+                onClick={onReset}
+                className="flex-1 rounded-2xl bg-gray-100 py-3 font-bold text-gray-900 transition-colors hover:bg-gray-200"
+              >
+                Сбросить
+              </button>
+            )}
             <button
               onClick={() => onOpenChange(false)}
-              className="w-full rounded-2xl bg-purple-600 py-3 font-bold text-white hover:bg-purple-700"
+              className="flex-1 rounded-2xl bg-purple-600 py-3 font-bold text-white transition-colors hover:bg-purple-700"
             >
               Применить
             </button>

@@ -72,6 +72,7 @@ export const usersTable = pgTable("users", {
   checkInStreak: integer("check_in_streak").default(0),
   achievements: jsonb("achievements").$type<Array<any>>(),
   skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const tasksProgressTable = pgTable("tasks_progress", {

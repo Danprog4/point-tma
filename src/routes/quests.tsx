@@ -13,6 +13,8 @@ import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
 import { Selecter } from "~/components/Selecter";
+import { useQuestsFilter } from "~/config/questsFilter";
+import { filterEvent, sortEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils";
 import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
@@ -68,22 +70,56 @@ function RouteComponent() {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("Все");
+
+  const [filters, setFilters] = useState({
+    sortBy: "Сначала новые",
+    location: "Все",
+    type: "Все",
+    organizer: "Все",
+    isSeries: false,
+    hasAchievement: "Все",
+    price: { min: 0, max: 1000000 },
+  });
+
   const trpc = useTRPC();
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
   const { data } = useQuery(trpc.event.getMyEvents.queryOptions());
-  const { data: questsData } = useQuery(
+
+  // Use useFilteredEvents to get filtered data directly
+  // We need all quests first, so we might need a query that fetches all quests if getEventsByCategory doesn't support full filtering on backend yet.
+  // Assuming getEventsByCategory fetches all quests for category "Квест"
+  const { data: allQuests } = useQuery(
     trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
   );
+
+  const filterConfig = useQuestsFilter();
+
+  const filterOptions = {
+    category: "Квест", // Constant
+    search,
+    location: filters.location === "Все" ? undefined : filters.location,
+    type: filters.type === "Все" ? undefined : filters.type,
+    organizer: filters.organizer === "Все" ? undefined : filters.organizer,
+    isSeries: filters.isSeries,
+    hasAchievement: filters.hasAchievement === "Все" ? undefined : filters.hasAchievement,
+    priceRange: filters.price,
+    sortBy: filters.sortBy,
+  };
+
+  // Apply frontend filtering and sorting
+  const filteredQuests = (allQuests || []).filter((quest) =>
+    filterEvent(quest, filterOptions),
+  );
+  const sortedQuests = sortEvents(filteredQuests, filters.sortBy);
+
   const { data: activeEvents } = useQuery(trpc.event.getMyEvents.queryOptions());
 
-  console.log(activeFilter);
-
-  const filteredEvents = activeEvents
+  const activeFilteredEvents = activeEvents
     ?.filter((event) => event.type === "Квест")
     .filter((q) => !q.isCompleted);
-  const userQuestsData = filteredEvents?.map((event) => {
-    const quest = questsData?.find((q: any) => q.id === event.eventId);
+
+  const userQuestsData = activeFilteredEvents?.map((event) => {
+    const quest = allQuests?.find((q: any) => q.id === event.eventId);
     return quest
       ? {
           ...event,
@@ -102,10 +138,11 @@ function RouteComponent() {
       : event;
   });
 
-  const filters = [
-    "Все",
-    "Активные",
-    ...Array.from(new Set(questsData?.map((quest) => quest.type).filter(Boolean) ?? [])),
+  const filterChips = [
+    { name: "Все", value: "Все" },
+    ...Array.from(
+      new Set(allQuests?.map((quest) => quest.type).filter(Boolean) ?? []),
+    ).map((type) => ({ name: type!, value: type! })),
   ];
 
   const isMobile = usePlatform();
@@ -114,6 +151,10 @@ function RouteComponent() {
     await queryClient.invalidateQueries({
       queryKey: trpc.event.getEventsByCategory.queryKey({ category: "Квест" }),
     });
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -147,7 +188,7 @@ function RouteComponent() {
                   onChange={(e) => setSearch(e.target.value)}
                   type="text"
                   placeholder="Поиск квестов..."
-                  className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-11 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500"
+                  className="h-12 w-full rounded-2xl border-none bg-white pr-4 pl-4 text-sm text-gray-900 shadow-sm ring-1 ring-gray-200 transition-all outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-violet-500"
                 />
               </div>
 
@@ -158,8 +199,26 @@ function RouteComponent() {
                   else unlockBodyScroll();
                   setIsOpen(open);
                 }}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onReset={() => {
+                  setFilters({
+                    sortBy: "Сначала новые",
+                    location: "Все",
+                    type: "Все",
+                    organizer: "Все",
+                    isSeries: false,
+                    hasAchievement: "Все",
+                    price: { min: 0, max: 1000000 },
+                  });
+                  setSearch("");
+                }}
+                config={filterConfig.main}
               >
-                <button className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-transform hover:bg-violet-700 active:scale-95">
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-200 transition-transform hover:bg-violet-700 active:scale-95"
+                >
                   <WhiteFilter />
                 </button>
               </FilterDrawer>
@@ -173,18 +232,18 @@ function RouteComponent() {
 
           {/* Filters */}
           <div className="scrollbar-hidden flex gap-2 overflow-x-auto px-5 pb-2">
-            {filters.map((filter) => (
+            {filterChips.map((chip) => (
               <button
-                key={filter}
-                onClick={() => setActiveFilter(filter ?? "")}
+                key={chip.name}
+                onClick={() => setFilters((prev) => ({ ...prev, type: chip.value }))}
                 className={cn(
                   "rounded-full px-5 py-2.5 text-sm font-medium transition-all active:scale-95",
-                  activeFilter === filter
+                  filters.type === chip.value
                     ? "bg-gray-900 text-white shadow-lg shadow-gray-200"
                     : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50",
                 )}
               >
-                {filter}
+                {chip.name}
               </button>
             ))}
           </div>
@@ -259,22 +318,8 @@ function RouteComponent() {
 
           {/* All Quests List */}
           <div className="space-y-4 px-5">
-            {questsData
-              ?.filter((quest) => !quest.isSeries)
-              .filter((quest) => {
-                if (activeFilter === "Все") return true;
-                if (activeFilter === "Активные") {
-                  return userQuestsData?.some((uq) => uq.eventId === quest.id);
-                }
-                return quest.type === activeFilter;
-              })
-              .filter((quest) => {
-                return (
-                  quest.title?.toLowerCase().includes(search.toLowerCase()) ||
-                  quest.description?.toLowerCase().includes(search.toLowerCase())
-                );
-              })
-              .map((quest) => (
+            {sortedQuests.length > 0 ? (
+              sortedQuests.map((quest) => (
                 <div key={quest.id} className="space-y-2">
                   <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
                     {quest.date}
@@ -297,8 +342,9 @@ function RouteComponent() {
                           <span>+</span>
                           <span>
                             {(
-                              quest?.rewards?.find((reward) => reward.type === "point")
-                                ?.value ?? 0
+                              quest?.rewards?.find(
+                                (reward: any) => reward.type === "point",
+                              )?.value ?? 0
                             ).toLocaleString()}
                           </span>
                           <span className="text-gray-500">points</span>
@@ -308,7 +354,35 @@ function RouteComponent() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="mb-4 text-6xl">😔</div>
+                <h3 className="mb-2 text-xl font-bold text-gray-900">
+                  Квестов не найдено
+                </h3>
+                <p className="max-w-[300px] text-gray-500">
+                  Попробуйте изменить фильтры или поискать что-то другое
+                </p>
+                <button
+                  onClick={() => {
+                    setFilters({
+                      sortBy: "Сначала новые",
+                      location: "Все",
+                      type: "Все",
+                      organizer: "Все",
+                      isSeries: false,
+                      hasAchievement: "Все",
+                      price: { min: 0, max: 1000000 },
+                    });
+                    setSearch("");
+                  }}
+                  className="mt-6 rounded-2xl bg-violet-600 px-6 py-3 font-medium text-white transition-colors hover:bg-violet-700"
+                >
+                  Сбросить фильтры
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import { List, Map } from "lucide-react";
 import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
+import FilterDrawer from "~/components/FilterDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
@@ -11,7 +12,9 @@ import { PeopleHeader } from "~/components/people/PeopleHeader";
 import { PeopleMap } from "~/components/people/PeopleMap";
 import { UsersList } from "~/components/people/UsersList";
 import PeopleDrawer from "~/components/PeopleDrawer";
+import { usePeopleFilter } from "~/config/peopleFilter";
 import { User } from "~/db/schema";
+import { useFilteredPeople } from "~/hooks/useFilteredPeople";
 import { usePeopleActions } from "~/hooks/usePeopleActions";
 import { usePeopleComplaints } from "~/hooks/usePeopleComplaints";
 import { usePeopleData } from "~/hooks/usePeopleData";
@@ -45,6 +48,26 @@ function RouteComponent() {
     openFastMeetId ?? null,
   );
 
+  const [filters, setFilters] = useState({
+    sortBy: "Сначала новые",
+    sex: "Все",
+    level: { min: 1, max: 100 },
+    city: "Все",
+    isWithPhoto: false,
+    age: { min: 18, max: 100 },
+  });
+
+  const filterConfig = usePeopleFilter();
+  const filterOptions = {
+    search,
+    sortBy: filters.sortBy,
+    sex: filters.sex,
+    level: filters.level,
+    city: filters.city,
+    isWithPhoto: filters.isWithPhoto,
+    age: filters.age,
+  };
+
   // Initialize view mode from sessionStorage to persist state ONLY when returning from profile
   const [isList, setIsList] = useState(() => {
     if (typeof sessionStorage !== "undefined") {
@@ -62,12 +85,14 @@ function RouteComponent() {
     users,
     user,
     fastMeets,
-    getFilteredUsers,
+    getFilteredUsers: getBaseFilteredUsers, // Renamed to avoid conflict
     getUsersWithDistances,
     getSortedUsers,
     isFavorite,
     isComplained,
   } = usePeopleData();
+
+  const { people: finalFilteredUsers } = useFilteredPeople(users || [], filterOptions);
 
   const { handleHideUser, handleToFavorites, handleSaveUser } = usePeopleActions(user);
   const galleryData = usePeopleGallery(users || []);
@@ -81,13 +106,9 @@ function RouteComponent() {
   } = usePeopleComplaints(user);
 
   // Computed data
-  const filteredUsers = useMemo(
-    () => getFilteredUsers(search),
-    [getFilteredUsers, search],
-  );
   const usersWithDistances = useMemo(
-    () => getUsersWithDistances(filteredUsers || [], user?.coordinates || null),
-    [getUsersWithDistances, filteredUsers, user?.coordinates],
+    () => getUsersWithDistances(finalFilteredUsers || [], user?.coordinates || null),
+    [getUsersWithDistances, finalFilteredUsers, user?.coordinates],
   );
   const sortedUsers = useMemo(
     () => getSortedUsers(usersWithDistances),
@@ -124,6 +145,10 @@ function RouteComponent() {
     setIsFetchingMore(false);
   };
 
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
     <div
       data-mobile={isMobile}
@@ -152,7 +177,30 @@ function RouteComponent() {
             setSearch={setSearch}
             isFilterOpen={isFilterOpen}
             setIsFilterOpen={setIsFilterOpen}
+            hideSearch={!isList}
           />
+
+          <FilterDrawer
+            open={isFilterOpen}
+            onOpenChange={setIsFilterOpen}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onReset={() => {
+              setFilters({
+                sortBy: "Сначала новые",
+                sex: "Все",
+                level: { min: 1, max: 100 },
+                city: "Все",
+                isWithPhoto: false,
+                age: { min: 18, max: 100 },
+              });
+              setSearch("");
+            }}
+            config={filterConfig.main}
+          >
+            {/* Trigger is handled by PeopleHeader button */}
+            <div />
+          </FilterDrawer>
 
           {/* View Toggle */}
           <div className="px-4">
@@ -190,15 +238,43 @@ function RouteComponent() {
 
           {isList ? (
             <div key="list" className="scrollbar-hidden overflow-hidden px-4">
-              <UsersList
-                users={sortedUsers || []}
-                galleryData={galleryData}
-                isFavorite={isFavorite}
-                onFavoriteClick={(userId) =>
-                  handleToFavorites(userId, isFavorite(userId))
-                }
-                onMoreClick={handleUserMoreClick}
-              />
+              {sortedUsers.length > 0 ? (
+                <UsersList
+                  users={sortedUsers || []}
+                  galleryData={galleryData}
+                  isFavorite={isFavorite}
+                  onFavoriteClick={(userId) =>
+                    handleToFavorites(userId, isFavorite(userId))
+                  }
+                  onMoreClick={handleUserMoreClick}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="mb-4 text-6xl">😔</div>
+                  <h3 className="mb-2 text-xl font-bold text-gray-900">
+                    Никого не найдено
+                  </h3>
+                  <p className="max-w-[300px] text-gray-500">
+                    Попробуйте изменить фильтры или поискать кого-то другого
+                  </p>
+                  <button
+                    onClick={() => {
+                      setFilters({
+                        sortBy: "Сначала новые",
+                        sex: "Все",
+                        level: { min: 1, max: 100 },
+                        city: "Все",
+                        isWithPhoto: false,
+                        age: { min: 18, max: 100 },
+                      });
+                      setSearch("");
+                    }}
+                    className="mt-6 rounded-2xl bg-violet-600 px-6 py-3 font-medium text-white transition-colors hover:bg-violet-700"
+                  >
+                    Сбросить фильтры
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div

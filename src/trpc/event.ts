@@ -14,7 +14,7 @@ import { getNewEvents } from "~/lib/utils/getNewEvents";
 import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
-import { createTRPCRouter, procedure } from "./init";
+import { createTRPCRouter, procedure, publicProcedure } from "./init";
 
 export const eventRouter = createTRPCRouter({
   getMyEvents: procedure.query(async ({ ctx }) => {
@@ -22,6 +22,17 @@ export const eventRouter = createTRPCRouter({
       where: eq(activeEventsTable.userId, ctx.userId),
     });
     return events;
+  }),
+
+  getCategories: publicProcedure.query(async () => {
+    return await db.query.categoriesTable.findMany({
+      orderBy: (categories, { desc }) => [desc(categories.createdAt)],
+    });
+  }),
+  getOrganizers: publicProcedure.query(async () => {
+    const events = await db.query.eventsTable.findMany();
+    const organizers = [...new Set(events.map((event) => event.organizer))];
+    return organizers;
   }),
 
   getNewEvents: procedure.query(async () => {

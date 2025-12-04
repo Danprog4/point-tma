@@ -35,6 +35,11 @@ export const crmRouter = createTRPCRouter({
       orderBy: [desc(categoriesTable.createdAt)],
     });
   }),
+  getOrganizers: creatorProcedure.query(async () => {
+    const events = await db.query.eventsTable.findMany();
+    const organizers = [...new Set(events.map((event) => event.organizer))];
+    return organizers;
+  }),
 
   createCategory: crmProcedure
     .input(z.object({ name: z.string(), types: z.array(z.string()) }))

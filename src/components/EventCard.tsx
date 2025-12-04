@@ -1,10 +1,13 @@
 import { Calendar, MapPin } from "lucide-react";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { Coin } from "./Icons/Coin";
 
 export const EventCard = ({ event }: { event: any }) => {
   return (
     <div className="group w-[200px] flex-shrink-0 overflow-hidden rounded-[24px] bg-white transition-all duration-300 hover:-translate-y-1">
-      <div className={`relative h-[160px] overflow-hidden rounded-[24px] ${event.bg || "bg-gray-100"}`}>
+      <div
+        className={`relative h-[160px] overflow-hidden rounded-[24px] ${event.bg || "bg-gray-100"}`}
+      >
         {event.image && (
           <>
             <img
@@ -27,15 +30,21 @@ export const EventCard = ({ event }: { event: any }) => {
           )}
         </div>
         <div className="absolute right-3 bottom-3 left-3 flex items-end justify-between">
-          {event.price && (
+          {event.price > 0 ? (
             <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-black shadow-sm backdrop-blur-sm">
-              {event.price}
+              <div className="flex items-center justify-center gap-[-2px]">
+                <span>{event.price}</span> <Coin />
+              </div>
+            </span>
+          ) : (
+            <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-black shadow-sm backdrop-blur-sm">
+              Бесплатно
             </span>
           )}
         </div>
       </div>
-      <div className="pt-3 pb-2 px-1">
-        <h3 className="mb-1.5 line-clamp-2 h-[40px] text-[15px] leading-[20px] font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+      <div className="px-1 pt-3 pb-2">
+        <h3 className="mb-1.5 line-clamp-2 h-[40px] text-[15px] leading-[20px] font-bold text-gray-900 transition-colors group-hover:text-purple-600">
           {event.title}
         </h3>
         <div className="flex flex-col gap-1.5">

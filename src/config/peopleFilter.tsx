@@ -1,3 +1,5 @@
+import { tagsByType } from "./tags";
+
 export const usePeopleFilter = () => {
   return {
     main: [
@@ -5,7 +7,7 @@ export const usePeopleFilter = () => {
         key: "sortBy",
         label: "Сортировка",
         type: "select",
-        options: ["Сначала новые", "Сначала старые"],
+        options: ["По дате: новые сначала", "По дате: старые сначала"],
       },
       {
         key: "sex",
@@ -37,6 +39,12 @@ export const usePeopleFilter = () => {
         type: "range",
         min: 18,
         max: 100,
+      },
+      {
+        key: "interests",
+        label: "Интересы",
+        type: "tags",
+        options: tagsByType,
       },
     ],
   };

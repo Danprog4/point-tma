@@ -26,7 +26,7 @@ export const useMeetingsFilter = (selectedCategory?: string) => {
         key: "sortBy",
         label: "Сортировка",
         type: "select",
-        options: ["Сначала новые", "Сначала старые"],
+        options: ["По дате: новые сначала", "По дате: старые сначала"],
       },
       {
         key: "category",
@@ -52,6 +52,22 @@ export const useMeetingsFilter = (selectedCategory?: string) => {
         type: "number",
         min: 1,
         max: 100,
+      },
+      {
+        key: "time",
+        label: "Время",
+        type: "time",
+      },
+      {
+        key: "date",
+        label: "Дата",
+        type: "date",
+      },
+      {
+        key: "city",
+        label: "Город",
+        type: "select",
+        options: ["Все", "Астана", "Алматы", "Москва"],
       },
     ],
   };

@@ -2,16 +2,7 @@ import { ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { Drawer } from "vaul";
 import { Check } from "./Icons/Check";
-
-interface FilterOption {
-  key: string;
-  label: string;
-  type: string;
-  options?: string[];
-  min?: number;
-  max?: number;
-  disabled?: boolean;
-}
+import { MultiSelectFilter, type FilterOption } from "./MultiSelectFilter";
 
 interface FilterDrawerProps {
   open: boolean;
@@ -34,6 +25,7 @@ function SelectFilter({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const currentValue = value || "Все";
+  const options = Array.isArray(filter.options) ? filter.options : [];
 
   if (filter.disabled) {
     return (
@@ -72,7 +64,7 @@ function SelectFilter({
               </div>
             </header>
             <div className="scrollbar-hidden flex max-h-[240px] flex-col gap-6 overflow-y-auto">
-              {(filter.options || []).map((option) => (
+              {options.map((option) => (
                 <div
                   key={option}
                   className="flex cursor-pointer items-center justify-between"
@@ -136,6 +128,17 @@ export default function FilterDrawer({
               if (filter.type === "select") {
                 return (
                   <SelectFilter
+                    key={filter.key}
+                    filter={filter as any} // Cast to any to avoid type mismatch with old SelectFilter
+                    value={filters[filter.key]}
+                    onChange={(val) => onFilterChange(filter.key, val)}
+                  />
+                );
+              }
+
+              if (filter.type === "tags") {
+                return (
+                  <MultiSelectFilter
                     key={filter.key}
                     filter={filter}
                     value={filters[filter.key]}

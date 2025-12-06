@@ -9,6 +9,7 @@ interface UseFilteredPeopleOptions {
   city?: string;
   isWithPhoto?: boolean;
   age?: { min: number; max: number };
+  interests?: string[];
 }
 
 const calculateAge = (birthday: string) => {
@@ -27,9 +28,9 @@ export const sortPeople = (people: User[], sortBy?: string) => {
 
   return [...people].sort((a, b) => {
     switch (sortBy) {
-      case "Сначала новые":
+      case "По дате: новые сначала":
         return (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0);
-      case "Сначала старые":
+      case "По дате: старые сначала":
         return (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0);
       default:
         return 0;
@@ -38,7 +39,7 @@ export const sortPeople = (people: User[], sortBy?: string) => {
 };
 
 export const filterPerson = (person: User, options: UseFilteredPeopleOptions) => {
-  const { search, sex, level, city, isWithPhoto, age } = options;
+  const { search, sex, level, city, isWithPhoto, age, interests } = options;
 
   // Search
   if (search) {
@@ -91,6 +92,19 @@ export const filterPerson = (person: User, options: UseFilteredPeopleOptions) =>
     if (personAge < age.min || personAge > age.max) {
       return false;
     }
+  }
+
+  // Interests
+  if (interests && interests.length > 0) {
+    const userInterests = person.interests || {};
+    const userInterestValues = Object.values(userInterests);
+
+    // Check if user has any of the selected interests
+    const hasInterest = interests.some((interest) =>
+      userInterestValues.includes(interest),
+    );
+
+    if (!hasInterest) return false;
   }
 
   return true;

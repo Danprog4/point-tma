@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Search, Settings } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
 import { Calendar } from "~/components/Calendar";
@@ -12,7 +12,6 @@ import { Coin } from "~/components/Icons/Coin";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
-import { Selecter } from "~/components/Selecter";
 import { useQuestsFilter } from "~/config/questsFilter";
 import { filterEvent, sortEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -72,7 +71,7 @@ function RouteComponent() {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const [filters, setFilters] = useState({
-    sortBy: "Сначала новые",
+    sortBy: "По дате: новые сначала",
     location: "Все",
     type: "Все",
     organizer: "Все",
@@ -169,11 +168,7 @@ function RouteComponent() {
           <div className="flex items-center justify-between px-5 pt-4">
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">Квесты</h1>
-              <Selecter width="24px" height="24px" />
             </div>
-            <button className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-100 active:scale-90">
-              <Settings className="h-6 w-6 text-gray-900" />
-            </button>
           </div>
 
           {/* Search */}
@@ -203,7 +198,7 @@ function RouteComponent() {
                 onFilterChange={handleFilterChange}
                 onReset={() => {
                   setFilters({
-                    sortBy: "Сначала новые",
+                    sortBy: "По дате: новые сначала",
                     location: "Все",
                     type: "Все",
                     organizer: "Все",
@@ -367,7 +362,7 @@ function RouteComponent() {
                 <button
                   onClick={() => {
                     setFilters({
-                      sortBy: "Сначала новые",
+                      sortBy: "По дате: новые сначала",
                       location: "Все",
                       type: "Все",
                       organizer: "Все",

@@ -74,7 +74,7 @@ export const PeopleHeader = ({
                 exit={{ opacity: 0, width: 0 }}
                 className="font-bold whitespace-nowrap"
               >
-                Фильтры
+                Фильтр
               </motion.span>
             )}
           </AnimatePresence>

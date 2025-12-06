@@ -1,13 +1,29 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Calendar1, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import DatePicker from "./DatePicker2";
 import { FullCalendar } from "./ui/calendar";
 
-export const Calendar = () => {
+interface CalendarProps {
+  selectedDate?: Date | null;
+  onDateSelect?: (date: Date) => void;
+}
+
+export const Calendar = ({ selectedDate, onDateSelect }: CalendarProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [internalDate, setInternalDate] = useState(new Date());
+  
+  // Use selectedDate if provided, otherwise internal state
+  const currentDate = selectedDate !== undefined ? selectedDate : internalDate;
+  
+  // Reference date for generating the calendar view (always starts around today/selected to ensure visibility)
+  // We don't want this to change on every click to avoid re-rendering the list and scrolling
+  const [referenceDate, setReferenceDate] = useState(currentDate || new Date());
+
+  const [currentMonth, setCurrentMonth] = useState(referenceDate.getMonth());
+  const [currentYear, setCurrentYear] = useState(referenceDate.getFullYear());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isMounted = useRef(false);
 
   const months = [
     "Январь",
@@ -30,9 +46,12 @@ export const Calendar = () => {
     const today = new Date();
     const days = [];
 
+    // Use referenceDate for generating the grid
+    const baseDate = referenceDate;
+
     for (let monthOffset = 0; monthOffset <= 6; monthOffset++) {
-      const year = today.getFullYear();
-      const month = today.getMonth() + monthOffset;
+      const year = baseDate.getFullYear();
+      const month = baseDate.getMonth() + monthOffset;
       const targetDate = new Date(year, month, 1);
       const targetYear = targetDate.getFullYear();
       const targetMonth = targetDate.getMonth();
@@ -40,9 +59,12 @@ export const Calendar = () => {
 
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(targetYear, targetMonth, day);
-        if (monthOffset === 0 && day < today.getDate()) {
+        
+        // Don't show past days if we're looking relative to today
+        if (monthOffset === 0 && day < today.getDate() && targetMonth === today.getMonth() && targetYear === today.getFullYear()) {
           continue;
         }
+        
         const isWeekend = date.getDay() === 0 || date.getDay() === 6;
         days.push({
           day: day.toString(),
@@ -77,30 +99,70 @@ export const Calendar = () => {
     }
   };
 
+  // Scroll to selected date only on mount or if explicitly requested (e.g. initial load)
+  // We skip this effect if it's just a click selection to prevent "scrolling on click"
   useEffect(() => {
-    if (scrollRef.current) {
-      const today = new Date();
-      const todayIndex = allDays.findIndex(
+    if (!isMounted.current && scrollRef.current) {
+      const targetDate = currentDate || new Date();
+      const targetIndex = allDays.findIndex(
         (day) =>
-          day.date.getDate() === today.getDate() &&
-          day.date.getMonth() === today.getMonth() &&
-          day.date.getFullYear() === today.getFullYear(),
+          day.date.getDate() === targetDate.getDate() &&
+          day.date.getMonth() === targetDate.getMonth() &&
+          day.date.getFullYear() === targetDate.getFullYear(),
       );
 
-      if (todayIndex !== -1) {
+      if (targetIndex !== -1) {
         const dayWidth = 56;
         const scrollPosition =
-          todayIndex * dayWidth - scrollRef.current.clientWidth / 2 + 28;
+          targetIndex * dayWidth - scrollRef.current.clientWidth / 2 + 28;
         scrollRef.current.scrollLeft = Math.max(0, scrollPosition);
       }
+      isMounted.current = true;
     }
-  }, []);
+  }, []); // Run once on mount
+
+  const handleDateClick = (date: Date) => {
+    if (onDateSelect) {
+      onDateSelect(date);
+    } else {
+      setInternalDate(date);
+    }
+    // Update reference date only if we want to shift the view (optional)
+    // For now, we keep the view stable as requested
+  };
+
+  const handleDateChange = (date: Date) => {
+      if (onDateSelect) {
+          onDateSelect(date);
+      } else {
+          setInternalDate(date);
+      }
+      setReferenceDate(date); // Update reference for date picker selection to jump to it
+      
+      // Also scroll to it
+      if (scrollRef.current) {
+         // Logic to scroll to the new reference date would go here or rely on re-render
+         // Since we updated referenceDate, allDays will regenerate centered on it (mostly)
+         // But we need to reset scroll
+         setTimeout(() => {
+             if (scrollRef.current) scrollRef.current.scrollLeft = 0;
+         }, 0);
+      }
+  };
 
   return (
     <div className="w-full overflow-x-hidden px-0">
       {isOpen && (
         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
       )}
+
+      {/* Hidden DatePicker trigger that we can activate programmatically or wrap around the button */}
+      <div className="hidden">
+         <DatePicker 
+            value={currentDate || new Date()} 
+            setDate={handleDateChange} 
+         />
+      </div>
 
       <div className="mb-4 flex items-center justify-between px-4">
         <button
@@ -115,12 +177,19 @@ export const Calendar = () => {
           />
         </button>
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="rounded-full p-2 hover:bg-gray-100"
-        >
-          <Calendar1 className="h-5 w-5 text-purple-600" />
-        </button>
+        <div className="relative">
+            <DatePicker 
+                value={currentDate || new Date()} 
+                setDate={handleDateChange}
+                trigger={
+                    <button
+                    className="rounded-full p-2 hover:bg-gray-100"
+                    >
+                    <Calendar1 className="h-5 w-5 text-purple-600" />
+                    </button>
+                }
+            />
+        </div>
       </div>
 
       <div
@@ -129,37 +198,39 @@ export const Calendar = () => {
         onScroll={handleScroll}
       >
         {allDays.map((date, idx) => {
-          const isToday =
-            date.date.getDate() === new Date().getDate() &&
-            date.date.getMonth() === new Date().getMonth() &&
-            date.date.getFullYear() === new Date().getFullYear();
+          const isSelected =
+            currentDate &&
+            date.date.getDate() === currentDate.getDate() &&
+            date.date.getMonth() === currentDate.getMonth() &&
+            date.date.getFullYear() === currentDate.getFullYear();
 
           return (
-            <motion.div
+            <motion.button
               key={idx}
+              onClick={() => handleDateClick(date.date)}
               initial={false}
               animate={{
-                scale: isToday ? 1.05 : 1,
+                scale: isSelected ? 1.05 : 1,
               }}
               className={`flex h-[70px] w-[48px] flex-shrink-0 flex-col items-center justify-center gap-1 rounded-[16px] border transition-colors ${
-                isToday
+                isSelected
                   ? "border-purple-600 bg-purple-600 text-white shadow-lg shadow-purple-200"
                   : "border-transparent bg-gray-50 text-gray-600"
               }`}
             >
               <span
                 className={`text-[10px] font-medium uppercase ${
-                  isToday ? "text-white/80" : "text-gray-400"
+                  isSelected ? "text-white/80" : "text-gray-400"
                 }`}
               >
                 {date.weekday}
               </span>
               <span
-                className={`text-xl font-bold ${isToday ? "text-white" : "text-gray-900"}`}
+                className={`text-xl font-bold ${isSelected ? "text-white" : "text-gray-900"}`}
               >
                 {date.day}
               </span>
-            </motion.div>
+            </motion.button>
           );
         })}
       </div>

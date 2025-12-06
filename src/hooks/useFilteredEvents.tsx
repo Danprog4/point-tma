@@ -7,6 +7,7 @@ interface UseFilteredEventsOptions {
   search?: string;
   priceRange?: { min: number; max: number };
   dateRange?: { start: Date; end: Date };
+  date?: Date;
   location?: string;
   type?: string;
   organizer?: string;
@@ -20,11 +21,11 @@ export const sortEvents = (events: any[], sortBy?: string) => {
 
   return [...events].sort((a, b) => {
     switch (sortBy) {
-      case "Сначала новые":
+      case "По дате: новые сначала":
         return (
           new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
-      case "Сначала старые":
+      case "По дате: старые сначала":
         return (
           new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
@@ -109,11 +110,44 @@ export const filterEvent = (event: any, options: UseFilteredEventsOptions) => {
     }
   }
 
-  // Фильтр по дате
+  // Фильтр по дате (диапазон)
   if (dateRange && event.date) {
     const eventDate = new Date(event.date);
     if (eventDate < dateRange.start || eventDate > dateRange.end) {
       return false;
+    }
+  }
+
+  // Фильтр по конкретной дате
+  if (options.date && event.date) {
+    const filterDate = options.date;
+
+    // Форматируем дату фильтра в строку DD.MM.YYYY
+    const day = filterDate.getDate().toString().padStart(2, "0");
+    const month = (filterDate.getMonth() + 1).toString().padStart(2, "0");
+    const year = filterDate.getFullYear();
+    const filterDateString = `${day}.${month}.${year}`;
+
+    // Если event.date это строка DD.MM.YYYY
+    if (typeof event.date === "string" && event.date.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+      if (event.date !== filterDateString) return false;
+    } else {
+      // Пытаемся распарсить как Date объект или другую строку
+      const eventDate = new Date(event.date);
+      // Проверяем валидность даты
+      if (!isNaN(eventDate.getTime())) {
+        if (
+          eventDate.getDate() !== filterDate.getDate() ||
+          eventDate.getMonth() !== filterDate.getMonth() ||
+          eventDate.getFullYear() !== filterDate.getFullYear()
+        ) {
+          return false;
+        }
+      } else {
+        // Если дата невалидна и не совпадает со строкой - отфильтровываем
+        // Но лучше проверить, вдруг формат другой
+        return false;
+      }
     }
   }
 

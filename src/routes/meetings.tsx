@@ -77,15 +77,19 @@ function RouteComponent() {
   const allMeetings = data?.pages.flatMap((page) => page.items) ?? [];
 
   const [filters, setFilters] = useState({
-    sortBy: "Сначала новые",
+    sortBy: "По дате: новые сначала",
     category: "Все",
     type: "Все",
     maxParticipants: 100,
+    time: "",
+    date: "",
+    city: "Все",
   });
 
   const filterConfig = useMeetingsFilter(filters.category);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const filterChips = [
     { name: "Все", value: "Все", emoji: null },
@@ -103,6 +107,9 @@ function RouteComponent() {
     maxParticipants:
       filters.maxParticipants === 100 ? undefined : filters.maxParticipants,
     sortBy: filters.sortBy,
+    time: filters.time || undefined,
+    date: selectedDate || undefined,
+    city: filters.city === "Все" ? undefined : filters.city,
   };
 
   const { meetings: filteredMeetings } = useFilteredMeetings(allMeetings, filterOptions);
@@ -188,12 +195,16 @@ function RouteComponent() {
                 onFilterChange={handleFilterChange}
                 onReset={() => {
                   setFilters({
-                    sortBy: "Сначала новые",
+                    sortBy: "По дате: новые сначала",
                     category: "Все",
                     type: "Все",
                     maxParticipants: 100,
+                    time: "",
+                    date: "",
+                    city: "Все",
                   });
                   setSearch("");
+                  setSelectedDate(null);
                 }}
                 config={filterConfig.main}
               >
@@ -210,7 +221,7 @@ function RouteComponent() {
 
           {/* Calendar */}
           <div className="px-1">
-            <Calendar />
+            <Calendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
           </div>
 
           {/* Categories */}
@@ -363,12 +374,16 @@ function RouteComponent() {
                       <button
                         onClick={() => {
                           setFilters({
-                            sortBy: "Сначала новые",
+                            sortBy: "По дате: новые сначала",
                             category: "Все",
                             type: "Все",
                             maxParticipants: 100,
+                            time: "",
+                            date: "",
+                            city: "Все",
                           });
                           setSearch("");
+                          setSelectedDate(null);
                         }}
                         className="mt-6 rounded-2xl bg-violet-600 px-6 py-3 font-medium text-white transition-colors hover:bg-violet-700"
                       >

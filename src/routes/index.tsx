@@ -33,7 +33,7 @@ function Home() {
   const { isCheckedInToday } = useSnapshot(store);
 
   const [filters, setFilters] = useState({
-    sortBy: "Сначала новые",
+    sortBy: "По дате: новые сначала",
     category: "Все",
     location: "Все",
     type: "Все",
@@ -54,6 +54,7 @@ function Home() {
 
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // Используем новый хук для кэширования и фильтрации событий
   const filterOptions = {
@@ -66,6 +67,7 @@ function Home() {
     isSeries: filters.isSeries,
     hasAchievement: filters.hasAchievement === "Все" ? undefined : filters.hasAchievement,
     priceRange: filters.price,
+    date: selectedDate || undefined,
   };
 
   const {
@@ -222,7 +224,7 @@ function Home() {
               onFilterChange={handleFilterChange}
               onReset={() => {
                 setFilters({
-                  sortBy: "Сначала новые",
+                  sortBy: "По дате: новые сначала",
                   category: "Все",
                   location: "Все",
                   type: "Все",
@@ -232,6 +234,7 @@ function Home() {
                   price: { min: 0, max: 1000000 },
                 });
                 setSearch("");
+                setSelectedDate(null);
               }}
               config={filterConfig.main}
             >
@@ -319,7 +322,10 @@ function Home() {
             </div>
           </div>
 
-          <Calendar />
+          <Calendar
+            selectedDate={selectedDate}
+            onDateSelect={(date) => setSelectedDate(date)}
+          />
 
           <div className="mx-auto mt-4 mb-8 flex w-[160px] items-center justify-center">
             <Selecter
@@ -589,7 +595,7 @@ function Home() {
               <button
                 onClick={() => {
                   setFilters({
-                    sortBy: "Сначала новые",
+                    sortBy: "По дате: новые сначала",
                     category: "Все",
                     location: "Все",
                     type: "Все",
@@ -599,6 +605,7 @@ function Home() {
                     price: { min: 0, max: 1000000 },
                   });
                   setSearch("");
+                  setSelectedDate(null);
                 }}
                 className="mt-6 rounded-2xl bg-purple-600 px-6 py-3 font-medium text-white transition-colors hover:bg-purple-700"
               >

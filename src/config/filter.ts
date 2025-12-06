@@ -28,7 +28,12 @@ export const useFilterConfig = (selectedCategory?: string) => {
         key: "sortBy",
         label: "Сортировка",
         type: "select",
-        options: ["Сначала новые", "Сначала старые", "Сначала дешевле", "Сначала дороже"],
+        options: [
+          "По дате: новые сначала",
+          "По дате: старые сначала",
+          "По цене: сначала дешевле",
+          "По цене: сначала дороже",
+        ],
       },
       {
         key: "location",

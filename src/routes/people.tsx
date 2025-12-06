@@ -49,12 +49,13 @@ function RouteComponent() {
   );
 
   const [filters, setFilters] = useState({
-    sortBy: "Сначала новые",
+    sortBy: "По дате: новые сначала",
     sex: "Все",
     level: { min: 1, max: 100 },
     city: "Все",
     isWithPhoto: false,
     age: { min: 18, max: 100 },
+    interests: [] as string[],
   });
 
   const filterConfig = usePeopleFilter();
@@ -66,6 +67,7 @@ function RouteComponent() {
     city: filters.city,
     isWithPhoto: filters.isWithPhoto,
     age: filters.age,
+    interests: filters.interests,
   };
 
   // Initialize view mode from sessionStorage to persist state ONLY when returning from profile
@@ -187,12 +189,13 @@ function RouteComponent() {
             onFilterChange={handleFilterChange}
             onReset={() => {
               setFilters({
-                sortBy: "Сначала новые",
+                sortBy: "По дате: новые сначала",
                 sex: "Все",
                 level: { min: 1, max: 100 },
                 city: "Все",
                 isWithPhoto: false,
                 age: { min: 18, max: 100 },
+                interests: [],
               });
               setSearch("");
             }}
@@ -260,12 +263,13 @@ function RouteComponent() {
                   <button
                     onClick={() => {
                       setFilters({
-                        sortBy: "Сначала новые",
+                        sortBy: "По дате: новые сначала",
                         sex: "Все",
                         level: { min: 1, max: 100 },
                         city: "Все",
                         isWithPhoto: false,
                         age: { min: 18, max: 100 },
+                        interests: [],
                       });
                       setSearch("");
                     }}

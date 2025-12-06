@@ -90,7 +90,7 @@ function DatePicker2({
             !value && "text-black/40",
           )}
         >
-          <span className="text-black capitalize">{formattedDate}</span>
+          {/* <span className="text-black capitalize">{formattedDate}</span> */}
         </button>
       </Drawer.Trigger>
       <Drawer.Portal>

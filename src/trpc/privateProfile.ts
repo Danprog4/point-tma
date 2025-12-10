@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
   notificationsTable,
   privateAccessRequestsTable,
   privateProfileAccessTable,
+  subscriptionsTable,
   usersTable,
 } from "~/db/schema";
 import { logAction } from "~/lib/utils/logger";
@@ -21,13 +22,36 @@ export const privateProfileRouter = createTRPCRouter({
         .where(eq(usersTable.id, ctx.userId));
 
       if (!input.isPrivate) {
-        // If turning OFF private mode, clear all access and requests
+        // If turning OFF private mode:
+        // 1. Get all users who had private access
+        const privateUsers = await db.query.privateProfileAccessTable.findMany({
+          where: eq(privateProfileAccessTable.ownerId, ctx.userId),
+          columns: { allowedUserId: true },
+        });
+
+        const privateUserIds = privateUsers.map((u) => u.allowedUserId);
+
+        // 2. Clear private access records
         await db
           .delete(privateProfileAccessTable)
           .where(eq(privateProfileAccessTable.ownerId, ctx.userId));
+        
+        // 3. Clear private requests
         await db
           .delete(privateAccessRequestsTable)
           .where(eq(privateAccessRequestsTable.ownerId, ctx.userId));
+
+        // 4. Remove these users from subscriptionsTable as per requirement "he is not subscriber"
+        if (privateUserIds.length > 0) {
+          await db
+            .delete(subscriptionsTable)
+            .where(
+              and(
+                eq(subscriptionsTable.targetUserId, ctx.userId),
+                inArray(subscriptionsTable.subscriberId, privateUserIds)
+              )
+            );
+        }
       }
 
       await logAction({
@@ -103,7 +127,16 @@ export const privateProfileRouter = createTRPCRouter({
         })
         .onConflictDoNothing();
 
-      // 2. Delete request
+      // 2. Add to subscriptions table (so "You are subscribed" works and they see updates)
+      await db
+        .insert(subscriptionsTable)
+        .values({
+          subscriberId: input.requesterId,
+          targetUserId: ctx.userId,
+        })
+        .onConflictDoNothing();
+
+      // 3. Delete request
       await db
         .delete(privateAccessRequestsTable)
         .where(
@@ -113,7 +146,7 @@ export const privateProfileRouter = createTRPCRouter({
           ),
         );
 
-      // 3. Send notification
+      // 4. Send notification
       await db.insert(notificationsTable).values({
         fromUserId: ctx.userId,
         toUserId: input.requesterId,
@@ -181,12 +214,23 @@ export const privateProfileRouter = createTRPCRouter({
   unsubscribe: procedure
     .input(z.object({ targetUserId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      // Remove from private access
       await db
         .delete(privateProfileAccessTable)
         .where(
           and(
             eq(privateProfileAccessTable.ownerId, input.targetUserId),
             eq(privateProfileAccessTable.allowedUserId, ctx.userId),
+          ),
+        );
+
+      // Remove from subscriptions
+      await db
+        .delete(subscriptionsTable)
+        .where(
+          and(
+            eq(subscriptionsTable.targetUserId, input.targetUserId),
+            eq(subscriptionsTable.subscriberId, ctx.userId),
           ),
         );
 
@@ -230,4 +274,3 @@ export const privateProfileRouter = createTRPCRouter({
       return { hasAccess: false, isPending: !!pending };
     }),
 });
-

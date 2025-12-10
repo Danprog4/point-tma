@@ -439,7 +439,11 @@ function RouteComponent() {
           </div>
 
           <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-43">
-            <PullToRefresh onRefresh={handleRefresh} className={cn("min-h-screen")}>
+            <PullToRefresh
+              onRefresh={handleRefresh}
+              className={cn("min-h-screen", isLocked && "pointer-events-none")}
+              pullDownThreshold={isLocked ? 1000 : 67}
+            >
               {!isMore ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div>

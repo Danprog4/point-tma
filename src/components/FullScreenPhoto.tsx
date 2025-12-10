@@ -21,7 +21,7 @@ export const FullScreenPhoto = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-opacity-90 fixed inset-0 z-[10000000] flex items-center justify-center bg-black"
+          className="fixed left-0 right-0 bottom-0 z-[10000000] flex items-center justify-center bg-black bg-opacity-90 top-[72px]"
         >
           {allPhotos.length > 1 && (
             <ChevronLeft
@@ -60,7 +60,7 @@ export const FullScreenPhoto = ({
           )}
 
           <XIcon
-            className="absolute top-28 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
+            className="absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
             onClick={() => setIsFullScreen(false)}
           />
 

@@ -35,29 +35,34 @@ export const privateProfileRouter = createTRPCRouter({
         await db
           .delete(privateProfileAccessTable)
           .where(eq(privateProfileAccessTable.ownerId, ctx.userId));
-        
+
         // 3. Clear private requests
         await db
           .delete(privateAccessRequestsTable)
           .where(eq(privateAccessRequestsTable.ownerId, ctx.userId));
 
-        // 4. Remove these users from subscriptionsTable as per requirement "he is not subscriber"
         if (privateUserIds.length > 0) {
-          await db
-            .delete(subscriptionsTable)
-            .where(
-              and(
-                eq(subscriptionsTable.targetUserId, ctx.userId),
-                inArray(subscriptionsTable.subscriberId, privateUserIds)
-              )
-            );
+          // 4. Remove these users from subscriptionsTable as per requirement "he is not subscriber"
+          // Filter out nulls just in case, though allowedUserId shouldn't be null
+          const validIds = privateUserIds.filter((id): id is number => id !== null);
+
+          if (validIds.length > 0) {
+            await db
+              .delete(subscriptionsTable)
+              .where(
+                and(
+                  eq(subscriptionsTable.targetUserId, ctx.userId),
+                  inArray(subscriptionsTable.subscriberId, validIds),
+                ),
+              );
+          }
         }
       }
 
       await logAction({
         userId: ctx.userId,
         type: "private_mode_toggle",
-        details: { isPrivate: input.isPrivate },
+        details: { from: String(!input.isPrivate), to: String(input.isPrivate) } as any,
       });
 
       return { success: true };
@@ -115,6 +120,38 @@ export const privateProfileRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  cancelRequest: procedure
+    .input(z.object({ targetUserId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db
+        .delete(privateAccessRequestsTable)
+        .where(
+          and(
+            eq(privateAccessRequestsTable.ownerId, input.targetUserId),
+            eq(privateAccessRequestsTable.requesterId, ctx.userId),
+          ),
+        );
+
+      // Remove the notification
+      await db
+        .delete(notificationsTable)
+        .where(
+          and(
+            eq(notificationsTable.fromUserId, ctx.userId),
+            eq(notificationsTable.toUserId, input.targetUserId),
+            eq(notificationsTable.type, "private_request"),
+          ),
+        );
+
+      await logAction({
+        userId: ctx.userId,
+        type: "private_request_cancel",
+        itemId: input.targetUserId,
+      });
+
+      return { success: true };
+    }),
+
   acceptRequest: procedure
     .input(z.object({ requesterId: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -152,16 +189,16 @@ export const privateProfileRouter = createTRPCRouter({
         toUserId: input.requesterId,
         type: "private_request_accepted",
       });
-      
-       // Remove original request notification
+
+      // Remove original request notification
       await db
         .delete(notificationsTable)
         .where(
           and(
             eq(notificationsTable.toUserId, ctx.userId),
             eq(notificationsTable.fromUserId, input.requesterId),
-            eq(notificationsTable.type, "private_request")
-          )
+            eq(notificationsTable.type, "private_request"),
+          ),
         );
 
       await logAction({
@@ -190,16 +227,16 @@ export const privateProfileRouter = createTRPCRouter({
         toUserId: input.requesterId,
         type: "private_request_rejected",
       });
-      
-       // Remove original request notification
+
+      // Remove original request notification
       await db
         .delete(notificationsTable)
         .where(
           and(
             eq(notificationsTable.toUserId, ctx.userId),
             eq(notificationsTable.fromUserId, input.requesterId),
-            eq(notificationsTable.type, "private_request")
-          )
+            eq(notificationsTable.type, "private_request"),
+          ),
         );
 
       await logAction({

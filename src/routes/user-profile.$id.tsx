@@ -37,7 +37,6 @@ import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
 import { useTRPC } from "~/trpc/init/react";
 import type { GroupedTicket } from "~/types/inventory";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/user-profile/$id")({
   component: RouteComponent,
@@ -62,22 +61,46 @@ function RouteComponent() {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const { data: accessData } = useQuery(
-    trpc.privateProfile.checkAccess.queryOptions({ targetUserId: Number(id) })
+    trpc.privateProfile.checkAccess.queryOptions({ targetUserId: Number(id) }),
   );
 
   const sendPrivateRequest = useMutation(
-    trpc.privateProfile.sendRequest.mutationOptions({
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: trpc.privateProfile.checkAccess.queryKey(),
-            });
-            toast.success("Запрос отправлен");
-        },
-        onError: (error) => {
-            toast.error(error.message);
-        }
-    })
+    trpc.privateProfile.sendRequest.mutationOptions({}),
   );
+
+  const cancelPrivateRequest = useMutation(
+    trpc.privateProfile.cancelRequest.mutationOptions({}),
+  );
+
+  const handleSendPrivateRequest = () => {
+    if (!user?.id) return;
+    const queryKey = trpc.privateProfile.checkAccess.queryOptions({
+      targetUserId: user.id,
+    }).queryKey;
+    const previous = queryClient.getQueryData(queryKey);
+
+    // Optimistic Update
+    queryClient.setQueryData(queryKey, (old: any) => ({
+      ...(old || {}),
+      isPending: !old?.isPending,
+    }));
+
+    if (accessData?.isPending) {
+      cancelPrivateRequest.mutate(
+        { targetUserId: user.id },
+        {
+          onError: () => queryClient.setQueryData(queryKey, previous as any),
+        },
+      );
+    } else {
+      sendPrivateRequest.mutate(
+        { targetUserId: user.id },
+        {
+          onError: () => queryClient.setQueryData(queryKey, previous as any),
+        },
+      );
+    }
+  };
 
   const { data: userMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({ userId: Number(id) }),
@@ -111,7 +134,7 @@ function RouteComponent() {
   }, [userRequests, user?.id]);
 
   const { data: events } = useQuery(
-    trpc.event.getUserEvents.queryOptions({ userId: user?.id! }),
+    trpc.event.getUserEvents.queryOptions({ userId: user?.id ?? 0 }),
   );
 
   const activeQuests = useMemo(() => {
@@ -440,45 +463,43 @@ function RouteComponent() {
 
           <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-43">
             {isLocked ? (
-              <div 
+              <div
                 data-mobile={isMobile}
-                className="fixed left-0 right-0 bottom-0 top-20 overflow-hidden data-[mobile=true]:top-43"
+                className="fixed top-20 right-0 bottom-0 left-0 overflow-hidden data-[mobile=true]:top-43"
               >
-                 {/* Blurred Background Image */}
-                 <img 
-                    src={getImage(user as any, allPhotos[0] || "")} 
-                    alt="Background"
-                    className="absolute inset-0 h-full w-full object-cover blur-2xl scale-110 opacity-50"
-                 />
-                 <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
-                 
-                 {/* Content Centered */}
-                 <div className="absolute inset-0 flex flex-col items-center justify-start pt-20 px-6 text-center">
-                      <div className="mb-6 rounded-full bg-white/40 p-6 backdrop-blur-xl shadow-lg">
-                          <Lock className="h-12 w-12 text-gray-900" />
-                      </div>
-                      
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">Профиль закрыт</h2>
-                      <p className="text-gray-700 font-medium mb-8 max-w-xs">
-                        Подпишитесь, чтобы увидеть полную информацию, фото и активности пользователя
-                      </p>
+                {/* Blurred Background Image */}
+                <img
+                  src={getImage(user as any, allPhotos[0] || "")}
+                  alt="Background"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+                />
+                <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
 
-                      <button
-                          disabled={accessData?.isPending || sendPrivateRequest.isPending}
-                          onClick={() => {
-                              if (user?.id) sendPrivateRequest.mutate({ targetUserId: user.id })
-                          }}
-                          className="w-full max-w-xs rounded-2xl bg-gray-900 py-4 font-bold text-white shadow-xl transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                          {accessData?.isPending ? "Запрос отправлен" : "Отправить запрос"}
-                      </button>
-                 </div>
+                {/* Content Centered */}
+                <div className="absolute inset-0 flex flex-col items-center justify-start px-6 pt-20 text-center">
+                  <div className="mb-6 rounded-full bg-white/40 p-6 shadow-lg backdrop-blur-xl">
+                    <Lock className="h-12 w-12 text-gray-900" />
+                  </div>
+
+                  <h2 className="mb-2 text-2xl font-bold text-gray-900">
+                    Профиль закрыт
+                  </h2>
+                  <p className="mb-8 max-w-xs font-medium text-gray-700">
+                    Подпишитесь, чтобы увидеть полную информацию, фото и активности
+                    пользователя
+                  </p>
+
+                  <button
+                    disabled={accessData?.hasAccess}
+                    onClick={handleSendPrivateRequest}
+                    className="flex w-full max-w-xs items-center justify-center rounded-2xl bg-gray-900 py-4 font-bold text-white shadow-xl transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {accessData?.isPending ? <>Отменить запрос</> : "Отправить запрос"}
+                  </button>
+                </div>
               </div>
             ) : (
-              <PullToRefresh
-                onRefresh={handleRefresh}
-                className="min-h-screen"
-              >
+              <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
                 {!isMore ? (
                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div>
@@ -774,7 +795,9 @@ function RouteComponent() {
 
                     <div className="px-5 pb-6">
                       <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-                        <h3 className="mb-3 text-lg font-bold text-gray-900">Достижения</h3>
+                        <h3 className="mb-3 text-lg font-bold text-gray-900">
+                          Достижения
+                        </h3>
                         <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
                             <img src="/shit.png" alt="achievement" className="h-8 w-8" />
@@ -867,7 +890,9 @@ function RouteComponent() {
 
                     <div className="px-5 pb-24">
                       <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-                        <h3 className="mb-3 text-lg font-bold text-gray-900">Инвентарь</h3>
+                        <h3 className="mb-3 text-lg font-bold text-gray-900">
+                          Инвентарь
+                        </h3>
                         {groupedTickets.length > 0 ? (
                           <div className="grid grid-cols-3 gap-3">
                             {groupedTickets.map((ticket, index) => {
@@ -986,7 +1011,9 @@ function RouteComponent() {
                     open={isKeyDrawerOpen}
                     onOpenChange={setIsKeyDrawerOpen}
                     keyData={selectedKey}
-                    caseData={selectedKey.caseId ? getCase(selectedKey.caseId) : undefined}
+                    caseData={
+                      selectedKey.caseId ? getCase(selectedKey.caseId) : undefined
+                    }
                   >
                     <div />
                   </KeyDrawer>

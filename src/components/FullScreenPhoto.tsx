@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, X as XIcon } from "lucide-react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getImageUrl } from "~/lib/utils/getImageURL";
+import { lockBodyScroll, unlockBodyScroll } from "~/lib/utils/drawerScroll";
 
 export const FullScreenPhoto = ({
   allPhotos,
@@ -11,6 +13,17 @@ export const FullScreenPhoto = ({
   isOpen,
   children,
 }: any) => {
+  useEffect(() => {
+    if (isOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
+    return () => {
+      unlockBodyScroll();
+    };
+  }, [isOpen]);
+
   if (typeof document === "undefined") return null;
 
   return createPortal(
@@ -21,11 +34,11 @@ export const FullScreenPhoto = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed left-0 right-0 bottom-0 z-[10000000] flex items-center justify-center bg-black bg-opacity-90 top-[72px]"
+          className="fixed inset-0 z-[49] flex items-center justify-center bg-black"
         >
           {allPhotos.length > 1 && (
             <ChevronLeft
-              className="absolute left-4 h-10 w-10 cursor-pointer rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
+              className="absolute left-4 h-10 w-10 cursor-pointer rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95 z-50"
               onClick={() =>
                 setCurrentIndex(
                   (prev: number) => (prev - 1 + allPhotos.length) % allPhotos.length,
@@ -52,7 +65,7 @@ export const FullScreenPhoto = ({
 
           {allPhotos.length > 1 && (
             <ChevronRight
-              className="absolute right-4 h-10 w-10 cursor-pointer rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
+              className="absolute right-4 h-10 w-10 cursor-pointer rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95 z-50"
               onClick={() =>
                 setCurrentIndex((prev: number) => (prev + 1) % allPhotos.length)
               }
@@ -60,7 +73,7 @@ export const FullScreenPhoto = ({
           )}
 
           <XIcon
-            className="absolute top-4 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95"
+            className="absolute top-28 right-4 h-8 w-8 cursor-pointer rounded-full bg-black/40 p-1 text-white shadow-lg backdrop-blur-sm transition-transform hover:bg-black/60 active:scale-95 z-50"
             onClick={() => setIsFullScreen(false)}
           />
 

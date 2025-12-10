@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Calendar, Heart, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Check, Heart, Lock, UserPlus, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import { toast } from "sonner";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
 import { usePlatform } from "~/hooks/usePlatform";
 import { cn } from "~/lib/utils/cn";
@@ -30,6 +31,26 @@ function RouteComponent() {
   const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
   const readNotification = useMutation(trpc.main.readNotification.mutationOptions());
   const { data: meetings } = useQuery(trpc.meetings.getMeetings.queryOptions());
+
+  const acceptPrivateRequest = useMutation(
+    trpc.privateProfile.acceptRequest.mutationOptions({
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: trpc.main.getNotifications.queryKey() });
+            toast.success("Запрос принят");
+        },
+        onError: () => toast.error("Ошибка при принятии запроса")
+    })
+  );
+
+  const rejectPrivateRequest = useMutation(
+    trpc.privateProfile.rejectRequest.mutationOptions({
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: trpc.main.getNotifications.queryKey() });
+            toast.success("Запрос отклонен");
+        },
+        onError: () => toast.error("Ошибка при отклонении запроса")
+    })
+  );
 
   useEffect(() => {
     markNotificationsAsRead.mutate();
@@ -73,6 +94,24 @@ function RouteComponent() {
             <Calendar className="h-4 w-4" />
           </div>
         );
+      case "private_request":
+        return (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                <Lock className="h-4 w-4" />
+            </div>
+        );
+      case "private_request_accepted":
+        return (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+                <Check className="h-4 w-4" />
+            </div>
+        );
+      case "private_request_rejected":
+        return (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <X className="h-4 w-4" />
+            </div>
+        );
       default:
         return null;
     }
@@ -97,12 +136,27 @@ function RouteComponent() {
         return (
           <span className="font-medium">{userName} пригласил(-а) вас на встречу</span>
         );
+      case "private_request":
+        return (
+            <span className="font-medium">{userName} хочет подписаться на ваш закрытый профиль</span>
+        );
+      case "private_request_accepted":
+        return (
+            <span className="font-medium">{userName} принял(-а) ваш запрос на подписку</span>
+        );
+      case "private_request_rejected":
+        return (
+            <span className="font-medium">{userName} отклонил(-а) ваш запрос на подписку</span>
+        );
       default:
         return null;
     }
   };
 
   const handleNavigate = (type: string, notification: any) => {
+    // Prevent navigation for action clicks handled elsewhere
+    if (type === "private_request") return;
+
     switch (type) {
       case "meet invite":
       case "meet request":
@@ -111,7 +165,8 @@ function RouteComponent() {
       case "friend request":
       case "like":
       case "subscribe":
-        navigate({ to: "/profile" });
+      case "private_request_accepted":
+        navigate({ to: "/user-profile/$id", params: { id: notification.fromUserId.toString() } });
         break;
     }
     saveScrollPosition("notif");
@@ -119,6 +174,7 @@ function RouteComponent() {
 
   // Приоритет сортировки по типу уведомления
   const typePriority: Record<string, number> = {
+    "private_request": 0,
     "meet invite": 1,
     "meet request": 2,
     "friend request": 3,
@@ -144,7 +200,7 @@ function RouteComponent() {
     if (activeFilter === "meet")
       return n.type === "meet invite" || n.type === "meet request";
     if (activeFilter === "friend")
-      return n.type === "friend request" || n.type === "subscribe";
+      return n.type === "friend request" || n.type === "subscribe" || n.type?.startsWith("private_request");
     if (activeFilter === "like") return n.type === "like";
     return true;
   });
@@ -181,6 +237,7 @@ function RouteComponent() {
   };
 
   const handleReadNotification = (notification: any) => {
+    if (notification.isRead) return;
     readNotification.mutate({ id: notification.id });
     queryClient.setQueryData(trpc.main.getNotifications.queryKey(), (old: any) => {
       return old.map((n: any) => (n.id === notification.id ? { ...n, isRead: true } : n));
@@ -196,7 +253,7 @@ function RouteComponent() {
       <div
         key={notification.id}
         className={cn(
-          "group relative mb-3 flex cursor-pointer items-start gap-3 overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all active:scale-[0.99]",
+          "group relative mb-3 flex flex-col gap-3 overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all active:scale-[0.99]",
           !notification.isRead && "bg-violet-50/50 ring-violet-100",
         )}
         onClick={() => {
@@ -204,43 +261,70 @@ function RouteComponent() {
           handleReadNotification(notification);
         }}
       >
-        <div className="relative flex-shrink-0">
-          <img
-            src={getImageUrl(mainImage || "")}
-            alt=""
-            className="h-12 w-12 rounded-xl object-cover"
-          />
-          <div className="absolute -right-1 -bottom-1 rounded-full bg-white p-0.5 shadow-sm">
-            {getNotificationIcon(notification.type || "")}
-          </div>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-1">
-          <div className="flex items-start justify-between gap-2">
-            <span className="text-sm text-gray-900">
-              {getNotificationDecs(notification.type || "", notification)}
-            </span>
-            <span className="text-[10px] font-medium whitespace-nowrap text-gray-400">
-              {notification.createdAt
-                ? dayjs(notification.createdAt).format("HH:mm")
-                : ""}
-            </span>
-          </div>
-
-          {meeting && (
-            <div className="mt-1 rounded-lg bg-gray-50 p-2 text-xs text-gray-600">
-              <span className="font-medium text-gray-900">{meeting.name}</span>
-              {meeting.description && (
-                <span className="block truncate opacity-70">{meeting.description}</span>
-              )}
+        <div className="flex items-start gap-3">
+            <div className="relative flex-shrink-0">
+            <img
+                src={getImageUrl(mainImage || "")}
+                alt=""
+                className="h-12 w-12 rounded-xl object-cover"
+            />
+            <div className="absolute -right-1 -bottom-1 rounded-full bg-white p-0.5 shadow-sm">
+                {getNotificationIcon(notification.type || "")}
             </div>
-          )}
+            </div>
+
+            <div className="flex flex-1 flex-col gap-1">
+            <div className="flex items-start justify-between gap-2">
+                <span className="text-sm text-gray-900">
+                {getNotificationDecs(notification.type || "", notification)}
+                </span>
+                <span className="text-[10px] font-medium whitespace-nowrap text-gray-400">
+                {notification.createdAt
+                    ? dayjs(notification.createdAt).format("HH:mm")
+                    : ""}
+                </span>
+            </div>
+
+            {meeting && (
+                <div className="mt-1 rounded-lg bg-gray-50 p-2 text-xs text-gray-600">
+                <span className="font-medium text-gray-900">{meeting.name}</span>
+                {meeting.description && (
+                    <span className="block truncate opacity-70">{meeting.description}</span>
+                )}
+                </div>
+            )}
+            </div>
+
+            {!notification.isRead && (
+            <div className="absolute top-1/2 right-2 -translate-y-1/2">
+                <div className="h-2 w-2 rounded-full bg-violet-500" />
+            </div>
+            )}
         </div>
 
-        {!notification.isRead && (
-          <div className="absolute top-1/2 right-2 -translate-y-1/2">
-            <div className="h-2 w-2 rounded-full bg-violet-500" />
-          </div>
+        {notification.type === "private_request" && (
+            <div className="flex w-full gap-2 pl-[60px]">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        acceptPrivateRequest.mutate({ requesterId: notification.fromUserId });
+                    }}
+                    disabled={acceptPrivateRequest.isPending || rejectPrivateRequest.isPending}
+                    className="flex-1 rounded-xl bg-violet-600 py-2 text-xs font-bold text-white transition-transform active:scale-95"
+                >
+                    Принять
+                </button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        rejectPrivateRequest.mutate({ requesterId: notification.fromUserId });
+                    }}
+                    disabled={acceptPrivateRequest.isPending || rejectPrivateRequest.isPending}
+                    className="flex-1 rounded-xl bg-gray-100 py-2 text-xs font-bold text-gray-900 transition-transform active:scale-95"
+                >
+                    Отклонить
+                </button>
+            </div>
         )}
       </div>
     );

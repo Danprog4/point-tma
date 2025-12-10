@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import imageCompression from "browser-image-compression";
-import { ArrowLeft, ImagePlus, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ImagePlus, Info, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DatePicker2 from "~/components/DatePicker2";
@@ -17,6 +18,70 @@ import { useTRPC } from "~/trpc/init/react";
 export const Route = createFileRoute("/profile-sett")({
   component: RouteComponent,
 });
+
+function InfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed top-1/2 left-1/2 z-[70] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 px-4"
+          >
+            <div className="relative overflow-hidden rounded-3xl bg-white p-6 shadow-xl">
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600">
+                <Info className="h-6 w-6" />
+              </div>
+
+              <h3 className="mb-2 text-xl font-bold text-gray-900">
+                Приватный профиль
+              </h3>
+              
+              <div className="space-y-3 text-sm text-gray-600">
+                <p>
+                  Когда ваш профиль закрыт, другие пользователи видят только:
+                </p>
+                <ul className="list-inside list-disc space-y-1 pl-2 font-medium text-gray-900">
+                  <li>Ваше фото</li>
+                  <li>Имя и возраст</li>
+                  <li>Пол</li>
+                </ul>
+                <p>
+                  Вся остальная информация будет скрыта. Чтобы увидеть полный профиль, пользователи должны отправить вам запрос на подписку.
+                </p>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="mt-6 w-full rounded-2xl bg-gray-900 py-3.5 font-bold text-white transition-transform active:scale-95"
+              >
+                Понятно
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -36,6 +101,9 @@ function RouteComponent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mainPhotoRaw, setMainPhotoRaw] = useState<string>("");
   const [bio, setBio] = useState<string>("");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -70,6 +138,9 @@ function RouteComponent() {
     if (user?.city) {
       setCity(user.city);
     }
+    if (user?.isPrivate !== undefined) {
+      setIsPrivate(user.isPrivate);
+    }
   }, [
     user?.name,
     user?.surname,
@@ -80,6 +151,7 @@ function RouteComponent() {
     user?.gallery,
     user?.birthday,
     user?.city,
+    user?.isPrivate,
   ]);
 
   const isDisabled =
@@ -99,7 +171,8 @@ function RouteComponent() {
     !selectedFile &&
     gallery.length === (user?.gallery?.length ?? 0) &&
     gallery.every((item, index) => item === user?.gallery?.[index]) &&
-    mainPhotoRaw === (user?.photo ?? "");
+    mainPhotoRaw === (user?.photo ?? "") &&
+    isPrivate === (user?.isPrivate ?? false);
 
   const updateProfile = useMutation(
     trpc.main.updateProfile.mutationOptions({
@@ -110,6 +183,22 @@ function RouteComponent() {
         navigate({ to: "/profile" });
       },
     }),
+  );
+
+  const togglePrivate = useMutation(
+    trpc.privateProfile.togglePrivateMode.mutationOptions({
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: trpc.main.getUser.queryKey(),
+            });
+            // toast.success(isPrivate ? "Профиль закрыт" : "Профиль открыт");
+        },
+        onError: () => {
+             // Revert state on error
+             setIsPrivate(!isPrivate);
+             toast.error("Не удалось изменить настройки приватности");
+        }
+    })
   );
 
   const deletePhoto = useMutation(
@@ -148,6 +237,11 @@ function RouteComponent() {
         city: city || "",
       };
       await updateProfile.mutateAsync(payload);
+      
+      if (isPrivate !== user?.isPrivate) {
+          await togglePrivate.mutateAsync({ isPrivate });
+      }
+
       toast.success("Профиль сохранен!");
     } catch (error: any) {
       toast.error(`❌ Сохранение не удалось: ${error.message || "Неизвестная ошибка"}`);
@@ -332,6 +426,38 @@ function RouteComponent() {
           </label>
         </div>
 
+        {/* Private Profile Toggle */}
+        <div className="overflow-hidden rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-900">Скрыть аккаунт</span>
+                    <button 
+                        onClick={() => setIsInfoOpen(true)}
+                        className="text-gray-400 hover:text-violet-600 transition-colors"
+                    >
+                        <Info className="h-5 w-5" />
+                    </button>
+                </div>
+                <button
+                    onClick={() => setIsPrivate(!isPrivate)}
+                    className={cn(
+                        "relative h-7 w-12 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+                        isPrivate ? "bg-violet-600" : "bg-gray-200"
+                    )}
+                >
+                    <span
+                        className={cn(
+                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                            isPrivate ? "translate-x-6" : "translate-x-1"
+                        )}
+                    />
+                </button>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+                Если включено, ваш профиль будет виден только подписчикам
+            </p>
+        </div>
+
         {/* Gallery Section */}
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-gray-900">Галерея</h2>
@@ -499,18 +625,20 @@ function RouteComponent() {
       {/* Floating Save Button */}
       <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white p-4">
         <button
-          disabled={isDisabled || updateProfile.isPending}
+          disabled={isDisabled || updateProfile.isPending || togglePrivate.isPending}
           onClick={handleUpdateProfile}
           className={cn(
             "w-full rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all active:scale-[0.98]",
-            isDisabled || updateProfile.isPending
+            isDisabled || updateProfile.isPending || togglePrivate.isPending
               ? "cursor-not-allowed bg-gray-200 text-gray-400 shadow-none"
               : "bg-gray-900 shadow-gray-200 hover:bg-gray-800",
           )}
         >
-          {updateProfile.isPending ? "Сохраняем..." : "Сохранить изменения"}
+          {updateProfile.isPending || togglePrivate.isPending ? "Сохраняем..." : "Сохранить изменения"}
         </button>
       </div>
+
+      <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
     </div>
   );
 }

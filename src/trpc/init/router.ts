@@ -6,6 +6,7 @@ import { friendsRouter } from "../friends";
 import { router } from "../main";
 import { marketRouter } from "../market";
 import { meetingRouter } from "../meetings";
+import { privateProfileRouter } from "../privateProfile";
 import { tasksRouter } from "../tasks";
 import { tradesRouter } from "../trades";
 import { yandexRouter } from "../yandex";
@@ -23,6 +24,7 @@ export const trpcRouter = createTRPCRouter({
   tasks: tasksRouter,
   trades: tradesRouter,
   market: marketRouter,
+  privateProfile: privateProfileRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

@@ -7,6 +7,7 @@ import {
   serial,
   timestamp,
   varchar,
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -73,6 +74,7 @@ export const usersTable = pgTable("users", {
   achievements: jsonb("achievements").$type<Array<any>>(),
   skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
   createdAt: timestamp("created_at").defaultNow(),
+  isPrivate: boolean("is_private").default(false),
 });
 
 export const tasksProgressTable = pgTable("tasks_progress", {
@@ -405,6 +407,32 @@ export const sellingTable = pgTable("selling", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const privateProfileAccessTable = pgTable(
+  "private_profile_access",
+  {
+    id: serial("id").primaryKey(),
+    ownerId: bigint("owner_id", { mode: "number" }),
+    allowedUserId: bigint("allowed_user_id", { mode: "number" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({
+    unq: unique().on(t.ownerId, t.allowedUserId),
+  }),
+);
+
+export const privateAccessRequestsTable = pgTable(
+  "private_access_requests",
+  {
+    id: serial("id").primaryKey(),
+    ownerId: bigint("owner_id", { mode: "number" }),
+    requesterId: bigint("requester_id", { mode: "number" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({
+    unq: unique().on(t.ownerId, t.requesterId),
+  }),
+);
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -449,3 +477,8 @@ export type RatingUser = typeof ratingsUserTable.$inferSelect;
 export type NewRatingUser = typeof ratingsUserTable.$inferInsert;
 
 export type Trade = typeof tradesTable.$inferSelect;
+
+export type PrivateProfileAccess = typeof privateProfileAccessTable.$inferSelect;
+export type NewPrivateProfileAccess = typeof privateProfileAccessTable.$inferInsert;
+export type PrivateAccessRequest = typeof privateAccessRequestsTable.$inferSelect;
+export type NewPrivateAccessRequest = typeof privateAccessRequestsTable.$inferInsert;

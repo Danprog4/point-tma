@@ -98,7 +98,9 @@ function RouteComponent() {
         });
         toast.success("Запрос принят");
       },
-      onError: () => toast.error("Ошибка при принятии запроса"),
+      onError: () => {
+        toast.error("Ошибка при принятии запроса");
+      },
     }),
   );
 
@@ -110,7 +112,9 @@ function RouteComponent() {
         });
         toast.success("Запрос отклонен");
       },
-      onError: () => toast.error("Ошибка при отклонении запроса"),
+      onError: () => {
+        toast.error("Ошибка при отклонении запроса");
+      },
     }),
   );
 
@@ -370,7 +374,26 @@ function RouteComponent() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                acceptPrivateRequest.mutate({ requesterId: notification.fromUserId });
+                const queryKey = trpc.notifications.getNotifications.queryKey();
+                const previousNotifications = queryClient.getQueryData(queryKey);
+
+                // Optimistic update: remove the notification immediately
+                queryClient.setQueryData(queryKey, (old: any) => {
+                  if (!old || !Array.isArray(old)) return old;
+                  return old.filter((n: any) => n.id !== notification.id);
+                });
+
+                acceptPrivateRequest.mutate(
+                  { requesterId: notification.fromUserId },
+                  {
+                    onError: () => {
+                      // Revert on error
+                      if (previousNotifications) {
+                        queryClient.setQueryData(queryKey, previousNotifications);
+                      }
+                    },
+                  },
+                );
               }}
               disabled={acceptPrivateRequest.isPending || rejectPrivateRequest.isPending}
               className="flex-1 rounded-xl bg-violet-600 py-2 text-xs font-bold text-white transition-transform active:scale-95"
@@ -380,7 +403,26 @@ function RouteComponent() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                rejectPrivateRequest.mutate({ requesterId: notification.fromUserId });
+                const queryKey = trpc.notifications.getNotifications.queryKey();
+                const previousNotifications = queryClient.getQueryData(queryKey);
+
+                // Optimistic update: remove the notification immediately
+                queryClient.setQueryData(queryKey, (old: any) => {
+                  if (!old || !Array.isArray(old)) return old;
+                  return old.filter((n: any) => n.id !== notification.id);
+                });
+
+                rejectPrivateRequest.mutate(
+                  { requesterId: notification.fromUserId },
+                  {
+                    onError: () => {
+                      // Revert on error
+                      if (previousNotifications) {
+                        queryClient.setQueryData(queryKey, previousNotifications);
+                      }
+                    },
+                  },
+                );
               }}
               disabled={acceptPrivateRequest.isPending || rejectPrivateRequest.isPending}
               className="flex-1 rounded-xl bg-gray-100 py-2 text-xs font-bold text-gray-900 transition-transform active:scale-95"
@@ -415,6 +457,21 @@ function RouteComponent() {
     });
   };
 
+  // Check if any mutation is loading
+  const isLoading = useMemo(() => {
+    return (
+      acceptPrivateRequest.isPending ||
+      rejectPrivateRequest.isPending ||
+      markNotificationsAsRead.isPending ||
+      readNotification.isPending
+    );
+  }, [
+    acceptPrivateRequest.isPending,
+    rejectPrivateRequest.isPending,
+    markNotificationsAsRead.isPending,
+    readNotification.isPending,
+  ]);
+
   console.log(notifications, "notifications");
   console.log(filteredNotifications, "filteredNotifications");
   console.log({ userIds, meetingIds, activeFilter }, "debug info");
@@ -422,8 +479,17 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen bg-[#FAFAFA] pb-10 data-[mobile=true]:pt-24"
+      className="relative min-h-screen bg-[#FAFAFA] pb-10 data-[mobile=true]:pt-24"
     >
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-600 border-t-transparent" />
+            <p className="text-sm font-medium text-gray-700">Обработка запроса...</p>
+          </div>
+        </div>
+      )}
       {/* Fixed Header */}
       <div
         data-mobile={isMobile}

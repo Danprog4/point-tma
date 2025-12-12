@@ -7,7 +7,7 @@ import { createTRPCRouter, procedure } from "./init";
 export const notificationsRouter = createTRPCRouter({
   getNotifications: procedure.query(async ({ ctx }) => {
     const notifications = await db.query.notificationTable.findMany({
-      where: eq(notificationTable.toUserId, ctx.userId),
+      where: eq(notificationTable.fromUserId, ctx.userId),
       orderBy: [desc(notificationTable.createdAt)],
     });
 

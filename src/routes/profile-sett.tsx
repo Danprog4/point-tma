@@ -180,7 +180,11 @@ function RouteComponent() {
         queryClient.invalidateQueries({
           queryKey: trpc.main.getUser.queryKey(),
         });
-        navigate({ to: "/profile" });
+        toast.success("Профиль сохранен!");
+        // Small delay to show success state before navigation
+        setTimeout(() => {
+          navigate({ to: "/profile" });
+        }, 300);
       },
     }),
   );
@@ -191,11 +195,10 @@ function RouteComponent() {
             queryClient.invalidateQueries({
                 queryKey: trpc.main.getUser.queryKey(),
             });
-            // toast.success(isPrivate ? "Профиль закрыт" : "Профиль открыт");
         },
         onError: () => {
              // Revert state on error
-             setIsPrivate(!isPrivate);
+             setIsPrivate(user?.isPrivate ?? false);
              toast.error("Не удалось изменить настройки приватности");
         }
     })
@@ -212,6 +215,9 @@ function RouteComponent() {
   );
 
   const handleUpdateProfile = async () => {
+    // Prevent double-clicks
+    if (updateProfile.isPending || togglePrivate.isPending) return;
+
     try {
       const filteredGallery = gallery.filter(
         (item) => typeof item === "string" && item.length > 0,
@@ -238,11 +244,10 @@ function RouteComponent() {
       };
       await updateProfile.mutateAsync(payload);
       
-      if (isPrivate !== user?.isPrivate) {
-          await togglePrivate.mutateAsync({ isPrivate });
+      // Update privacy setting if it changed
+      if (isPrivate !== (user?.isPrivate ?? false)) {
+        await togglePrivate.mutateAsync({ isPrivate });
       }
-
-      toast.success("Профиль сохранен!");
     } catch (error: any) {
       toast.error(`❌ Сохранение не удалось: ${error.message || "Неизвестная ошибка"}`);
     }
@@ -441,16 +446,58 @@ function RouteComponent() {
                 <button
                     onClick={() => setIsPrivate(!isPrivate)}
                     className={cn(
-                        "relative h-7 w-12 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
-                        isPrivate ? "bg-violet-600" : "bg-gray-200"
+                        "relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+                        isPrivate 
+                            ? "bg-violet-600 shadow-lg shadow-violet-600/30" 
+                            : "bg-gray-200"
                     )}
+                    role="switch"
+                    aria-checked={isPrivate}
+                    aria-label="Toggle private profile"
                 >
                     <span
                         className={cn(
-                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                            isPrivate ? "translate-x-6" : "translate-x-1"
+                            "pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-in-out",
+                            isPrivate 
+                                ? "translate-x-5 scale-100" 
+                                : "translate-x-0.5 scale-100"
                         )}
-                    />
+                    >
+                        <span
+                            className={cn(
+                                "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
+                                isPrivate ? "opacity-0" : "opacity-100"
+                            )}
+                        >
+                            <svg
+                                className="h-3.5 w-3.5 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 12 12"
+                            >
+                                <path
+                                    d="M4 8l2-2m0 0l2-2M6 6l2-2M6 6L4 4"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </span>
+                        <span
+                            className={cn(
+                                "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
+                                isPrivate ? "opacity-100" : "opacity-0"
+                            )}
+                        >
+                            <svg
+                                className="h-3.5 w-3.5 text-violet-600"
+                                fill="currentColor"
+                                viewBox="0 0 12 12"
+                            >
+                                <path d="M9.707 3.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L5 6.586l3.293-3.293a1 1 0 011.414 0z" />
+                            </svg>
+                        </span>
+                    </span>
                 </button>
             </div>
             <p className="mt-2 text-xs text-gray-500">
@@ -623,18 +670,46 @@ function RouteComponent() {
       </div>
 
       {/* Floating Save Button */}
-      <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white p-4">
+      <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm p-4">
         <button
           disabled={isDisabled || updateProfile.isPending || togglePrivate.isPending}
           onClick={handleUpdateProfile}
           className={cn(
-            "w-full rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all active:scale-[0.98]",
+            "relative w-full overflow-hidden rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all duration-300 ease-in-out",
             isDisabled || updateProfile.isPending || togglePrivate.isPending
               ? "cursor-not-allowed bg-gray-200 text-gray-400 shadow-none"
-              : "bg-gray-900 shadow-gray-200 hover:bg-gray-800",
+              : "bg-gray-900 shadow-gray-200/50 hover:bg-gray-800 hover:shadow-xl hover:shadow-gray-200/30 active:scale-[0.98]",
           )}
         >
-          {updateProfile.isPending || togglePrivate.isPending ? "Сохраняем..." : "Сохранить изменения"}
+          <span className="relative inline-block">
+            <span className={cn("transition-opacity duration-300", (updateProfile.isPending || togglePrivate.isPending) && "opacity-0")}>
+              Сохранить изменения
+            </span>
+            {(updateProfile.isPending || togglePrivate.isPending) && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  className="h-5 w-5 animate-spin text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              </span>
+            )}
+          </span>
         </button>
       </div>
 

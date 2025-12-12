@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsCheckedInToday(isCheckedToday);
 
         // Сразу устанавливаем данные пользователя в кэш
+        // Prefetch only essential data that's used across multiple pages
         queryClient.prefetchQuery(
           trpc.meetings.getMeetingsPagination.queryOptions({
             limit: 10,
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         );
         queryClient.prefetchQuery(trpc.notifications.getNotifications.queryOptions());
         queryClient.prefetchQuery(trpc.main.getReviews.queryOptions());
-        queryClient.prefetchQuery(trpc.main.getUsers.queryOptions());
+        // Removed getUsers prefetch - pages now use getUsersByIds for optimized fetching
         queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
         queryClient.prefetchQuery(
           trpc.meetings.getMeetings.queryOptions({ userId: data.id }),

@@ -51,21 +51,18 @@ function InfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 <Info className="h-6 w-6" />
               </div>
 
-              <h3 className="mb-2 text-xl font-bold text-gray-900">
-                Приватный профиль
-              </h3>
-              
+              <h3 className="mb-2 text-xl font-bold text-gray-900">Приватный профиль</h3>
+
               <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  Когда ваш профиль закрыт, другие пользователи видят только:
-                </p>
+                <p>Когда ваш профиль закрыт, другие пользователи видят только:</p>
                 <ul className="list-inside list-disc space-y-1 pl-2 font-medium text-gray-900">
                   <li>Ваше фото</li>
                   <li>Имя и возраст</li>
                   <li>Пол</li>
                 </ul>
                 <p>
-                  Вся остальная информация будет скрыта. Чтобы увидеть полный профиль, пользователи должны отправить вам запрос на подписку.
+                  Вся остальная информация будет скрыта. Чтобы увидеть полный профиль,
+                  пользователи должны отправить вам запрос на подписку.
                 </p>
               </div>
 
@@ -103,7 +100,7 @@ function RouteComponent() {
   const [bio, setBio] = useState<string>("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -139,7 +136,7 @@ function RouteComponent() {
       setCity(user.city);
     }
     if (user?.isPrivate !== undefined) {
-      setIsPrivate(user.isPrivate);
+      setIsPrivate(user.isPrivate ?? false);
     }
   }, [
     user?.name,
@@ -191,17 +188,17 @@ function RouteComponent() {
 
   const togglePrivate = useMutation(
     trpc.privateProfile.togglePrivateMode.mutationOptions({
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: trpc.main.getUser.queryKey(),
-            });
-        },
-        onError: () => {
-             // Revert state on error
-             setIsPrivate(user?.isPrivate ?? false);
-             toast.error("Не удалось изменить настройки приватности");
-        }
-    })
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.main.getUser.queryKey(),
+        });
+      },
+      onError: () => {
+        // Revert state on error
+        setIsPrivate(user?.isPrivate ?? false);
+        toast.error("Не удалось изменить настройки приватности");
+      },
+    }),
   );
 
   const deletePhoto = useMutation(
@@ -243,7 +240,7 @@ function RouteComponent() {
         city: city || "",
       };
       await updateProfile.mutateAsync(payload);
-      
+
       // Update privacy setting if it changed
       if (isPrivate !== (user?.isPrivate ?? false)) {
         await togglePrivate.mutateAsync({ isPrivate });
@@ -370,7 +367,7 @@ function RouteComponent() {
       {/* Fixed Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
       >
         <button
           disabled={updateProfile.isPending}
@@ -383,7 +380,7 @@ function RouteComponent() {
         <div className="w-10" /> {/* Spacer for alignment */}
       </div>
 
-      <div className="space-y-8 px-5 pt-28" data-mobile={isMobile}>
+      <div className="space-y-8 px-5 pt-42" data-mobile={isMobile}>
         {/* Main Photo Section */}
         <div className="flex flex-col items-center gap-4">
           <label
@@ -433,76 +430,74 @@ function RouteComponent() {
 
         {/* Private Profile Toggle */}
         <div className="overflow-hidden rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-900">Скрыть аккаунт</span>
-                    <button 
-                        onClick={() => setIsInfoOpen(true)}
-                        className="text-gray-400 hover:text-violet-600 transition-colors"
-                    >
-                        <Info className="h-5 w-5" />
-                    </button>
-                </div>
-                <button
-                    onClick={() => setIsPrivate(!isPrivate)}
-                    className={cn(
-                        "relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
-                        isPrivate 
-                            ? "bg-violet-600 shadow-lg shadow-violet-600/30" 
-                            : "bg-gray-200"
-                    )}
-                    role="switch"
-                    aria-checked={isPrivate}
-                    aria-label="Toggle private profile"
-                >
-                    <span
-                        className={cn(
-                            "pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-in-out",
-                            isPrivate 
-                                ? "translate-x-5 scale-100" 
-                                : "translate-x-0.5 scale-100"
-                        )}
-                    >
-                        <span
-                            className={cn(
-                                "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
-                                isPrivate ? "opacity-0" : "opacity-100"
-                            )}
-                        >
-                            <svg
-                                className="h-3.5 w-3.5 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 12 12"
-                            >
-                                <path
-                                    d="M4 8l2-2m0 0l2-2M6 6l2-2M6 6L4 4"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </span>
-                        <span
-                            className={cn(
-                                "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
-                                isPrivate ? "opacity-100" : "opacity-0"
-                            )}
-                        >
-                            <svg
-                                className="h-3.5 w-3.5 text-violet-600"
-                                fill="currentColor"
-                                viewBox="0 0 12 12"
-                            >
-                                <path d="M9.707 3.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L5 6.586l3.293-3.293a1 1 0 011.414 0z" />
-                            </svg>
-                        </span>
-                    </span>
-                </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">Скрыть аккаунт</span>
+              <button
+                onClick={() => setIsInfoOpen(true)}
+                className="text-gray-400 transition-colors hover:text-violet-600"
+              >
+                <Info className="h-5 w-5" />
+              </button>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
-                Если включено, ваш профиль будет виден только подписчикам
-            </p>
+            <button
+              onClick={() => setIsPrivate(!isPrivate)}
+              className={cn(
+                "relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:outline-none",
+                isPrivate
+                  ? "bg-violet-600 shadow-lg shadow-violet-600/30"
+                  : "bg-gray-200",
+              )}
+              role="switch"
+              aria-checked={isPrivate}
+              aria-label="Toggle private profile"
+            >
+              <span
+                className={cn(
+                  "pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-in-out",
+                  isPrivate ? "translate-x-5 scale-100" : "translate-x-0.5 scale-100",
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
+                    isPrivate ? "opacity-0" : "opacity-100",
+                  )}
+                >
+                  <svg
+                    className="h-3.5 w-3.5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 12 12"
+                  >
+                    <path
+                      d="M4 8l2-2m0 0l2-2M6 6l2-2M6 6L4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center rounded-full transition-opacity duration-300",
+                    isPrivate ? "opacity-100" : "opacity-0",
+                  )}
+                >
+                  <svg
+                    className="h-3.5 w-3.5 text-violet-600"
+                    fill="currentColor"
+                    viewBox="0 0 12 12"
+                  >
+                    <path d="M9.707 3.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L5 6.586l3.293-3.293a1 1 0 011.414 0z" />
+                  </svg>
+                </span>
+              </span>
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-500">
+            Если включено, ваш профиль будет виден только подписчикам
+          </p>
         </div>
 
         {/* Gallery Section */}
@@ -670,7 +665,7 @@ function RouteComponent() {
       </div>
 
       {/* Floating Save Button */}
-      <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white/95 backdrop-blur-sm p-4">
+      <div className="pb-safe fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white/95 p-4 backdrop-blur-sm">
         <button
           disabled={isDisabled || updateProfile.isPending || togglePrivate.isPending}
           onClick={handleUpdateProfile}
@@ -682,7 +677,12 @@ function RouteComponent() {
           )}
         >
           <span className="relative inline-block">
-            <span className={cn("transition-opacity duration-300", (updateProfile.isPending || togglePrivate.isPending) && "opacity-0")}>
+            <span
+              className={cn(
+                "transition-opacity duration-300",
+                (updateProfile.isPending || togglePrivate.isPending) && "opacity-0",
+              )}
+            >
               Сохранить изменения
             </span>
             {(updateProfile.isPending || togglePrivate.isPending) && (

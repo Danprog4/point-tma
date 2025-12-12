@@ -416,6 +416,8 @@ function RouteComponent() {
   };
 
   console.log(notifications, "notifications");
+  console.log(filteredNotifications, "filteredNotifications");
+  console.log({ userIds, meetingIds, activeFilter }, "debug info");
 
   return (
     <div

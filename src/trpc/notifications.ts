@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import { notificationTable } from "~/db/schema";
@@ -8,6 +8,7 @@ export const notificationsRouter = createTRPCRouter({
   getNotifications: procedure.query(async ({ ctx }) => {
     const notifications = await db.query.notificationTable.findMany({
       where: eq(notificationTable.toUserId, ctx.userId),
+      orderBy: [desc(notificationTable.createdAt)],
     });
 
     return notifications;

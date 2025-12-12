@@ -9,7 +9,9 @@ import { Logo } from "./Icons/Logo";
 export const Header = () => {
   const navigate = useNavigate();
   const trpc = useTRPC();
-  const { data: notifications } = useQuery(trpc.main.getNotifications.queryOptions());
+  const { data: notifications } = useQuery(
+    trpc.main.getAllUserNotifications.queryOptions(),
+  );
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
 
   const activeNotifications = notifications?.filter(

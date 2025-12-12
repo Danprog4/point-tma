@@ -47,6 +47,10 @@ function Home() {
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: notifications } = useQuery(
+    trpc.notifications.getNotifications.queryOptions(),
+  );
+  console.log(notifications, "notifications");
   const { data: popularEvents } = useQuery(trpc.main.getPopularEvents.queryOptions());
   const { data: newEvents } = useQuery(trpc.event.getNewEvents.queryOptions());
   const { data, isLoading } = useQuery(trpc.main.getHello.queryOptions());

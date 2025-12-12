@@ -50,6 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             limit: 10,
           }),
         );
+        queryClient.prefetchQuery(trpc.notifications.getNotifications.queryOptions());
         queryClient.prefetchQuery(trpc.main.getReviews.queryOptions());
         queryClient.prefetchQuery(trpc.main.getUsers.queryOptions());
         queryClient.prefetchQuery(trpc.event.getEvents.queryOptions());
@@ -57,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           trpc.meetings.getMeetings.queryOptions({ userId: data.id }),
         );
 
-        queryClient.setQueryData(trpc.main.getNotifications.queryKey(), []);
+        queryClient.setQueryData(trpc.main.getAllUserNotifications.queryKey(), []);
         queryClient.setQueryData(trpc.main.getUserFavorites.queryKey(), []);
         queryClient.setQueryData(trpc.main.getUserSubscribers.queryKey(), []);
       },

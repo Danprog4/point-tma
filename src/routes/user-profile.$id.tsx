@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import { toast } from "sonner";
 import { ComplaintDrawer } from "~/components/ComplaintDrawer";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { useScroll } from "~/components/hooks/useScroll";
@@ -101,6 +102,43 @@ function RouteComponent() {
       );
     }
   };
+
+  const { data: notifications } = useQuery(
+    trpc.main.getAllUserNotifications.queryOptions(),
+  );
+
+  const incomingPrivateRequest = useMemo(() => {
+    return notifications?.find(
+      (n) => n.type === "private_request" && n.fromUserId === user?.id && n.isRequest,
+    );
+  }, [notifications, user?.id]);
+
+  const acceptPrivateRequest = useMutation(
+    trpc.privateProfile.acceptRequest.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.main.getAllUserNotifications.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.privateProfile.checkAccess.queryKey(),
+        });
+        toast.success("Запрос принят");
+      },
+      onError: () => toast.error("Ошибка при принятии запроса"),
+    }),
+  );
+
+  const rejectPrivateRequest = useMutation(
+    trpc.privateProfile.rejectRequest.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.main.getAllUserNotifications.queryKey(),
+        });
+        toast.success("Запрос отклонен");
+      },
+      onError: () => toast.error("Ошибка при отклонении запроса"),
+    }),
+  );
 
   const { data: userMeetings } = useQuery(
     trpc.meetings.getMeetings.queryOptions({ userId: Number(id) }),
@@ -430,7 +468,7 @@ function RouteComponent() {
           {/* Fixed Header */}
           <div
             data-mobile={isMobile}
-            className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
+            className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-35"
           >
             <button
               onClick={() => (isMore ? setIsMore(false) : window.history.back())}
@@ -489,13 +527,44 @@ function RouteComponent() {
                     пользователя
                   </p>
 
-                  <button
-                    disabled={accessData?.hasAccess}
-                    onClick={handleSendPrivateRequest}
-                    className="flex w-full max-w-xs items-center justify-center rounded-2xl bg-gray-900 py-4 font-bold text-white shadow-xl transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {accessData?.isPending ? <>Отменить запрос</> : "Отправить запрос"}
-                  </button>
+                  {incomingPrivateRequest ? (
+                    <div className="flex w-full max-w-xs gap-3">
+                      <button
+                        onClick={() =>
+                          acceptPrivateRequest.mutate({
+                            requesterId: incomingPrivateRequest.fromUserId!,
+                          })
+                        }
+                        disabled={
+                          acceptPrivateRequest.isPending || rejectPrivateRequest.isPending
+                        }
+                        className="flex-1 rounded-2xl bg-violet-600 py-4 font-bold text-white shadow-xl transition-transform active:scale-95 disabled:opacity-70"
+                      >
+                        Принять
+                      </button>
+                      <button
+                        onClick={() =>
+                          rejectPrivateRequest.mutate({
+                            requesterId: incomingPrivateRequest.fromUserId!,
+                          })
+                        }
+                        disabled={
+                          acceptPrivateRequest.isPending || rejectPrivateRequest.isPending
+                        }
+                        className="flex-1 rounded-2xl bg-gray-100 py-4 font-bold text-gray-900 transition-transform active:scale-95 disabled:opacity-70"
+                      >
+                        Отклонить
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      disabled={accessData?.hasAccess}
+                      onClick={handleSendPrivateRequest}
+                      className="flex w-full max-w-xs items-center justify-center rounded-2xl bg-gray-900 py-4 font-bold text-white shadow-xl transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {accessData?.isPending ? <>Отменить запрос</> : "Отправить запрос"}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -681,26 +750,61 @@ function RouteComponent() {
                           </div>
 
                           <div className="flex w-full gap-3">
-                            <button
-                              className="flex flex-1 items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 font-medium text-white transition-transform active:scale-95"
-                              onClick={() => handleSubscribe()}
-                            >
-                              {isSubscribed ? "Отписаться" : "Подписаться"}
-                            </button>
-                            {isFriend ? (
-                              <button
-                                className="rounded-2xl bg-red-50 px-4 py-3 font-medium text-red-600 transition-transform active:scale-95"
-                                onClick={() => handleRemoveFriend()}
-                              >
-                                Удалить
-                              </button>
+                            {incomingPrivateRequest ? (
+                              <div className="flex w-full gap-3">
+                                <button
+                                  onClick={() =>
+                                    acceptPrivateRequest.mutate({
+                                      requesterId: incomingPrivateRequest.fromUserId!,
+                                    })
+                                  }
+                                  disabled={
+                                    acceptPrivateRequest.isPending ||
+                                    rejectPrivateRequest.isPending
+                                  }
+                                  className="flex-1 rounded-2xl bg-violet-600 px-4 py-3 font-medium text-white transition-transform active:scale-95 disabled:opacity-70"
+                                >
+                                  Принять запрос
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    rejectPrivateRequest.mutate({
+                                      requesterId: incomingPrivateRequest.fromUserId!,
+                                    })
+                                  }
+                                  disabled={
+                                    acceptPrivateRequest.isPending ||
+                                    rejectPrivateRequest.isPending
+                                  }
+                                  className="flex-1 rounded-2xl bg-gray-100 px-4 py-3 font-medium text-gray-900 transition-transform active:scale-95 disabled:opacity-70"
+                                >
+                                  Отклонить
+                                </button>
+                              </div>
                             ) : (
-                              <button
-                                className="flex flex-1 items-center justify-center rounded-2xl bg-gray-900 px-4 py-3 font-medium text-white transition-transform active:scale-95"
-                                onClick={() => handleSendRequest()}
-                              >
-                                {isRequest ? "Отменить запрос" : "Добавить в друзья"}
-                              </button>
+                              <>
+                                <button
+                                  className="flex flex-1 items-center justify-center rounded-2xl bg-violet-600 px-4 py-3 font-medium text-white transition-transform active:scale-95"
+                                  onClick={() => handleSubscribe()}
+                                >
+                                  {isSubscribed ? "Отписаться" : "Подписаться"}
+                                </button>
+                                {isFriend ? (
+                                  <button
+                                    className="rounded-2xl bg-red-50 px-4 py-3 font-medium text-red-600 transition-transform active:scale-95"
+                                    onClick={() => handleRemoveFriend()}
+                                  >
+                                    Удалить
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="flex flex-1 items-center justify-center rounded-2xl bg-gray-900 px-4 py-3 font-medium text-white transition-transform active:scale-95"
+                                    onClick={() => handleSendRequest()}
+                                  >
+                                    {isRequest ? "Отменить запрос" : "Добавить в друзья"}
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>

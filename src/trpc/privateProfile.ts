@@ -3,7 +3,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
-  notificationsTable,
+  notificationTable,
   privateAccessRequestsTable,
   privateProfileAccessTable,
   subscriptionsTable,
@@ -104,7 +104,7 @@ export const privateProfileRouter = createTRPCRouter({
         requesterId: ctx.userId,
       });
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.targetUserId,
         type: "private_request",
@@ -134,12 +134,12 @@ export const privateProfileRouter = createTRPCRouter({
 
       // Remove the notification
       await db
-        .delete(notificationsTable)
+        .delete(notificationTable)
         .where(
           and(
-            eq(notificationsTable.fromUserId, ctx.userId),
-            eq(notificationsTable.toUserId, input.targetUserId),
-            eq(notificationsTable.type, "private_request"),
+            eq(notificationTable.fromUserId, ctx.userId),
+            eq(notificationTable.toUserId, input.targetUserId),
+            eq(notificationTable.type, "private_request"),
           ),
         );
 
@@ -184,20 +184,21 @@ export const privateProfileRouter = createTRPCRouter({
         );
 
       // 4. Send notification
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.requesterId,
         type: "private_request_accepted",
+        isRequest: false,
       });
 
       // Remove original request notification
       await db
-        .delete(notificationsTable)
+        .delete(notificationTable)
         .where(
           and(
-            eq(notificationsTable.toUserId, ctx.userId),
-            eq(notificationsTable.fromUserId, input.requesterId),
-            eq(notificationsTable.type, "private_request"),
+            eq(notificationTable.toUserId, ctx.userId),
+            eq(notificationTable.fromUserId, input.requesterId),
+            eq(notificationTable.type, "private_request"),
           ),
         );
 
@@ -222,20 +223,21 @@ export const privateProfileRouter = createTRPCRouter({
           ),
         );
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.requesterId,
         type: "private_request_rejected",
+        isRequest: false,
       });
 
       // Remove original request notification
       await db
-        .delete(notificationsTable)
+        .delete(notificationTable)
         .where(
           and(
-            eq(notificationsTable.toUserId, ctx.userId),
-            eq(notificationsTable.fromUserId, input.requesterId),
-            eq(notificationsTable.type, "private_request"),
+            eq(notificationTable.toUserId, ctx.userId),
+            eq(notificationTable.fromUserId, input.requesterId),
+            eq(notificationTable.type, "private_request"),
           ),
         );
 

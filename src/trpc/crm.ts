@@ -18,7 +18,7 @@ import {
   meetMessagesTable,
   meetParticipantsTable,
   meetTable,
-  notificationsTable,
+  notificationTable,
   ratingsUserTable,
   reviewsTable,
   sellingTable,
@@ -505,17 +505,17 @@ export const crmRouter = createTRPCRouter({
     }),
 
   // ===== УВЕДОМЛЕНИЯ =====
-  getNotifications: crmProcedure.query(async () => {
-    return await db.query.notificationsTable.findMany({
-      orderBy: [desc(notificationsTable.createdAt)],
+  getAllUserNotifications: crmProcedure.query(async () => {
+    return await db.query.notificationTable.findMany({
+      orderBy: [desc(notificationTable.createdAt)],
     });
   }),
 
   getNotification: crmProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const notification = await db.query.notificationsTable.findFirst({
-        where: eq(notificationsTable.id, Number(input.id)),
+      const notification = await db.query.notificationTable.findFirst({
+        where: eq(notificationTable.id, Number(input.id)),
       });
       if (!notification)
         throw new TRPCError({ code: "NOT_FOUND", message: "Notification not found" });
@@ -526,9 +526,9 @@ export const crmRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       await db
-        .update(notificationsTable)
+        .update(notificationTable)
         .set({ isRead: true })
-        .where(eq(notificationsTable.id, Number(input.id)));
+        .where(eq(notificationTable.id, Number(input.id)));
       return { success: true };
     }),
 

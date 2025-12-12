@@ -1,7 +1,7 @@
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { friendRequestsTable, notificationsTable } from "~/db/schema";
+import { friendRequestsTable, notificationTable } from "~/db/schema";
 import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
@@ -12,6 +12,27 @@ export const friendsRouter = createTRPCRouter({
     });
 
     return requests;
+  }),
+
+  getNotifications: procedure.query(async ({ ctx }) => {
+    const notifications = await db.query.notificationTable.findMany({
+      where: eq(notificationTable.fromUserId, ctx.userId),
+    });
+
+    return notifications;
+  }),
+
+  markNotificationsAsRead: procedure.mutation(async ({ ctx }) => {
+    await db
+      .update(notificationTable)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(notificationTable.toUserId, ctx.userId),
+          eq(notificationTable.isRead, false),
+        ),
+      );
+    return { success: true };
   }),
 
   getFriends: procedure
@@ -71,7 +92,7 @@ export const friendsRouter = createTRPCRouter({
         toUserId: input.userId,
       });
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.userId,
         type: "friend request",
@@ -103,12 +124,12 @@ export const friendsRouter = createTRPCRouter({
         );
 
       await db
-        .delete(notificationsTable)
+        .delete(notificationTable)
         .where(
           and(
-            eq(notificationsTable.fromUserId, ctx.userId),
-            eq(notificationsTable.toUserId, input.userId),
-            eq(notificationsTable.type, "friend request"),
+            eq(notificationTable.fromUserId, ctx.userId),
+            eq(notificationTable.toUserId, input.userId),
+            eq(notificationTable.type, "friend request"),
           ),
         );
       await logAction({

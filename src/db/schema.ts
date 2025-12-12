@@ -215,7 +215,7 @@ export const reviewsTable = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const notificationsTable = pgTable("notifications", {
+export const notificationTable = pgTable("notification", {
   id: serial("id").primaryKey(),
   toUserId: bigint("to_user_id", { mode: "number" }),
   fromUserId: bigint("from_user_id", { mode: "number" }),
@@ -463,8 +463,8 @@ export type Event = typeof eventsTable.$inferSelect;
 export type NewEvent = typeof eventsTable.$inferInsert;
 export type Review = typeof reviewsTable.$inferSelect;
 export type NewReview = typeof reviewsTable.$inferInsert;
-export type Notification = typeof notificationsTable.$inferSelect;
-export type NewNotification = typeof notificationsTable.$inferInsert;
+export type Notification = typeof notificationTable.$inferSelect;
+export type NewNotification = typeof notificationTable.$inferInsert;
 export type Complaint = typeof complaintsTable.$inferSelect;
 export type NewComplaint = typeof complaintsTable.$inferInsert;
 export type MeetParticipant = typeof meetParticipantsTable.$inferSelect;

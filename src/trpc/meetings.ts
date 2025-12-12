@@ -9,7 +9,7 @@ import {
   meetMessagesTable,
   meetParticipantsTable,
   meetTable,
-  notificationsTable,
+  notificationTable,
   usersTable,
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
@@ -197,6 +197,17 @@ export const meetingRouter = createTRPCRouter({
       }
     }),
 
+  getMeetingsByIds: procedure
+    .input(z.object({ ids: z.array(z.number()) }))
+    .query(async ({ ctx, input }) => {
+      if (input.ids.length === 0) return [];
+      const meetings = await db.query.meetTable.findMany({
+        where: inArray(meetTable.id, input.ids),
+      });
+
+      return meetings;
+    }),
+
   getMeetingsPagination: procedure
     .input(
       z.object({
@@ -317,7 +328,7 @@ export const meetingRouter = createTRPCRouter({
           isRequest: false,
         }));
 
-        await db.insert(notificationsTable).values(notificationRows);
+        await db.insert(notificationTable).values(notificationRows);
         await logAction({
           userId: ctx.userId,
           type: "meet_invite_send",
@@ -650,7 +661,7 @@ export const meetingRouter = createTRPCRouter({
         isRequest: true,
       });
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: user.id,
         toUserId: meet.userId,
         type: "meet request",
@@ -742,7 +753,7 @@ export const meetingRouter = createTRPCRouter({
         isRequest: true,
       });
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.toUserId,
         type: "meet request",
@@ -778,13 +789,13 @@ export const meetingRouter = createTRPCRouter({
         );
 
       await db
-        .delete(notificationsTable)
+        .delete(notificationTable)
         .where(
           and(
-            eq(notificationsTable.fromUserId, ctx.userId),
-            eq(notificationsTable.toUserId, input.toUserId),
-            eq(notificationsTable.type, "meet request"),
-            eq(notificationsTable.meetId, input.meetId),
+            eq(notificationTable.fromUserId, ctx.userId),
+            eq(notificationTable.toUserId, input.toUserId),
+            eq(notificationTable.type, "meet request"),
+            eq(notificationTable.meetId, input.meetId),
           ),
         );
       await logAction({

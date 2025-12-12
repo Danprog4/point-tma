@@ -43,7 +43,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
-    "drizzle-orm": "^0.44.2",
+    "drizzle-orm": "^0.45.1",
     "eruda": "^3.4.1",
     "framer-motion": "^12.23.12",
     "grammy": "^1.36.3",

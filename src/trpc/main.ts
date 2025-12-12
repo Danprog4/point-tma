@@ -12,7 +12,7 @@ import {
   friendRequestsTable,
   loggingTable,
   meetTable,
-  notificationsTable,
+  notificationTable,
   ratingsUserTable,
   reviewsTable,
   subscriptionsTable,
@@ -98,25 +98,86 @@ export const router = {
     return await getPopularEvents();
   }),
 
-  getNotifications: procedure.query(async ({ ctx }) => {
-    const notifications = await db.query.notificationsTable.findMany({
-      where: eq(notificationsTable.toUserId, ctx.userId),
-      orderBy: [desc(notificationsTable.createdAt), desc(notificationsTable.id)],
-    });
-
-    return notifications;
+  getAllUserNotifications: procedure.query(async ({ ctx }) => {
+    try {
+      const notifications = await db.query.notificationTable.findMany({
+        where: eq(notificationTable.fromUserId, ctx.userId),
+        orderBy: [desc(notificationTable.createdAt), desc(notificationTable.id)],
+      });
+      console.log(
+        `[getAllUserNotifications] Returning ${notifications.length} notifications from DB`,
+      );
+      return notifications;
+    } catch (error) {
+      console.error(`[getAllUserNotifications] Error:`, error);
+      throw error;
+    }
   }),
+
+  // getAllUserNotifications: procedure.query(async ({ ctx }) => {
+  //   const userId = Number(ctx.userId); // Ensure it's a number
+  //   console.log(`[getAllUserNotifications] User ID: ${userId}, type: ${typeof userId}`);
+
+  //   try {
+  //     // Get ALL notifications to see what's in the DB
+  //     const allNotifications = await db.query.notificationTable.findMany();
+  //     console.log(
+  //       `[getAllUserNotifications] TOTAL notifications in DB: ${allNotifications.length}`,
+  //     );
+
+  //     // Show all unique toUserId values in the DB
+  //     const uniqueToUserIds = [...new Set(allNotifications.map((n) => n.toUserId))];
+  //     console.log(`[getAllUserNotifications] Unique toUserId values in DB:`, uniqueToUserIds);
+
+  //     // Check if any match our user ID (using toUserId, not fromUserId)
+  //     const matchingNotifications = allNotifications.filter(
+  //       (n) => Number(n.toUserId) === userId,
+  //     );
+  //     console.log(
+  //       `[getAllUserNotifications] Notifications matching user ${userId} (filtered in JS by toUserId): ${matchingNotifications.length}`,
+  //       matchingNotifications,
+  //     );
+
+  //     // Query with explicit number conversion
+  //     const notifications = await db.query.notificationTable.findMany({
+  //       where: eq(notificationTable.toUserId, userId),
+  //       orderBy: [desc(notificationTable.createdAt), desc(notificationTable.id)],
+  //     });
+
+  //     console.log(
+  //       `[getAllUserNotifications] Found ${notifications.length} notifications for user ${userId} (via SQL):`,
+  //       notifications,
+  //     );
+
+  //     // Log what we're actually returning
+  //     const result = allNotifications;
+  //     console.log(
+  //       `[getAllUserNotifications] RETURNING ${result.length} notifications (allNotifications)`,
+  //     );
+  //     console.log(`[getAllUserNotifications] Result type:`, typeof result);
+  //     console.log(`[getAllUserNotifications] Result is array:`, Array.isArray(result));
+  //     console.log(
+  //       `[getAllUserNotifications] Result JSON:`,
+  //       JSON.stringify(result.slice(0, 2), null, 2),
+  //     );
+
+  //     return result;
+  //   } catch (error) {
+  //     console.error(`[getAllUserNotifications] Error:`, error);
+  //     throw error;
+  //   }
+  // }),
 
   readNotification: procedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       await db
-        .update(notificationsTable)
+        .update(notificationTable)
         .set({ isRead: true })
         .where(
           and(
-            eq(notificationsTable.id, input.id),
-            eq(notificationsTable.toUserId, ctx.userId),
+            eq(notificationTable.id, input.id),
+            eq(notificationTable.toUserId, ctx.userId),
           ),
         );
 
@@ -128,6 +189,17 @@ export const router = {
 
     return users;
   }),
+
+  getUsersByIds: procedure
+    .input(z.object({ ids: z.array(z.number()) }))
+    .query(async ({ ctx, input }) => {
+      if (input.ids.length === 0) return [];
+      const users = await db.query.usersTable.findMany({
+        where: inArray(usersTable.id, input.ids),
+      });
+
+      return users;
+    }),
 
   getUserById: procedure
     .input(z.object({ id: z.string() }))
@@ -489,7 +561,7 @@ export const router = {
         meetId: input.meetId,
       });
 
-      await db.insert(notificationsTable).values({
+      await db.insert(notificationTable).values({
         fromUserId: ctx.userId,
         toUserId: input.userId,
         type: "like",
@@ -1244,12 +1316,12 @@ export const router = {
 
   markNotificationsAsRead: procedure.mutation(async ({ ctx }) => {
     await db
-      .update(notificationsTable)
+      .update(notificationTable)
       .set({ isRead: true })
       .where(
         and(
-          eq(notificationsTable.toUserId, ctx.userId),
-          eq(notificationsTable.isRead, false),
+          eq(notificationTable.toUserId, ctx.userId),
+          eq(notificationTable.isRead, false),
         ),
       );
     return { success: true };

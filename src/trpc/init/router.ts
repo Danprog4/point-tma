@@ -6,6 +6,7 @@ import { friendsRouter } from "../friends";
 import { router } from "../main";
 import { marketRouter } from "../market";
 import { meetingRouter } from "../meetings";
+import { notificationsRouter } from "../notifications";
 import { privateProfileRouter } from "../privateProfile";
 import { tasksRouter } from "../tasks";
 import { tradesRouter } from "../trades";
@@ -17,6 +18,7 @@ export const trpcRouter = createTRPCRouter({
   auth: authRouter,
   event: eventRouter,
   friends: friendsRouter,
+  notifications: notificationsRouter,
   meetings: meetingRouter,
   yandex: yandexRouter,
   cases: casesRouter,

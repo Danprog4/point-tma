@@ -514,7 +514,7 @@ function RouteComponent() {
                 <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
 
                 {/* Content Centered */}
-                <div className="absolute inset-0 flex flex-col items-center justify-start px-6 pt-20 text-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-start px-6 pt-40 text-center">
                   <div className="mb-6 rounded-full bg-white/40 p-6 shadow-lg backdrop-blur-xl">
                     <Lock className="h-12 w-12 text-gray-900" />
                   </div>

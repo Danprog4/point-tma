@@ -142,6 +142,8 @@ function RouteComponent() {
 
   const isDisabled = (user?.balance ?? 0) < (event?.price ?? 0) * count;
 
+  const isSeries = event?.isSeries;
+
   console.log(selectedUser, "selectedUser");
   console.log(ticket, "ticket");
 
@@ -266,7 +268,10 @@ function RouteComponent() {
   return (
     <div
       data-mobile={isMobile}
-      className="min-h-screen bg-[#FAFAFA] pb-8 data-[mobile=true]:pt-0"
+      className={cn(
+        "min-h-screen pb-8 data-[mobile=true]:pt-0",
+        isSeries ? "bg-[#FEF2F2]" : "bg-[#FAFAFA]",
+      )}
     >
       {isOpen ? (
         <>
@@ -391,15 +396,23 @@ function RouteComponent() {
               alt={event?.title ?? ""}
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            {isSeries && (
+              <div className="absolute inset-0 bg-red-950/10 mix-blend-multiply" />
+            )}
 
             <div className="absolute bottom-0 left-0 w-full p-6 pb-10">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mb-3 flex items-center gap-2"
+                className="mb-3 flex flex-wrap items-center gap-2"
               >
+                {isSeries && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-[10px] font-black tracking-wider text-white uppercase shadow-lg ring-2 ring-white">
+                    <span className="animate-pulse">🎃</span> Halloween Series
+                  </span>
+                )}
                 <span className="rounded-full border border-white/10 bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
                   {event?.category}
                 </span>
@@ -442,7 +455,18 @@ function RouteComponent() {
           </div>
 
           {/* Content Container with Overlap */}
-          <div className="relative z-10 -mt-6 min-h-[50vh] rounded-t-[32px] bg-[#FAFAFA] px-5 pt-8">
+          <div
+            className={cn(
+              "relative z-10 -mt-10 min-h-[50vh] rounded-t-[40px] px-5 pt-10",
+              isSeries ? "bg-[#FEF2F2]" : "bg-[#FAFAFA]",
+            )}
+          >
+            {isSeries && (
+              <div className="absolute inset-0 -z-10 overflow-hidden rounded-t-[40px]">
+                <div className="absolute top-0 left-1/4 h-64 w-64 bg-red-400/5 blur-3xl" />
+                <div className="absolute top-40 right-0 h-40 w-40 bg-orange-400/5 blur-3xl" />
+              </div>
+            )}
             {/* Tabs */}
             <div className="mb-6 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-gray-100">
               <div className="relative flex h-10 items-center">
@@ -484,12 +508,28 @@ function RouteComponent() {
                   exit={{ opacity: 0, y: -10 }}
                   className="flex flex-col gap-4"
                 >
-                  <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <h3 className="mb-3 text-lg font-bold text-gray-900">Описание</h3>
+                  <div
+                    className={cn(
+                      "rounded-3xl p-6 shadow-sm ring-1",
+                      isSeries
+                        ? "border-2 border-red-100 bg-white shadow-red-100/50 ring-red-50"
+                        : "bg-white ring-gray-100",
+                    )}
+                  >
+                    <h3
+                      className={cn(
+                        "mb-3 text-lg font-bold",
+                        isSeries ? "text-red-600" : "text-gray-900",
+                      )}
+                    >
+                      Описание
+                    </h3>
                     <div className="space-y-3 text-sm leading-relaxed text-gray-600">
-                      {event?.description
-                        ?.split(/\n{2,}/)
-                        .map((paragraph, idx) => <p key={idx}>{paragraph}</p>)}
+                      {event?.description?.split(/\n{2,}/).map((paragraph, idx) => (
+                        <p key={idx} className={cn(isSeries && "italic opacity-90")}>
+                          {paragraph}
+                        </p>
+                      ))}
                     </div>
                   </div>
 
@@ -523,8 +563,20 @@ function RouteComponent() {
                   )}
 
                   {event?.stages && event?.stages?.length > 0 ? (
-                    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                      <h3 className="mb-4 text-lg font-bold text-gray-900">
+                    <div
+                      className={cn(
+                        "rounded-3xl p-6 shadow-sm ring-1",
+                        isSeries
+                          ? "border-2 border-red-100 bg-white ring-red-50"
+                          : "bg-white ring-gray-100",
+                      )}
+                    >
+                      <h3
+                        className={cn(
+                          "mb-4 text-lg font-bold",
+                          isSeries ? "text-red-600" : "text-gray-900",
+                        )}
+                      >
                         Этапы квеста
                       </h3>
                       <div className="relative pl-2">
@@ -534,11 +586,25 @@ function RouteComponent() {
                             key={idx}
                             className="relative flex items-start gap-4 pb-6 last:pb-0"
                           >
-                            <div className="relative z-10 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white ring-4 ring-white">
+                            <div
+                              className={cn(
+                                "relative z-10 flex h-8 w-8 flex-none items-center justify-center rounded-full text-xs font-bold text-white ring-4 ring-white",
+                                isSeries
+                                  ? "bg-red-600 shadow-md shadow-red-200"
+                                  : "bg-gray-900",
+                              )}
+                            >
                               {idx + 1}
                             </div>
                             <div className="pt-1">
-                              <div className="font-bold text-gray-900">{stage.title}</div>
+                              <div
+                                className={cn(
+                                  "font-bold",
+                                  isSeries ? "text-red-900/80" : "text-gray-900",
+                                )}
+                              >
+                                {stage.title}
+                              </div>
                               <div className="mt-1 text-sm text-gray-500">
                                 {stage.desc}
                               </div>
@@ -553,7 +619,12 @@ function RouteComponent() {
                       {event?.quests?.map((quest) => (
                         <div
                           key={quest.id}
-                          className="rounded-3xl bg-white p-2 shadow-sm ring-1 ring-gray-100"
+                          className={cn(
+                            "rounded-3xl p-2 shadow-sm ring-1",
+                            isSeries
+                              ? "border-2 border-red-100 bg-white ring-red-50"
+                              : "bg-white ring-gray-100",
+                          )}
                         >
                           <QuestCard quest={quest as any} isNavigable={true} />
                         </div>
@@ -562,10 +633,27 @@ function RouteComponent() {
                   )}
 
                   {/* Rewards Section */}
-                  <div className="rounded-3xl bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] p-6 text-white shadow-lg">
+                  <div
+                    className={cn(
+                      "rounded-3xl p-6 text-white shadow-lg",
+                      isSeries
+                        ? "border-2 border-red-400/30 bg-gradient-to-br from-red-700 to-red-900"
+                        : "bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a]",
+                    )}
+                  >
                     <div className="mb-6 flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-yellow-400" />
+                      <Sparkles
+                        className={cn(
+                          "h-5 w-5",
+                          isSeries ? "text-orange-400" : "text-yellow-400",
+                        )}
+                      />
                       <h3 className="text-lg font-bold">Награды</h3>
+                      {isSeries && (
+                        <span className="ml-auto rounded-lg bg-white/10 px-2 py-1 text-[10px] font-bold tracking-widest text-white/80 uppercase ring-1 ring-white/20">
+                          Exclusive Drop
+                        </span>
+                      )}
                     </div>
 
                     <div className="mb-6">

@@ -168,7 +168,7 @@ function RouteComponent() {
           {/* Top Navigation Bar */}
           <div
             className={`fixed top-0 left-0 z-20 flex w-full items-center justify-between px-4 py-3 transition-all duration-200 ${
-              isMobile ? "pt-12" : "pt-4"
+              isMobile ? "pt-28" : "pt-4"
             } ${page === "info" && !isMobile ? "bg-transparent" : "bg-white/80 shadow-sm backdrop-blur-md"}`}
           >
             <button
@@ -212,7 +212,7 @@ function RouteComponent() {
           </div>
 
           {/* Spacer for fixed header */}
-          <div className={`${isMobile ? "h-28" : "h-20"} shrink-0`} />
+          <div className={`${isMobile ? "h-48" : "h-20"} shrink-0`} />
 
           {/* Tabs - Segmented Control */}
           <div className="sticky top-[calc(var(--header-height,60px))] z-10 px-4 pb-4">

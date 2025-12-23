@@ -346,7 +346,7 @@ function RouteComponent() {
                         <div className="mt-1 flex items-center justify-center gap-2 text-sm font-medium text-gray-500">
                           <span>г. {user?.city}</span>
                           <span>•</span>
-                          <span>{userAge} лет</span>
+                          <span>{userAge}</span>
                           {user?.sex === "male" ? (
                             <Mars className="h-4 w-4 text-blue-500" />
                           ) : (

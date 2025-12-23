@@ -297,7 +297,7 @@ function Home() {
             <div className="group relative h-[280px] w-full overflow-hidden rounded-[32px] shadow-2xl shadow-gray-200">
               <video
                 src="https://cdn.pixabay.com/video/2022/03/16/110945-689949688_large.mp4"
-                className="pointer-events-none absolute top-0 left-0 z-[-1] h-full w-full object-cover transition-transform select-none group-hover:scale-105"
+                className="pointer-events-none absolute top-0 left-0 z-0 h-full w-full object-cover transition-transform select-none group-hover:scale-105"
                 autoPlay
                 muted
                 loop

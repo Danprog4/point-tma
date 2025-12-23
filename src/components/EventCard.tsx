@@ -22,10 +22,15 @@ export const EventCard = ({ event }: { event: any }) => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-90" />
           </>
         )}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {event.category && (
-            <span className="inline-block rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+            <span className="inline-block rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md ring-1 ring-white/20">
               {event.category}
+            </span>
+          )}
+          {event.isSeries && (
+            <span className="inline-block animate-pulse rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg ring-1 ring-white/30">
+              🔥 Серия
             </span>
           )}
         </div>

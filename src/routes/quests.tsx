@@ -12,6 +12,7 @@ import { Coin } from "~/components/Icons/Coin";
 import { WhiteFilter } from "~/components/Icons/WhiteFilter";
 import { More } from "~/components/More";
 import { QuestCard } from "~/components/QuestCard";
+import { SeriesQuestCard } from "~/components/SeriesQuestCard";
 import { useQuestsFilter } from "~/config/questsFilter";
 import { filterEvent, sortEvents } from "~/hooks/useFilteredEvents";
 import { usePlatform } from "~/hooks/usePlatform";
@@ -298,58 +299,55 @@ function RouteComponent() {
             </>
           )} */}
 
-          {/* Series Quests */}
-          {/* {questsData?.some((q) => q.isSeries) && (
-            <>
-              {questsData
-                .filter((quest) => quest.isSeries)
-                .map((quest) => (
-                  <div key={quest.id} className="px-1">
-                    <SeriesQuestCard quest={quest as any} />
-                  </div>
-                ))}
-            </>
-          )} */}
-
           {/* All Quests List */}
           <div className="space-y-4 px-5">
             {sortedQuests.length > 0 ? (
-              sortedQuests.map((quest) => (
-                <div key={quest.id} className="space-y-2">
-                  <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                    {quest.date}
-                  </h3>
-                  <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
-                    <QuestCard quest={quest as any} isNavigable={true} />
-                    <div className="border-t border-gray-50 px-4 pb-4">
-                      <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
-                        {quest.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        {quest.hasAchievement ? (
-                          <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
-                            🏆 Достижение
-                          </span>
-                        ) : (
-                          <div />
-                        )}
-                        <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
-                          <span>+</span>
-                          <span>
-                            {(
-                              quest?.rewards?.find(
-                                (reward: any) => reward.type === "point",
-                              )?.value ?? 0
-                            ).toLocaleString()}
-                          </span>
-                          <span className="text-gray-500">points</span>
-                          <Coin />
+              sortedQuests.map((quest) => {
+                if (quest.isSeries) {
+                  return (
+                    <div key={quest.id} className="-mx-5">
+                      <SeriesQuestCard quest={quest as any} />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={quest.id} className="space-y-2">
+                    <h3 className="px-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                      {quest.date}
+                    </h3>
+                    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md">
+                      <QuestCard quest={quest as any} isNavigable={true} />
+                      <div className="border-t border-gray-50 px-4 pb-4">
+                        <p className="mb-4 line-clamp-2 pt-3 text-sm leading-relaxed text-gray-600">
+                          {quest.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          {quest.hasAchievement ? (
+                            <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100 ring-inset">
+                              🏆 Достижение
+                            </span>
+                          ) : (
+                            <div />
+                          )}
+                          <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-900 ring-1 ring-gray-200 ring-inset">
+                            <span>+</span>
+                            <span>
+                              {(
+                                quest?.rewards?.find(
+                                  (reward: any) => reward.type === "point",
+                                )?.value ?? 0
+                              ).toLocaleString()}
+                            </span>
+                            <span className="text-gray-500">points</span>
+                            <Coin />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="mb-4 text-6xl">😔</div>

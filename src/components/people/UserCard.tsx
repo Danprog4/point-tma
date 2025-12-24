@@ -139,13 +139,13 @@ export const UserCard = ({
                 <div
                   className={cn(
                     "h-2 w-2 rounded-full",
-                    user.isOnline
-                      ? "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"
+                    user.onlineStatus?.isOnline
+                      ? "animate-pulse bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
                       : "bg-gray-400",
                   )}
                 />
-                <span>{user.isOnline ? "Онлайн" : "Был(а) недавно"}</span>
-                {user.distance && (
+                <span>{user.onlineStatus?.label || "Был(а) давно"}</span>
+                {user.distance ? (
                   <>
                     <span className="opacity-60">•</span>
                     <div className="flex items-center gap-1">
@@ -153,7 +153,7 @@ export const UserCard = ({
                       <span>{user.distance} км</span>
                     </div>
                   </>
-                )}
+                ) : null}
               </div>
 
               {user.bio && (

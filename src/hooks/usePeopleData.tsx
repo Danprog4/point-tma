@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { calculateDistanceFromCoords } from "~/lib/utils/calculateDistance";
+import { getUserOnlineStatus } from "~/lib/utils/isOnline";
 import { useTRPC } from "~/trpc/init/react";
 
 export const usePeopleData = () => {
@@ -42,12 +43,13 @@ export const usePeopleData = () => {
     }
 
     return filteredUsers.map((u) => {
+      const onlineStatus = getUserOnlineStatus(u.lastLogin, u.lastLocationUpdate);
       if (!u.coordinates) {
-        return { ...u, distance: null };
+        return { ...u, distance: null, onlineStatus };
       }
 
       const distance = calculateDistanceFromCoords(userCoordinates, u.coordinates);
-      return { ...u, distance };
+      return { ...u, distance, onlineStatus };
     });
   };
 

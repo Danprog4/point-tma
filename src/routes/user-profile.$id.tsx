@@ -38,6 +38,7 @@ import { getImage } from "~/lib/utils/getImage";
 import { getImageUrl } from "~/lib/utils/getImageURL";
 import { getUserAge } from "~/lib/utils/getUserAge";
 import { getInterestLabel } from "~/lib/utils/interestLabels";
+import { getUserOnlineStatus } from "~/lib/utils/isOnline";
 import { useTRPC } from "~/trpc/init/react";
 import type { GroupedTicket } from "~/types/inventory";
 
@@ -725,7 +726,23 @@ function RouteComponent() {
                             <h2 className="text-2xl font-bold text-gray-900">
                               {user?.name} {user?.surname}
                             </h2>
-                            <div className="mt-1 flex items-center justify-center gap-2 text-sm font-medium text-gray-500">
+                            <div className="mt-1 flex items-center justify-center gap-1.5">
+                              {getUserOnlineStatus(
+                                user?.lastLogin,
+                                user?.lastLocationUpdate,
+                              ).isOnline && (
+                                <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                              )}
+                              <span className="text-xs font-medium text-gray-400">
+                                {
+                                  getUserOnlineStatus(
+                                    user?.lastLogin,
+                                    user?.lastLocationUpdate,
+                                  ).label
+                                }
+                              </span>
+                            </div>
+                            <div className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-gray-500">
                               <span>г. {user?.city}</span>
                               <span>•</span>
                               <span>{age}</span>

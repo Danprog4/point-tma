@@ -515,7 +515,7 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-43">
+          <div data-mobile={isMobile} className="h-full pt-20 data-[mobile=true]:pt-49">
             {isLocked ? (
               <div
                 data-mobile={isMobile}

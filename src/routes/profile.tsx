@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { shareURL } from "@telegram-apps/sdk";
 import {
   AlertTriangle,
   Award,
@@ -13,6 +14,7 @@ import {
   Package,
   Repeat2,
   Settings,
+  Share2,
   ShoppingBag,
   ShoppingCart,
   Star,
@@ -21,6 +23,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import PullToRefresh from "react-simple-pull-to-refresh";
+import { Blacklist } from "~/components/Blacklist";
 import { FullScreenPhoto } from "~/components/FullScreenPhoto";
 import { Header } from "~/components/Header";
 import { useScrollRestoration } from "~/components/hooks/useScrollRes";
@@ -57,6 +60,7 @@ function RouteComponent() {
   const trpc = useTRPC();
   const [isSubscribersPage, setIsSubscribersPage] = useState(false);
   const [isFriendsPage, setIsFriendsPage] = useState(false);
+  const [isBlacklistPage, setIsBlacklistPage] = useState(false);
   const [isTradesPage, setIsTradesPage] = useState(false);
   const [isWarningsBansOpen, setIsWarningsBansOpen] = useState(false);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
@@ -82,6 +86,20 @@ function RouteComponent() {
   const { data: questsData } = useQuery(
     trpc.event.getEventsByCategory.queryOptions({ category: "Квест" }),
   );
+
+  const link = useMemo((): string => {
+    return `https://t.me/pointTMA_bot/user-profile/${user?.id}?startapp=ref_${user?.id || ""}`;
+  }, [user?.id]);
+
+  const text = useMemo((): string => {
+    return `Поделись своим профилем в Golss!`;
+  }, []);
+
+  const handleShare = () => {
+    if (shareURL.isAvailable()) {
+      shareURL(link, text);
+    }
+  };
 
   const { data: warnings } = useQuery(trpc.main.getUserWarnings.queryOptions());
   const { data: bans } = useQuery(trpc.main.getUserBans.queryOptions());
@@ -174,6 +192,8 @@ function RouteComponent() {
             users={users}
           />
         </>
+      ) : isBlacklistPage ? (
+        <Blacklist onBack={() => setIsBlacklistPage(false)} />
       ) : isTradesPage ? (
         <MyTrades onBack={() => setIsTradesPage(false)} />
       ) : (
@@ -187,11 +207,19 @@ function RouteComponent() {
             {/* Header Section */}
             <div className="flex items-center justify-between px-5 py-4">
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">Профиль</h1>
-              <Link to="/profile-sett" preload="viewport">
-                <button className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90">
-                  <Settings className="h-6 w-6 text-gray-900" />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleShare}
+                  className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90"
+                >
+                  <Share2 className="h-6 w-6 text-gray-900" />
                 </button>
-              </Link>
+                <Link to="/profile-sett" preload="viewport">
+                  <button className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90">
+                    <Settings className="h-6 w-6 text-gray-900" />
+                  </button>
+                </Link>
+              </div>
             </div>
 
             {page === "info" && (

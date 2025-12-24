@@ -266,7 +266,7 @@ function RouteComponent() {
       {/* Header */}
       <div
         data-mobile={isMobile}
-        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-14"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl data-[mobile=true]:pt-28"
       >
         {isInvite ? (
           <button
@@ -323,7 +323,7 @@ function RouteComponent() {
       {/* Content */}
       <div
         className={cn(
-          "flex-1 px-0 pt-24 data-[mobile=true]:pt-36",
+          "flex-1 px-0 pt-24 data-[mobile=true]:pt-49",
           step === 4 && "pt-0 data-[mobile=true]:pt-0",
         )}
       >

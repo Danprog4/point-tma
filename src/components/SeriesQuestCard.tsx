@@ -36,11 +36,6 @@ export function SeriesQuestCard({ quest }: { quest: Quest }) {
 
         <div className="relative flex flex-col rounded-[22px] bg-white p-5">
           {/* Halloween Badge */}
-          <div className="absolute top-4 right-4 z-10">
-            <span className="flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-[10px] font-black tracking-wider text-white uppercase shadow-lg ring-2 ring-white">
-              <span className="animate-pulse">🎃</span> Special
-            </span>
-          </div>
 
           <div className="flex gap-4">
             <div className="relative h-28 w-24 flex-shrink-0 overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5">

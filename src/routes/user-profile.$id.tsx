@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import { shareURL } from "@telegram-apps/sdk";
 import {
   ArrowLeft,
   Brain,
@@ -10,6 +11,7 @@ import {
   Heart,
   Lock,
   Mars,
+  Share2,
   Star,
   Users,
   Venus,
@@ -361,6 +363,14 @@ function RouteComponent() {
 
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
 
+  const link = useMemo((): string => {
+    return `https://t.me/pointTMA_bot/user-profile/${user?.id}?startapp=ref_${user?.id || ""}`;
+  }, [user?.id]);
+
+  const text = useMemo((): string => {
+    return `Поделись профилем ${user?.name} ${user?.surname} в Golss!`;
+  }, [user?.name, user?.surname]);
+
   const {
     isComplaintOpen,
     setIsComplaintOpen,
@@ -450,6 +460,12 @@ function RouteComponent() {
   // Private Profile View Logic
   const isLocked = !accessData?.hasAccess && !isOwner && user?.isPrivate;
 
+  const handleShare = () => {
+    if (shareURL.isAvailable()) {
+      shareURL(link, text);
+    }
+  };
+
   return (
     <div>
       {isFriendsPage ? (
@@ -481,20 +497,20 @@ function RouteComponent() {
             </h1>
             <div className="flex w-10 items-center justify-center">
               {!isOwner && !isMore && !isLocked && (
-                <button
-                  onClick={handleComplaintAction}
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-90",
-                    isUserComplained
-                      ? "bg-red-50 text-red-500"
-                      : "text-gray-400 hover:bg-gray-100 hover:text-gray-600",
-                  )}
-                >
-                  <Flag
-                    className="h-5 w-5"
-                    fill={isUserComplained ? "currentColor" : "none"}
-                  />
-                </button>
+                <>
+                  <button
+                    onClick={handleShare}
+                    className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90"
+                  >
+                    <Share2 className="h-6 w-6 text-gray-900" />
+                  </button>
+                  <button
+                    onClick={handleComplaintAction}
+                    className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90"
+                  >
+                    <Flag className="h-6 w-6 text-gray-900" />
+                  </button>
+                </>
               )}
             </div>
           </div>

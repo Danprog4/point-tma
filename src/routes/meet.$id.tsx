@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { shareURL } from "@telegram-apps/sdk";
+import { ArrowLeft, Share2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Chat } from "~/components/Chat";
@@ -126,6 +127,20 @@ function RouteComponent() {
 
   const saveEventOrMeet = useMutation(trpc.main.saveEventOrMeet.mutationOptions());
 
+  const link = useMemo((): string => {
+    return `https://t.me/pointTMA_bot/meet/${id}?startapp=ref_${user?.id || ""}`;
+  }, [user?.id]);
+
+  const text = useMemo((): string => {
+    return `Поделись встречей ${meeting?.name} в Golss!`;
+  }, [meeting?.name]);
+
+  const handleShare = () => {
+    if (shareURL.isAvailable()) {
+      shareURL(link, text);
+    }
+  };
+
   const isSaved = user?.savedMeetsIds?.some((saved: any) => saved === Number(id));
 
   const handleSaveEventOrMeet = () => {
@@ -177,7 +192,9 @@ function RouteComponent() {
             >
               <ArrowLeft className="h-6 w-6" strokeWidth={2.5} />
             </button>
-            <h1 className={`text-lg font-bold text-gray-900 transition-opacity`}>
+            <h1
+              className={`absolute left-1/2 -translate-x-1/2 text-lg font-bold text-gray-900 transition-opacity`}
+            >
               {page === "chat"
                 ? "Чат"
                 : page === "participants"
@@ -186,27 +203,43 @@ function RouteComponent() {
             </h1>
             <div className="flex h-10 items-center justify-center">
               {isOwner ? (
-                <button
-                  onClick={() => {
-                    navigate({ to: "/meeting-edit", search: { meetId: id } });
-                  }}
-                  className="text-sm font-semibold text-[#9924FF] transition-colors hover:text-[#7a1bcc]"
-                >
-                  Изменить
-                </button>
+                <>
+                  <button
+                    onClick={handleShare}
+                    className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90"
+                  >
+                    <Share2 className="h-6 w-6 text-gray-900" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate({ to: "/meeting-edit", search: { meetId: id } });
+                    }}
+                    className="text-sm font-semibold text-[#9924FF] transition-colors hover:text-[#7a1bcc]"
+                  >
+                    Изменить
+                  </button>
+                </>
               ) : (
-                <button
-                  onClick={() => {
-                    if (isComplaint) {
-                      toast.error("Вы уже пожаловались на эту встречу");
-                      return;
-                    }
-                    setIsComplaintOpen(true);
-                  }}
-                  className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
-                >
-                  <ComplaintIcon />
-                </button>
+                <>
+                  <button
+                    onClick={handleShare}
+                    className="rounded-full p-2 transition-colors transition-transform hover:bg-gray-200 active:scale-90"
+                  >
+                    <Share2 className="h-6 w-6 text-gray-900" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (isComplaint) {
+                        toast.error("Вы уже пожаловались на эту встречу");
+                        return;
+                      }
+                      setIsComplaintOpen(true);
+                    }}
+                    className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                  >
+                    <ComplaintIcon />
+                  </button>
+                </>
               )}
             </div>
           </div>

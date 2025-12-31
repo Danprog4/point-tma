@@ -25,6 +25,8 @@ export const Navbar = () => {
     pathname.pathname === "/meetings" ||
     pathname.pathname === "/people" ||
     pathname.pathname === "/shop" ||
+    pathname.pathname === "/progress" ||
+    pathname.pathname === "/leaderboard" ||
     pathname.pathname === "/";
 
   useEffect(() => {

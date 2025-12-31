@@ -21,8 +21,8 @@ import {
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { calculateStreak } from "~/lib/utils/calculateStreak";
 import { getPopularEvents } from "~/lib/utils/getPopularEvents";
-import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
+import { giveXP, ActionType } from "~/systems/progression";
 import { procedure, publicProcedure } from "./init";
 export const router = {
   getHello: publicProcedure.query(() => {
@@ -73,15 +73,17 @@ export const router = {
         .where(eq(usersTable.id, ctx.userId));
     }
 
-    if (reward.type === "xp") {
-      await giveXps(ctx.userId, user, reward.value);
-    }
-
-    // Обновляем стрик И lastCheckIn
+    // Обновляем стрик И lastCheckIn перед начислением XP (нужно для множителя streak)
     await db
       .update(usersTable)
       .set({ checkInStreak: newStreak, lastCheckIn: now })
       .where(eq(usersTable.id, ctx.userId));
+
+    // Начисляем XP за daily check-in (автоматически учитывается streak множитель)
+    await giveXP({
+      userId: ctx.userId,
+      actionType: ActionType.DAILY_CHECKIN,
+    });
 
     return { streak: newStreak };
   }),

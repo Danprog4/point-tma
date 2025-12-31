@@ -1,12 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { xpForBuyCase } from "~/consts/levels-xp";
 import { db } from "~/db";
 import { casesTable, tasksProgressTable, usersTable } from "~/db/schema";
 import { getItem } from "~/lib/utils/getItem";
-import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
+import { giveXP, ActionType } from "~/systems/progression";
 import { createTRPCRouter, procedure } from "./init";
 
 export const casesRouter = createTRPCRouter({
@@ -95,7 +94,11 @@ export const casesRouter = createTRPCRouter({
         amount: caseData.price ?? null,
       });
 
-      await giveXps(ctx.userId, user, xpForBuyCase);
+      // Начисляем XP за покупку кейса
+      await giveXP({
+        userId: ctx.userId,
+        actionType: ActionType.CASE_BUY,
+      });
 
       // Обновляем прогресс задания "buy-case" если оно начато
       const existingTask = await db.query.tasksProgressTable.findFirst({
@@ -232,6 +235,12 @@ export const casesRouter = createTRPCRouter({
         caseId: input.caseId,
         eventId: input.eventId ?? (undefined as unknown as number | null),
         itemId: (reward as any).id ?? null,
+      });
+
+      // Начисляем XP за открытие кейса
+      await giveXP({
+        userId: ctx.userId,
+        actionType: ActionType.CASE_OPEN,
       });
 
       return {

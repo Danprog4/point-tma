@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { backendTasks } from "~/config/tasks";
 import { db } from "~/db";
 import { tasksProgressTable, usersTable } from "~/db/schema";
-import { giveXps } from "./giveXps";
+import { giveXP, ActionType } from "~/systems/progression";
 
 interface CheckTaskProps {
   userId: number;
@@ -51,8 +51,25 @@ export const checkTask = async ({ userId, taskId }: CheckTaskProps) => {
       })
       .where(eq(usersTable.id, userId));
 
-    // Выдаем награду: XP
-    await giveXps(userId, user, task?.reward?.xp || 0);
+    // Выдаем награду: XP (используем базовое действие, можно создать специальный ActionType.TASK_COMPLETE)
+    if (task?.reward?.xp && task.reward.xp > 0) {
+      // Определяем тип действия по taskId
+      let actionType = ActionType.QUEST_COMPLETE; // По умолчанию
+
+      if (taskId === "buy-case") {
+        actionType = ActionType.CASE_BUY;
+      } else if (taskId === "buy-event") {
+        actionType = ActionType.EVENT_BUY;
+      } else if (taskId === "meet") {
+        actionType = ActionType.MEET_CREATE;
+      }
+
+      await giveXP({
+        userId,
+        actionType,
+        isFirstTime: true, // Задания обычно делаются первый раз
+      });
+    }
 
     // Отмечаем задание выполненным
     await db

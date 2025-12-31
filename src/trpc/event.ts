@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { xpForBuyEvent, xpForEndQuest } from "~/consts/levels-xp";
 import { db } from "~/db";
 import {
   activeEventsTable,
@@ -11,9 +10,9 @@ import {
   usersTable,
 } from "~/db/schema";
 import { getNewEvents } from "~/lib/utils/getNewEvents";
-import { giveXps } from "~/lib/utils/giveXps";
 import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
+import { giveXP, ActionType, checkAchievements } from "~/systems/progression";
 import { createTRPCRouter, procedure, publicProcedure } from "./init";
 
 export const eventRouter = createTRPCRouter({
@@ -165,7 +164,46 @@ export const eventRouter = createTRPCRouter({
         eventType: eventData.category ?? input.name,
       });
 
-      await giveXps(ctx.userId, user, xpForEndQuest);
+      // Определяем тип квеста по редкости для начисления XP
+      let actionType = ActionType.QUEST_COMPLETE;
+      const rarity = (eventData as any).rarity;
+      if (rarity === "legendary") {
+        actionType = ActionType.QUEST_COMPLETE_LEGENDARY;
+      } else if (rarity === "epic") {
+        actionType = ActionType.QUEST_COMPLETE_EPIC;
+      } else if (rarity === "rare") {
+        actionType = ActionType.QUEST_COMPLETE_RARE;
+      }
+
+      // Начисляем XP с учётом множителей
+      const xpResult = await giveXP({
+        userId: ctx.userId,
+        actionType,
+      });
+
+      // Проверяем достижения
+      const newAchievements = await checkAchievements(ctx.userId);
+
+      // Уведомляем о повышении уровня
+      if (xpResult.leveledUp) {
+        const rewardsText = xpResult.rewards
+          .map((r) => `• ${r.description}`)
+          .join("\n");
+
+        await sendTelegram(
+          `🎉 Поздравляем!\n\nВы достигли *${xpResult.newLevel} уровня*!\n\n*Награды:*\n${rewardsText}`,
+          ctx.userId,
+          { parse_mode: "Markdown" }
+        );
+      }
+
+      // Уведомляем о новых достижениях
+      if (newAchievements.length > 0) {
+        await sendTelegram(
+          `🏆 Получено достижение${newAchievements.length > 1 ? "я" : ""}!\n\n${newAchievements.map((id) => `• ${id}`).join("\n")}`,
+          ctx.userId
+        );
+      }
     }),
 
   buyEvent: procedure
@@ -269,7 +307,11 @@ export const eventRouter = createTRPCRouter({
         amount: eventData.price ? eventData.price * input.count : null,
       });
 
-      await giveXps(ctx.userId, user, xpForBuyEvent);
+      // Начисляем XP за покупку события
+      await giveXP({
+        userId: ctx.userId,
+        actionType: ActionType.EVENT_BUY,
+      });
 
       const existingTask = await db.query.tasksProgressTable.findFirst({
         where: and(

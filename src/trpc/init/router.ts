@@ -8,6 +8,7 @@ import { marketRouter } from "../market";
 import { meetingRouter } from "../meetings";
 import { notificationsRouter } from "../notifications";
 import { privateProfileRouter } from "../privateProfile";
+import { progressionRouter } from "../progression";
 import { tasksRouter } from "../tasks";
 import { tradesRouter } from "../trades";
 import { yandexRouter } from "../yandex";
@@ -27,6 +28,7 @@ export const trpcRouter = createTRPCRouter({
   trades: tradesRouter,
   market: marketRouter,
   privateProfile: privateProfileRouter,
+  progression: progressionRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

@@ -15,6 +15,7 @@ import { Route as TasksImport } from './routes/tasks'
 import { Route as SkillsImport } from './routes/skills'
 import { Route as ShopImport } from './routes/shop'
 import { Route as QuestsImport } from './routes/quests'
+import { Route as ProgressImport } from './routes/progress'
 import { Route as ProfileSettImport } from './routes/profile-sett'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as PointsImport } from './routes/points'
@@ -24,6 +25,7 @@ import { Route as MyMeetingsImport } from './routes/my-meetings'
 import { Route as MeetingsImport } from './routes/meetings'
 import { Route as MeetingEditImport } from './routes/meeting-edit'
 import { Route as MarketImport } from './routes/market'
+import { Route as LeaderboardImport } from './routes/leaderboard'
 import { Route as InviteImport } from './routes/invite'
 import { Route as InventoryImport } from './routes/inventory'
 import { Route as HistoryImport } from './routes/history'
@@ -67,6 +69,12 @@ const ShopRoute = ShopImport.update({
 const QuestsRoute = QuestsImport.update({
   id: '/quests',
   path: '/quests',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProgressRoute = ProgressImport.update({
+  id: '/progress',
+  path: '/progress',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -121,6 +129,12 @@ const MeetingEditRoute = MeetingEditImport.update({
 const MarketRoute = MarketImport.update({
   id: '/market',
   path: '/market',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const LeaderboardRoute = LeaderboardImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -319,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteImport
       parentRoute: typeof rootRoute
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardImport
+      parentRoute: typeof rootRoute
+    }
     '/market': {
       id: '/market'
       path: '/market'
@@ -380,6 +401,13 @@ declare module '@tanstack/react-router' {
       path: '/profile-sett'
       fullPath: '/profile-sett'
       preLoaderRoute: typeof ProfileSettImport
+      parentRoute: typeof rootRoute
+    }
+    '/progress': {
+      id: '/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ProgressImport
       parentRoute: typeof rootRoute
     }
     '/quests': {
@@ -483,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
@@ -492,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
+  '/progress': typeof ProgressRoute
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
@@ -518,6 +548,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
@@ -527,6 +558,7 @@ export interface FileRoutesByTo {
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
+  '/progress': typeof ProgressRoute
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
@@ -554,6 +586,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/inventory': typeof InventoryRoute
   '/invite': typeof InviteRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/market': typeof MarketRoute
   '/meeting-edit': typeof MeetingEditRoute
   '/meetings': typeof MeetingsRoute
@@ -563,6 +596,7 @@ export interface FileRoutesById {
   '/points': typeof PointsRoute
   '/profile': typeof ProfileRoute
   '/profile-sett': typeof ProfileSettRoute
+  '/progress': typeof ProgressRoute
   '/quests': typeof QuestsRoute
   '/shop': typeof ShopRoute
   '/skills': typeof SkillsRoute
@@ -591,6 +625,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/leaderboard'
     | '/market'
     | '/meeting-edit'
     | '/meetings'
@@ -600,6 +635,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/profile-sett'
+    | '/progress'
     | '/quests'
     | '/shop'
     | '/skills'
@@ -625,6 +661,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/leaderboard'
     | '/market'
     | '/meeting-edit'
     | '/meetings'
@@ -634,6 +671,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/profile-sett'
+    | '/progress'
     | '/quests'
     | '/shop'
     | '/skills'
@@ -659,6 +697,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/inventory'
     | '/invite'
+    | '/leaderboard'
     | '/market'
     | '/meeting-edit'
     | '/meetings'
@@ -668,6 +707,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/profile-sett'
+    | '/progress'
     | '/quests'
     | '/shop'
     | '/skills'
@@ -695,6 +735,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   InventoryRoute: typeof InventoryRoute
   InviteRoute: typeof InviteRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   MarketRoute: typeof MarketRoute
   MeetingEditRoute: typeof MeetingEditRoute
   MeetingsRoute: typeof MeetingsRoute
@@ -704,6 +745,7 @@ export interface RootRouteChildren {
   PointsRoute: typeof PointsRoute
   ProfileRoute: typeof ProfileRoute
   ProfileSettRoute: typeof ProfileSettRoute
+  ProgressRoute: typeof ProgressRoute
   QuestsRoute: typeof QuestsRoute
   ShopRoute: typeof ShopRoute
   SkillsRoute: typeof SkillsRoute
@@ -730,6 +772,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   InventoryRoute: InventoryRoute,
   InviteRoute: InviteRoute,
+  LeaderboardRoute: LeaderboardRoute,
   MarketRoute: MarketRoute,
   MeetingEditRoute: MeetingEditRoute,
   MeetingsRoute: MeetingsRoute,
@@ -739,6 +782,7 @@ const rootRouteChildren: RootRouteChildren = {
   PointsRoute: PointsRoute,
   ProfileRoute: ProfileRoute,
   ProfileSettRoute: ProfileSettRoute,
+  ProgressRoute: ProgressRoute,
   QuestsRoute: QuestsRoute,
   ShopRoute: ShopRoute,
   SkillsRoute: SkillsRoute,
@@ -774,6 +818,7 @@ export const routeTree = rootRoute
         "/history",
         "/inventory",
         "/invite",
+        "/leaderboard",
         "/market",
         "/meeting-edit",
         "/meetings",
@@ -783,6 +828,7 @@ export const routeTree = rootRoute
         "/points",
         "/profile",
         "/profile-sett",
+        "/progress",
         "/quests",
         "/shop",
         "/skills",
@@ -830,6 +876,9 @@ export const routeTree = rootRoute
     "/invite": {
       "filePath": "invite.tsx"
     },
+    "/leaderboard": {
+      "filePath": "leaderboard.tsx"
+    },
     "/market": {
       "filePath": "market.tsx"
     },
@@ -856,6 +905,9 @@ export const routeTree = rootRoute
     },
     "/profile-sett": {
       "filePath": "profile-sett.tsx"
+    },
+    "/progress": {
+      "filePath": "progress.tsx"
     },
     "/quests": {
       "filePath": "quests.tsx"

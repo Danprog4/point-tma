@@ -19,6 +19,8 @@ import {
   ShoppingCart,
   Star,
   Target,
+  TrendingUp,
+  Trophy,
   Venus,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -600,6 +602,17 @@ function RouteComponent() {
                     </Link>
                     <div className="h-px bg-gray-50" />
                     <Link
+                      to="/progress"
+                      preload="viewport"
+                      onClick={() => saveScrollPosition("profile")}
+                    >
+                      <MenuItem
+                        icon={<TrendingUp className="h-5 w-5 text-violet-500" />}
+                        title="Прогресс"
+                      />
+                    </Link>
+                    <div className="h-px bg-gray-50" />
+                    <Link
                       to="/achievments"
                       preload="viewport"
                       onClick={() => saveScrollPosition("profile")}
@@ -607,6 +620,17 @@ function RouteComponent() {
                       <MenuItem
                         icon={<Award className="h-5 w-5 text-violet-500" />}
                         title="Достижения"
+                      />
+                    </Link>
+                    <div className="h-px bg-gray-50" />
+                    <Link
+                      to="/leaderboard"
+                      preload="viewport"
+                      onClick={() => saveScrollPosition("profile")}
+                    >
+                      <MenuItem
+                        icon={<Trophy className="h-5 w-5 text-violet-500" />}
+                        title="Лидерборд"
                       />
                     </Link>
                     <div className="h-px bg-gray-50" />

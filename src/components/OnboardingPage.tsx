@@ -363,7 +363,7 @@ export const OnboardingPage = () => {
           </div>
 
           <div className="overflow-hidden rounded-2xl bg-white">
-            <DatePicker2 value={birthday} setDate={setBirthday} />
+            <DatePicker2 value={birthday} setDate={setBirthday} mode="birthday" />
           </div>
 
           <textarea

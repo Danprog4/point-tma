@@ -569,7 +569,7 @@ function RouteComponent() {
             <div className="border-b border-gray-50">
               {/* DatePicker usually has its own padding, wrapping it to match style */}
               <div className="p-0">
-                <DatePicker2 value={birthday} setDate={setBirthday} />
+                <DatePicker2 value={birthday} setDate={setBirthday} mode="birthday" />
               </div>
             </div>
             <div className="p-4">

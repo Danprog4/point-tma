@@ -401,7 +401,7 @@ function RouteComponent() {
               <div className="absolute inset-0 bg-red-950/10 mix-blend-multiply" />
             )}
 
-            <div className="absolute bottom-0 left-0 w-full p-6 pb-10">
+            <div className="absolute bottom-0 left-0 w-full p-6 pb-14">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

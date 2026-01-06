@@ -10,12 +10,36 @@ export function useMeetPage(meetId: number) {
   const trpc = useTRPC();
   const qc = useQueryClient();
 
-  // Base data
-  const { data: users } = useQuery(trpc.main.getUsers.queryOptions());
+  // Current user (already cached from AuthProvider)
   const { data: user } = useQuery(trpc.main.getUser.queryOptions());
+
+  // Fetch only the specific meeting by ID
+  const { data: meeting } = useQuery(
+    trpc.meetings.getMeetingById.queryOptions({ id: meetId }),
+  );
+
+  // Collect all user IDs we need to fetch
+  const userIdsToFetch = useMemo(() => {
+    const ids = new Set<number>();
+    if (meeting?.userId) ids.add(meeting.userId);
+    if (meeting?.participantsIds) {
+      meeting.participantsIds.forEach((id: any) => {
+        const numId = Number(id);
+        if (numId) ids.add(numId);
+      });
+    }
+    return Array.from(ids);
+  }, [meeting?.userId, meeting?.participantsIds]);
+
+  // Fetch only needed users
+  const { data: users } = useQuery({
+    ...trpc.main.getUsersByIds.queryOptions({ ids: userIdsToFetch }),
+    enabled: userIdsToFetch.length > 0,
+  });
+
+  // These queries are lightweight or needed for functionality
   const { data: friends } = useQuery(trpc.friends.getFriends.queryOptions());
   const { data: complaints } = useQuery(trpc.main.getComplaints.queryOptions());
-  const { data: meetingsData } = useQuery(trpc.meetings.getMeetings.queryOptions());
   const { data: chatMessages } = useQuery(
     trpc.meetings.getMessages.queryOptions({ meetId }),
   );
@@ -23,19 +47,11 @@ export function useMeetPage(meetId: number) {
     trpc.meetings.getParticipants.queryOptions(),
   );
 
-  // Meeting with organizer attached
-  const meetingsWithEvents = useMemo(() => {
-    return meetingsData?.map((m) => ({
-      ...m,
-      organizer: users?.find((u) => u.id === m.userId),
-    }));
-  }, [meetingsData, users]);
+  // Organizer from users list
+  const organizer = useMemo(() => {
+    return users?.find((u) => u.id === meeting?.userId);
+  }, [users, meeting?.userId]);
 
-  const meeting = useMemo(() => {
-    return meetingsWithEvents?.find((m) => m.id === meetId);
-  }, [meetingsWithEvents, meetId]);
-
-  const organizer = meeting?.organizer;
   const isOwner = organizer?.id === user?.id;
 
   const isParticipant = useMemo(() => {
@@ -61,22 +77,28 @@ export function useMeetPage(meetId: number) {
     return complaints?.some((c) => c.meetId === meeting?.id && c.fromUserId === user?.id);
   }, [complaints, meeting?.id, user?.id]);
 
-  // Ratings
-  const { data: userRating } = useQuery(
-    trpc.main.getUserRating.queryOptions({ meetId: meeting?.id! }),
-  );
-  const { data: meetRating } = useQuery(
-    trpc.main.getMeetRating.queryOptions({ meetId: meeting?.id! }),
-  );
+  // Ratings - only fetch when meeting is loaded
+  const { data: userRating } = useQuery({
+    ...trpc.main.getUserRating.queryOptions({ meetId: meeting?.id! }),
+    enabled: !!meeting?.id,
+  });
+  const { data: meetRating } = useQuery({
+    ...trpc.main.getMeetRating.queryOptions({ meetId: meeting?.id! }),
+    enabled: !!meeting?.id,
+  });
 
-  // Requests/Invites helper
+  // Requests/Invites helper - pass meeting as array for compatibility
+  const meetingsForRequests = useMemo(
+    () => (meeting ? [meeting] : []),
+    [meeting],
+  );
   const {
     pendingInvitesForMeet: invitesForUser,
     pendingRequestsForMeet: filteredRequests,
     sentInvitesForMeet: invitedUsers,
     accept,
     decline,
-  } = useRequests(user?.id, meetingsData || [], users || [], meetId);
+  } = useRequests(user?.id, meetingsForRequests, users || [], meetId);
 
   const isInvited = invitesForUser.length > 0;
 
@@ -159,17 +181,18 @@ export function useMeetPage(meetId: number) {
       qc.setQueryData(trpc.meetings.getRequests.queryKey(), (old: any) =>
         (old || []).filter((r: any) => r.meetId !== meeting.id),
       );
-      qc.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
-        (old || []).map((r: any) =>
-          r.id === meeting.id
+      // Update the specific meeting cache
+      qc.setQueryData(
+        trpc.meetings.getMeetingById.queryKey({ id: meeting.id }),
+        (old: any) =>
+          old
             ? {
-                ...r,
-                participantsIds: (r.participantsIds || []).filter(
+                ...old,
+                participantsIds: (old.participantsIds || []).filter(
                   (p: any) => p !== user?.id,
                 ),
               }
-            : r,
-        ),
+            : old,
       );
     } else {
       joinMeeting.mutate({ id: meeting.id });
@@ -188,10 +211,9 @@ export function useMeetPage(meetId: number) {
 
   const handleEndMeeting = () => {
     endMeeting.mutate({ id: meeting?.id! });
-    qc.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
-      (old || []).map((m: any) =>
-        m.id === meeting?.id ? { ...m, isCompleted: true } : m,
-      ),
+    qc.setQueryData(
+      trpc.meetings.getMeetingById.queryKey({ id: meeting?.id! }),
+      (old: any) => (old ? { ...old, isCompleted: true } : old),
     );
   };
 
@@ -228,15 +250,17 @@ export function useMeetPage(meetId: number) {
     qc.setQueryData(trpc.meetings.getParticipants.queryKey(), (old: any) =>
       (old || []).filter((p: any) => p.toUserId !== userId),
     );
-    qc.setQueryData(trpc.meetings.getMeetings.queryKey(), (old: any) =>
-      (old || []).map((m: any) =>
-        m.id === meeting?.id
+    qc.setQueryData(
+      trpc.meetings.getMeetingById.queryKey({ id: meeting.id }),
+      (old: any) =>
+        old
           ? {
-              ...m,
-              participantsIds: (m.participantsIds || []).filter((p: any) => p !== userId),
+              ...old,
+              participantsIds: (old.participantsIds || []).filter(
+                (p: any) => p !== userId,
+              ),
             }
-          : m,
-      ),
+          : old,
     );
   };
 

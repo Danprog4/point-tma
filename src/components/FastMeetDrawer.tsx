@@ -153,8 +153,8 @@ export default function FastMeetDrawer({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[100] mt-24 flex h-[85vh] flex-col rounded-t-[20px] bg-white">
+        <Drawer.Overlay className="fixed inset-0 z-[1000002] bg-black/40" />
+        <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[1000003] mt-24 flex h-[85vh] flex-col rounded-t-[20px] bg-white">
           {/* Header */}
           <div className="flex items-center justify-between p-4 pb-2">
             <ArrowLeft className="h-6 w-6 text-transparent" />

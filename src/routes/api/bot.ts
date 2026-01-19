@@ -45,20 +45,24 @@ bot.on("message:text", async (ctx) => {
       });
 
       if (tgUser) {
-        // TG user exists → link supabaseId to them and merge data
+        // TG user exists → merge data
+        const newBalance = (tgUser.balance ?? 0) + (mobileUser.balance ?? 0);
+        const newXp = (tgUser.xp ?? 0) + (mobileUser.xp ?? 0);
+
+        // Delete mobile user FIRST (to free up the supabase_id)
+        if (mobileUser.id !== telegramId) {
+          await db.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
+        }
+
+        // Now update TG user with supabaseId
         await db
           .update(usersTable)
           .set({
             supabaseId: supabaseId,
-            balance: (tgUser.balance ?? 0) + (mobileUser.balance ?? 0),
-            xp: (tgUser.xp ?? 0) + (mobileUser.xp ?? 0),
+            balance: newBalance,
+            xp: newXp,
           })
           .where(eq(usersTable.id, telegramId));
-
-        // Delete mobile user (different record)
-        if (mobileUser.id !== telegramId) {
-          await db.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
-        }
       } else {
         // TG user doesn't exist → create new with telegram id and mobile data
         await db.insert(usersTable).values({

@@ -1,14 +1,21 @@
 import { getEvent, setCookie } from "@tanstack/react-start/server";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { TRPCError, TRPCRouterRecord } from "@trpc/server";
-import { eq } from "drizzle-orm";
-import { SignJWT } from "jose";
+import { eq, and, gt } from "drizzle-orm";
+import { jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { db } from "~/db";
-import { usersTable } from "~/db/schema";
+import { linkCodesTable, usersTable } from "~/db/schema";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { giveXP, ActionType } from "~/systems/progression";
-import { publicProcedure } from "./init";
+import { mobileProcedure, publicProcedure } from "./init";
+
+const SUPABASE_JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+
+// Generate random 6-digit code
+function generateCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export const authRouter = {
   login: publicProcedure
@@ -152,4 +159,114 @@ export const authRouter = {
 
       return existingUser;
     }),
+
+  // Mobile login - links Supabase user to internal user
+  mobileLogin: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+        name: z.string().optional(),
+        email: z.string().optional(),
+        photoUrl: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      let payload;
+      try {
+        const result = await jwtVerify(input.token, SUPABASE_JWT_SECRET);
+        payload = result.payload;
+      } catch (error) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid Supabase token",
+        });
+      }
+
+      if (!payload.sub) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid token payload",
+        });
+      }
+
+      const supabaseId = payload.sub;
+
+      // Check if user with this supabaseId already exists
+      const existingUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.supabaseId, supabaseId),
+      });
+
+      if (existingUser) {
+        // Update last login
+        await db
+          .update(usersTable)
+          .set({ lastLogin: new Date() })
+          .where(eq(usersTable.id, existingUser.id));
+
+        return existingUser;
+      }
+
+      // Create new user with supabaseId
+      // Generate a unique numeric ID for the new user
+      const maxIdResult = await db.query.usersTable.findFirst({
+        orderBy: (users, { desc }) => [desc(users.id)],
+      });
+      const newId = (maxIdResult?.id ?? 0) + 1;
+
+      const newUser = await db
+        .insert(usersTable)
+        .values({
+          id: newId,
+          supabaseId,
+          name: input.name || null,
+          email: input.email || null,
+          photoUrl: input.photoUrl || null,
+          phone: null,
+          bio: null,
+          interests: null,
+          city: null,
+          inventory: [],
+          balance: 0,
+          birthday: null,
+          surname: null,
+          sex: null,
+          photo: null,
+          gallery: [],
+          isOnboarded: false,
+          lastLogin: new Date(),
+        })
+        .returning();
+
+      return newUser[0];
+    }),
+
+  // Generate link code for mobile user to link Telegram account
+  generateLinkCode: mobileProcedure.mutation(async ({ ctx }) => {
+    const supabaseId = ctx.supabaseId;
+
+    // Delete any existing codes for this user
+    await db.delete(linkCodesTable).where(eq(linkCodesTable.supabaseId, supabaseId));
+
+    // Generate unique code
+    let code = generateCode();
+    let attempts = 0;
+    while (attempts < 10) {
+      const existing = await db.query.linkCodesTable.findFirst({
+        where: eq(linkCodesTable.code, code),
+      });
+      if (!existing) break;
+      code = generateCode();
+      attempts++;
+    }
+
+    // Save code with 15 min expiration
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await db.insert(linkCodesTable).values({
+      code,
+      supabaseId,
+      expiresAt,
+    });
+
+    return { code, expiresAt };
+  }),
 } satisfies TRPCRouterRecord;

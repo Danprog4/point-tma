@@ -12,6 +12,7 @@ import {
 
 export const usersTable = pgTable("users", {
   id: bigint("id", { mode: "number" }).primaryKey(),
+  supabaseId: varchar("supabase_id", { length: 36 }).unique(),
   referrerId: bigint("referrerId", { mode: "number" }),
   photoUrl: varchar("photoUrl", { length: 255 }),
   name: varchar("name", { length: 255 }),
@@ -433,6 +434,14 @@ export const privateAccessRequestsTable = pgTable(
   }),
 );
 
+export const linkCodesTable = pgTable("link_codes", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 6 }).notNull().unique(),
+  supabaseId: varchar("supabase_id", { length: 36 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -482,3 +491,6 @@ export type PrivateProfileAccess = typeof privateProfileAccessTable.$inferSelect
 export type NewPrivateProfileAccess = typeof privateProfileAccessTable.$inferInsert;
 export type PrivateAccessRequest = typeof privateAccessRequestsTable.$inferSelect;
 export type NewPrivateAccessRequest = typeof privateAccessRequestsTable.$inferInsert;
+
+export type LinkCode = typeof linkCodesTable.$inferSelect;
+export type NewLinkCode = typeof linkCodesTable.$inferInsert;

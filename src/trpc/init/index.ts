@@ -103,7 +103,10 @@ const mobileAuthMiddleware = middleware(async ({ ctx, next }) => {
   const event = getEvent();
   const authHeader = event.headers.get("Authorization");
 
+  console.log("[mobileAuth] Starting auth check");
+
   if (!authHeader?.startsWith("Bearer ")) {
+    console.log("[mobileAuth] No Bearer token found");
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Mobile auth required",
@@ -112,7 +115,9 @@ const mobileAuthMiddleware = middleware(async ({ ctx, next }) => {
 
   const token = authHeader.slice(7);
   try {
+    console.log("[mobileAuth] Verifying JWT with JWKS...");
     const { payload } = await jwtVerify(token, SUPABASE_JWKS);
+    console.log("[mobileAuth] JWT verified, sub:", payload.sub);
 
     if (!payload.sub) {
       throw new TRPCError({
@@ -125,10 +130,12 @@ const mobileAuthMiddleware = middleware(async ({ ctx, next }) => {
       where: eq(usersTable.supabaseId, payload.sub),
     });
 
+    console.log("[mobileAuth] User lookup result:", user ? `found id=${user.id}` : "NOT FOUND");
+
     if (!user) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "User not found",
+        code: "NOT_FOUND",
+        message: "User not found. Call mobileLogin first to register.",
       });
     }
 
@@ -141,6 +148,7 @@ const mobileAuthMiddleware = middleware(async ({ ctx, next }) => {
     });
   } catch (error) {
     if (error instanceof TRPCError) throw error;
+    console.log("[mobileAuth] JWT verification failed:", error);
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Invalid Supabase JWT token",

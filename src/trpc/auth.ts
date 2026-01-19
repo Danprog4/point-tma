@@ -2,7 +2,7 @@ import { getEvent, setCookie } from "@tanstack/react-start/server";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { TRPCError, TRPCRouterRecord } from "@trpc/server";
 import { eq, and, gt } from "drizzle-orm";
-import { jwtVerify, SignJWT } from "jose";
+import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { db } from "~/db";
 import { linkCodesTable, usersTable } from "~/db/schema";
@@ -10,7 +10,9 @@ import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { giveXP, ActionType } from "~/systems/progression";
 import { mobileProcedure, publicProcedure } from "./init";
 
-const SUPABASE_JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+// Supabase JWKS endpoint for verifying JWTs
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://dbyuvsgmthognoznrllh.supabase.co";
+const SUPABASE_JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 
 // Generate random 6-digit code
 function generateCode(): string {
@@ -173,7 +175,7 @@ export const authRouter = {
     .mutation(async ({ input }) => {
       let payload;
       try {
-        const result = await jwtVerify(input.token, SUPABASE_JWT_SECRET);
+        const result = await jwtVerify(input.token, SUPABASE_JWKS);
         payload = result.payload;
       } catch (error) {
         throw new TRPCError({

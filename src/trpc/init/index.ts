@@ -1,7 +1,7 @@
 import { getCookie, getEvent } from "@tanstack/react-start/server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import superjson from "superjson";
 
 import { db } from "../../db";
@@ -16,7 +16,10 @@ export const publicProcedure = t.procedure;
 export const middleware = t.middleware;
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-const SUPABASE_JWT_SECRET = new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!);
+
+// Supabase JWKS endpoint for verifying JWTs
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://dbyuvsgmthognoznrllh.supabase.co";
+const SUPABASE_JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 
 const authMiddleware = middleware(async ({ ctx, next }) => {
   const event = getEvent();
@@ -26,7 +29,7 @@ const authMiddleware = middleware(async ({ ctx, next }) => {
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
     try {
-      const { payload } = await jwtVerify(token, SUPABASE_JWT_SECRET);
+      const { payload } = await jwtVerify(token, SUPABASE_JWKS);
 
       if (!payload.sub) {
         throw new TRPCError({
@@ -109,7 +112,7 @@ const mobileAuthMiddleware = middleware(async ({ ctx, next }) => {
 
   const token = authHeader.slice(7);
   try {
-    const { payload } = await jwtVerify(token, SUPABASE_JWT_SECRET);
+    const { payload } = await jwtVerify(token, SUPABASE_JWKS);
 
     if (!payload.sub) {
       throw new TRPCError({

@@ -2,7 +2,7 @@ import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { eq, and, gt } from "drizzle-orm";
 import { Bot, webhookCallback } from "grammy";
 import { db } from "~/db";
-import { linkCodesTable, usersTable } from "~/db/schema";
+import { linkCodesTable, telegramLinksTable, usersTable } from "~/db/schema";
 
 const bot = new Bot(process.env.PROD_BOT_TOKEN!);
 
@@ -16,87 +16,132 @@ bot.on("message:text", async (ctx) => {
     const telegramId = ctx.from.id;
 
     try {
-      // Find the link code (not expired)
-      const linkRequest = await db.query.linkCodesTable.findFirst({
-        where: and(
-          eq(linkCodesTable.code, code),
-          gt(linkCodesTable.expiresAt, new Date())
-        ),
-      });
-
-      if (!linkRequest) {
-        return ctx.reply("❌ Код не найден или истёк. Запросите новый код в приложении.");
-      }
-
-      const supabaseId = linkRequest.supabaseId;
-
-      // Find mobile user by supabaseId
-      const mobileUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.supabaseId, supabaseId),
-      });
-
-      if (!mobileUser) {
-        return ctx.reply("❌ Мобильный аккаунт не найден.");
-      }
-
-      // Check if TG user exists
-      const tgUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.id, telegramId),
-      });
-
-      if (tgUser) {
-        // TG user exists → merge data
-        const newBalance = (tgUser.balance ?? 0) + (mobileUser.balance ?? 0);
-        const newXp = (tgUser.xp ?? 0) + (mobileUser.xp ?? 0);
-
-        // Delete mobile user FIRST (to free up the supabase_id)
-        if (mobileUser.id !== telegramId) {
-          await db.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
-        }
-
-        // Now update TG user with supabaseId
-        await db
-          .update(usersTable)
-          .set({
-            supabaseId: supabaseId,
-            balance: newBalance,
-            xp: newXp,
-          })
-          .where(eq(usersTable.id, telegramId));
-      } else {
-        // TG user doesn't exist → create new with telegram id and mobile data
-        await db.insert(usersTable).values({
-          id: telegramId,
-          supabaseId: supabaseId,
-          name: mobileUser.name,
-          email: mobileUser.email,
-          phone: mobileUser.phone,
-          bio: mobileUser.bio,
-          photoUrl: mobileUser.photoUrl,
-          photo: mobileUser.photo,
-          gallery: mobileUser.gallery,
-          interests: mobileUser.interests,
-          city: mobileUser.city,
-          birthday: mobileUser.birthday,
-          sex: mobileUser.sex,
-          balance: mobileUser.balance,
-          xp: mobileUser.xp,
-          level: mobileUser.level,
-          inventory: mobileUser.inventory,
-          isOnboarded: mobileUser.isOnboarded,
-          lastLogin: new Date(),
+      await db.transaction(async (tx) => {
+        // Find the link code (not expired)
+        const linkRequest = await tx.query.linkCodesTable.findFirst({
+          where: and(
+            eq(linkCodesTable.code, code),
+            gt(linkCodesTable.expiresAt, new Date()),
+          ),
         });
 
-        // Delete old mobile user record
-        await db.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
-      }
+        if (!linkRequest) {
+          throw new Error("LINK_CODE_NOT_FOUND");
+        }
 
-      // Delete used code
-      await db.delete(linkCodesTable).where(eq(linkCodesTable.code, code));
+        const supabaseId = linkRequest.supabaseId;
+
+        // Explicit one-to-one mapping guard: one Telegram -> one Supabase.
+        const linkByTelegram = await tx.query.telegramLinksTable.findFirst({
+          where: eq(telegramLinksTable.telegramId, telegramId),
+        });
+
+        if (linkByTelegram && linkByTelegram.supabaseId !== supabaseId) {
+          throw new Error("TELEGRAM_ALREADY_LINKED_TO_ANOTHER_SUPABASE");
+        }
+
+        // Explicit one-to-one mapping guard: one Supabase -> one Telegram.
+        const linkBySupabase = await tx.query.telegramLinksTable.findFirst({
+          where: eq(telegramLinksTable.supabaseId, supabaseId),
+        });
+
+        if (linkBySupabase && linkBySupabase.telegramId !== telegramId) {
+          throw new Error("SUPABASE_ALREADY_LINKED_TO_ANOTHER_TELEGRAM");
+        }
+
+        // Find mobile user by supabaseId
+        const mobileUser = await tx.query.usersTable.findFirst({
+          where: eq(usersTable.supabaseId, supabaseId),
+        });
+
+        if (!mobileUser) {
+          throw new Error("MOBILE_USER_NOT_FOUND");
+        }
+
+        // Check if TG user exists
+        const tgUser = await tx.query.usersTable.findFirst({
+          where: eq(usersTable.id, telegramId),
+        });
+
+        if (tgUser) {
+          // Prevent Telegram account takeover across Supabase users.
+          if (tgUser.supabaseId && tgUser.supabaseId !== supabaseId) {
+            throw new Error("TELEGRAM_ALREADY_LINKED_TO_ANOTHER_SUPABASE");
+          }
+
+          if (mobileUser.id !== telegramId) {
+            const newBalance = (tgUser.balance ?? 0) + (mobileUser.balance ?? 0);
+            const newXp = (tgUser.xp ?? 0) + (mobileUser.xp ?? 0);
+
+            await tx.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
+
+            await tx
+              .update(usersTable)
+              .set({
+                supabaseId,
+                balance: newBalance,
+                xp: newXp,
+                lastLogin: new Date(),
+              })
+              .where(eq(usersTable.id, telegramId));
+          } else {
+            await tx
+              .update(usersTable)
+              .set({
+                supabaseId,
+                lastLogin: new Date(),
+              })
+              .where(eq(usersTable.id, telegramId));
+          }
+        } else {
+          // Recreate user under Telegram id.
+          const newTelegramUser = {
+            ...mobileUser,
+            id: telegramId,
+            supabaseId,
+            lastLogin: new Date(),
+          };
+
+          await tx.delete(usersTable).where(eq(usersTable.id, mobileUser.id));
+          await tx.insert(usersTable).values(newTelegramUser);
+        }
+
+        await tx
+          .insert(telegramLinksTable)
+          .values({
+            telegramId,
+            supabaseId,
+            updatedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: telegramLinksTable.telegramId,
+            set: {
+              supabaseId,
+              updatedAt: new Date(),
+            },
+          });
+
+        // Delete used code
+        await tx.delete(linkCodesTable).where(eq(linkCodesTable.code, code));
+      });
 
       return ctx.reply("✅ Аккаунты успешно связаны! Теперь вы можете входить и с Telegram, и с мобильного приложения.");
     } catch (error) {
       console.error("Link accounts error:", error);
+      if (error instanceof Error) {
+        if (error.message === "LINK_CODE_NOT_FOUND") {
+          return ctx.reply("❌ Код не найден или истёк. Запросите новый код в приложении.");
+        }
+        if (error.message === "MOBILE_USER_NOT_FOUND") {
+          return ctx.reply("❌ Мобильный аккаунт не найден.");
+        }
+        if (error.message === "TELEGRAM_ALREADY_LINKED_TO_ANOTHER_SUPABASE") {
+          return ctx.reply("❌ Этот Telegram уже привязан к другому аккаунту. Используйте другой Telegram.");
+        }
+        if (error.message === "SUPABASE_ALREADY_LINKED_TO_ANOTHER_TELEGRAM") {
+          return ctx.reply("❌ К этому аккаунту уже привязан другой Telegram. Сначала отвяжите его.");
+        }
+      }
       return ctx.reply("❌ Произошла ошибка. Попробуйте ещё раз.");
     }
   }

@@ -442,6 +442,13 @@ export const linkCodesTable = pgTable("link_codes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const telegramLinksTable = pgTable("telegram_links", {
+  telegramId: bigint("telegram_id", { mode: "number" }).primaryKey(),
+  supabaseId: varchar("supabase_id", { length: 36 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -494,3 +501,6 @@ export type NewPrivateAccessRequest = typeof privateAccessRequestsTable.$inferIn
 
 export type LinkCode = typeof linkCodesTable.$inferSelect;
 export type NewLinkCode = typeof linkCodesTable.$inferInsert;
+
+export type TelegramLink = typeof telegramLinksTable.$inferSelect;
+export type NewTelegramLink = typeof telegramLinksTable.$inferInsert;

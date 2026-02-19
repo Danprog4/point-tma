@@ -1,18 +1,22 @@
 import { getEvent, setCookie } from "@tanstack/react-start/server";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { TRPCError, TRPCRouterRecord } from "@trpc/server";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { db } from "~/db";
-import { linkCodesTable, usersTable } from "~/db/schema";
+import { linkCodesTable, telegramLinksTable, usersTable } from "~/db/schema";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { giveXP, ActionType } from "~/systems/progression";
 import { mobileProcedure, publicProcedure } from "./init";
 
 // Supabase JWKS endpoint for verifying JWTs
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://dbyuvsgmthognoznrllh.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+if (!SUPABASE_URL) {
+  throw new Error("Missing SUPABASE_URL env var");
+}
 const SUPABASE_JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
+const MOBILE_USER_MAX_ID = 100_000_000;
 
 // Generate random 6-digit code
 function generateCode(): string {
@@ -34,7 +38,7 @@ export const authRouter = {
         validate(input.initData, process.env.BOT_TOKEN!, {
           expiresIn: 0,
         });
-      } catch (error) {
+      } catch {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid init data",
@@ -177,7 +181,7 @@ export const authRouter = {
       try {
         const result = await jwtVerify(input.token, SUPABASE_JWKS);
         payload = result.payload;
-      } catch (error) {
+      } catch {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Invalid Supabase token",
@@ -209,11 +213,18 @@ export const authRouter = {
       }
 
       // Create new user with supabaseId
-      // Generate a unique numeric ID for the new user
+      // Keep mobile ids in a non-Telegram range to avoid false "Telegram linked" heuristics.
       const maxIdResult = await db.query.usersTable.findFirst({
+        where: lt(usersTable.id, MOBILE_USER_MAX_ID),
         orderBy: (users, { desc }) => [desc(users.id)],
       });
       const newId = (maxIdResult?.id ?? 0) + 1;
+      if (newId >= MOBILE_USER_MAX_ID) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Mobile user id range exhausted",
+        });
+      }
 
       const newUser = await db
         .insert(usersTable)
@@ -241,6 +252,22 @@ export const authRouter = {
 
       return newUser[0];
     }),
+
+  getTelegramLinkStatus: mobileProcedure.query(async ({ ctx }) => {
+    const link = await db.query.telegramLinksTable.findFirst({
+      where: eq(telegramLinksTable.supabaseId, ctx.supabaseId),
+    });
+
+    return {
+      linked: Boolean(link),
+      telegramId: link?.telegramId ?? null,
+    };
+  }),
+
+  clearTelegramLink: mobileProcedure.mutation(async ({ ctx }) => {
+    await db.delete(telegramLinksTable).where(eq(telegramLinksTable.supabaseId, ctx.supabaseId));
+    return { success: true };
+  }),
 
   // Generate link code for mobile user to link Telegram account
   generateLinkCode: mobileProcedure.mutation(async ({ ctx }) => {

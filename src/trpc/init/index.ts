@@ -18,7 +18,10 @@ export const middleware = t.middleware;
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 // Supabase JWKS endpoint for verifying JWTs
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://dbyuvsgmthognoznrllh.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+if (!SUPABASE_URL) {
+  throw new Error("Missing SUPABASE_URL env var");
+}
 const SUPABASE_JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 
 const authMiddleware = middleware(async ({ ctx, next }) => {

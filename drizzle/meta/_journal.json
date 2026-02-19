@@ -15,6 +15,13 @@
       "when": 1768834658726,
       "tag": "0001_add-link-codes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771509600000,
+      "tag": "0002_add-telegram-links",
+      "breakpoints": true
     }
   ]
 }

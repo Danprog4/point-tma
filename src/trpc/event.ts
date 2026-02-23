@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
@@ -456,6 +456,40 @@ export const eventRouter = createTRPCRouter({
     });
     return events;
   }),
+
+  getEventsPagination: procedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z.number().nullish(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { limit, cursor } = input;
+
+      const events = await db.query.eventsTable.findMany({
+        where: cursor
+          ? and(
+              eq(eventsTable.isApproved, true),
+              eq(eventsTable.isReviewed, true),
+              lt(eventsTable.id, cursor),
+            )
+          : and(eq(eventsTable.isApproved, true), eq(eventsTable.isReviewed, true)),
+        orderBy: [desc(eventsTable.id)],
+        limit: limit + 1,
+      });
+
+      let nextCursor: number | undefined = undefined;
+      if (events.length > limit) {
+        const nextItem = events.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        items: events,
+        nextCursor,
+      };
+    }),
 
   getEventByTitle: procedure
     .input(z.object({ title: z.string() }))

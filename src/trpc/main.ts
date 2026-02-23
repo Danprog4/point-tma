@@ -192,6 +192,34 @@ export const router = {
     return users;
   }),
 
+  getUsersPagination: procedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z.number().nullish(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { limit, cursor } = input;
+
+      const users = await db.query.usersTable.findMany({
+        where: cursor ? lt(usersTable.id, cursor) : undefined,
+        orderBy: [desc(usersTable.id)],
+        limit: limit + 1,
+      });
+
+      let nextCursor: number | undefined = undefined;
+      if (users.length > limit) {
+        const nextItem = users.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        items: users,
+        nextCursor,
+      };
+    }),
+
   getUsersByIds: procedure
     .input(z.object({ ids: z.array(z.number()) }))
     .query(async ({ ctx, input }) => {

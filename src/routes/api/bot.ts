@@ -94,7 +94,7 @@ bot.on("message:text", async (ctx) => {
               .where(eq(usersTable.id, telegramId));
           }
         } else {
-          // Recreate user under Telegram id.
+          // Recreate user under Telegram id (Telegram becomes source of truth).
           const newTelegramUser = {
             ...mobileUser,
             id: telegramId,

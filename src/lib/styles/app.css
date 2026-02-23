@@ -141,6 +141,13 @@
   }
 }
 
+/* PullToRefresh fix for Android WebView */
+.ptr,
+.ptr__children {
+  height: auto !important;
+  overflow: visible !important;
+}
+
 /* Скрытие скроллбаров */
 .scrollbar-hidden {
   scrollbar-width: none; /* Firefox */

@@ -1,7 +1,7 @@
 import { getEvent, setCookie } from "@tanstack/react-start/server";
 import { parse, validate } from "@telegram-apps/init-data-node";
 import { TRPCError, TRPCRouterRecord } from "@trpc/server";
-import { eq, lt } from "drizzle-orm";
+import { eq, lt, sql } from "drizzle-orm";
 import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { db } from "~/db";
@@ -17,10 +17,29 @@ if (!SUPABASE_URL) {
 }
 const SUPABASE_JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`));
 const MOBILE_USER_MAX_ID = 100_000_000;
+const MOBILE_USER_ID_LOCK_KEY = 810_340_021;
 
 // Generate random 6-digit code
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function issueAuthCookie(userId: number) {
+  const token = await new SignJWT({ userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("1y")
+    .sign(new TextEncoder().encode(process.env.JWT_SECRET!));
+
+  const event = getEvent();
+  setCookie(event, "auth", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 365,
+    path: "/",
+  });
+
+  return token;
 }
 
 export const authRouter = {
@@ -59,24 +78,30 @@ export const authRouter = {
         });
       }
 
-      const token = await new SignJWT({ userId: telegramUser.id })
-        .setProtectedHeader({ alg: "HS256" })
-        .setIssuedAt()
-        .setExpirationTime("1y")
-        .sign(new TextEncoder().encode(process.env.JWT_SECRET!));
-
-      console.log(token, "token auth");
-
-      const event = getEvent();
-
-      setCookie(event, "auth", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 365,
-        path: "/",
+      const linkedTelegram = await db.query.telegramLinksTable.findFirst({
+        where: eq(telegramLinksTable.telegramId, telegramUser.id),
       });
 
-      console.log(event, "event auth");
+      if (linkedTelegram) {
+        const linkedUser = await db.query.usersTable.findFirst({
+          where: eq(usersTable.supabaseId, linkedTelegram.supabaseId),
+        });
+
+        if (linkedUser) {
+          const token = await issueAuthCookie(linkedUser.id);
+          console.log(token, "token auth");
+
+          await db
+            .update(usersTable)
+            .set({ lastLogin: new Date() })
+            .where(eq(usersTable.id, linkedUser.id));
+
+          return linkedUser;
+        }
+      }
+
+      const token = await issueAuthCookie(telegramUser.id);
+      console.log(token, "token auth");
 
       const existingUser = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, telegramUser.id),
@@ -196,61 +221,80 @@ export const authRouter = {
       }
 
       const supabaseId = payload.sub;
+      const now = new Date();
 
-      // Check if user with this supabaseId already exists
-      const existingUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.supabaseId, supabaseId),
-      });
-
-      if (existingUser) {
-        // Update last login
-        await db
-          .update(usersTable)
-          .set({ lastLogin: new Date() })
-          .where(eq(usersTable.id, existingUser.id));
-
-        return existingUser;
-      }
-
-      // Create new user with supabaseId
-      // Keep mobile ids in a non-Telegram range to avoid false "Telegram linked" heuristics.
-      const maxIdResult = await db.query.usersTable.findFirst({
-        where: lt(usersTable.id, MOBILE_USER_MAX_ID),
-        orderBy: (users, { desc }) => [desc(users.id)],
-      });
-      const newId = (maxIdResult?.id ?? 0) + 1;
-      if (newId >= MOBILE_USER_MAX_ID) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Mobile user id range exhausted",
+      return db.transaction(async (tx) => {
+        const existingUser = await tx.query.usersTable.findFirst({
+          where: eq(usersTable.supabaseId, supabaseId),
         });
-      }
 
-      const newUser = await db
-        .insert(usersTable)
-        .values({
-          id: newId,
-          supabaseId,
-          name: input.name || null,
-          email: input.email || null,
-          photoUrl: input.photoUrl || null,
-          phone: null,
-          bio: null,
-          interests: null,
-          city: null,
-          inventory: [],
-          balance: 0,
-          birthday: null,
-          surname: null,
-          sex: null,
-          photo: null,
-          gallery: [],
-          isOnboarded: false,
-          lastLogin: new Date(),
-        })
-        .returning();
+        if (existingUser) {
+          const [updatedUser] = await tx
+            .update(usersTable)
+            .set({ lastLogin: now })
+            .where(eq(usersTable.id, existingUser.id))
+            .returning();
 
-      return newUser[0];
+          return updatedUser ?? { ...existingUser, lastLogin: now };
+        }
+
+        // Serialize mobile id allocation to prevent duplicate id under concurrent requests.
+        await tx.execute(sql`select pg_advisory_xact_lock(${MOBILE_USER_ID_LOCK_KEY})`);
+
+        // Re-check after lock: another transaction may have already created this Supabase user.
+        const existingUserAfterLock = await tx.query.usersTable.findFirst({
+          where: eq(usersTable.supabaseId, supabaseId),
+        });
+
+        if (existingUserAfterLock) {
+          const [updatedUser] = await tx
+            .update(usersTable)
+            .set({ lastLogin: now })
+            .where(eq(usersTable.id, existingUserAfterLock.id))
+            .returning();
+
+          return updatedUser ?? { ...existingUserAfterLock, lastLogin: now };
+        }
+
+        // Keep mobile ids in a non-Telegram range to avoid false "Telegram linked" heuristics.
+        const maxIdResult = await tx.query.usersTable.findFirst({
+          where: lt(usersTable.id, MOBILE_USER_MAX_ID),
+          orderBy: (users, { desc }) => [desc(users.id)],
+        });
+        const newId = (maxIdResult?.id ?? 0) + 1;
+        if (newId >= MOBILE_USER_MAX_ID) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Mobile user id range exhausted",
+          });
+        }
+
+        const [newUser] = await tx
+          .insert(usersTable)
+          .values({
+            id: newId,
+            supabaseId,
+            name: input.name || null,
+            email: input.email || null,
+            photoUrl: input.photoUrl || null,
+            phone: null,
+            bio: null,
+            interests: null,
+            city: null,
+            inventory: [],
+            balance: 0,
+            birthday: null,
+            surname: null,
+            sex: null,
+            photo: null,
+            gallery: [],
+            isOnboarded: false,
+            lastLogin: now,
+          })
+          .returning();
+
+        return newUser;
+      });
     }),
 
   getTelegramLinkStatus: mobileProcedure.query(async ({ ctx }) => {

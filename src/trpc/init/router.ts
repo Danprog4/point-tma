@@ -2,6 +2,7 @@ import { authRouter } from "../auth";
 import { casesRouter } from "../cases";
 import { crmRouter } from "../crm";
 import { eventRouter } from "../event";
+import { faceVerificationRouter } from "../faceVerification";
 import { friendsRouter } from "../friends";
 import { router } from "../main";
 import { marketRouter } from "../market";
@@ -29,6 +30,7 @@ export const trpcRouter = createTRPCRouter({
   market: marketRouter,
   privateProfile: privateProfileRouter,
   progression: progressionRouter,
+  faceVerification: faceVerificationRouter,
 });
 
 export type TRPCRouter = typeof trpcRouter;

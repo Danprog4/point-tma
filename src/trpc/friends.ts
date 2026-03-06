@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "~/db";
 import { friendRequestsTable, notificationTable } from "~/db/schema";
 import { logAction } from "~/lib/utils/logger";
+import { ActionType, giveXP } from "~/systems/progression";
 import { createTRPCRouter, procedure } from "./init";
 
 export const friendsRouter = createTRPCRouter({
@@ -80,6 +81,17 @@ export const friendsRouter = createTRPCRouter({
             .update(friendRequestsTable)
             .set({ status: "accepted" })
             .where(eq(friendRequestsTable.id, existing.id));
+
+          await Promise.all([
+            giveXP({
+              userId: ctx.userId,
+              actionType: ActionType.FRIEND_ADD,
+            }),
+            giveXP({
+              userId: input.userId,
+              actionType: ActionType.FRIEND_ADD,
+            }),
+          ]);
 
           return { ...existing, status: "accepted" };
         }
@@ -180,6 +192,18 @@ export const friendsRouter = createTRPCRouter({
             eq(friendRequestsTable.toUserId, ctx.userId),
           ),
         );
+
+      await Promise.all([
+        giveXP({
+          userId: ctx.userId,
+          actionType: ActionType.FRIEND_ADD,
+        }),
+        giveXP({
+          userId: input.userId,
+          actionType: ActionType.FRIEND_ADD,
+        }),
+      ]);
+
       await logAction({
         userId: ctx.userId,
         type: "friend_request_accept",

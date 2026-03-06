@@ -14,6 +14,7 @@ import {
 } from "~/db/schema";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { logAction } from "~/lib/utils/logger";
+import { ActionType, giveXP } from "~/systems/progression";
 import { createTRPCRouter, procedure } from "./init";
 
 export const meetingRouter = createTRPCRouter({
@@ -174,6 +175,11 @@ export const meetingRouter = createTRPCRouter({
         type: "meet_create",
         meetId: meet.id,
         amount: reward ? reward * (participants ?? 0) : null,
+      });
+
+      await giveXP({
+        userId: ctx.userId,
+        actionType: ActionType.MEET_CREATE,
       });
 
       return meet;
@@ -895,6 +901,12 @@ export const meetingRouter = createTRPCRouter({
         meetId: input.meetId,
         itemId: participantRow.id,
       });
+
+      await giveXP({
+        userId: participantIdToAdd,
+        actionType: ActionType.MEET_JOIN,
+      });
+
       return request;
     }),
 

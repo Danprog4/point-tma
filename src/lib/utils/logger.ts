@@ -11,7 +11,7 @@ type LogParams = {
   caseId?: number | null;
   itemId?: number | null;
   keyId?: number | null;
-  details?: Record<string, { from: unknown; to: unknown }> | null;
+  details?: unknown;
 };
 
 export async function logAction(params: LogParams): Promise<void> {
@@ -38,7 +38,9 @@ export async function logAction(params: LogParams): Promise<void> {
       caseId: caseId ?? null,
       itemId: itemId ?? null,
       keyId: keyId ?? null,
-      details: details ?? null,
+      details: (details ?? null) as
+        | Record<string, { from: unknown; to: unknown }>
+        | null,
     });
   } catch (error) {
     // Non-blocking: swallow logging errors to not affect main flow

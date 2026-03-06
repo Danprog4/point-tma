@@ -792,6 +792,11 @@ export const router = {
 
       await logAction({ userId: ctx.userId, type: "subscribe", itemId: input.userId });
 
+      await giveXP({
+        userId: ctx.userId,
+        actionType: ActionType.SUBSCRIBE,
+      });
+
       return user;
     }),
 

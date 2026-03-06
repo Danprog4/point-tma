@@ -76,6 +76,9 @@ export const usersTable = pgTable("users", {
   skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
   createdAt: timestamp("created_at").defaultNow(),
   isPrivate: boolean("is_private").default(false),
+  isFaceVerified: boolean("is_face_verified").default(false),
+  faceVerifiedAt: timestamp("face_verified_at"),
+  rekognitionFaceId: varchar("rekognition_face_id", { length: 255 }),
 });
 
 export const tasksProgressTable = pgTable("tasks_progress", {
@@ -449,6 +452,17 @@ export const telegramLinksTable = pgTable("telegram_links", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const faceVerificationAttemptsTable = pgTable("face_verification_attempts", {
+  id: serial("id").primaryKey(),
+  userId: bigint("user_id", { mode: "number" }),
+  status: varchar("status", { length: 64 }).notNull(),
+  reason: varchar("reason", { length: 255 }),
+  similarity: integer("similarity"),
+  similarUserId: bigint("similar_user_id", { mode: "number" }),
+  matchedFaceId: varchar("matched_face_id", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export all table types
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -504,3 +518,6 @@ export type NewLinkCode = typeof linkCodesTable.$inferInsert;
 
 export type TelegramLink = typeof telegramLinksTable.$inferSelect;
 export type NewTelegramLink = typeof telegramLinksTable.$inferInsert;
+
+export type FaceVerificationAttempt = typeof faceVerificationAttemptsTable.$inferSelect;
+export type NewFaceVerificationAttempt = typeof faceVerificationAttemptsTable.$inferInsert;

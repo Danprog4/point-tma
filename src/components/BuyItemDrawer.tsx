@@ -113,18 +113,12 @@ export default function BuyItemDrawer({
 
   const handleBuyItem = (
     sellingId: number,
-    sellerId: number,
-    eventId: number,
-    eventType: string,
     amount: number,
   ) => {
     setIsPurchasing(true);
 
     buyItem.mutate({
       sellingId,
-      sellerId,
-      eventId,
-      eventType,
       amount,
     });
   };
@@ -290,6 +284,7 @@ export default function BuyItemDrawer({
                   </label>
                   <div className="flex items-center gap-3">
                     <button
+                      type="button"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
                       className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300 disabled:opacity-50"
@@ -312,6 +307,7 @@ export default function BuyItemDrawer({
                       className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-center text-lg font-semibold focus:border-purple-600 focus:outline-none"
                     />
                     <button
+                      type="button"
                       onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                       disabled={quantity >= maxQuantity}
                       className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 text-lg font-bold text-gray-900 hover:bg-gray-300 disabled:opacity-50"
@@ -357,9 +353,6 @@ export default function BuyItemDrawer({
                 onClick={() =>
                   handleBuyItem(
                     selling.id,
-                    seller?.id!,
-                    selling.eventId!,
-                    selling.eventType!,
                     quantity,
                   )
                 }
@@ -387,6 +380,7 @@ export default function BuyItemDrawer({
               </motion.button>
             ) : (
               <button
+                type="button"
                 disabled
                 className="w-full rounded-2xl bg-gray-300 px-6 py-3 font-semibold text-gray-500"
               >

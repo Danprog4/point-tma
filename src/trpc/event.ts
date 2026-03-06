@@ -15,6 +15,21 @@ import { sendTelegram } from "~/lib/utils/sendTelegram";
 import { giveXP, ActionType, checkAchievements } from "~/systems/progression";
 import { createTRPCRouter, procedure, publicProcedure } from "./init";
 
+const normalizeTicketCategory = (value: string | null | undefined) =>
+  (value ?? "").trim().toLowerCase();
+
+const matchesTicketCategory = (
+  ticket: { name?: string; eventType?: string; eventId?: number },
+  eventId: number,
+  category: string,
+) => {
+  if (ticket.eventId !== eventId) return false;
+  const normalizedCategory = normalizeTicketCategory(category);
+  const normalizedTicketCategory =
+    normalizeTicketCategory(ticket.name) || normalizeTicketCategory(ticket.eventType);
+  return normalizedCategory.length > 0 && normalizedTicketCategory === normalizedCategory;
+};
+
 export const eventRouter = createTRPCRouter({
   getMyEvents: procedure.query(async ({ ctx }) => {
     const events = await db.query.activeEventsTable.findMany({
@@ -245,7 +260,7 @@ export const eventRouter = createTRPCRouter({
       }
 
       const relatedTickets = (user.inventory || []).filter(
-        (ticket) => ticket.eventId === input.id && ticket.name === input.name,
+        (ticket) => matchesTicketCategory(ticket, input.id, input.name),
       );
       const hasAnyTicket = relatedTickets.length > 0;
       const hasActiveTicket = relatedTickets.some((t) => t.isActive);
@@ -272,6 +287,7 @@ export const eventRouter = createTRPCRouter({
           type: "ticket",
           eventId: input.id,
           name: input.name,
+          eventType: input.name,
           isActive: false,
           id: Date.now() + index,
         })),
@@ -356,8 +372,7 @@ export const eventRouter = createTRPCRouter({
       const inactiveTicket = user.inventory?.find(
         (ticket) =>
           ticket.type === "ticket" &&
-          ticket.eventId === input.id &&
-          ticket.name === input.name &&
+          matchesTicketCategory(ticket, input.id, input.name) &&
           ticket.isActive === false,
       );
 
@@ -371,8 +386,7 @@ export const eventRouter = createTRPCRouter({
 
       const newInventory = user.inventory?.map((ticket) => {
         if (
-          ticket.eventId === input.id &&
-          ticket.name === input.name &&
+          matchesTicketCategory(ticket, input.id, input.name) &&
           ticket.id === inactiveTicket.id
         ) {
           return { ...ticket, isActive: true };

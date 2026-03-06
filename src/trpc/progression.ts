@@ -34,7 +34,17 @@ export const progressionRouter = createTRPCRouter({
       throw new Error("User not found");
     }
 
-    return getUserProgressStats(user);
+    await checkAchievements(ctx.userId);
+
+    const refreshedUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!refreshedUser) {
+      throw new Error("User not found");
+    }
+
+    return await getUserProgressStats(refreshedUser);
   }),
 
   /**
@@ -51,7 +61,7 @@ export const progressionRouter = createTRPCRouter({
         throw new Error("User not found");
       }
 
-      return getUserProgressStats(user);
+      return await getUserProgressStats(user);
     }),
 
   /**
@@ -81,7 +91,17 @@ export const progressionRouter = createTRPCRouter({
       throw new Error("User not found");
     }
 
-    return getUserAchievements(user);
+    await checkAchievements(ctx.userId);
+
+    const refreshedUser = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+    });
+
+    if (!refreshedUser) {
+      throw new Error("User not found");
+    }
+
+    return await getUserAchievements(refreshedUser);
   }),
 
   /**

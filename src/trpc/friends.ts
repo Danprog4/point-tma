@@ -1,7 +1,12 @@
+import { TRPCError } from "@trpc/server";
 import { and, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
-import { friendRequestsTable, notificationTable } from "~/db/schema";
+import { friendRequestsTable, notificationTable, usersTable } from "~/db/schema";
+import {
+  buildPrivacyViewerContext,
+  canSendFriendRequest,
+} from "~/lib/privacy";
 import { logAction } from "~/lib/utils/logger";
 import { ActionType, giveXP } from "~/systems/progression";
 import { createTRPCRouter, procedure } from "./init";
@@ -58,6 +63,23 @@ export const friendsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const targetUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
+      });
+
+      if (!targetUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const canSend = await canSendFriendRequest(viewerContext, targetUser);
+      if (!canSend) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This user does not accept friend requests",
+        });
+      }
+
       const existing = await db.query.friendRequestsTable.findFirst({
         where: or(
           and(

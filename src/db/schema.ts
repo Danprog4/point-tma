@@ -10,6 +10,24 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+export const privacyAudienceValues = ["everyone", "friends", "nobody"] as const;
+export type PrivacyAudience = (typeof privacyAudienceValues)[number];
+
+export const privacyProfileAccessValues = ["everyone", "friends", "request"] as const;
+export type PrivacyProfileAccess = (typeof privacyProfileAccessValues)[number];
+
+export type UserPrivacySettings = {
+  profileAccess: PrivacyProfileAccess;
+  discoverInPeople: PrivacyAudience;
+  discoverInSearch: PrivacyAudience;
+  meetingInvites: PrivacyAudience;
+  friendRequests: "everyone" | "nobody";
+  showActivity: PrivacyAudience;
+  showOnlineStatus: PrivacyAudience;
+  showCity: PrivacyAudience;
+  showAge: PrivacyAudience;
+};
+
 export const usersTable = pgTable("users", {
   id: bigint("id", { mode: "number" }).primaryKey(),
   supabaseId: varchar("supabase_id", { length: 36 }).unique(),
@@ -76,6 +94,7 @@ export const usersTable = pgTable("users", {
   skills: jsonb("skills").$type<Array<{ [skill: string]: number }>>(),
   createdAt: timestamp("created_at").defaultNow(),
   isPrivate: boolean("is_private").default(false),
+  privacySettings: jsonb("privacy_settings").$type<UserPrivacySettings>(),
   isFaceVerified: boolean("is_face_verified").default(false),
   faceVerifiedAt: timestamp("face_verified_at"),
   rekognitionFaceId: varchar("rekognition_face_id", { length: 255 }),

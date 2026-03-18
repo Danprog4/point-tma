@@ -18,6 +18,7 @@ import {
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
+import { buildPrivacyViewerContext, isBlockedBetween } from "~/lib/privacy";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { calculateStreak } from "~/lib/utils/calculateStreak";
 import { getPopularEvents } from "~/lib/utils/getPopularEvents";
@@ -777,11 +778,22 @@ export const router = {
       const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, ctx.userId),
       });
+      const targetUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
+      });
 
-      if (!user) {
+      if (!user || !targetUser) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "User not found",
+        });
+      }
+
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      if (isBlockedBetween(viewerContext, targetUser)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You cannot subscribe to this user",
         });
       }
 

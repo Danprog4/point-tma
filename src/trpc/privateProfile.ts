@@ -1,68 +1,141 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/db";
 import {
   notificationTable,
+  privacyAudienceValues,
+  privacyProfileAccessValues,
   privateAccessRequestsTable,
   privateProfileAccessTable,
   subscriptionsTable,
   usersTable,
 } from "~/db/schema";
+import {
+  buildPrivacyViewerContext,
+  canDiscoverUser,
+  canSendMeetingInvite,
+  clearPrivateAccessState,
+  getGrantedPrivateAccess,
+  getPendingPrivateRequests,
+  getProfileAccessState,
+  normalizePrivacySettings,
+  toPrivacyAwareUserPreview,
+} from "~/lib/privacy";
 import { logAction } from "~/lib/utils/logger";
 import { createTRPCRouter, procedure } from "./init";
 
+const privacySettingsSchema = z.object({
+  profileAccess: z.enum(privacyProfileAccessValues),
+  discoverInPeople: z.enum(privacyAudienceValues),
+  discoverInSearch: z.enum(privacyAudienceValues),
+  meetingInvites: z.enum(privacyAudienceValues),
+  friendRequests: z.enum(["everyone", "nobody"]),
+  showActivity: z.enum(privacyAudienceValues),
+  showOnlineStatus: z.enum(privacyAudienceValues),
+  showCity: z.enum(privacyAudienceValues),
+  showAge: z.enum(privacyAudienceValues),
+});
+
 export const privateProfileRouter = createTRPCRouter({
+  getSettings: procedure.query(async ({ ctx }) => {
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, ctx.userId),
+      columns: {
+        isPrivate: true,
+        privacySettings: true,
+      },
+    });
+
+    if (!user) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+    }
+
+    return normalizePrivacySettings(user.privacySettings, user.isPrivate);
+  }),
+
+  updateSettings: procedure
+    .input(z.object({ settings: privacySettingsSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+        columns: {
+          id: true,
+          isPrivate: true,
+          privacySettings: true,
+        },
+      });
+
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const previousSettings = normalizePrivacySettings(user.privacySettings, user.isPrivate);
+      const nextSettings = normalizePrivacySettings(input.settings, input.settings.profileAccess !== "everyone");
+
+      if (
+        previousSettings.profileAccess === "request" &&
+        nextSettings.profileAccess !== "request"
+      ) {
+        await clearPrivateAccessState(ctx.userId);
+      }
+
+      await db
+        .update(usersTable)
+        .set({
+          isPrivate: nextSettings.profileAccess !== "everyone",
+          privacySettings: nextSettings,
+        })
+        .where(eq(usersTable.id, ctx.userId));
+
+      await logAction({
+        userId: ctx.userId,
+        type: "privacy_settings_update",
+        details: {
+          from: previousSettings,
+          to: nextSettings,
+        },
+      });
+
+      return nextSettings;
+    }),
+
   togglePrivateMode: procedure
     .input(z.object({ isPrivate: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
+      const currentUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, ctx.userId),
+        columns: {
+          isPrivate: true,
+          privacySettings: true,
+        },
+      });
+
+      if (!currentUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const nextSettings = {
+        ...normalizePrivacySettings(currentUser.privacySettings, currentUser.isPrivate),
+        profileAccess: input.isPrivate ? "request" : "everyone",
+      } as const;
+
       await db
         .update(usersTable)
-        .set({ isPrivate: input.isPrivate })
+        .set({
+          isPrivate: input.isPrivate,
+          privacySettings: nextSettings,
+        })
         .where(eq(usersTable.id, ctx.userId));
 
       if (!input.isPrivate) {
-        // If turning OFF private mode:
-        // 1. Get all users who had private access
-        const privateUsers = await db.query.privateProfileAccessTable.findMany({
-          where: eq(privateProfileAccessTable.ownerId, ctx.userId),
-          columns: { allowedUserId: true },
-        });
-
-        const privateUserIds = privateUsers.map((u) => u.allowedUserId);
-
-        // 2. Clear private access records
-        await db
-          .delete(privateProfileAccessTable)
-          .where(eq(privateProfileAccessTable.ownerId, ctx.userId));
-
-        // 3. Clear private requests
-        await db
-          .delete(privateAccessRequestsTable)
-          .where(eq(privateAccessRequestsTable.ownerId, ctx.userId));
-
-        if (privateUserIds.length > 0) {
-          // 4. Remove these users from subscriptionsTable as per requirement "he is not subscriber"
-          // Filter out nulls just in case, though allowedUserId shouldn't be null
-          const validIds = privateUserIds.filter((id): id is number => id !== null);
-
-          if (validIds.length > 0) {
-            await db
-              .delete(subscriptionsTable)
-              .where(
-                and(
-                  eq(subscriptionsTable.targetUserId, ctx.userId),
-                  inArray(subscriptionsTable.subscriberId, validIds),
-                ),
-              );
-          }
-        }
+        await clearPrivateAccessState(ctx.userId);
       }
 
       await logAction({
         userId: ctx.userId,
         type: "private_mode_toggle",
-        details: { from: String(!input.isPrivate), to: String(input.isPrivate) } as any,
+        details: { from: String(!input.isPrivate), to: String(input.isPrivate) },
       });
 
       return { success: true };
@@ -71,6 +144,23 @@ export const privateProfileRouter = createTRPCRouter({
   sendRequest: procedure
     .input(z.object({ targetUserId: z.number() }))
     .mutation(async ({ ctx, input }) => {
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const targetUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.targetUserId),
+      });
+
+      if (!targetUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      const accessState = await getProfileAccessState(viewerContext, targetUser);
+      if (!accessState.canRequestAccess) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Profile access requests are disabled for this user",
+        });
+      }
+
       const existingRequest = await db.query.privateAccessRequestsTable.findFirst({
         where: and(
           eq(privateAccessRequestsTable.ownerId, input.targetUserId),
@@ -250,6 +340,44 @@ export const privateProfileRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  getPendingRequests: procedure.query(async ({ ctx }) => {
+    return getPendingPrivateRequests(ctx.userId);
+  }),
+
+  getGrantedUsers: procedure.query(async ({ ctx }) => {
+    return getGrantedPrivateAccess(ctx.userId);
+  }),
+
+  revokeAccess: procedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await db
+        .delete(privateProfileAccessTable)
+        .where(
+          and(
+            eq(privateProfileAccessTable.ownerId, ctx.userId),
+            eq(privateProfileAccessTable.allowedUserId, input.userId),
+          ),
+        );
+
+      await db
+        .delete(subscriptionsTable)
+        .where(
+          and(
+            eq(subscriptionsTable.targetUserId, ctx.userId),
+            eq(subscriptionsTable.subscriberId, input.userId),
+          ),
+        );
+
+      await logAction({
+        userId: ctx.userId,
+        type: "private_access_revoke",
+        itemId: input.userId,
+      });
+
+      return { success: true };
+    }),
+
   unsubscribe: procedure
     .input(z.object({ targetUserId: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -285,31 +413,125 @@ export const privateProfileRouter = createTRPCRouter({
   checkAccess: procedure
     .input(z.object({ targetUserId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.userId === input.targetUserId) return { hasAccess: true, isPending: false };
-
       const targetUser = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, input.targetUserId),
-        columns: { isPrivate: true },
       });
 
-      if (!targetUser?.isPrivate) return { hasAccess: true, isPending: false };
+      if (!targetUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
 
-      const access = await db.query.privateProfileAccessTable.findFirst({
-        where: and(
-          eq(privateProfileAccessTable.ownerId, input.targetUserId),
-          eq(privateProfileAccessTable.allowedUserId, ctx.userId),
-        ),
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      return getProfileAccessState(viewerContext, targetUser);
+    }),
+
+  getUserProfile: procedure
+    .input(z.object({ userId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const targetUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, input.userId),
       });
 
-      if (access) return { hasAccess: true, isPending: false };
+      if (!targetUser) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
 
-      const pending = await db.query.privateAccessRequestsTable.findFirst({
-        where: and(
-          eq(privateAccessRequestsTable.ownerId, input.targetUserId),
-          eq(privateAccessRequestsTable.requesterId, ctx.userId),
-        ),
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const access = await getProfileAccessState(viewerContext, targetUser);
+      const user = await toPrivacyAwareUserPreview(viewerContext, targetUser);
+
+      return { user, access };
+    }),
+
+  getDiscoverableUsersPagination: procedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const users = await db.query.usersTable.findMany({
+        where: input.cursor ? lt(usersTable.id, input.cursor) : undefined,
+        orderBy: [desc(usersTable.id)],
       });
 
-      return { hasAccess: false, isPending: !!pending };
+      const visibleUsers = [];
+      for (const user of users) {
+        if (user.id === ctx.userId) continue;
+        if (!(await canDiscoverUser(viewerContext, user, "people"))) continue;
+        visibleUsers.push(await toPrivacyAwareUserPreview(viewerContext, user));
+      }
+
+      const sliced = visibleUsers.slice(0, input.limit + 1);
+      const nextCursor =
+        sliced.length > input.limit ? sliced[input.limit]?.id : undefined;
+
+      return {
+        items: sliced.slice(0, input.limit),
+        nextCursor,
+      };
+    }),
+
+  searchUsers: procedure
+    .input(
+      z.object({
+        query: z.string().default(""),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const users = await db.query.usersTable.findMany({
+        orderBy: [desc(usersTable.id)],
+      });
+
+      const normalizedQuery = input.query.trim().toLowerCase();
+      const visibleUsers = [];
+
+      for (const user of users) {
+        if (user.id === ctx.userId) continue;
+        if (!(await canDiscoverUser(viewerContext, user, "search"))) continue;
+
+        const preview = await toPrivacyAwareUserPreview(viewerContext, user);
+        if (normalizedQuery) {
+          const haystack =
+            `${preview.name || ""} ${preview.surname || ""} ${preview.city || ""}`.toLowerCase();
+          if (!haystack.includes(normalizedQuery)) continue;
+        }
+
+        visibleUsers.push(preview);
+      }
+
+      return visibleUsers;
+    }),
+
+  searchInvitableUsers: procedure
+    .input(
+      z.object({
+        query: z.string().default(""),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const users = await db.query.usersTable.findMany({
+        orderBy: [desc(usersTable.id)],
+      });
+      const normalizedQuery = input.query.trim().toLowerCase();
+      const visibleUsers = [];
+
+      for (const user of users) {
+        if (user.id === ctx.userId) continue;
+        if (!(await canSendMeetingInvite(viewerContext, user))) continue;
+        const preview = await toPrivacyAwareUserPreview(viewerContext, user);
+        if (normalizedQuery) {
+          const haystack =
+            `${preview.name || ""} ${preview.surname || ""} ${preview.city || ""}`.toLowerCase();
+          if (!haystack.includes(normalizedQuery)) continue;
+        }
+        visibleUsers.push(preview);
+      }
+
+      return visibleUsers;
     }),
 });

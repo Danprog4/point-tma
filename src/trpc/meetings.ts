@@ -12,6 +12,11 @@ import {
   notificationTable,
   usersTable,
 } from "~/db/schema";
+import {
+  buildPrivacyViewerContext,
+  canSendMeetingInvite,
+  getProfileAccessState,
+} from "~/lib/privacy";
 import { uploadBase64Image } from "~/lib/s3/uploadBase64";
 import { logAction } from "~/lib/utils/logger";
 import { ActionType, giveXP } from "~/systems/progression";
@@ -191,6 +196,22 @@ export const meetingRouter = createTRPCRouter({
       const userId = input?.userId;
 
       if (userId) {
+        if (userId !== ctx.userId) {
+          const targetUser = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, userId),
+          });
+
+          if (!targetUser) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+          }
+
+          const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+          const access = await getProfileAccessState(viewerContext, targetUser);
+          if (!access.canViewActivity) {
+            return [];
+          }
+        }
+
         const meetings = await db.query.meetTable.findMany({
           where: eq(meetTable.userId, userId),
         });
@@ -300,6 +321,26 @@ export const meetingRouter = createTRPCRouter({
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You are not the owner of this meet",
+        });
+      }
+
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const targetUsers = await db.query.usersTable.findMany({
+        where: inArray(usersTable.id, userIds),
+      });
+
+      const blockedUserIds = [];
+      for (const targetUser of targetUsers) {
+        const canInvite = await canSendMeetingInvite(viewerContext, targetUser);
+        if (!canInvite && targetUser.id) {
+          blockedUserIds.push(targetUser.id);
+        }
+      }
+
+      if (blockedUserIds.length > 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "One or more users do not allow meeting invites",
         });
       }
 
@@ -657,6 +698,24 @@ export const meetingRouter = createTRPCRouter({
 
       if (!meet) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Meet not found" });
+      }
+
+      const owner = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, meet.userId!),
+      });
+
+      if (!owner) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meet owner not found" });
+      }
+
+      const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+      const canRequestToJoin = await canSendMeetingInvite(viewerContext, owner);
+
+      if (!canRequestToJoin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This user does not accept meeting requests",
+        });
       }
 
       const meetParticipant = await db.insert(meetParticipantsTable).values({

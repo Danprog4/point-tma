@@ -9,6 +9,7 @@ import {
   tasksProgressTable,
   usersTable,
 } from "~/db/schema";
+import { buildPrivacyViewerContext, getProfileAccessState } from "~/lib/privacy";
 import { getNewEvents } from "~/lib/utils/getNewEvents";
 import { logAction } from "~/lib/utils/logger";
 import { sendTelegram } from "~/lib/utils/sendTelegram";
@@ -57,6 +58,23 @@ export const eventRouter = createTRPCRouter({
   getUserEvents: procedure
     .input(z.object({ userId: z.number() }))
     .query(async ({ ctx, input }) => {
+      if (input.userId !== ctx.userId) {
+        const targetUser = await db.query.usersTable.findFirst({
+          where: eq(usersTable.id, input.userId),
+        });
+
+        if (!targetUser) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+        }
+
+        const viewerContext = await buildPrivacyViewerContext(ctx.userId);
+        const access = await getProfileAccessState(viewerContext, targetUser);
+
+        if (!access.canViewActivity) {
+          return [];
+        }
+      }
+
       const events = await db.query.activeEventsTable.findMany({
         where: eq(activeEventsTable.userId, input.userId),
       });

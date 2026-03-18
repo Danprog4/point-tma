@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { Drawer } from "vaul";
 import { eventTypes } from "~/types/events";
 
+
 interface CreateMeetDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -75,9 +76,8 @@ export function CreateMeetDrawer({
                       setSubType(subType);
                       onOpenChange(false);
                     }}
-                    className={`w-full rounded-2xl p-4 ${
-                      eventTypes.find((e) => e.name === type)?.bgColor || "bg-gray-100"
-                    } flex items-center justify-between transition-opacity hover:opacity-80`}
+                    className={`w-full rounded-2xl p-4 ${eventTypes.find((e) => e.name === type)?.bgColor || "bg-gray-100"
+                      } flex items-center justify-between transition-opacity hover:opacity-80`}
                   >
                     <span className="text-base font-medium text-nowrap text-gray-900">
                       {subType.length > 30 ? subType.slice(0, 30) + "..." : subType}

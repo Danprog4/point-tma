@@ -42,6 +42,13 @@ export const Route = createFileRoute("/event/$name/$id")({
   component: RouteComponent,
 });
 
+const normalizeSearchIndex = (value: unknown) => {
+  const parsed = Number(Array.isArray(value) ? value[0] : value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+};
+
+type NestedSeriesQuest = NonNullable<Quest["quests"]>[number] & Partial<Quest>;
+
 function RouteComponent() {
   useScroll();
 
@@ -66,6 +73,7 @@ function RouteComponent() {
   const sendGift = useMutation(trpc.main.sendGift.mutationOptions());
   const [page, setPage] = useState("info");
   const { name, id } = Route.useParams();
+  const { stageIndex } = Route.useSearch() as { stageIndex?: string | number };
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isBought, setIsBought] = useState(false);
@@ -112,10 +120,62 @@ function RouteComponent() {
     }
   }, [name, id, userEvents]);
 
-  const { events, isLoading: cacheLoading, getEventById } = useEventsCache();
+  const { getEventById } = useEventsCache();
 
-  // Ищем событие в кэше
-  const event = getEventById(Number(id), name ?? "");
+  // Ищем событие в кэше. Для этапа серии URL хранит id родителя, а stageIndex
+  // выбирает вложенный квест из parentEvent. Вложенный quest.id не является events.id.
+  const parentEvent = getEventById(Number(id), name ?? "");
+  const parentEventQuests = useMemo(
+    () =>
+      (Array.isArray(parentEvent?.quests) ? parentEvent.quests : []) as NestedSeriesQuest[],
+    [parentEvent?.quests],
+  );
+  const selectedSeriesQuestIndex = useMemo(
+    () => normalizeSearchIndex(stageIndex),
+    [stageIndex],
+  );
+  const selectedSeriesQuest = useMemo(
+    () =>
+      selectedSeriesQuestIndex == null
+        ? null
+        : parentEventQuests[selectedSeriesQuestIndex] || null,
+    [parentEventQuests, selectedSeriesQuestIndex],
+  );
+  const event = useMemo(
+    () =>
+      selectedSeriesQuest
+        ? ({
+            ...parentEvent,
+            ...selectedSeriesQuest,
+            id: parentEvent?.id,
+            category: selectedSeriesQuest.category || parentEvent?.category,
+            type: selectedSeriesQuest.type || parentEvent?.type,
+            organizer: selectedSeriesQuest.organizer || parentEvent?.organizer,
+            location: selectedSeriesQuest.location || parentEvent?.location,
+            price: selectedSeriesQuest.price ?? parentEvent?.price,
+            isSeries: false,
+            stages: [],
+            quests: [],
+          } as Quest)
+        : parentEvent,
+    [parentEvent, selectedSeriesQuest],
+  );
+
+  const openSeriesQuest = (index: number) => {
+    const quest = parentEventQuests[index];
+    if (!quest) return;
+
+    navigate({
+      to: "/event/$name/$id",
+      params: {
+        name: name ?? parentEvent?.category ?? "Квест",
+        id,
+      },
+      search: {
+        stageIndex: index,
+      },
+    });
+  };
 
   console.log(event, "event image");
 
@@ -581,10 +641,21 @@ function RouteComponent() {
                       </h3>
                       <div className="relative pl-2">
                         <div className="absolute top-2 bottom-6 left-[15px] w-0.5 bg-gray-100" />
-                        {event?.stages?.map((stage, idx) => (
-                          <div
+                        {event?.stages?.map((stage, idx) => {
+                          const linkedQuest = parentEventQuests[idx];
+                          const canOpen = Boolean(linkedQuest);
+
+                          return (
+                            <button
                             key={idx}
-                            className="relative flex items-start gap-4 pb-6 last:pb-0"
+                            type="button"
+                            disabled={!canOpen}
+                            onClick={() => openSeriesQuest(idx)}
+                            className={cn(
+                              "relative flex w-full items-start gap-4 pb-6 text-left last:pb-0",
+                              canOpen && "cursor-pointer transition-opacity active:opacity-70",
+                              !canOpen && "cursor-default",
+                            )}
                           >
                             <div
                               className={cn(
@@ -596,27 +667,33 @@ function RouteComponent() {
                             >
                               {idx + 1}
                             </div>
-                            <div className="pt-1">
+                            <div className="flex-1 pt-1">
                               <div
                                 className={cn(
                                   "font-bold",
                                   isSeries ? "text-red-900/80" : "text-gray-900",
                                 )}
                               >
-                                {stage.title}
+                                {stage.title || linkedQuest?.title || `Этап ${idx + 1}`}
                               </div>
-                              <div className="mt-1 text-sm text-gray-500">
-                                {stage.desc}
-                              </div>
+                              {(stage.desc || linkedQuest?.description) && (
+                                <div className="mt-1 text-sm text-gray-500">
+                                  {stage.desc || linkedQuest?.description}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        ))}
+                            {canOpen && (
+                              <div className="pt-1 text-lg font-bold text-gray-300">›</div>
+                            )}
+                          </button>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : (
                     // Sub-quests logic
                     <div className="flex flex-col gap-3">
-                      {event?.quests?.map((quest) => (
+                      {event?.quests?.map((quest, idx) => (
                         <div
                           key={quest.id}
                           className={cn(
@@ -626,7 +703,11 @@ function RouteComponent() {
                               : "bg-white ring-gray-100",
                           )}
                         >
-                          <QuestCard quest={quest as any} isNavigable={true} />
+                          <QuestCard
+                            quest={quest}
+                            isNavigable={false}
+                            onClick={() => openSeriesQuest(idx)}
+                          />
                         </div>
                       ))}
                     </div>
